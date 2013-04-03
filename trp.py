@@ -8,6 +8,8 @@ PTCPOS=Plate("PTC",25,1,1,1)
 
 WASTE=Plate("Waste",19,3,1,1)
 RPTEXTRA=0.2   # Extra amount when repeat pipetting
+REAGENTEXTRA=5	# Absoute amount of extra in each supply well of reagents
+REAGENTFRAC=0.1	# Relative amount of extra in each supply well of reagents (use max of EXTRA and FRAC)
 
 allsamples=[]
 
@@ -24,6 +26,7 @@ class Sample(object):
         self.conc=conc
         self.volume=volume
         self.liquidClass=liquidClass
+        self.history=""
         allsamples.append(self)
         
     def dilute(self,factor):
@@ -51,17 +54,22 @@ class Sample(object):
             c2=(conc*volume)/(self.volume+volume)
             assert(c1==c2)
             self.conc=c1
-
         self.volume=self.volume+volume
 
+    def addhistory(self,name,vol):
+        if len(self.history)>0:
+            self.history=self.history+",%s[%.1f]"%(name,vol)
+        else:
+            self.history="%s[%.1f]"%(name,vol)
+        
     def mix(self,w):
         w.mix([self.well],self.liquidClass,self.volume*0.9,self.plate,3)
 
     def __str__(self):
         if self.conc==None:
-            return "%s(%s.%s,%.2f ul,LC=%s)"%(self.name,str(self.plate),str(self.well),self.volume,self.liquidClass)
+            return "%s(%s.%s,%.2f ul,LC=%s) %s"%(self.name,str(self.plate),str(self.well),self.volume,self.liquidClass,self.history)
         else:
-            return "%s(%s.%s,%.2fx,%.2f ul,LC=%s)"%(self.name,str(self.plate),str(self.well),self.conc,self.volume,self.liquidClass)
+            return "%s(%s.%s,%.2fx,%.2f ul,LC=%s) %s"%(self.name,str(self.plate),str(self.well),self.conc,self.volume,self.liquidClass,self.history)
 
 WATER=Sample("Water",WATERLOC,0,None)
 
@@ -72,18 +80,19 @@ def multitransfer(w, volumes, src, dests,mix=False):
         # Same volume for each dest
         volumes=[volumes for i in range(len(dests))]
     assert(len(volumes)==len(dests))
-    cmt="Add  %s to samples %s"%(src.name,",".join("%s[%.1f]"%(dests[i].name,volumes[i]) for i in range(len(dests))))
-    if mix:
-        cmt=cmt+" with mix"
-    print "*",cmt
-    w.comment(cmt)
     if useMulti and mix==False:
+        cmt="Add  %s to samples %s"%(src.name,",".join("%s[%.1f]"%(dests[i].name,volumes[i]) for i in range(len(dests))))
+        if mix:
+            cmt=cmt+" with mix"
+        print "*",cmt
+        w.comment(cmt)
         v=sum(volumes)*(1+RPTEXTRA)
         w.getDITI(1,v)
         src.aspirate(w,v)
         for i in range(len(dests)):
             if volumes[i]>0:
                 dests[i].dispense(w,volumes[i],src.conc)
+                dests[i].addhistory(src.name,volumes[i])
         w.dropDITI(1,WASTE)
     else:
         for i in range(len(dests)):
@@ -98,11 +107,12 @@ def transfer(w, volume, src, dest, mix=False):
     w.getDITI(1,volume)
     src.aspirate(w,volume)
     dest.dispense(w,volume,src.conc)
+    dest.addhistory(src.name,volume)
     if mix:
         dest.mix(w)
     w.dropDITI(1,WASTE)
 
-def stage(w,reagents,sources,samples,volume,pgm=None):
+def stage(w,reagents,sources,samples,volume):
     # Add water to sample wells as needed (multi)
     # Pipette reagents into sample wells (multi)
     # Pipette sources into sample wells
@@ -128,32 +138,33 @@ def stage(w,reagents,sources,samples,volume,pgm=None):
         for i in range(len(sources)):
             transfer(w,sourcevols[i],sources[i],samples[i],True)
 
-    if pgm!=None:
-        # move to thermocycler
-        w.execute("ptc200exec LID OPEN")
-        w.vector("sample",SAMPLEPLATE,w.SAFETOEND,True,w.DONOTMOVE,w.CLOSE)
-        w.vector("ptc200",PTCPOS,w.SAFETOEND,True,w.DONOTMOVE,w.OPEN)
-        w.romahome()
-        w.execute("ptc200exec LID CLOSE")
-        w.execute('ptc200exec RUN "%s"'%pgm)
-        w.execute('ptc200wait')
+
+def runpgm(pgm):
+    # move to thermocycler
+    w.execute("ptc200exec LID OPEN")
+    w.vector("sample",SAMPLEPLATE,w.SAFETOEND,True,w.DONOTMOVE,w.CLOSE)
+    w.vector("ptc200",PTCPOS,w.SAFETOEND,True,w.DONOTMOVE,w.OPEN)
+    w.romahome()
+    w.execute("ptc200exec LID CLOSE")
+    w.execute('ptc200exec RUN "%s"'%pgm)
+    w.execute('ptc200wait')
 
 
 def t7(w,reagents,templates,samples,volume):
     w.comment('T7')
-    stage(w,reagents,templates,samples,volume,"30-15MIN")
+    stage(w,reagents,templates,samples,volume)
 
 def stop(w,reagents,samples,volume):
     w.comment('STOP')
-    for s in samples:
-        s.dilute(2)
     stage(w,reagents,[],samples,volume)
 
 def rt(w,reagents,sources,samples,volume):
     w.comment('RT')
-    for s in sources:
-        s.dilute(2)
-    stage(w,reagents, sources,samples,volume,"TRP-SS")
+    stage(w,reagents, sources,samples,volume)
+
+def dilute(w,samples,factor):
+    for s in samples:
+        s.dilute(factor)
 
 def printallsamples(txt=""):
     print "\n%s:"%txt
@@ -166,6 +177,7 @@ rpos=0; spos=0;
 S_T7=Sample("M-T7",REAGENTPLATE,rpos,2); rpos=rpos+1
 S_Theo=Sample("Theo",REAGENTPLATE,rpos,25/7.5); rpos=rpos+1
 S_MRT=Sample("M-RT",REAGENTPLATE,rpos,2); rpos=rpos+1
+S_MRTNeg=Sample("M-RTNeg",REAGENTPLATE,rpos,2); rpos=rpos+1
 S_Stop=Sample("M-Stp",REAGENTPLATE,rpos,2); rpos=rpos+1
 S_L2b12=Sample("L2b12",REAGENTPLATE,rpos,10); rpos=rpos+1
 S_L2b12Cntl=Sample("L2b12Cntl",REAGENTPLATE,rpos,10); rpos=rpos+1
@@ -173,21 +185,29 @@ nT7=3
 S_R1_T7=[Sample("R1.T7.%d"%i,SAMPLEPLATE,i+spos) for i in range(nT7)]; spos=spos+nT7
 nRT=nT7
 S_R1_RT=[Sample("R1.RT.%d"%i,SAMPLEPLATE,i+spos) for i in range(nRT)]; spos=spos+nRT
+S_R1_RTNeg=[Sample("R1.RTNeg.%d"%i,SAMPLEPLATE,i+spos) for i in range(nRT)]; spos=spos+nRT
 scale=1
 printallsamples("Before T7")
 t7(w,[S_T7,S_Theo],[S_L2b12,S_L2b12,S_L2b12Cntl],S_R1_T7,10*scale)
+runpgm("37-15MIN")
 printallsamples("Before Stop")
+dilute(w,S_R1_T7,2)
 stop(w,[S_Stop],S_R1_T7,20*scale)
 printallsamples("Before RT")
+dilute(w,S_R1_T7,2)
 rt(w,[S_MRT],S_R1_T7,S_R1_RT,5*scale)
+rt(w,[S_MRTNeg],S_R1_T7,S_R1_RTNeg,5*scale)
+runpgm("TRP-SS")
 printallsamples("After RT")
 
 print  "Preparation:"
 for s in allsamples:
     if s.volume<0:
+        extra=max(REAGENTEXTRA,-REAGENTFRAC*s.volume)
         if s.conc!=None:
-            print "%s@%.2fx in %s.%s consume %.1f ul"%(s.name,s.conc,str(s.plate),str(s.well),-s.volume)
+            c="@%.2fx"%s.conc
         else:
-            print "%s in %s.%s consume %.1f ul"%(s.name,str(s.plate),str(s.well),-s.volume)
+             c=""   
+        print "%s%s in %s.%s consume %.1f ul, provide %.1f ul"%(s.name,c,str(s.plate),str(s.well),-s.volume,extra-s.volume)
         
 w.save("trp.gwk")
