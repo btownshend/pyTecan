@@ -57,6 +57,7 @@ class WorkList(object):
         self.aspirateDispense('Mix',wells, liquidClass, volume, loc, cycles)
         
     def aspirateDispense(self,op,wells, liquidClass, volume, loc, cycles=None):
+        print "%s %s.%s %.2f"%(op,str(loc),str(wells),volume)
         # Update volumes
         if op=='Aspirate':
             vincr=-volume
