@@ -1,12 +1,12 @@
-import worklist
+from worklist import *
 
-REAGENTPLATE=(4,1,12,8)
-SAMPLEPLATE=(4,2,12,8)
-WATERLOC=(3,1,1,1)
-PTCPOS=(25,1,1,1)
+REAGENTPLATE=Plate("Reagents",4,1,12,8)
+SAMPLEPLATE=Plate("Samples",4,2,12,8)
+WATERLOC=Plate("Water",3,1,1,1)
+PTCPOS=Plate("PTC",25,1,1,1)
 LC="Water"
 
-WASTE=(1,1,1,1)
+WASTE=Plate("Waste",1,1,1,1)
 RPTEXTRA=0.2   # Extra amount when repeat pipetting
 
 def multitransfer(w, liquidClass, volume, srcplate, srcwell, destplate, destwells):
@@ -69,7 +69,7 @@ def rt(w,reagentwells,reagentconcs,sourcewells,sourceconc,samplewells,volume):
     w.execute('ptc200wait')
 
 
-w=worklist.WorkList()
+w=WorkList()
 w.comment('T7')
 t7(w,[0,1],[2,3],[2,3,4],10,[0,1,2],10)
 w.comment('RT')
