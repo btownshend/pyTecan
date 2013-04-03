@@ -52,14 +52,14 @@ class WorkList(object):
             well=wells[i]
             if isinstance(well,(long,int)):
                 ival=int(well)
-                (col,row)=divmod(ival,8)
+                (col,row)=divmod(ival,loc[3])
                 col=col+1
                 row=row+1
             else:
                 col=int(well[1:])
                 row=ord(well[0])-ord('A')+1
-            assert(row>=1 and row<=8 and col>=1 and col<=12)
-            pos[i]=(row-1)+8*(col-1)
+            assert(row>=1 and row<=loc[3] and col>=1 and col<=loc[2])
+            pos[i]=(row-1)+loc[3]*(col-1)
             if i>0:
                 assert(col==prevcol)
             prevcol=col
@@ -88,7 +88,7 @@ class WorkList(object):
             print "pos[0]=",pos[0]
             print "spacing=",spacing
 
-        ws=WorkList.wellSelection(12,8,pos)
+        ws=WorkList.wellSelection(loc[2],loc[3],pos)
         volstr="%.2f"%allvols[0]
         for i in range(1,11):
             volstr="%s,%.2f"%(volstr,allvols[i]);
