@@ -8,6 +8,7 @@ class WorkList(object):
     
     debug=False
     list=[]
+    volumes={}
     
     def bin(s):
         return str(s) if s<=1 else bin(s>>1) + str(s&1)
@@ -45,6 +46,24 @@ class WorkList(object):
         self.aspirateDispense('Mix',wells, liquidClass, volume, loc, cycles)
         
     def aspirateDispense(self,op,wells, liquidClass, volume, loc, cycles=None):
+        # Update volumes
+        if op=='Aspirate':
+            vincr=-volume
+        elif op=='Dispense':
+            vincr=volume
+        else:
+            vincr=0
+            
+        if vincr != 0:
+            if loc not in self.volumes:
+                self.volumes[loc]={}
+            for well in wells:
+                if well not in self.volumes[loc]:
+                    self.volumes[loc][well]=vincr
+                else:
+                    self.volumes[loc][well]=self.volumes[loc][well]+vincr
+                    
+            
         tipMask=0
         spacing=1
         pos=[0 for x in range(len(wells))]
@@ -160,3 +179,10 @@ class WorkList(object):
         'Dump current worklist'
         for i in range(len(self.list)):
             print self.list[i]
+
+    def dumpvols(self):
+        'Dump final volumes'
+        print self.volumes
+        for loc in self.volumes:
+            for well in self.volumes[loc]:
+                print loc,",",well,"=",self.volumes[loc][well]
