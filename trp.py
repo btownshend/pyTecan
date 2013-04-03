@@ -190,5 +190,4 @@ for s in allsamples:
         else:
             print "%s in %s.%s consume %.1f ul"%(s.name,str(s.plate),str(s.well),-s.volume)
         
-w.save("trp.wrk")
-
+w.save("trp.gwk")
