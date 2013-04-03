@@ -196,3 +196,15 @@ class WorkList(object):
         for loc in self.volumes:
             for well in self.volumes[loc]:
                 print "%-14s\t%s\t%6.1f"%(str(loc),str(well),self.volumes[loc][well])
+
+    def save(self,filename):
+        'Save worklist in a file in format that Gemini can load'
+        fd=open(filename,'w')
+        for loc in self.volumes:
+            for well in self.volumes[loc]:
+                if self.volumes[loc][well]<0:
+                    print >>fd,'B;Comment("Make sure %s.%s has at least %.1f ul")'%(str(loc),str(well),-self.volumes[loc][well])
+        for i in range(len(self.list)):
+            print >>fd, "B;%s"%str(self.list[i])
+        fd.close()
+        
