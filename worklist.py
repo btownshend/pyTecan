@@ -1,26 +1,4 @@
 # Module for generating a worklist from a set of commands
-
-class Location(object):
-    'Wrapper around a location include a grid, a position, and a list of wells.   Wells can be an integer list or a list of strings such as A2,E4.'
-    def __init__(self, grid, pos, wells=[0]):
-        self.grid=grid
-        self.pos=pos
-        self.wells=wells
-
-    def __str__(self):
-        return "Grid %d, Pos %s, Wells %s"%(self.grid,self.pos,str(self.wells))
-
-    def wloc(self, wells):
-        copy=self;
-        copy.wells=wells
-        return copy
-
-    def __len__(self):
-        return len(self.wells)
-
-    def __getitem__(self,i):
-        return self.wloc([self.wells[i]])
-    
 class WorkList(object):
     OPEN=0
     CLOSE=1
@@ -29,7 +7,6 @@ class WorkList(object):
     ENDTOSAFE=1
     
     debug=False
-    waste=Location(1,1)
     list=[]
     
     def bin(s):
@@ -56,46 +33,23 @@ class WorkList(object):
             s=s+chr(0x30+bitMask)
         return s
 
-    def setWaste(self, waste):
-        self.waste=waste
-        
-    def transfer(self, liquidClass, volume, src, dest, mix=False):
-        'Entire sequence of moving a volume from src to dest'
-        assert(len(src)==1)
-        assert(len(dest)==1)
-        self.getDITI(1,volume)
-        self.aspirate( liquidClass, volume, src)
-        self.dispense( liquidClass, volume, dest)
-        if mix:
-            self.mix(liquidClass,volume*0.9,dest,3)
-        self.dropDITI(1)
 
-    def multitransfer(self, liquidClass, volume, src, dests):
-        'Multi pipette from src to multiple dest'
-        self.getDITI(1,volume)
-        self.aspirate(liquidClass, volume*len(dests), src)
-        if isinstance(dests,Location):
-            self.dispense(liquidClass, volume, dests)
-        else:
-            for d in dests:
-                self.dispense(liquidClass, volume, d)
-        self.dropDITI(1)
-        
-    def aspirate(self, liquidClass, volume, src):
-        self.aspirateDispense('Aspirate',liquidClass, volume, src)
+    #def aspirate(tipMask, liquidClass, volume, loc, spacing, ws):
+    def aspirate(self,wells, liquidClass, volume, loc):
+        self.aspirateDispense('Aspirate',wells, liquidClass, volume, loc)
 
-    def dispense(self, liquidClass, volume, dest):
-        self.aspirateDispense('Dispense',liquidClass, volume, dest)
+    def dispense(self,wells, liquidClass, volume, loc):
+        self.aspirateDispense('Dispense',wells, liquidClass, volume, loc)
 
-    def mix(self, liquidClass, volume, src, cycles=3):
-        self.aspirateDispense('Mix', liquidClass, volume, src, cycles)
+    def mix(self,wells, liquidClass, volume, loc, cycles=3):
+        self.aspirateDispense('Mix',wells, liquidClass, volume, loc, cycles)
         
-    def aspirateDispense(self,op, liquidClass, volume, srcdest, cycles=None):
+    def aspirateDispense(self,op,wells, liquidClass, volume, loc, cycles=None):
         tipMask=0
         spacing=1
-        pos=[0 for x in range(len(srcdest.wells))]
-        for i in range(len(srcdest.wells)):
-            well=srcdest.wells[i]
+        pos=[0 for x in range(len(wells))]
+        for i in range(len(wells)):
+            well=wells[i]
             if isinstance(well,(long,int)):
                 ival=int(well)
                 (col,row)=divmod(ival,8)
@@ -116,7 +70,7 @@ class WorkList(object):
         else:
             spacing=2
         allvols=[0 for x in range(12)]
-        for i in range(len(srcdest.wells)):
+        for i in range(len(wells)):
             if i==0:
                 tip=0
             else:
@@ -139,9 +93,9 @@ class WorkList(object):
         for i in range(1,11):
             volstr="%s,%.2f"%(volstr,allvols[i]);
         if op=="Mix":
-            self.list.append( '%s(%d,"%s",%s,%d,%d,%d,"%s",%d,0)'%(op,tipMask,liquidClass,volstr,srcdest.grid,srcdest.pos,spacing,ws,cycles))
+            self.list.append( '%s(%d,"%s",%s,%d,%d,%d,"%s",%d,0)'%(op,tipMask,liquidClass,volstr,loc[0],loc[1],spacing,ws,cycles))
         else:
-            self.list.append( '%s(%d,"%s",%s,%d,%d,%d,"%s",0)'%(op,tipMask,liquidClass,volstr,srcdest.grid,srcdest.pos,spacing,ws))
+            self.list.append( '%s(%d,"%s",%s,%d,%d,%d,"%s",0)'%(op,tipMask,liquidClass,volstr,loc[0],loc[1],spacing,ws))
 
     # Get DITI
     def getDITI(self, tipMask, volume, retry=True):
@@ -159,12 +113,12 @@ class WorkList(object):
             type=DITI200
         self.list.append('GetDITI(%d,%d,%d)'%(tipMask,type,options))
 
-    def dropDITI(self, tipMask, loc=waste, airgap=10, airgapSpeed=70):
+    def dropDITI(self, tipMask, loc, airgap=10, airgapSpeed=70):
         'Drop DITI, airgap is in ul, speed in ul/sec'
         assert(tipMask>=1 and tipMask<=15)
         assert(airgap>=0 and airgap<=100)
         assert(airgapSpeed>=1 and airgapSpeed<1000)
-        self.list.append('DropDITI(%d,%d,%d,%f,%d)'%(tipMask,loc.grid,loc.pos,airgap,airgapSpeed))
+        self.list.append('DropDITI(%d,%d,%d,%f,%d)'%(tipMask,loc[0],loc[1],airgap,airgapSpeed))
 
     def vector(self, vector,loc, direction, andBack, beginAction, endAction, slow=True):
         'Move ROMA.  Gripper actions=0 (open), 1 (close), 2 (do not move).'
@@ -176,7 +130,7 @@ class WorkList(object):
             andBack=1
         else:
             andBack=0
-        self.list.append('Vector("%s",%d,%d,%d,%d,%d,%d,%d,0)'%(vector,loc.grid,loc.pos,direction,andBack,beginAction, endAction, speed))
+        self.list.append('Vector("%s",%d,%d,%d,%d,%d,%d,%d,0)'%(vector,loc[0],loc[1],direction,andBack,beginAction, endAction, speed))
 
     def romahome(self):
         self.list.append('ROMA(2,0,0,0,0,0,60,0,0)')

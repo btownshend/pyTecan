@@ -1,12 +1,11 @@
-import sitecustomize
-from worklist import *
+import worklist
 
-REAGENT_PLATE=Location(4,1)
-SOURCE_PLATE=Location(4,1)
-SAMPLE_PLATE=Location(4,2)
-WATERLOC=Location(3,1)
-PTCPOS=Location(25,1)
-LC="Water"   # Liquid class to use
+REAGENTPLATE=(4,1)
+SOURCEPLATE=(4,1)
+SAMPLEPLATE=(4,2)
+WATERLOC=(3,1)
+PTCPOS=(25,1)
+
 WASTE=(1,1)
 RPTEXTRA=0.2   # Extra amount when repeat pipetting
 
@@ -26,23 +25,38 @@ def t7(w,reagentwells,reagentconcs,templatewells,templateconc,samplewells,volume
     assert(watervol>=0)
     if watervol>0:
 	w.comment("Adding %.1f ul of water to each sample well"%watervol)
-	w.multitransfer(LC, watervol, WATERLOC, samplewells)
+	v=watervol*nsamples*(1+RPTEXTRA)
+	w.getDITI(1,v)
+	w.aspirate([0],"Water",v,WATERLOC)
+	for i in range(len(samplewells)):
+	    w.dispense([samplewells[i]],"Water",watervol,SAMPLEPLATE)
+	w.dropDITI(1,WASTE)
 
-    w.comment("Adding %s ul of reagents from wells %s to each sample well"%(str(reagentvols),str(reagentwells)))
     for i in range(len(reagentwells)):
-	w.multitransfer(LC,reagentvols[i], reagentwells[i],samplewells)
+	w.comment("Adding %.1f ul of reagent %d from well %s to each sample well"%(reagentvols[i],i,reagentwells[i]))
+	v=reagentvols[i]*nsamples*(1+RPTEXTRA)
+	w.getDITI(1,v)
 
-    for i in range(len(samplewells)):
-	w.comment( "Adding %.1f ul of template from %s to well %s"%(volume/templateconc, templatewells[i], samplewells[i]))
-	if len(templatewells)==1:
-	    src=templatewells[0]
-	else:
-	    src=templatewells[i]
-	w.transfer(LC, v, src, samplewells[i], True)
+	w.aspirate([reagentwells[i]],"Water",v,REAGENTPLATE)
+	for j in range(len(samplewells)):
+	    w.dispense([samplewells[j]],"Water",reagentvols[i],SAMPLEPLATE)
+	w.dropDITI(1,WASTE)
+
+        v=volume/templateconc
+    	for i in range(len(samplewells)):
+	    w.comment( "Adding %.1f ul of template from %s to well %s"%(volume/templateconc, templatewells[i], samplewells[i]))
+	    w.getDITI(1,v)
+	    if len(templatewells)==1:
+		w.aspirate([templatewells[0]],"Water",v,SOURCEPLATE)
+	    else:
+		w.aspirate([templatewells[i]],"Water",v,SOURCEPLATE)
+	    w.dispense([samplewells[i]],"Water",v,SAMPLEPLATE)
+	    w.mix([samplewells[i]],"Water",volume*0.9,SAMPLEPLATE,3)
+	    w.dropDITI(1,WASTE)
 
     # move to thermocycler
     w.execute("ptc200exec LID OPEN")
-    w.vector("sample",SAMPLE_PLATE,w.SAFETOEND,True,w.DONOTMOVE,w.CLOSE)
+    w.vector("sample",SAMPLEPLATE,w.SAFETOEND,True,w.DONOTMOVE,w.CLOSE)
     w.vector("ptc200",PTCPOS,w.SAFETOEND,True,w.DONOTMOVE,w.OPEN)
     w.execute("ptc200exec LID CLOSE")
     w.romahome()
@@ -50,9 +64,6 @@ def t7(w,reagentwells,reagentconcs,templatewells,templateconc,samplewells,volume
     w.execute('ptc200exec RUN "30-15MIN"')
     w.execute('ptc200wait')
 
-w=WorkList()
-w.setWaste(WASTE)
-t7(w,REAGENT_PLATE.wloc(['A1','B1']),[2,3],SOURCE_PLATE.wloc(['C1','D1','E1']),10,SAMPLE_PLATE.wloc(['A1','B1','C1']),10,30)
+w=worklist.WorkList()
+t7(w,['A1','A2'],[2,3],['A3','A4','A5'],10,['A1','A2','A3'],10,30)
 w.dump()
-
-
