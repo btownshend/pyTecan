@@ -5,6 +5,13 @@ defaultLC="Water-BT"   # Default liquid class
 defaultMixFrac = 0.9
 
 class Sample(object):
+    @staticmethod
+    def printallsamples(txt=""):
+        print "\n%s:"%txt
+        for s in allsamples:
+            print s
+        print ""
+
     def __init__(self,name,plate,well,conc=None,volume=0,liquidClass=defaultLC):
         for s in allsamples:
             if s.plate==plate and s.well==well:
@@ -61,3 +68,5 @@ class Sample(object):
             return "%s(%s.%s,%.2f ul,LC=%s) %s"%(self.name,str(self.plate),str(self.well),self.volume,self.liquidClass,self.history)
         else:
             return "%s(%s.%s,%.2fx,%.2f ul,LC=%s) %s"%(self.name,str(self.plate),str(self.well),self.conc,self.volume,self.liquidClass,self.history)
+
+    
