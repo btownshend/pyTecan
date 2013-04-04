@@ -28,7 +28,6 @@ class RIC:
 
     def gettemp(self):
         res=self.execute("p")
-	print "temp=",res
         temp=float(res)
 	return temp
 

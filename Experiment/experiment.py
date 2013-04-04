@@ -20,6 +20,12 @@ class Experiment(object):
         'Create a new experiment with given sample locations for water and self.WASTE'
         self.w=WorkList()
 
+    def setreagenttemp(self,temp=None):
+        if temp==None:
+            self.w.pyrun("RIC\\ricset.py IDLE")
+        else:
+            self.w.pyrun("RIC\\ricset.py %f"%temp)
+
     def saveworklist(self,filename):
         self.w.saveworklist(filename)
 
@@ -35,6 +41,8 @@ class Experiment(object):
         print >>fd,self.QPCRPLATE
         print >>fd,self.WATERLOC
         print >>fd,self.WASTE
+        print >>fd
+        print >>fd,"DiTi usage:",self.w.getDITIcnt()
         print >>fd
         Sample.printprep(fd)
         Sample.printallsamples("All Samples:",fd)
@@ -112,13 +120,13 @@ class Experiment(object):
         cmt="run %s"%pgm
         self.w.comment(cmt)
         print "*",cmt
-        self.w.pyrun("PTC\\ptcexec.py LID OPEN")
+        self.w.pyrun("PTC\\ptclid.py OPEN")
         self.w.vector("Microplate Landscape",self.SAMPLEPLATE,self.w.SAFETOEND,True,self.w.DONOTMOVE,self.w.CLOSE)
         self.w.vector("PTC200",self.PTCPOS,self.w.SAFETOEND,True,self.w.DONOTMOVE,self.w.OPEN)
         self.w.vector("Hotel 1 Lid",self.HOTELPOS,self.w.SAFETOEND,True,self.w.DONOTMOVE,self.w.CLOSE)
         self.w.vector("PTC200lid",self.PTCPOS,self.w.SAFETOEND,True,self.w.DONOTMOVE,self.w.OPEN)
         self.w.romahome()
-        self.w.pyrun("PTC\\ptcexec.py LID CLOSE")
+        self.w.pyrun("PTC\\ptclid.py CLOSE")
         pgm="PAUSE30"  # For debugging
         self.w.pyrun('PTC\\ptcrun.py %s CALC ON'%pgm)
         self.w.pyrun('PTC\\ptcwait.py')

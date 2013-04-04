@@ -3,6 +3,9 @@ import string
 from plate import Plate
 import shutil
 
+_WorkList__DITI200=0
+_WorkList__DITI10=2
+
 class WorkList(object):
     "A Gemini worklist created programmatically"
     OPEN=0
@@ -14,6 +17,7 @@ class WorkList(object):
     debug=False
     list=[]
     volumes={}
+    diticnt=[0,0,0,0]
     
     def bin(s):
         return str(s) if s<=1 else bin(s>>1) + str(s&1)
@@ -126,8 +130,6 @@ class WorkList(object):
 
     # Get DITI
     def getDITI(self, tipMask, volume, retry=True):
-        DITI200=0
-        DITI10=2
         assert(tipMask>=1 and tipMask<=15)
         assert(volume>0 and volume<200)
         if retry:
@@ -135,10 +137,21 @@ class WorkList(object):
         else:
             options=0
         if volume<10:
-            type=DITI10
+            type=__DITI10
         elif volume<200:
-            type=DITI200
+            type=__DITI200
         self.list.append('GetDITI(%d,%d,%d)'%(tipMask,type,options))
+        if tipMask&1:
+            self.diticnt[type]+=1
+        if tipMask&2:
+            self.diticnt[type]+=1
+        if tipMask&4:
+            self.diticnt[type]+=1
+        if tipMask&8:
+            self.diticnt[type]+=1
+
+    def getDITIcnt(self):
+        return "10ul: %d, 200ul: %d"%(self.diticnt[__DITI10],self.diticnt[__DITI200])
 
     def dropDITI(self, tipMask, loc, airgap=10, airgapSpeed=70):
         'Drop DITI, airgap is in ul, speed in ul/sec'
