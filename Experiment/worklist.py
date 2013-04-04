@@ -191,7 +191,7 @@ class WorkList(object):
         self.list.append('Execute("%s",%d,"%s")'%(command,flags,resultvar))
 
     def pyrun(self, cmd):
-        self.execute("c:\Python32\python.exe c:\Home\Admin\%s"%cmd)
+        self.execute("C:\Python27\python.exe C:\cygwin\Home\Admin\%s"%cmd)
         
     def dump(self):
         'Dump current worklist'

@@ -72,8 +72,8 @@ class PTC:
     class CmdError(BaseException):
         pass
     
-    def __init__(self):
-        self.ser = serial.Serial(self.PORT,baudrate=9600,timeout=1)
+    def __init__(self,to=1):
+        self.ser = serial.Serial(self.PORT,baudrate=9600,timeout=to)
         if self.debug:
             print self.ser.portstr
 
@@ -134,3 +134,17 @@ class PTC:
             raise self.CmdError("Bad force value")
         res=self.execute("LIDFORCE %f"%force)
 
+    def folders(self):
+        self.execute("FOLDERS?")
+
+    def programs(self,folder):
+        res = self.execute('PROGRAMS? "%s"'%folder)
+        res=string.split(res,',')
+        res=res[1:]
+        for i in range(len(res)):
+            res[i]=res[i].strip('"')
+        return res
+
+    def erase(self, pgm):
+        res = self.execute('ERASE "%s"'%pgm)
+        return res

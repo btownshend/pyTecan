@@ -112,15 +112,16 @@ class Experiment(object):
         cmt="run %s"%pgm
         self.w.comment(cmt)
         print "*",cmt
-        self.w.pyrun("PTC/ptc200exec.py LID OPEN")
+        self.w.pyrun("PTC\\ptcexec.py LID OPEN")
         self.w.vector("Microplate Landscape",self.SAMPLEPLATE,self.w.SAFETOEND,True,self.w.DONOTMOVE,self.w.CLOSE)
         self.w.vector("PTC200",self.PTCPOS,self.w.SAFETOEND,True,self.w.DONOTMOVE,self.w.OPEN)
         self.w.vector("Hotel 1 Lid",self.HOTELPOS,self.w.SAFETOEND,True,self.w.DONOTMOVE,self.w.CLOSE)
         self.w.vector("PTC200lid",self.PTCPOS,self.w.SAFETOEND,True,self.w.DONOTMOVE,self.w.OPEN)
         self.w.romahome()
-        self.w.pyrun("PTC/ptc200exec.py LID CLOSE")
-        self.w.pyrun('PTC/ptc200exec.py RUN "%s"'%pgm)
-        self.w.pyrun('PTC/ptc200wait.py')
+        self.w.pyrun("PTC\\ptcexec.py LID CLOSE")
+        pgm="PAUSE30"  # For debugging
+        self.w.pyrun('PTC\\ptcrun.py %s CALC ON'%pgm)
+        self.w.pyrun('PTC\\ptcwait.py')
 
 
     def dilute(self,samples,factor):
