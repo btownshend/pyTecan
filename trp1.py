@@ -2,7 +2,9 @@ from Experiment.sample import Sample
 from Experiment.experiment import *
 import copy
 
+scale=1   # Overall scale of reactions
 
+### Setup samples
 e=Experiment()
 rpos=0; spos=0;
 S_T7=Sample("M-T7",e.REAGENTPLATE,rpos,2); rpos=rpos+1
@@ -15,43 +17,47 @@ S_MRTNeg=Sample("M-RTNeg",e.REAGENTPLATE,rpos,2); rpos=rpos+1
 S_LIGB=Sample("M-LIGB",e.REAGENTPLATE,rpos,1.25); rpos=rpos+1
 S_LIGASE=Sample("M-LIGASE",e.REAGENTPLATE,rpos,2); rpos=rpos+1
 
-nT7=3
-S_R1_T7=[Sample("R1.T7.%d"%i,e.SAMPLEPLATE,i+spos) for i in range(nT7)]; spos=spos+nT7
-
-nRT=nT7
-S_R1_RTPos=[Sample("R1.RT.%d"%i,e.SAMPLEPLATE,i+spos) for i in range(nRT)]; spos=spos+nRT
-S_R1_RTNeg=[Sample("R1.RTNeg.%d"%i,e.SAMPLEPLATE,i+spos) for i in range(nRT)]; spos=spos+nRT
-S_R1_RT=copy.copy(S_R1_RTPos)
-S_R1_RT.extend(S_R1_RTNeg)
-
-nExt=nRT*2
-S_R1_EXT=[Sample("R1.EXT.%d"%i,e.SAMPLEPLATE,i+spos) for i in range(nExt)]; spos=spos+nRT
-
-scale=1   # Overall scale of reactions
-
-Sample.printallsamples("Before T7")
-e.stage('T7',[S_T7,S_Theo],[S_L2b12,S_L2b12,S_L2b12Cntl],S_R1_T7,10*scale)
+### T7 
+templates=[S_L2b12,S_L2b12,S_L2b12Cntl]
+nT7=len(templates)
+S_R1_T7MINUS=[Sample("R1.T7+.%d"%i,e.SAMPLEPLATE,i+spos) for i in range(nT7)]; spos=spos+nT7
+S_R1_T7PLUS=[Sample("R1.T7-.%d"%i,e.SAMPLEPLATE,i+spos) for i in range(nT7)]; spos=spos+nT7
+S_R1_T7=copy.copy(S_R1_T7MINUS)
+S_R1_T7.extend(S_R1_T7PLUS)
+e.stage('T7-',[S_T7],templates,S_R1_T7MINUS,10*scale)
+e.stage('T7+',[S_T7,S_Theo],templates,S_R1_T7PLUS,10*scale)
+nT7*=2
 e.runpgm("37-15MIN")
 
-Sample.printallsamples("Before Stop")
+## Stop
 e.dilute(S_R1_T7,2)
 e.stage('Stop',[S_Stop],[],S_R1_T7,20*scale)
 
-Sample.printallsamples("Before RT")
+### RT
 e.dilute(S_R1_T7,2)
-e.stage('RT',[S_MRT],S_R1_T7,S_R1_RTPos,5*scale)
-e.stage('RT',[S_MRTNeg],S_R1_T7,S_R1_RTNeg,5*scale)
+nRT=nT7
+S_R1_RTPos=[Sample("R1.RT.%d"%i,e.SAMPLEPLATE,i+spos) for i in range(nRT)]; spos=spos+nRT
+e.stage('RTPos',[S_MRT],S_R1_T7,S_R1_RTPos,5*scale)
+
+S_R1_RTNeg=[Sample("R1.RTNeg.%d"%i,e.SAMPLEPLATE,i+spos) for i in range(nRT)]; spos=spos+nRT
+e.stage('RTNeg',[S_MRTNeg],S_R1_T7,S_R1_RTNeg,5*scale)
+
+S_R1_RT=copy.copy(S_R1_RTPos)
+S_R1_RT.extend(S_R1_RTNeg)
+nRT*=2
 e.runpgm("TRP-SS")
 
-Sample.printallsamples("Before Ligation")
+## Extension
 e.dilute(S_R1_RT,5)
+nExt=nRT
+S_R1_EXT=[Sample("R1.EXT.%d"%i,e.SAMPLEPLATE,i+spos) for i in range(nExt)]; spos=spos+nRT
 e.stage('LigAnneal',[S_LIGB],S_R1_RT,S_R1_EXT,10*scale)
 e.runpgm("TRP-ANNEAL")
+
 e.dilute(S_R1_EXT,2)
 e.stage('Ligation',[S_LIGASE],[],S_R1_EXT,20*scale)
+e.runpgm("TRP-EXTEND")
 
-Sample.printallsamples("After Ligation")
-
-Sample.printprep()
-
-e.w.save("trp1.gwl")
+# Save worklist to a file
+e.saveworklist("trp1.gwl")
+e.savesummary("trp1.txt")

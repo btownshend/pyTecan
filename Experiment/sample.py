@@ -1,4 +1,5 @@
-from worklist import *
+import sys
+from worklist import WorkList
 
 defaultLC="Water-BT"   # Default liquid class
 defaultMixFrac = 0.9
@@ -72,11 +73,11 @@ class Sample(object):
 
     
     @staticmethod
-    def printprep():
+    def printprep(fd=sys.stdout):
         REAGENTEXTRA=5	# Absoute amount of extra in each supply well of reagents
         REAGENTFRAC=0.1	# Relative amount of extra in each supply well of reagents (use max of EXTRA and FRAC)
 
-        notes=""
+        notes="Reagents:"
         for s in __allsamples:
             if s.volume<0:
                 extra=max(REAGENTEXTRA,-REAGENTFRAC*s.volume)
@@ -86,4 +87,4 @@ class Sample(object):
                     c=""   
                 note="%s%s in %s.%s consume %.1f ul, provide %.1f ul"%(s.name,c,str(s.plate),str(s.well),-s.volume,extra-s.volume)
                 notes=notes+"\n"+note
-        print notes
+        print >>fd,notes

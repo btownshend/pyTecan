@@ -1,0 +1,17 @@
+Deck layout:
+Reagents(3,1)
+Samples(10,3)
+Water(17,2)
+Waste(19,3)
+
+Reagents:
+Water in Water(17,2).0 consume 15.0 ul, provide 20.0 ul
+M-T7@2.00x in Reagents(3,1).0 consume 30.0 ul, provide 35.0 ul
+Theo@3.33x in Reagents(3,1).1 consume 9.0 ul, provide 14.0 ul
+L2b12@10.00x in Reagents(3,1).2 consume 4.0 ul, provide 9.0 ul
+L2b12Cntl@10.00x in Reagents(3,1).3 consume 2.0 ul, provide 7.0 ul
+M-Stp@2.00x in Reagents(3,1).4 consume 60.0 ul, provide 66.0 ul
+M-RT@2.00x in Reagents(3,1).5 consume 15.0 ul, provide 20.0 ul
+M-RTNeg@2.00x in Reagents(3,1).6 consume 15.0 ul, provide 20.0 ul
+M-LIGB@1.25x in Reagents(3,1).7 consume 96.0 ul, provide 105.6 ul
+M-LIGASE@2.00x in Reagents(3,1).8 consume 120.0 ul, provide 132.0 ul

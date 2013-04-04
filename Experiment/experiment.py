@@ -19,6 +19,20 @@ class Experiment(object):
         'Create a new experiment with given sample locations for water and self.WASTE'
         self.w=WorkList()
 
+    def saveworklist(self,filename):
+        self.w.save(filename)
+
+    def savesummary(self,filename):
+        # Print amount of samples needed
+        fd=open(filename,"w")
+        print >>fd,"Deck layout:"
+        print >>fd,self.REAGENTPLATE
+        print >>fd,self.SAMPLEPLATE
+        print >>fd,self.WATERLOC
+        print >>fd,self.WASTE
+        print >>fd
+        Sample.printprep(fd)
+
     def multitransfer(self, volumes, src, dests,mix=False):
         'Multi pipette from src to multiple dest'
         useMulti=False   # Disable for now, use single transfers
@@ -63,6 +77,7 @@ class Experiment(object):
         # Pipette reagents into sample wells (multi)
         # Pipette sources into sample wells
         # Concs are in x (>=1)
+        Sample.printallsamples("Before "+stagename)
         self.w.comment(stagename)
         assert(volume>0)
         volume=float(volume)
