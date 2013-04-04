@@ -121,12 +121,12 @@ class WorkList(object):
 
         ws=WorkList.wellSelection(loc.nx,loc.ny,pos)
         volstr="%.2f"%allvols[0]
-        for i in range(1,11):
+        for i in range(1,12):
             volstr="%s,%.2f"%(volstr,allvols[i]);
         if op=="Mix":
-            self.list.append( '%s(%d,"%s",%s,%d,%d,%d,"%s",%d,0)'%(op,tipMask,liquidClass,volstr,loc.grid,loc.pos,spacing,ws,cycles))
+            self.list.append( '%s(%d,"%s",%s,%d,%d,%d,"%s",%d,0)'%(op,tipMask,liquidClass,volstr,loc.grid,loc.pos-1,spacing,ws,cycles))
         else:
-            self.list.append( '%s(%d,"%s",%s,%d,%d,%d,"%s",0)'%(op,tipMask,liquidClass,volstr,loc.grid,loc.pos,spacing,ws))
+            self.list.append( '%s(%d,"%s",%s,%d,%d,%d,"%s",0)'%(op,tipMask,liquidClass,volstr,loc.grid,loc.pos-1,spacing,ws))
 
     # Get DITI
     def getDITI(self, tipMask, volume, retry=True):
@@ -149,7 +149,7 @@ class WorkList(object):
         assert(tipMask>=1 and tipMask<=15)
         assert(airgap>=0 and airgap<=100)
         assert(airgapSpeed>=1 and airgapSpeed<1000)
-        self.list.append('DropDITI(%d,%d,%d,%f,%d)'%(tipMask,loc.grid,loc.pos,airgap,airgapSpeed))
+        self.list.append('DropDITI(%d,%d,%d,%f,%d)'%(tipMask,loc.grid,loc.pos-1,airgap,airgapSpeed))
 
     def vector(self, vector,loc, direction, andBack, beginAction, endAction, slow=True):
         'Move ROMA.  Gripper actions=0 (open), 1 (close), 2 (do not move).'
@@ -161,7 +161,7 @@ class WorkList(object):
             andBack=1
         else:
             andBack=0
-        self.list.append('Vector("%s",%d,%d,%d,%d,%d,%d,%d,0)'%(vector,loc.grid,loc.pos,direction,andBack,beginAction, endAction, speed))
+        self.list.append('Vector("%s",%d,%d,%d,%d,%d,%d,%d,0)'%(vector,loc.grid,loc.pos-1,direction,andBack,beginAction, endAction, speed))
 
     def romahome(self):
         self.list.append('ROMA(2,0,0,0,0,0,60,0,0)')
@@ -170,8 +170,18 @@ class WorkList(object):
         'Prompt the user with text.  Beeps = 0 (no sound), 1 (once), 2 (three times), 3 (every 3 seconds).  Close after closetime seconds if > -1'
         self.list.append('UserPrompt("%s",%d,%d)'%(text,beeps,closetime))
 
-    def comment(self, text):
-        self.list.append('Comment("%s")'%text)
+    def comment(self, text,prepend=False):
+        if prepend:
+            self.list.insert(0,'Comment("%s")'%text)
+        else:
+            self.list.append('Comment("%s")'%text)
+
+    def userprompt(self, text,timeout=-1,prepend=False):
+        cmd='UserPrompt("%s",0,%d)'%(text,timeout)
+        if prepend:
+            self.list.insert(0,cmd)
+        else:
+            self.list.append(cmd)
         
     def execute(self, command, wait=True, resultvar=None):
         'Execute an external command'
@@ -201,10 +211,6 @@ class WorkList(object):
     def save(self,filename):
         'Save worklist in a file in format that Gemini can load'
         fd=open(filename,'w')
-        for loc in self.volumes:
-            for well in self.volumes[loc]:
-                if self.volumes[loc][well]<0:
-                    print >>fd,'B;Comment("Make sure %s.%s has at least %.1f ul")'%(str(loc),str(well),-self.volumes[loc][well])
         for i in range(len(self.list)):
             print >>fd, "B;%s"%str(self.list[i])
         fd.close()

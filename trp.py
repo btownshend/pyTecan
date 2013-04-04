@@ -1,4 +1,5 @@
 from worklist import *
+import copy
 import sitecustomize
 
 REAGENTPLATE=Plate("Reagents",3,1,12,8)
@@ -14,7 +15,7 @@ REAGENTFRAC=0.1	# Relative amount of extra in each supply well of reagents (use 
 allsamples=[]
 
 class Sample(object):
-    def __init__(self,name,plate,well,conc=None,volume=0,liquidClass="Water-LV"):
+    def __init__(self,name,plate,well,conc=None,volume=0,liquidClass="Water - LV"):
         for s in allsamples:
             if s.plate==plate and s.well==well:
                 print "Aliasing %s as %s"%(s.name,name)
@@ -141,6 +142,9 @@ def stage(w,reagents,sources,samples,volume):
 
 def runpgm(pgm):
     # move to thermocycler
+    cmt="run %s"%pgm
+    w.comment(cmt)
+    print "*",cmt
     w.execute("ptc200exec LID OPEN")
     w.vector("sample",SAMPLEPLATE,w.SAFETOEND,True,w.DONOTMOVE,w.CLOSE)
     w.vector("ptc200",PTCPOS,w.SAFETOEND,True,w.DONOTMOVE,w.OPEN)
@@ -176,31 +180,52 @@ w=WorkList()
 rpos=0; spos=0;
 S_T7=Sample("M-T7",REAGENTPLATE,rpos,2); rpos=rpos+1
 S_Theo=Sample("Theo",REAGENTPLATE,rpos,25/7.5); rpos=rpos+1
-S_MRT=Sample("M-RT",REAGENTPLATE,rpos,2); rpos=rpos+1
-S_MRTNeg=Sample("M-RTNeg",REAGENTPLATE,rpos,2); rpos=rpos+1
-S_Stop=Sample("M-Stp",REAGENTPLATE,rpos,2); rpos=rpos+1
 S_L2b12=Sample("L2b12",REAGENTPLATE,rpos,10); rpos=rpos+1
 S_L2b12Cntl=Sample("L2b12Cntl",REAGENTPLATE,rpos,10); rpos=rpos+1
+S_Stop=Sample("M-Stp",REAGENTPLATE,rpos,2); rpos=rpos+1
+S_MRT=Sample("M-RT",REAGENTPLATE,rpos,2); rpos=rpos+1
+S_MRTNeg=Sample("M-RTNeg",REAGENTPLATE,rpos,2); rpos=rpos+1
+S_LIGB=Sample("M-LIGB",REAGENTPLATE,rpos,1.25); rpos=rpos+1
+S_LIGASE=Sample("M-LIGASE",REAGENTPLATE,rpos,2); rpos=rpos+1
+
 nT7=3
 S_R1_T7=[Sample("R1.T7.%d"%i,SAMPLEPLATE,i+spos) for i in range(nT7)]; spos=spos+nT7
+
 nRT=nT7
-S_R1_RT=[Sample("R1.RT.%d"%i,SAMPLEPLATE,i+spos) for i in range(nRT)]; spos=spos+nRT
+S_R1_RTPos=[Sample("R1.RT.%d"%i,SAMPLEPLATE,i+spos) for i in range(nRT)]; spos=spos+nRT
 S_R1_RTNeg=[Sample("R1.RTNeg.%d"%i,SAMPLEPLATE,i+spos) for i in range(nRT)]; spos=spos+nRT
-scale=1
+S_R1_RT=copy.copy(S_R1_RTPos)
+S_R1_RT.extend(S_R1_RTNeg)
+nExt=nRT*2
+S_R1_EXT=[Sample("R1.EXT.%d"%i,SAMPLEPLATE,i+spos) for i in range(nExt)]; spos=spos+nRT
+
+scale=1   # Overall scale of reactions
+
 printallsamples("Before T7")
 t7(w,[S_T7,S_Theo],[S_L2b12,S_L2b12,S_L2b12Cntl],S_R1_T7,10*scale)
 runpgm("37-15MIN")
+
 printallsamples("Before Stop")
 dilute(w,S_R1_T7,2)
 stop(w,[S_Stop],S_R1_T7,20*scale)
+
 printallsamples("Before RT")
 dilute(w,S_R1_T7,2)
-rt(w,[S_MRT],S_R1_T7,S_R1_RT,5*scale)
+rt(w,[S_MRT],S_R1_T7,S_R1_RTPos,5*scale)
 rt(w,[S_MRTNeg],S_R1_T7,S_R1_RTNeg,5*scale)
 runpgm("TRP-SS")
-printallsamples("After RT")
+
+printallsamples("Before Ligation")
+dilute(w,S_R1_RT,5)
+stage(w,[S_LIGB],S_R1_RT,S_R1_EXT,10*scale)
+runpgm("TRP-ANNEAL")
+dilute(w,S_R1_EXT,2)
+stage(w,[S_LIGASE],[],S_R1_EXT,20*scale)
+
+printallsamples("After Ligation")
 
 print  "Preparation:"
+notes="Notes:"
 for s in allsamples:
     if s.volume<0:
         extra=max(REAGENTEXTRA,-REAGENTFRAC*s.volume)
@@ -208,6 +233,9 @@ for s in allsamples:
             c="@%.2fx"%s.conc
         else:
              c=""   
-        print "%s%s in %s.%s consume %.1f ul, provide %.1f ul"%(s.name,c,str(s.plate),str(s.well),-s.volume,extra-s.volume)
+        note="%s%s in %s.%s consume %.1f ul, provide %.1f ul"%(s.name,c,str(s.plate),str(s.well),-s.volume,extra-s.volume)
+        print note
+        notes=notes+", "+note
+w.userprompt(notes,-1,True)
         
-w.save("trp.gwk")
+w.save("trp.gwl")
