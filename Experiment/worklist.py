@@ -129,17 +129,22 @@ class WorkList(object):
             self.list.append( '%s(%d,"%s",%s,%d,%d,%d,"%s",0)'%(op,tipMask,liquidClass,volstr,loc.grid,loc.pos-1,spacing,ws))
 
     # Get DITI
-    def getDITI(self, tipMask, volume, retry=True):
+    def getDITI(self, tipMask, volume, retry=True,multi=False):
         assert(tipMask>=1 and tipMask<=15)
         assert(volume>0 and volume<200)
         if retry:
             options=1
         else:
             options=0
-        if volume<10:
+        if multi:
+            type=__DITI200
+            print "Forced to 200ul tip"
+        elif volume<10:
             type=__DITI10
         elif volume<200:
             type=__DITI200
+        else:
+            assert(False)
         self.list.append('GetDITI(%d,%d,%d)'%(tipMask,type,options))
         if tipMask&1:
             self.diticnt[type]+=1

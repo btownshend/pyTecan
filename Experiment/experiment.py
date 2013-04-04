@@ -14,7 +14,8 @@ class Experiment(object):
 
     WATER=Sample("Water",WATERLOC,0,None)
 
-    RPTEXTRA=0.2   # Extra amount when repeat pipetting
+    RPTEXTRA=0   # Extra amount when repeat pipetting
+    MAXVOLUME=200  # Maximum volume for pipetting in ul
 
     def __init__(self):
         'Create a new experiment with given sample locations for water and self.WASTE'
@@ -49,19 +50,28 @@ class Experiment(object):
         
     def multitransfer(self, volumes, src, dests,mix=False):
         'Multi pipette from src to multiple dest'
-        useMulti=False   # Disable for now, use single transfers
+        useMulti=True   # Disable for now, use single transfers
         if isinstance(volumes,(int,long,float)):
             # Same volume for each dest
             volumes=[volumes for i in range(len(dests))]
         assert(len(volumes)==len(dests))
-        if useMulti and mix==False:
-            cmt="Add  %s to samples %s"%(src.name,",".join("%s[%.1f]"%(dests[i].name,volumes[i]) for i in range(len(dests))))
+        if useMulti and mix==False and len(volumes)>1:
+            if sum(volumes)>self.MAXVOLUME:
+                print "sum(volumes)=%.1f, MAXVOL=%.1f"%(sum(volumes),self.MAXVOLUME)
+                for i in range(1,len(volumes)):
+                    if sum(volumes[0:i+1])>self.MAXVOLUME:
+                        print "Splitting multi with total volume of %.1f ul into smaller chunks < %.1f ul after %d dispenses"%(sum(volumes),self.MAXVOLUME,i)
+                        self.multitransfer(volumes[0:i],src,dests[0:i],mix)
+                        self.multitransfer(volumes[i:],src,dests[i:],mix)
+                        return
+                    
+            cmt="Multi-add  %s to samples %s"%(src.name,",".join("%s[%.1f]"%(dests[i].name,volumes[i]) for i in range(len(dests))))
             if mix:
                 cmt=cmt+" with mix"
             print "*",cmt
             self.w.comment(cmt)
-            v=sum(volumes)*(1+RPTEXTRA)
-            self.w.getDITI(1,v)
+            v=sum(volumes)*(1+self.RPTEXTRA)
+            self.w.getDITI(1,v,True,True)
             src.aspirate(self.w,v)
             for i in range(len(dests)):
                 if volumes[i]>0:
@@ -73,6 +83,12 @@ class Experiment(object):
                 self.transfer(volumes[i],src,dests[i],mix)
 
     def transfer(self, volume, src, dest, mix=False):
+        if volume>self.MAXVOLUME:
+            print "Splitting large transfer of %.1f ul into smaller chunks < %.1f ul"%(volume,self.MAXVOLUME)
+            self.transfer(self.MAXVOLUME,src,dest,mix)
+            self.transfer(volume-self.MAXVOLUME,src,dest,mix)
+            return
+        
         cmt="Add %.1f ul of %s to %s"%(volume, src.name, dest.name)
         if mix:
             cmt=cmt+" with mix"
