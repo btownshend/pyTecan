@@ -6,7 +6,7 @@ REAGENTPLATE=Plate("Reagents",3,1,12,8)
 SAMPLEPLATE=Plate("Samples",10,3,12,8)
 WATERLOC=Plate("Water",17,2,1,1)
 PTCPOS=Plate("PTC",25,1,1,1)
-
+HOTELPOS=Plate("Hotel",25,0,1,1)
 WASTE=Plate("Waste",19,3,1,1)
 RPTEXTRA=0.2   # Extra amount when repeat pipetting
 REAGENTEXTRA=5	# Absoute amount of extra in each supply well of reagents
@@ -15,7 +15,7 @@ REAGENTFRAC=0.1	# Relative amount of extra in each supply well of reagents (use 
 allsamples=[]
 
 class Sample(object):
-    def __init__(self,name,plate,well,conc=None,volume=0,liquidClass="Water - LV"):
+    def __init__(self,name,plate,well,conc=None,volume=0,liquidClass="Water-BT"):
         for s in allsamples:
             if s.plate==plate and s.well==well:
                 print "Aliasing %s as %s"%(s.name,name)
@@ -146,8 +146,10 @@ def runpgm(pgm):
     w.comment(cmt)
     print "*",cmt
     w.execute("ptc200exec LID OPEN")
-    w.vector("sample",SAMPLEPLATE,w.SAFETOEND,True,w.DONOTMOVE,w.CLOSE)
-    w.vector("ptc200",PTCPOS,w.SAFETOEND,True,w.DONOTMOVE,w.OPEN)
+    w.vector("Microplate Landscape",SAMPLEPLATE,w.SAFETOEND,True,w.DONOTMOVE,w.CLOSE)
+    w.vector("PTC200",PTCPOS,w.SAFETOEND,True,w.DONOTMOVE,w.OPEN)
+    w.vector("Hotel 1 Lid",HOTELPOS,w.SAFETOEND,True,w.DONOTMOVE,w.CLOSE)
+    w.vector("PTC200lid",PTCPOS,w.SAFETOEND,True,w.DONOTMOVE,w.OPEN)
     w.romahome()
     w.execute("ptc200exec LID CLOSE")
     w.execute('ptc200exec RUN "%s"'%pgm)
@@ -235,7 +237,7 @@ for s in allsamples:
              c=""   
         note="%s%s in %s.%s consume %.1f ul, provide %.1f ul"%(s.name,c,str(s.plate),str(s.well),-s.volume,extra-s.volume)
         print note
-        notes=notes+", "+note
+        notes=notes+"\n"+note
 w.userprompt(notes,-1,True)
         
 w.save("trp.gwl")

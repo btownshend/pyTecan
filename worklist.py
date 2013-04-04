@@ -1,4 +1,6 @@
 # Module for generating a worklist from a set of commands
+import string
+
 class Plate(object):
     def __init__(self,name, grid, pos, nx=12, ny=8):
         self.name=name
@@ -130,7 +132,7 @@ class WorkList(object):
 
     # Get DITI
     def getDITI(self, tipMask, volume, retry=True):
-        DITI200=1
+        DITI200=0
         DITI10=2
         assert(tipMask>=1 and tipMask<=15)
         assert(volume>0 and volume<200)
@@ -151,7 +153,7 @@ class WorkList(object):
         assert(airgapSpeed>=1 and airgapSpeed<1000)
         self.list.append('DropDITI(%d,%d,%d,%f,%d)'%(tipMask,loc.grid,loc.pos-1,airgap,airgapSpeed))
 
-    def vector(self, vector,loc, direction, andBack, beginAction, endAction, slow=True):
+    def vector(self, vector,loc, direction, andBack, safeAction, endAction, slow=True):
         'Move ROMA.  Gripper actions=0 (open), 1 (close), 2 (do not move).'
         if slow:
             speed=1
@@ -161,7 +163,7 @@ class WorkList(object):
             andBack=1
         else:
             andBack=0
-        self.list.append('Vector("%s",%d,%d,%d,%d,%d,%d,%d,0)'%(vector,loc.grid,loc.pos-1,direction,andBack,beginAction, endAction, speed))
+        self.list.append('Vector("%s",%d,%d,%d,%d,%d,%d,%d,0)'%(vector,loc.grid,loc.pos-1,direction,andBack,safeAction, endAction, speed))
 
     def romahome(self):
         self.list.append('ROMA(2,0,0,0,0,0,60,0,0)')
@@ -212,6 +214,6 @@ class WorkList(object):
         'Save worklist in a file in format that Gemini can load'
         fd=open(filename,'w')
         for i in range(len(self.list)):
-            print >>fd, "B;%s"%str(self.list[i])
+            print >>fd, "B;%s"%string.replace(str(self.list[i]),'\n','\f\a')
         fd.close()
         
