@@ -1,6 +1,4 @@
-from Experiment.plate import Plate
 from Experiment.sample import Sample
-from Experiment.worklist import WorkList
 from Experiment.experiment import *
 import copy
 
@@ -54,6 +52,6 @@ e.stage('Ligation',[S_LIGASE],[],S_R1_EXT,20*scale)
 
 Sample.printallsamples("After Ligation")
 
-e.printsetup()
+Sample.printprep()
 
 e.w.save("trp1.gwl")

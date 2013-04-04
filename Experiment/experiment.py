@@ -1,5 +1,5 @@
 from worklist import *
-from sample import *
+from sample import Sample
 
 #from .. import debughook
 
@@ -14,8 +14,6 @@ class Experiment(object):
     WATER=Sample("Water",WATERLOC,0,None)
 
     RPTEXTRA=0.2   # Extra amount when repeat pipetting
-    REAGENTEXTRA=5	# Absoute amount of extra in each supply well of reagents
-    REAGENTFRAC=0.1	# Relative amount of extra in each supply well of reagents (use max of EXTRA and FRAC)
 
     def __init__(self):
         'Create a new experiment with given sample locations for water and self.WASTE'
@@ -107,18 +105,3 @@ class Experiment(object):
     def dilute(self,samples,factor):
         for s in samples:
             s.dilute(factor)
-
-    def printsetup(self):
-        print  "Preparation:"
-        notes="Notes:"
-        for s in allsamples:
-            if s.volume<0:
-                extra=max(self.REAGENTEXTRA,-self.REAGENTFRAC*s.volume)
-                if s.conc!=None:
-                    c="@%.2fx"%s.conc
-                else:
-                    c=""   
-                note="%s%s in %s.%s consume %.1f ul, provide %.1f ul"%(s.name,c,str(s.plate),str(s.well),-s.volume,extra-s.volume)
-                notes=notes+"\n"+note
-        print notes
-

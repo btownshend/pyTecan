@@ -1,19 +1,20 @@
 from worklist import *
 
-allsamples=[]
 defaultLC="Water-BT"   # Default liquid class
 defaultMixFrac = 0.9
+
+_Sample__allsamples = []
 
 class Sample(object):
     @staticmethod
     def printallsamples(txt=""):
         print "\n%s:"%txt
-        for s in allsamples:
+        for s in __allsamples:
             print s
         print ""
 
     def __init__(self,name,plate,well,conc=None,volume=0,liquidClass=defaultLC):
-        for s in allsamples:
+        for s in __allsamples:
             if s.plate==plate and s.well==well:
                 print "Aliasing %s as %s"%(s.name,name)
                 assert(False)
@@ -25,7 +26,7 @@ class Sample(object):
         self.volume=volume
         self.liquidClass=liquidClass
         self.history=""
-        allsamples.append(self)
+        __allsamples.append(self)
         
     def dilute(self,factor):
         'Dilute sample -- just increases its recorded concentration'
@@ -70,3 +71,19 @@ class Sample(object):
             return "%s(%s.%s,%.2fx,%.2f ul,LC=%s) %s"%(self.name,str(self.plate),str(self.well),self.conc,self.volume,self.liquidClass,self.history)
 
     
+    @staticmethod
+    def printprep():
+        REAGENTEXTRA=5	# Absoute amount of extra in each supply well of reagents
+        REAGENTFRAC=0.1	# Relative amount of extra in each supply well of reagents (use max of EXTRA and FRAC)
+
+        notes=""
+        for s in __allsamples:
+            if s.volume<0:
+                extra=max(REAGENTEXTRA,-REAGENTFRAC*s.volume)
+                if s.conc!=None:
+                    c="@%.2fx"%s.conc
+                else:
+                    c=""   
+                note="%s%s in %s.%s consume %.1f ul, provide %.1f ul"%(s.name,c,str(s.plate),str(s.well),-s.volume,extra-s.volume)
+                notes=notes+"\n"+note
+        print notes
