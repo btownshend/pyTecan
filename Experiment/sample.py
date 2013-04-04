@@ -8,12 +8,11 @@ _Sample__allsamples = []
 
 class Sample(object):
     @staticmethod
-    def printallsamples(txt=""):
-        print "\n%s:"%txt
+    def printallsamples(txt="",fd=sys.stdout):
+        print >>fd,"\n%s:"%txt
         for s in __allsamples:
-            print s
-        print ""
-
+            print >>fd,s
+        print >>fd
     def __init__(self,name,plate,well,conc=None,volume=0,liquidClass=defaultLC):
         for s in __allsamples:
             if s.plate==plate and s.well==well:
@@ -58,7 +57,7 @@ class Sample(object):
 
     def addhistory(self,name,vol):
         if len(self.history)>0:
-            self.history=self.history+",%s[%.1f]"%(name,vol)
+            self.history=self.history+"+%s[%.1f]"%(name,vol)
         else:
             self.history="%s[%.1f]"%(name,vol)
         

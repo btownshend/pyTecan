@@ -6,7 +6,8 @@ from sample import Sample
 class Experiment(object):
     REAGENTPLATE=Plate("Reagents",3,1,12,8)
     SAMPLEPLATE=Plate("Samples",10,3,12,8)
-    WATERLOC=Plate("Water",17,2,1,1)
+    QPCRPLATE=Plate("qPCR",10,2,12,8)
+    WATERLOC=Plate("Water",17,2,1,4)
     PTCPOS=Plate("PTC",25,1,1,1)
     HOTELPOS=Plate("Hotel",25,0,1,1)
     WASTE=Plate("Waste",19,3,1,1)
@@ -20,19 +21,24 @@ class Experiment(object):
         self.w=WorkList()
 
     def saveworklist(self,filename):
-        self.w.save(filename)
+        self.w.saveworklist(filename)
 
+    def savegem(self,headerfile,filename):
+        self.w.savegem(headerfile,filename)
+        
     def savesummary(self,filename):
         # Print amount of samples needed
         fd=open(filename,"w")
         print >>fd,"Deck layout:"
         print >>fd,self.REAGENTPLATE
         print >>fd,self.SAMPLEPLATE
+        print >>fd,self.QPCRPLATE
         print >>fd,self.WATERLOC
         print >>fd,self.WASTE
         print >>fd
         Sample.printprep(fd)
-
+        Sample.printallsamples("All Samples:",fd)
+        
     def multitransfer(self, volumes, src, dests,mix=False):
         'Multi pipette from src to multiple dest'
         useMulti=False   # Disable for now, use single transfers
@@ -106,15 +112,15 @@ class Experiment(object):
         cmt="run %s"%pgm
         self.w.comment(cmt)
         print "*",cmt
-        self.w.execute("ptc200exec LID OPEN")
+        self.w.pyrun("PTC/ptc200exec.py LID OPEN")
         self.w.vector("Microplate Landscape",self.SAMPLEPLATE,self.w.SAFETOEND,True,self.w.DONOTMOVE,self.w.CLOSE)
         self.w.vector("PTC200",self.PTCPOS,self.w.SAFETOEND,True,self.w.DONOTMOVE,self.w.OPEN)
         self.w.vector("Hotel 1 Lid",self.HOTELPOS,self.w.SAFETOEND,True,self.w.DONOTMOVE,self.w.CLOSE)
         self.w.vector("PTC200lid",self.PTCPOS,self.w.SAFETOEND,True,self.w.DONOTMOVE,self.w.OPEN)
         self.w.romahome()
-        self.w.execute("ptc200exec LID CLOSE")
-        self.w.execute('ptc200exec RUN "%s"'%pgm)
-        self.w.execute('ptc200wait')
+        self.w.pyrun("PTC/ptc200exec.py LID CLOSE")
+        self.w.pyrun('PTC/ptc200exec.py RUN "%s"'%pgm)
+        self.w.pyrun('PTC/ptc200wait.py')
 
 
     def dilute(self,samples,factor):

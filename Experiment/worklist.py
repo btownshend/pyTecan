@@ -1,6 +1,7 @@
 "Module for generating a worklist from a set of commands"
 import string
 from plate import Plate
+import shutil
 
 class WorkList(object):
     "A Gemini worklist created programmatically"
@@ -203,10 +204,18 @@ class WorkList(object):
             for well in self.volumes[loc]:
                 print "%-14s\t%s\t%6.1f"%(str(loc),str(well),self.volumes[loc][well])
 
-    def save(self,filename):
-        'Save worklist in a file in format that Gemini can load'
+    def saveworklist(self,filename):
+        'Save worklist in a file in format that Gemini can load as a worklist'
         fd=open(filename,'w')
         for i in range(len(self.list)):
             print >>fd, "B;%s"%string.replace(str(self.list[i]),'\n','\f\a')
+        fd.close()
+        
+    def savegem(self,headerfile,filename):
+        'Save worklist in a file in format that Gemini can load as an experiment'
+        shutil.copy(headerfile,filename)
+        fd=open(filename,'a')
+        for i in range(len(self.list)):
+            print >>fd, "%s"%string.replace(str(self.list[i]),'\n','\f\a')
         fd.close()
         
