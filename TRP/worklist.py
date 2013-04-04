@@ -1,18 +1,9 @@
-# Module for generating a worklist from a set of commands
+"Module for generating a worklist from a set of commands"
 import string
+from plate import Plate
 
-class Plate(object):
-    def __init__(self,name, grid, pos, nx=12, ny=8):
-        self.name=name
-        self.grid=grid
-        self.pos=pos
-        self.nx=nx
-        self.ny=ny
-
-    def __str__(self):
-        return self.name
-        
 class WorkList(object):
+    "A Gemini worklist created programmatically"
     OPEN=0
     CLOSE=1
     DONOTMOVE=2
@@ -59,6 +50,8 @@ class WorkList(object):
         self.aspirateDispense('Mix',wells, liquidClass, volume, loc, cycles)
         
     def aspirateDispense(self,op,wells, liquidClass, volume, loc, cycles=None):
+        assert(isinstance(loc,Plate))
+
         print "%s %s.%s %.2f"%(op,str(loc),str(wells),volume)
         # Update volumes
         if op=='Aspirate':
