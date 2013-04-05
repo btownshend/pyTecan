@@ -14,11 +14,12 @@ class WorkList(object):
     SAFETOEND=0
     ENDTOSAFE=1
     
-    debug=False
-    list=[]
-    volumes={}
-    diticnt=[0,0,0,0]
-    
+    def __init__(self):
+        self.debug=False
+        self.list=[]
+        self.volumes={}
+        self.diticnt=[0,0,0,0]
+        
     def bin(s):
         return str(s) if s<=1 else bin(s>>1) + str(s&1)
 
@@ -131,7 +132,7 @@ class WorkList(object):
     # Get DITI
     def getDITI(self, tipMask, volume, retry=True,multi=False):
         assert(tipMask>=1 and tipMask<=15)
-        assert(volume>0 and volume<200)
+        assert(volume>0 and volume<=200)
         if retry:
             options=1
         else:
@@ -139,9 +140,9 @@ class WorkList(object):
         if multi:
             type=__DITI200
             print "Forced to 200ul tip"
-        elif volume<10:
+        elif volume<=10:
             type=__DITI10
-        elif volume<200:
+        elif volume<=200:
             type=__DITI200
         else:
             assert(False)
@@ -165,6 +166,9 @@ class WorkList(object):
         assert(airgapSpeed>=1 and airgapSpeed<1000)
         self.list.append('DropDITI(%d,%d,%d,%f,%d)'%(tipMask,loc.grid,loc.pos-1,airgap,airgapSpeed))
 
+    def wash(self, tipMask):
+        self.list.append('Wash(%d,1,1,1,0,"1",500,"0.5",500,10,70,30,0,0,1000)'%tipMask)
+        
     def vector(self, vector,loc, direction, andBack, safeAction, endAction, slow=True):
         'Move ROMA.  Gripper actions=0 (open), 1 (close), 2 (do not move).'
         if slow:
@@ -175,7 +179,7 @@ class WorkList(object):
             andBack=1
         else:
             andBack=0
-        self.list.append('Vector("%s",%d,%d,%d,%d,%d,%d,%d,0)'%(vector,loc.grid,loc.pos-1,direction,andBack,safeAction, endAction, speed))
+        self.list.append('Vector("%s",%d,%d,%d,%d,%d,%d,%d,0)'%(vector,loc.grid,loc.pos,direction,andBack,safeAction, endAction, speed))
 
     def romahome(self):
         self.list.append('ROMA(2,0,0,0,0,0,60,0,0)')

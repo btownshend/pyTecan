@@ -45,9 +45,9 @@ nRT=nT7
 S_RTPos=[Sample("R1.RT.%d"%i,e.SAMPLEPLATE,i+spos) for i in range(nRT)]; spos=spos+nRT
 e.stage('RTPos',[R_MRT],S_T7,S_RTPos,5*scale)
 
-nNegRT=min(nRT,negRT)
-S_RTNeg=[Sample("R1.RTNeg.%d"%i,e.SAMPLEPLATE,i+spos) for i in range(nNegRT)]; spos=spos+nNegRT
-e.stage('RTNeg',[R_MRTNeg],S_T7[0:nNegRT],S_RTNeg,5*scale)
+negRT=min(nRT,negRT)
+S_RTNeg=[Sample("R1.RTNeg.%d"%i,e.SAMPLEPLATE,i+spos) for i in range(negRT)]; spos=spos+negRT
+e.stage('RTNeg',[R_MRTNeg],S_T7[0:negRT],S_RTNeg,5*scale)
 S_RT=S_RTPos+S_RTNeg
 nRT=len(S_RT)
 e.runpgm("TRP-SS")
@@ -77,6 +77,7 @@ S_QPCR_B=[Sample("R1.QPCR.B.%d"%i,e.QPCRPLATE,i+qpos) for i in range(nQPCR)]; qp
 e.stage('QPCRA',[R_MQB],S_EXTDIL,S_QPCR_B,10)
 S_QPCR=S_QPCR_A+S_QPCR_B
 nQPCR=nQPCR*2
+
 e.w.userprompt("Process complete. Continue to turn off reagent cooler")
 e.setreagenttemp(None)
 
@@ -84,3 +85,13 @@ e.setreagenttemp(None)
 e.saveworklist("trp1.gwl")
 e.savegem("header.gem","trp1.gem")
 e.savesummary("trp1.txt")
+
+# Build a script to prefill the reagent wells for testing
+pre=Experiment()
+print "e=",e,"e.worklist=",e.w,",e.w.l=",e.w.list
+print "pre=",pre,"pre.worklist=",pre.w,",pre.w.l=",pre.w.list
+allReagents=[R_MT7,R_Theo,R_L2b12,R_L2b12Cntl,R_MStop,R_MRT,R_MRTNeg,R_MLigB,R_MLigase,R_MQA,R_MQB]
+# Will add 10ul extra in addition to bringing the currently negative sample volumes to zero
+pre.stage('Prefill',[],[],allReagents,20)  
+pre.savegem("header.gem","prefill.gem")
+pre.savesummary("prefill.txt")

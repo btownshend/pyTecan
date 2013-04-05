@@ -1,7 +1,7 @@
 import sys
 from worklist import WorkList
 
-defaultLC="Water-BT"   # Default liquid class
+defaultLC="Water"   # Default liquid class
 defaultMixFrac = 0.9
 
 _Sample__allsamples = []
@@ -33,13 +33,16 @@ class Sample(object):
         self.conc=self.conc*factor
 
     def aspirate(self,w,volume):
-        w.aspirate([self.well],self.liquidClass,volume,self.plate)
+        w.aspirate([self.well],self.liquidClass+'-First',volume,self.plate)
         self.volume=self.volume-volume
         if self.volume<0:
             print "Warning: %s is now short by %.1f ul"%(self.name,-self.volume)
             
     def dispense(self,w,volume,conc):
-        w.dispense([self.well],self.liquidClass,volume,self.plate)
+        if self.volume>10:
+            w.dispense([self.well],self.liquidClass+"-InLiquid",volume,self.plate)
+        else:
+            w.dispense([self.well],self.liquidClass+"-First",volume,self.plate)
         # Assume we're diluting the contents
         if self.conc==None and conc==None:
             pass

@@ -20,7 +20,8 @@ class Experiment(object):
     def __init__(self):
         'Create a new experiment with given sample locations for water and self.WASTE'
         self.w=WorkList()
-
+        self.w.wash(15)
+        
     def setreagenttemp(self,temp=None):
         if temp==None:
             self.w.pyrun("RIC\\ricset.py IDLE")
@@ -90,11 +91,14 @@ class Experiment(object):
             return
         
         cmt="Add %.1f ul of %s to %s"%(volume, src.name, dest.name)
+        ditivolume=volume
         if mix:
             cmt=cmt+" with mix"
+            ditivolume=max(volume,volume+dest.volume)
+            print "Mix volume=%.1f ul"%(ditivolume)
         print "*",cmt
         self.w.comment(cmt)
-        self.w.getDITI(1,volume)
+        self.w.getDITI(1,ditivolume)
         src.aspirate(self.w,volume)
         dest.dispense(self.w,volume,src.conc)
         dest.addhistory(src.name,volume)
@@ -120,7 +124,7 @@ class Experiment(object):
 
         assert(min(watervols)>=0)
         if sum(watervols)>0:
-            self.multitransfer(watervols,self.WATER,samples,len(sources)==0 and len(reagents)==0)
+            self.multitransfer(watervols,self.WATER,samples,False)
 
         for i in range(len(reagents)):
             self.multitransfer(reagentvols[i],reagents[i],samples,len(sources)==0)
@@ -146,6 +150,12 @@ class Experiment(object):
         pgm="PAUSE30"  # For debugging
         self.w.pyrun('PTC\\ptcrun.py %s CALC ON'%pgm)
         self.w.pyrun('PTC\\ptcwait.py')
+        self.w.pyrun("PTC\\ptclid.py OPEN")
+        self.w.vector("PTC200lid",self.PTCPOS,self.w.SAFETOEND,True,self.w.DONOTMOVE,self.w.CLOSE)
+        self.w.vector("Hotel 1 Lid",self.HOTELPOS,self.w.SAFETOEND,True,self.w.DONOTMOVE,self.w.OPEN)
+        self.w.vector("PTC200",self.PTCPOS,self.w.SAFETOEND,True,self.w.DONOTMOVE,self.w.CLOSE)
+        self.w.vector("Microplate Landscape",self.SAMPLEPLATE,self.w.SAFETOEND,True,self.w.DONOTMOVE,self.w.OPEN)
+        self.w.romahome()
 
 
     def dilute(self,samples,factor):
