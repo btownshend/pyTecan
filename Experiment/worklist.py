@@ -131,8 +131,18 @@ class WorkList(object):
 
     # Get DITI
     def getDITI(self, tipMask, volume, retry=True,multi=False):
+        ASPEXTRASINGLE=13
+        ASPEXTRAMULTI=20
+        MAXVOL10=23
+        MAXVOL200=220
+        
+        if multi:
+            aspvolume=volume+ASPEXTRAMULTI
+        else:
+            aspvolume=volume+ASPEXTRASINGLE
+
         assert(tipMask>=1 and tipMask<=15)
-        assert(volume>0 and volume<=200)
+        assert(volume>0 and aspvolume<=MAXVOL200)
         if retry:
             options=1
         else:
@@ -140,12 +150,11 @@ class WorkList(object):
         if multi:
             type=__DITI200
             print "Forced to 200ul tip"
-        elif volume<=10:
+        elif aspvolume<=MAXVOL10:
             type=__DITI10
-        elif volume<=200:
-            type=__DITI200
         else:
-            assert(False)
+            type=__DITI200
+
         self.list.append('GetDITI(%d,%d,%d)'%(tipMask,type,options))
         if tipMask&1:
             self.diticnt[type]+=1
@@ -169,7 +178,7 @@ class WorkList(object):
     def wash(self, tipMask):
         wasteLoc=(1,1)
         cleanerLoc=(1,0)
-        wasteVolume=1  # in ml
+        wasteVol=1  # in ml
         wasteDelay=500 # in msec
         cleanerVol=0.5 # in ml
         cleanerDelay=500 # in msec
@@ -179,12 +188,12 @@ class WorkList(object):
         fastWash=0
         lowVolume=0
         atFreq=1000  # Hz, For Active tip
-        self.list.append('Wash(%d,%d,%d,%d,%d,%f,%d,%f,%d,%f,%d,%d,%d,%d,%d)'%(tipMask,wasteLoc[0],wasteLoc[1],cleanerLoc[0],cleanerLoc[1],wasteVol,wasteDelay,cleanerVol,cleanerDelay,airgap, airgapSpeed, retractSpeed, fastWash, lowVolume, atFreq)
+        self.list.append('Wash(%d,%d,%d,%d,%d,%.1f,%d,%.1f,%d,%.1f,%d,%d,%d,%d,%d)'%(tipMask,wasteLoc[0],wasteLoc[1],cleanerLoc[0],cleanerLoc[1],wasteVol,wasteDelay,cleanerVol,cleanerDelay,airgap, airgapSpeed, retractSpeed, fastWash, lowVolume, atFreq))
 
     def periodicWash(self,tipMask,period):
         wasteLoc=(1,1)
         cleanerLoc=(1,0)
-        wasteVolume=1  # in ml
+        wasteVol=1  # in ml
         wasteDelay=500 # in msec
         cleanerVol=0.5 # in ml
         cleanerDelay=500 # in msec
@@ -194,7 +203,7 @@ class WorkList(object):
         fastWash=0
         lowVolume=0
         atFreq=1000  # Hz, For Active tip
-        self.list.append('Periodic_Wash(%d,%d,%d,%d,%d,%f,%d,%f,%d,%f,%d,%d,%d,%d,%d,%d)'%(tipMask,wasteLoc[0],wasteLoc[1],cleanerLoc[0],cleanerLoc[1],wasteVol,wasteDelay,cleanerVol,cleanerDelay,airgap, airgapSpeed, retractSpeed, fastWash, lowVolume, period, atFreq)
+        self.list.append('Periodic_Wash(%d,%d,%d,%d,%d,%.1f,%d,%.1f,%d,%.1f,%d,%d,%d,%d,%d,%d)'%(tipMask,wasteLoc[0],wasteLoc[1],cleanerLoc[0],cleanerLoc[1],wasteVol,wasteDelay,cleanerVol,cleanerDelay,airgap, airgapSpeed, retractSpeed, fastWash, lowVolume, period, atFreq))
                          
     def vector(self, vector,loc, direction, andBack, safeAction, endAction, slow=True):
         'Move ROMA.  Gripper actions=0 (open), 1 (close), 2 (do not move).'
