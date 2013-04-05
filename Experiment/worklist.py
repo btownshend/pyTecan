@@ -167,8 +167,35 @@ class WorkList(object):
         self.list.append('DropDITI(%d,%d,%d,%f,%d)'%(tipMask,loc.grid,loc.pos-1,airgap,airgapSpeed))
 
     def wash(self, tipMask):
-        self.list.append('Wash(%d,1,1,1,0,"1",500,"0.5",500,10,70,30,0,0,1000)'%tipMask)
-        
+        wasteLoc=(1,1)
+        cleanerLoc=(1,0)
+        wasteVolume=1  # in ml
+        wasteDelay=500 # in msec
+        cleanerVol=0.5 # in ml
+        cleanerDelay=500 # in msec
+        airgap=10  # ul
+        airgapSpeed=70 # ul/sec
+        retractSpeed=30 # mm/sec
+        fastWash=0
+        lowVolume=0
+        atFreq=1000  # Hz, For Active tip
+        self.list.append('Wash(%d,%d,%d,%d,%d,%f,%d,%f,%d,%f,%d,%d,%d,%d,%d)'%(tipMask,wasteLoc[0],wasteLoc[1],cleanerLoc[0],cleanerLoc[1],wasteVol,wasteDelay,cleanerVol,cleanerDelay,airgap, airgapSpeed, retractSpeed, fastWash, lowVolume, atFreq)
+
+    def periodicWash(self,tipMask,period):
+        wasteLoc=(1,1)
+        cleanerLoc=(1,0)
+        wasteVolume=1  # in ml
+        wasteDelay=500 # in msec
+        cleanerVol=0.5 # in ml
+        cleanerDelay=500 # in msec
+        airgap=20  # ul
+        airgapSpeed=20 # ul/sec
+        retractSpeed=30 # mm/sec
+        fastWash=0
+        lowVolume=0
+        atFreq=1000  # Hz, For Active tip
+        self.list.append('Periodic_Wash(%d,%d,%d,%d,%d,%f,%d,%f,%d,%f,%d,%d,%d,%d,%d,%d)'%(tipMask,wasteLoc[0],wasteLoc[1],cleanerLoc[0],cleanerLoc[1],wasteVol,wasteDelay,cleanerVol,cleanerDelay,airgap, airgapSpeed, retractSpeed, fastWash, lowVolume, period, atFreq)
+                         
     def vector(self, vector,loc, direction, andBack, safeAction, endAction, slow=True):
         'Move ROMA.  Gripper actions=0 (open), 1 (close), 2 (do not move).'
         if slow:
