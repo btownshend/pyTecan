@@ -25,8 +25,9 @@ class Sample(object):
         self.well=well
         self.conc=conc
         self.volume=volume
-        self.bottomLC=liquidclass.LC("%s-First"%liquidClass.name,liquidClass.singletag,liquidClass.multicond,liquidClass.multiexcess)
+        self.bottomLC=liquidclass.LC("%s-Bottom"%liquidClass.name,liquidClass.singletag,liquidClass.multicond,liquidClass.multiexcess)
         self.inliquidLC=liquidclass.LC("%s-InLiquid"%liquidClass.name,liquidClass.singletag,liquidClass.multicond,liquidClass.multiexcess)
+        self.emptyLC=liquidclass.LC("%s-Empty"%liquidClass.name,liquidClass.singletag,liquidClass.multicond,liquidClass.multiexcess)
         self.history=""
         __allsamples.append(self)
         
@@ -35,19 +36,14 @@ class Sample(object):
         self.conc=self.conc*factor
 
     def aspirate(self,w,volume):
-        if self.volume>MINLIQUIDDETECTVOLUME:
-            w.aspirate([self.well],self.inliquidLC,volume,self.plate)
-        else:
-            w.aspirate([self.well],self.bottomLC,volume,self.plate)
+        w.aspirate([self.well],self.chooseLC(True),volume,self.plate)
         self.volume=self.volume-volume
         if self.volume<0:
             print "Warning: %s is now short by %.1f ul"%(self.name,-self.volume)
             
     def dispense(self,w,volume,conc):
-        if self.volume>MINLIQUIDDETECTVOLUME:
-            w.dispense([self.well],self.inliquidLC,volume,self.plate)
-        else:
-            w.dispense([self.well],self.bottomLC,volume,self.plate)
+        w.dispense([self.well],self.chooseLC(),volume,self.plate)
+
         # Assume we're diluting the contents
         if self.conc==None and conc==None:
             pass
@@ -69,14 +65,22 @@ class Sample(object):
         else:
             self.history="%s[%.1f]"%(name,vol)
         
+    def chooseLC(self,isAspirate=False):
+        if self.volume>MINLIQUIDDETECTVOLUME:
+            return self.inliquidLC
+        elif self.volume==0 and not isAspirate:
+            return self.emptyLC
+        else:
+            return self.bottomLC
+        
     def mix(self,w,mixFrac=defaultMixFrac):
-        w.mix([self.well],self.inliquidLC,self.volume*mixFrac,self.plate,3)
+        w.mix([self.well],self.chooseLC(),self.volume*mixFrac,self.plate,3)
 
     def __str__(self):
         if self.conc==None:
-            return "%s(%s.%s,%.2f ul,LC=[%s,%s]) %s"%(self.name,str(self.plate),str(self.well),self.volume,str(self.bottomLC),str(self.inliquidLC),self.history)
+            return "%s(%s.%s,%.2f ul,LC=%s) %s"%(self.name,str(self.plate),str(self.well),self.volume,self.bottomLC.name,self.history)
         else:
-            return "%s(%s.%s,%.2fx,%.2f ul,LC=[%s,%s]) %s"%(self.name,str(self.plate),str(self.well),self.conc,self.volume,str(self.bottomLC),str(self.inliquidLC),self.history)
+            return "%s(%s.%s,%.2fx,%.2f ul,LC=%s) %s"%(self.name,str(self.plate),str(self.well),self.conc,self.volume,self.bottomLC.name,self.history)
 
     
     @staticmethod

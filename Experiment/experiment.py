@@ -49,7 +49,7 @@ class Experiment(object):
         
     def multitransfer(self, volumes, src, dests,mix=False,getDITI=True,dropDITI=True):
         'Multi pipette from src to multiple dest'
-        print "multitransfer(",volumes,",",src,",",dests,",",mix,",",getDITI,",",dropDITI,")"
+        #print "multitransfer(",volumes,",",src,",",dests,",",mix,",",getDITI,",",dropDITI,")"
         if isinstance(volumes,(int,long,float)):
             # Same volume for each dest
             volumes=[volumes for i in range(len(dests))]
@@ -86,7 +86,7 @@ class Experiment(object):
                 self.w.dropDITI(1,self.WASTE)
         else:
             for i in range(len(dests)):
-                self.transfer(volumes[i],src,dests[i],mix)
+                self.transfer(volumes[i],src,dests[i],mix,getDITI,dropDITI)
 
     def transfer(self, volume, src, dest, mix=False, getDITI=True, dropDITI=True):
         if volume>self.MAXVOLUME:
