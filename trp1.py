@@ -90,8 +90,8 @@ e.savesummary("trp1.txt")
 
 # Build a script to prefill the reagent wells for testing
 pre=Experiment()
-print "e=",e,"e.worklist=",e.w,",e.w.l=",e.w.list
-print "pre=",pre,"pre.worklist=",pre.w,",pre.w.l=",pre.w.list
+#print "e=",e,"e.worklist=",e.w,",e.w.l=",e.w.list
+#print "pre=",pre,"pre.worklist=",pre.w,",pre.w.l=",pre.w.list
 allReagents=[R_MT7,R_Theo,R_L2b12,R_L2b12Cntl,R_MStop,R_MRT,R_MRTNeg,R_MLigB,R_MLigase,R_MQA,R_MQB]
 # Will add 10ul extra in addition to bringing the currently negative sample volumes to zero
 pre.stage('Prefill',[],[],allReagents,20)  

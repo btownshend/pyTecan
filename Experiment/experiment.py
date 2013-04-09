@@ -47,45 +47,58 @@ class Experiment(object):
         Sample.printprep(fd)
         Sample.printallsamples("All Samples:",fd)
         
-    def multitransfer(self, volumes, src, dests,mix=False):
+    def multitransfer(self, volumes, src, dests,mix=False,getDITI=True,dropDITI=True):
         'Multi pipette from src to multiple dest'
-        useMulti=True   # Disable for now, use single transfers
+        print "multitransfer(",volumes,",",src,",",dests,",",mix,",",getDITI,",",dropDITI,")"
         if isinstance(volumes,(int,long,float)):
             # Same volume for each dest
             volumes=[volumes for i in range(len(dests))]
         assert(len(volumes)==len(dests))
-        if useMulti and mix==False and len(volumes)>1:
+        if mix==False and len(volumes)>1:
             if sum(volumes)>self.MAXVOLUME:
                 print "sum(volumes)=%.1f, MAXVOL=%.1f"%(sum(volumes),self.MAXVOLUME)
                 for i in range(1,len(volumes)):
                     if sum(volumes[0:i+1])>self.MAXVOLUME:
-                        print "Splitting multi with total volume of %.1f ul into smaller chunks < %.1f ul after %d dispenses"%(sum(volumes),self.MAXVOLUME,i)
-                        self.multitransfer(volumes[0:i],src,dests[0:i],mix)
-                        self.multitransfer(volumes[i:],src,dests[i:],mix)
+                        print "Splitting multi with total volume of %.1f ul into smaller chunks < %.1f ul after %d dispenses "%(sum(volumes),self.MAXVOLUME,i),
+                        destvol=max([d.volume for d in dests[0:i]])
+                        reuseTip=destvol<=0
+                        if reuseTip:
+                            print "with tip reuse"
+                        else:
+                            print "without tip reuse"
+                        self.multitransfer(volumes[0:i],src,dests[0:i],mix,getDITI,not reuseTip)
+                        self.multitransfer(volumes[i:],src,dests[i:],mix,not reuseTip,dropDITI)
                         return
                     
             cmt="Multi-add  %s to samples %s"%(src.name,",".join("%s[%.1f]"%(dests[i].name,volumes[i]) for i in range(len(dests))))
-            if mix:
-                cmt=cmt+" with mix"
             print "*",cmt
             self.w.comment(cmt)
-            v=sum(volumes)+src.inliquidLC.multicond+src.inliquidLC.multiexcess
-            self.w.getDITI(1,v,True,True)
-            src.aspirate(self.w,v)
+            if  getDITI:
+                ditivol=sum(volumes)+src.inliquidLC.multicond+src.inliquidLC.multiexcess
+                self.w.getDITI(1,min(self.MAXVOLUME,ditivol),True,True)
+
+            src.aspirate(self.w,sum(volumes))
             for i in range(len(dests)):
                 if volumes[i]>0:
                     dests[i].dispense(self.w,volumes[i],src.conc)
                     dests[i].addhistory(src.name,volumes[i])
-            self.w.dropDITI(1,self.WASTE)
+            if dropDITI:
+                self.w.dropDITI(1,self.WASTE)
         else:
             for i in range(len(dests)):
                 self.transfer(volumes[i],src,dests[i],mix)
 
-    def transfer(self, volume, src, dest, mix=False):
+    def transfer(self, volume, src, dest, mix=False, getDITI=True, dropDITI=True):
         if volume>self.MAXVOLUME:
-            print "Splitting large transfer of %.1f ul into smaller chunks < %.1f ul"%(volume,self.MAXVOLUME)
-            self.transfer(self.MAXVOLUME,src,dest,mix)
-            self.transfer(volume-self.MAXVOLUME,src,dest,mix)
+            destvol=max([d.volume for d in dests[0:i]])
+            reuseTip=destvol<=0
+            print "Splitting large transfer of %.1f ul into smaller chunks < %.1f ul "%(volume,self.MAXVOLUME),
+            if reuseTip:
+                print "with tip reuse"
+            else:
+                print "without tip reuse"
+            self.transfer(self.MAXVOLUME,src,dest,mix,getDITI,False)
+            self.transfer(volume-self.MAXVOLUME,src,dest,mix,False,dropDITI)
             return
         
         cmt="Add %.1f ul of %s to %s"%(volume, src.name, dest.name)
@@ -93,16 +106,18 @@ class Experiment(object):
         if mix:
             cmt=cmt+" with mix"
             ditivolume=max(volume,volume+dest.volume)
-            print "Mix volume=%.1f ul"%(ditivolume)
+            #            print "Mix volume=%.1f ul"%(ditivolume)
         print "*",cmt
         self.w.comment(cmt)
-        self.w.getDITI(1,ditivolume)
+        if getDITI:
+            self.w.getDITI(1,ditivolume)
         src.aspirate(self.w,volume)
         dest.dispense(self.w,volume,src.conc)
         dest.addhistory(src.name,volume)
         if mix:
             dest.mix(self.w)
-        self.w.dropDITI(1,self.WASTE)
+        if dropDITI:
+            self.w.dropDITI(1,self.WASTE)
 
     def stage(self,stagename,reagents,sources,samples,volume):
         # Add water to sample wells as needed (multi)

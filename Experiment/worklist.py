@@ -140,10 +140,7 @@ class WorkList(object):
             options=1
         else:
             options=0
-        if multi:
-            type=__DITI200
-            print "Forced to 200ul tip"
-        elif volume<=MAXVOL10:
+        if volume<=MAXVOL10:
             type=__DITI10
         else:
             type=__DITI200

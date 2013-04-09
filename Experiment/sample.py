@@ -3,6 +3,7 @@ import liquidclass
 from worklist import WorkList
 
 defaultMixFrac = 0.9
+MINLIQUIDDETECTVOLUME=20
 
 _Sample__allsamples = []
 
@@ -34,13 +35,16 @@ class Sample(object):
         self.conc=self.conc*factor
 
     def aspirate(self,w,volume):
-        w.aspirate([self.well],self.bottomLC,volume,self.plate)
+        if self.volume>MINLIQUIDDETECTVOLUME:
+            w.aspirate([self.well],self.inliquidLC,volume,self.plate)
+        else:
+            w.aspirate([self.well],self.bottomLC,volume,self.plate)
         self.volume=self.volume-volume
         if self.volume<0:
             print "Warning: %s is now short by %.1f ul"%(self.name,-self.volume)
             
     def dispense(self,w,volume,conc):
-        if self.volume>20:
+        if self.volume>MINLIQUIDDETECTVOLUME:
             w.dispense([self.well],self.inliquidLC,volume,self.plate)
         else:
             w.dispense([self.well],self.bottomLC,volume,self.plate)
