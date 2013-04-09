@@ -92,7 +92,7 @@ if keepB:
 else:
     S_PCRB=[]
 S_PCR=S_PCRA+S_PCRB
-e.runpgm("PCR")
+# Wait until after qPCR setup to run PCR
 
 ## qPCR
 if totaldilution<2000:
@@ -110,6 +110,9 @@ S_QPCR_B=[Sample("R1.QPCR.B.%d"%i,e.QPCRPLATE,i+qpos) for i in range(nQPCR)]; qp
 e.stage('QPCRA',[R_MQB],S_QPCRDIL,S_QPCR_B,10)
 S_QPCR=S_QPCR_A+S_QPCR_B
 nQPCR=nQPCR*2
+
+# Run PCR program
+e.runpgm("PCR")
 
 e.w.userprompt("Process complete. Continue to turn off reagent cooler")
 e.setreagenttemp(None)
