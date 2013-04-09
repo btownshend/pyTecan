@@ -5,7 +5,7 @@ qPCR(10,2)
 Water(17,2)
 Waste(19,3)
 
-DiTi usage: 10ul: 20, 200ul: 16
+DiTi usage: 10ul: 23, 200ul: 17
 
 Reagents:
 MT7@2.00x in Reagents(3,1).0 consume 10.0 ul, provide 15.0 ul
@@ -18,9 +18,10 @@ MLigB@1.25x in Reagents(3,1).7 consume 24.0 ul, provide 29.0 ul
 MLigase@2.00x in Reagents(3,1).8 consume 30.0 ul, provide 35.0 ul
 MQA@1.67x in Reagents(3,1).9 consume 18.0 ul, provide 23.0 ul
 MQB@1.67x in Reagents(3,1).10 consume 18.0 ul, provide 23.0 ul
+MPCRA@2.00x in Reagents(3,1).11 consume 15.0 ul, provide 20.0 ul
 
 All Samples::
-Water(Water(17,2).0,8947.00 ul,LC=Water-Bottom) 
+Water(Water(17,2).0,8977.00 ul,LC=Water-Bottom) 
 MT7(Reagents(3,1).0,2.00x,-10.00 ul,LC=Water-Bottom) 
 Theo(Reagents(3,1).1,3.33x,-3.00 ul,LC=Water-Bottom) 
 L2b12(Reagents(3,1).2,5.00x,-4.00 ul,LC=Water-Bottom) 
@@ -32,6 +33,8 @@ MLigB(Reagents(3,1).7,1.25x,-24.00 ul,LC=Water-Bottom)
 MLigase(Reagents(3,1).8,2.00x,-30.00 ul,LC=Water-Bottom) 
 MQA(Reagents(3,1).9,1.67x,-18.00 ul,LC=Water-Bottom) 
 MQB(Reagents(3,1).10,1.67x,-18.00 ul,LC=Water-Bottom) 
+MPCRA(Reagents(3,1).11,2.00x,-15.00 ul,LC=Water-Bottom) 
+MPCRB(Reagents(3,1).12,2.00x,0.00 ul,LC=Water-Bottom) 
 R1.T7PLUS.0(Samples(10,3).0,2.00x,15.00 ul,LC=Water-Bottom) Water[3.0]+MT7[5.0]+L2b12[2.0]+MStp[10.0]
 R1.T7MINUS.0(Samples(10,3).1,2.00x,17.50 ul,LC=Water-Bottom) MT7[5.0]+Theo[3.0]+L2b12[2.0]+MStp[10.0]
 R1.RT.0(Samples(10,3).2,5.00x,3.00 ul,LC=Water-Bottom) MRT[2.5]+R1.T7PLUS.0[2.5]
@@ -40,12 +43,15 @@ R1.RTNeg.0(Samples(10,3).4,5.00x,3.00 ul,LC=Water-Bottom) MRTNeg[2.5]+R1.T7PLUS.
 R1.EXT.0(Samples(10,3).5,20.00x,10.00 ul,LC=Water-Bottom) MLigB[8.0]+R1.RT.0[2.0]+MLigase[10.0]
 R1.EXT.1(Samples(10,3).6,20.00x,10.00 ul,LC=Water-Bottom) MLigB[8.0]+R1.RT.1[2.0]+MLigase[10.0]
 R1.EXT.2(Samples(10,3).7,20.00x,10.00 ul,LC=Water-Bottom) MLigB[8.0]+R1.RTNeg.0[2.0]+MLigase[10.0]
-R1.EXTDIL.0(Samples(10,3).8,5.00x,160.00 ul,LC=Water-Bottom) Water[190.0]+R1.EXT.0[10.0]
-R1.EXTDIL.1(Samples(10,3).9,5.00x,160.00 ul,LC=Water-Bottom) Water[190.0]+R1.EXT.1[10.0]
-R1.EXTDIL.2(Samples(10,3).10,5.00x,160.00 ul,LC=Water-Bottom) Water[190.0]+R1.EXT.2[10.0]
-R1.QPCRDIL.0(Samples(10,3).11,2.50x,192.00 ul,LC=Water-Bottom) Water[160.0]+R1.EXTDIL.0[40.0]
-R1.QPCRDIL.1(Samples(10,3).12,2.50x,192.00 ul,LC=Water-Bottom) Water[160.0]+R1.EXTDIL.1[40.0]
-R1.QPCRDIL.2(Samples(10,3).13,2.50x,192.00 ul,LC=Water-Bottom) Water[160.0]+R1.EXTDIL.2[40.0]
+R1.EXTDIL.0(Samples(10,3).8,4.00x,145.00 ul,LC=Water-Bottom) Water[190.0]+R1.EXT.0[10.0]
+R1.EXTDIL.1(Samples(10,3).9,4.00x,145.00 ul,LC=Water-Bottom) Water[190.0]+R1.EXT.1[10.0]
+R1.EXTDIL.2(Samples(10,3).10,4.00x,145.00 ul,LC=Water-Bottom) Water[190.0]+R1.EXT.2[10.0]
+R1.PCRA.0(Samples(10,3).11,1.00x,10.00 ul,LC=Water-Bottom) MPCRA[5.0]+R1.EXTDIL.0[5.0]
+R1.PCRA.1(Samples(10,3).12,1.00x,10.00 ul,LC=Water-Bottom) MPCRA[5.0]+R1.EXTDIL.1[5.0]
+R1.PCRA.2(Samples(10,3).13,1.00x,10.00 ul,LC=Water-Bottom) MPCRA[5.0]+R1.EXTDIL.2[5.0]
+R1.QPCRDIL.0(Samples(10,3).14,2.50x,192.00 ul,LC=Water-Bottom) Water[150.0]+R1.EXTDIL.0[50.0]
+R1.QPCRDIL.1(Samples(10,3).15,2.50x,192.00 ul,LC=Water-Bottom) Water[150.0]+R1.EXTDIL.1[50.0]
+R1.QPCRDIL.2(Samples(10,3).16,2.50x,192.00 ul,LC=Water-Bottom) Water[150.0]+R1.EXTDIL.2[50.0]
 R1.QPCR.A.0(qPCR(10,2).0,1.00x,10.00 ul,LC=Water-Bottom) MQA[6.0]+R1.QPCRDIL.0[4.0]
 R1.QPCR.A.1(qPCR(10,2).1,1.00x,10.00 ul,LC=Water-Bottom) MQA[6.0]+R1.QPCRDIL.1[4.0]
 R1.QPCR.A.2(qPCR(10,2).2,1.00x,10.00 ul,LC=Water-Bottom) MQA[6.0]+R1.QPCRDIL.2[4.0]

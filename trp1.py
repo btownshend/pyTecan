@@ -6,6 +6,8 @@ import debughook
 scale=1   # Overall scale of reactions
 nreplicates=1  
 negRT=1   # Number of negative RTs (first ones only are run with RT)  set very high to run negative of all reactions
+keepA=True
+keepB=False
 
 ### Setup samples
 e=Experiment()
@@ -24,6 +26,8 @@ R_MLigB=Sample("MLigB",e.REAGENTPLATE,len(allReagents),1.25); allReagents.append
 R_MLigase=Sample("MLigase",e.REAGENTPLATE,len(allReagents),2); allReagents.append(R_MLigase)
 R_MQA=Sample("MQA",e.REAGENTPLATE,len(allReagents),20.0/12); allReagents.append(R_MQA)
 R_MQB=Sample("MQB",e.REAGENTPLATE,len(allReagents),20.0/12); allReagents.append(R_MQB)
+R_PCRA=Sample("MPCRA",e.REAGENTPLATE,len(allReagents),2.0); allReagents.append(R_PCRA)
+R_PCRB=Sample("MPCRB",e.REAGENTPLATE,len(allReagents),2.0); allReagents.append(R_PCRB)
 
 totaldilution=1
 
@@ -75,6 +79,21 @@ e.dilute(S_EXT,20);totaldilution*=20
 S_EXTDIL=[Sample("R1.EXTDIL.%d"%i,e.SAMPLEPLATE,i+spos) for i in range(nExt)]; spos=spos+nExt
 e.stage('PrePCR-Dilute',[],S_EXT,S_EXTDIL,200)
         
+## PCR
+e.dilute(S_EXTDIL,2); totaldilution*=2
+if keepA:
+    S_PCRA=[Sample("R1.PCRA.%d"%i,e.SAMPLEPLATE,i+spos) for i in range(nExt)]; spos=spos+nExt
+    e.stage('PCRA',[R_PCRA],S_EXTDIL,S_PCRA,10);
+else:
+    S_PCRA=[]
+if keepB:
+    S_PCRB=[Sample("R1.PCRB.%d"%i,e.SAMPLEPLATE,i+spos) for i in range(nExt)]; spos=spos+nExt
+    e.stage('PCRB',[R_PCRB],S_EXTDIL,S_PCRB,10);
+else:
+    S_PCRB=[]
+S_PCR=S_PCRA+S_PCRB
+e.runpgm("PCR")
+
 ## qPCR
 if totaldilution<2000:
     S_QPCRDIL=[Sample("R1.QPCRDIL.%d"%i,e.SAMPLEPLATE,i+spos) for i in range(nExt)]; spos=spos+nExt
