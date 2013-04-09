@@ -1,5 +1,7 @@
 from Experiment.sample import Sample
 from Experiment.experiment import *
+import debughook
+
 
 scale=1   # Overall scale of reactions
 nreplicates=1
@@ -11,8 +13,8 @@ e.setreagenttemp(4.0)
 rpos=0; spos=0;qpos=0
 R_MT7=Sample("MT7",e.REAGENTPLATE,rpos,2); rpos=rpos+1
 R_Theo=Sample("Theo",e.REAGENTPLATE,rpos,25/7.5); rpos=rpos+1
-R_L2b12=Sample("L2b12",e.REAGENTPLATE,rpos,10); rpos=rpos+1
-R_L2b12Cntl=Sample("L2b12Cntl",e.REAGENTPLATE,rpos,10); rpos=rpos+1
+R_L2b12=Sample("L2b12",e.REAGENTPLATE,rpos,5); rpos=rpos+1
+R_L2b12Cntl=Sample("L2b12Cntl",e.REAGENTPLATE,rpos,5); rpos=rpos+1
 R_MStop=Sample("MStp",e.REAGENTPLATE,rpos,2); rpos=rpos+1
 R_MRT=Sample("MRT",e.REAGENTPLATE,rpos,2); rpos=rpos+1
 R_MRTNeg=Sample("MRTNeg",e.REAGENTPLATE,rpos,2); rpos=rpos+1

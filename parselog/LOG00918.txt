@@ -1,0 +1,723 @@
+11:41:2 Starting program "dyecalibration2.gem" (lines 8 to 24)
+O1 ALO (Activate door lock output)  ['1', '1']  ->  0 []
+O1 ALO (Activate door lock output)  ['2', '1']  ->  0 []
+O1 RSL (UNDOCUMENTED)  ['2']  ->  0 ['0']
+O1 SSL (Set search speed for liquid search commands)  ['1', '1']  ->  0 []
+O1 SPN (UNDOCUMENTED)  []  ->  0 []
+O1 SPS (Set pierce speed for piercing commands)  ['3']  ->  0 []
+11:41:2 Line    8 : Wash Tips
+11:41:2 wash (0.5ml + 1ml), grid 1 and grid 1
+C2 RPX (Report current parameter for X-axis)  ['0']  ->  0 ['7056']
+C2 RPR (Report current parameter for rotator-axis)  ['0']  ->  0 ['1800']
+C5 SHZ (Set individual Z-travel height)  ['2080', '2080', '2080', '2080']  ->  0 []
+C5 RPX (Report current parameter for X-axis)  ['0']  ->  0 ['5125']
+C5 RPY (Report current parameter for Y-axis)  ['0']  ->  0 ['2603', '90']
+C2 RPX (Report current parameter for X-axis)  ['0']  ->  0 ['7056']
+C2 RPR (Report current parameter for rotator-axis)  ['0']  ->  0 ['1800']
+C5 SHZ (Set individual Z-travel height)  ['2080', '2080', '2080', '2080']  ->  0 []
+C5 PAA (Position absolute for all axis)  ['5', '1031', '90', '223', '223', '223', '223']  ->  0 []
+C5 PVL (UNDOCUMENTED)  ['0', '0', '0', '0']  ->  0 []
+C5 SEP (UNDOCUMENTED)  ['5400', '5400', '5400', '5400']  ->  0 []
+C5 PPA (UNDOCUMENTED)  ['0', '0', '0', '0']  ->  0 []
+C5 PVL (UNDOCUMENTED)  ['1', '1', '1', '1']  ->  0 []
+C5 SEP (UNDOCUMENTED)  ['5400', '5400', '5400', '5400']  ->  0 []
+C5 PPR (UNDOCUMENTED)  ['3000', '3000', '3000', '3000']  ->  0 []
+C5 PVL (UNDOCUMENTED)  ['0', '0', '0', '0']  ->  0 []
+C5 PPA (UNDOCUMENTED)  ['0', '0', '0', '0']  ->  0 []
+C5 PVL (UNDOCUMENTED)  ['1', '1', '1', '1']  ->  0 []
+C5 SEP (UNDOCUMENTED)  ['5400', '5400', '5400', '5400']  ->  0 []
+C5 PPR (UNDOCUMENTED)  ['3000', '3000', '3000', '3000']  ->  0 []
+C5 PVL (UNDOCUMENTED)  ['0', '0', '0', '0']  ->  0 []
+C5 PPA (UNDOCUMENTED)  ['0', '0', '0', '0']  ->  0 []
+C5 SHZ (Set individual Z-travel height)  ['2080', '2080', '2080', '2080']  ->  0 []
+C5 RPX (Report current parameter for X-axis)  ['0']  ->  0 ['5']
+C5 RPY (Report current parameter for Y-axis)  ['0']  ->  0 ['1031', '90']
+C2 RPX (Report current parameter for X-axis)  ['0']  ->  0 ['7056']
+C2 RPR (Report current parameter for rotator-axis)  ['0']  ->  0 ['1800']
+C5 SHZ (Set individual Z-travel height)  ['2080', '2080', '2080', '2080']  ->  0 []
+C5 PAA (Position absolute for all axis)  ['57', '156', '90', '2100', '2100', '2100', '2100']  ->  0 []
+C5 MAZ (Position absolute slow speed for Z axis)  ['', '', '', '300']  ->  0 []
+C5 SEP (UNDOCUMENTED)  ['480', '1680', '1680', '1680']  ->  0 []
+C5 PPR (UNDOCUMENTED)  ['240', '240', '240', '240']  ->  0 []
+11:41:4 Line    9 : Begin Loop
+11:41:4 LOOP_Replicates = 1
+11:41:4 Line   10 : Set Variable
+11:41:4 VOLUME = 1
+11:41:4 Line   11 : Begin Loop
+11:41:4 LOOP_VOLS = 1
+11:41:4 Line   12 : Transfer
+11:41:4 tip 1 : fetch DITIs  9, 8 DiTi10, 96 Tips 10ul [19,1]
+C2 RPX (Report current parameter for X-axis)  ['0']  ->  0 ['7056']
+C2 RPR (Report current parameter for rotator-axis)  ['0']  ->  0 ['1800']
+C5 RPX (Report current parameter for X-axis)  ['0']  ->  0 ['57']
+C5 RPY (Report current parameter for Y-axis)  ['0']  ->  0 ['156', '90']
+C2 RPX (Report current parameter for X-axis)  ['0']  ->  0 ['7056']
+C2 RPR (Report current parameter for rotator-axis)  ['0']  ->  0 ['1800']
+C5 SHZ (Set individual Z-travel height)  ['2080', '2080', '2080', '2080']  ->  0 []
+C5 PAA (Position absolute for all axis)  ['5355', '670', '90', '2080', '2080', '2080', '2080']  ->  0 []
+C5 AGT (Get a disposable tip)  ['1', '768', '210']  ->  0 []
+C5 RTS (Report tip status DiTi)  []  ->  0 ['1']
+C2 RPX (Report current parameter for X-axis)  ['0']  ->  0 ['7056']
+C2 RPR (Report current parameter for rotator-axis)  ['0']  ->  0 ['1800']
+11:41:4 tip 1 : aspirate 1.00µl 12, 8 HSP96xx on carrier [10,3]
+11:41:4                  1.00µl "Water-InLiquid" DITI <all volumes> Single 
+C5 SHZ (Set individual Z-travel height)  ['2080', '2080', '2080', '2080']  ->  0 []
+C5 RPX (Report current parameter for X-axis)  ['0']  ->  0 ['5355']
+C5 RPY (Report current parameter for Y-axis)  ['0']  ->  0 ['670', '90']
+C2 RPX (Report current parameter for X-axis)  ['0']  ->  0 ['7056']
+C2 RPR (Report current parameter for rotator-axis)  ['0']  ->  0 ['1800']
+C5 PAA (Position absolute for all axis)  ['3333', '2653', '90', '587', '2080', '2080', '2080']  ->  0 []
+C5 RTS (Report tip status DiTi)  []  ->  0 ['1']
+C5 PVL (UNDOCUMENTED)  ['0', '', '', '']  ->  0 []
+C5 SEP (UNDOCUMENTED)  ['480', '', '', '']  ->  0 []
+C5 PPR (UNDOCUMENTED)  ['60', '', '', '']  ->  0 []
+C5 SDM (Set liquid detection mode)  ['3', '1']  ->  0 []
+C5 SSL (Set search speed for liquid search commands)  ['600', '', '', '']  ->  0 []
+C5 SDL (Set individual save detection retract distance for liquid search command)  ['40', '', '', '']  ->  0 []
+C5 STL (Set individual z-start for liquid search command)  ['559', '', '', '']  ->  0 []
+C5 SML (Set individual z-max for liquid search command)  ['407', '2100', '2100', '2100']  ->  0 []
+C5 SBL (Set individual submerge for liquid search command)  ['20', '', '', '']  ->  0 []
+C5 MDT (Move tip, detect liquid, submerge)  ['1', '', '', '', '2', '0', '0', '0']  ->  0 []
+C5 RPZ (Report current parameter for Z-axis)  ['0']  ->  0 ['517', '2080', '2080', '2080']
+C5 SSZ (Set slow speed for z-axis)  ['20', '', '', '']  ->  0 []
+C5 SEP (UNDOCUMENTED)  ['480', '', '', '']  ->  0 []
+C5 STZ (UNDOCUMENTED)  ['-1', '', '', '']  ->  0 []
+C5 MTR (UNDOCUMENTED (?aspirate in units of 1/12 ul))  ['12', '', '', '']  ->  0 []
+C5 RPZ (Report current parameter for Z-axis)  ['0']  ->  0 ['515', '2080', '2080', '2080']
+C5 PVL (UNDOCUMENTED)  ['0', '', '', '']  ->  0 []
+C5 SEP (UNDOCUMENTED)  ['480', '', '', '']  ->  0 []
+C5 PPR (UNDOCUMENTED)  ['96', '', '', '']  ->  0 []
+C5 RTS (Report tip status DiTi)  []  ->  0 ['1']
+11:41:4 detected_volume_1 = 160
+11:41:4 detected_volume_2 = -1
+11:41:4 detected_volume_3 = -1
+11:41:4 detected_volume_4 = -1
+C2 RPX (Report current parameter for X-axis)  ['0']  ->  0 ['7056']
+C2 RPR (Report current parameter for rotator-axis)  ['0']  ->  0 ['1800']
+11:41:4 tip 1 : dispense 14.00µl  3, 1 HSP96xx on carrier [10,3]
+11:41:4                  1.00µl "Water-First" DITI <all volumes> Single 
+C5 SHZ (Set individual Z-travel height)  ['587', '2080', '2080', '2080']  ->  0 []
+C5 RPX (Report current parameter for X-axis)  ['0']  ->  0 ['3333']
+C5 RPY (Report current parameter for Y-axis)  ['0']  ->  0 ['2653', '90']
+C2 RPX (Report current parameter for X-axis)  ['0']  ->  0 ['7056']
+C2 RPR (Report current parameter for rotator-axis)  ['0']  ->  0 ['1800']
+C5 PAA (Position absolute for all axis)  ['2528', '2015', '90', '407', '2080', '2080', '2080']  ->  0 []
+C5 RTS (Report tip status DiTi)  []  ->  0 ['1']
+C5 RPP (UNDOCUMENTED)  ['0']  ->  0 ['408', '240', '240', '240']
+C5 RPZ (Report current parameter for Z-axis)  ['0']  ->  0 ['407', '2080', '2080', '2080']
+C5 SSZ (Set slow speed for z-axis)  ['856', '', '', '']  ->  0 []
+C5 SEP (UNDOCUMENTED)  ['5400', '', '', '']  ->  0 []
+C5 SPP (UNDOCUMENTED)  ['5400', '', '', '']  ->  28 []
+Unknown error: <28>
+Error message: Unknown error
+C5 STZ (UNDOCUMENTED)  ['53', '', '', '']  ->  0 []
+C5 MTR (UNDOCUMENTED (?aspirate in units of 1/12 ul))  ['-168', '', '', '']  ->  0 []
+C5 MRX (Position relative slow speed for X axis)  ['-10', '100']  ->  0 []
+C5 PRX (Positive relative for X axis)  ['10']  ->  0 []
+C5 RPZ (Report current parameter for Z-axis)  ['0']  ->  0 ['460', '2080', '2080', '2080']
+C5 SSZ (Set slow speed for z-axis)  ['500', '', '', '']  ->  0 []
+C5 MAZ (Position absolute slow speed for Z axis)  ['552', '', '', '']  ->  0 []
+C5 PVL (UNDOCUMENTED)  ['0', '', '', '']  ->  0 []
+C5 SEP (UNDOCUMENTED)  ['480', '', '', '']  ->  0 []
+C5 PPR (UNDOCUMENTED)  ['96', '', '', '']  ->  0 []
+C5 RTS (Report tip status DiTi)  []  ->  0 ['1']
+11:41:5 detected_volume_1 = -1
+11:41:5 detected_volume_2 = -1
+11:41:5 detected_volume_3 = -1
+11:41:5 detected_volume_4 = -1
+11:41:5 drop DITIs, grid 19
+C2 RPX (Report current parameter for X-axis)  ['0']  ->  0 ['7056']
+C2 RPR (Report current parameter for rotator-axis)  ['0']  ->  0 ['1800']
+C5 SHZ (Set individual Z-travel height)  ['2080', '2080', '2080', '2080']  ->  0 []
+C5 RPX (Report current parameter for X-axis)  ['0']  ->  0 ['2528']
+C5 RPY (Report current parameter for Y-axis)  ['0']  ->  0 ['2015', '90']
+C2 RPX (Report current parameter for X-axis)  ['0']  ->  0 ['7056']
+C2 RPR (Report current parameter for rotator-axis)  ['0']  ->  0 ['1800']
+C5 SHZ (Set individual Z-travel height)  ['2080', '2080', '2080', '2080']  ->  0 []
+C5 PAA (Position absolute for all axis)  ['5125', '2603', '90', '700', '2100', '2100', '2100']  ->  0 []
+C5 AST (Spash free discard tip)  ['1', '1']  ->  0 []
+C5 RTS (Report tip status DiTi)  []  ->  0 ['0']
+C5 PVL (UNDOCUMENTED)  ['0', '', '', '']  ->  0 []
+C5 SEP (UNDOCUMENTED)  ['5400', '', '', '']  ->  0 []
+C5 PPA (UNDOCUMENTED)  ['240', '', '', '']  ->  0 []
+11:41:5 Line   13 : Set Variable
+11:41:5 VOLUME = 2
+11:41:5 Line   14 : End Loop
+11:41:5 Line   11 : Begin Loop
+11:41:5 LOOP_VOLS = 2
+11:41:5 Line   12 : Transfer
+11:41:5 tip 1 : fetch DITIs 10, 1 DiTi10, 96 Tips 10ul [19,1]
+C2 RPX (Report current parameter for X-axis)  ['0']  ->  0 ['7056']
+C2 RPR (Report current parameter for rotator-axis)  ['0']  ->  0 ['1800']
+C5 RPX (Report current parameter for X-axis)  ['0']  ->  0 ['5125']
+C5 RPY (Report current parameter for Y-axis)  ['0']  ->  0 ['2603', '90']
+C2 RPX (Report current parameter for X-axis)  ['0']  ->  0 ['7056']
+C2 RPR (Report current parameter for rotator-axis)  ['0']  ->  0 ['1800']
+C5 SHZ (Set individual Z-travel height)  ['2080', '2080', '2080', '2080']  ->  0 []
+C5 PAA (Position absolute for all axis)  ['5445', '38', '90', '2080', '2080', '2080', '2080']  ->  0 []
+C5 AGT (Get a disposable tip)  ['1', '768', '210']  ->  0 []
+C5 RTS (Report tip status DiTi)  []  ->  0 ['1']
+C2 RPX (Report current parameter for X-axis)  ['0']  ->  0 ['7056']
+C2 RPR (Report current parameter for rotator-axis)  ['0']  ->  0 ['1800']
+11:41:5 tip 1 : aspirate 2.00µl 12, 8 HSP96xx on carrier [10,3]
+11:41:5                  2.00µl "Water-InLiquid" DITI <all volumes> Single 
+C5 SHZ (Set individual Z-travel height)  ['2080', '2080', '2080', '2080']  ->  0 []
+C5 RPX (Report current parameter for X-axis)  ['0']  ->  0 ['5445']
+C5 RPY (Report current parameter for Y-axis)  ['0']  ->  0 ['38', '90']
+C2 RPX (Report current parameter for X-axis)  ['0']  ->  0 ['7056']
+C2 RPR (Report current parameter for rotator-axis)  ['0']  ->  0 ['1800']
+C5 PAA (Position absolute for all axis)  ['3333', '2653', '90', '587', '2080', '2080', '2080']  ->  0 []
+C5 RTS (Report tip status DiTi)  []  ->  0 ['1']
+C5 PVL (UNDOCUMENTED)  ['0', '', '', '']  ->  0 []
+C5 SEP (UNDOCUMENTED)  ['480', '', '', '']  ->  0 []
+C5 PPR (UNDOCUMENTED)  ['60', '', '', '']  ->  0 []
+C5 SDM (Set liquid detection mode)  ['3', '1']  ->  0 []
+C5 SSL (Set search speed for liquid search commands)  ['600', '', '', '']  ->  0 []
+C5 SDL (Set individual save detection retract distance for liquid search command)  ['40', '', '', '']  ->  0 []
+C5 STL (Set individual z-start for liquid search command)  ['559', '', '', '']  ->  0 []
+C5 SML (Set individual z-max for liquid search command)  ['407', '2100', '2100', '2100']  ->  0 []
+C5 SBL (Set individual submerge for liquid search command)  ['20', '', '', '']  ->  0 []
+C5 MDT (Move tip, detect liquid, submerge)  ['1', '', '', '', '8', '0', '0', '0']  ->  0 []
+C5 RPZ (Report current parameter for Z-axis)  ['0']  ->  0 ['513', '2080', '2080', '2080']
+C5 SSZ (Set slow speed for z-axis)  ['13', '', '', '']  ->  0 []
+C5 SEP (UNDOCUMENTED)  ['480', '', '', '']  ->  0 []
+C5 STZ (UNDOCUMENTED)  ['-1', '', '', '']  ->  0 []
+C5 MTR (UNDOCUMENTED (?aspirate in units of 1/12 ul))  ['24', '', '', '']  ->  0 []
+C5 RPZ (Report current parameter for Z-axis)  ['0']  ->  0 ['512', '2080', '2080', '2080']
+C5 PVL (UNDOCUMENTED)  ['0', '', '', '']  ->  0 []
+C5 SEP (UNDOCUMENTED)  ['480', '', '', '']  ->  0 []
+C5 PPR (UNDOCUMENTED)  ['96', '', '', '']  ->  0 []
+C5 RTS (Report tip status DiTi)  []  ->  0 ['1']
+11:42:0 detected_volume_1 = 151
+11:42:0 detected_volume_2 = -1
+11:42:0 detected_volume_3 = -1
+11:42:0 detected_volume_4 = -1
+C2 RPX (Report current parameter for X-axis)  ['0']  ->  0 ['7056']
+C2 RPR (Report current parameter for rotator-axis)  ['0']  ->  0 ['1800']
+11:42:0 tip 1 : dispense 15.00µl  3, 2 HSP96xx on carrier [10,3]
+11:42:0                  2.00µl "Water-First" DITI <all volumes> Single 
+C5 SHZ (Set individual Z-travel height)  ['587', '2080', '2080', '2080']  ->  0 []
+C5 RPX (Report current parameter for X-axis)  ['0']  ->  0 ['3333']
+C5 RPY (Report current parameter for Y-axis)  ['0']  ->  0 ['2653', '90']
+C2 RPX (Report current parameter for X-axis)  ['0']  ->  0 ['7056']
+C2 RPR (Report current parameter for rotator-axis)  ['0']  ->  0 ['1800']
+C5 PAA (Position absolute for all axis)  ['2528', '2106', '90', '407', '2080', '2080', '2080']  ->  0 []
+C5 RTS (Report tip status DiTi)  []  ->  0 ['1']
+C5 RPP (UNDOCUMENTED)  ['0']  ->  0 ['420', '240', '240', '240']
+C5 RPZ (Report current parameter for Z-axis)  ['0']  ->  0 ['407', '2080', '2080', '2080']
+C5 SSZ (Set slow speed for z-axis)  ['817', '', '', '']  ->  0 []
+C5 SEP (UNDOCUMENTED)  ['5400', '', '', '']  ->  0 []
+C5 SPP (UNDOCUMENTED)  ['5400', '', '', '']  ->  28 []
+Error message: Unknown error
+C5 STZ (UNDOCUMENTED)  ['54', '', '', '']  ->  0 []
+C5 MTR (UNDOCUMENTED (?aspirate in units of 1/12 ul))  ['-180', '', '', '']  ->  0 []
+C5 MRX (Position relative slow speed for X axis)  ['-10', '100']  ->  0 []
+C5 PRX (Positive relative for X axis)  ['10']  ->  0 []
+C5 RPZ (Report current parameter for Z-axis)  ['0']  ->  0 ['461', '2080', '2080', '2080']
+C5 SSZ (Set slow speed for z-axis)  ['500', '', '', '']  ->  0 []
+C5 MAZ (Position absolute slow speed for Z axis)  ['552', '', '', '']  ->  0 []
+C5 PVL (UNDOCUMENTED)  ['0', '', '', '']  ->  0 []
+C5 SEP (UNDOCUMENTED)  ['480', '', '', '']  ->  0 []
+C5 PPR (UNDOCUMENTED)  ['96', '', '', '']  ->  0 []
+C5 RTS (Report tip status DiTi)  []  ->  0 ['1']
+11:42:0 detected_volume_1 = -1
+11:42:0 detected_volume_2 = -1
+11:42:0 detected_volume_3 = -1
+11:42:0 detected_volume_4 = -1
+11:42:0 drop DITIs, grid 19
+C2 RPX (Report current parameter for X-axis)  ['0']  ->  0 ['7056']
+C2 RPR (Report current parameter for rotator-axis)  ['0']  ->  0 ['1800']
+C5 SHZ (Set individual Z-travel height)  ['2080', '2080', '2080', '2080']  ->  0 []
+C5 RPX (Report current parameter for X-axis)  ['0']  ->  0 ['2528']
+C5 RPY (Report current parameter for Y-axis)  ['0']  ->  0 ['2106', '90']
+C2 RPX (Report current parameter for X-axis)  ['0']  ->  0 ['7056']
+C2 RPR (Report current parameter for rotator-axis)  ['0']  ->  0 ['1800']
+C5 SHZ (Set individual Z-travel height)  ['2080', '2080', '2080', '2080']  ->  0 []
+C5 PAA (Position absolute for all axis)  ['5125', '2603', '90', '700', '2100', '2100', '2100']  ->  0 []
+C5 AST (Spash free discard tip)  ['1', '1']  ->  0 []
+C5 RTS (Report tip status DiTi)  []  ->  0 ['0']
+C5 PVL (UNDOCUMENTED)  ['0', '', '', '']  ->  0 []
+C5 SEP (UNDOCUMENTED)  ['5400', '', '', '']  ->  0 []
+C5 PPA (UNDOCUMENTED)  ['240', '', '', '']  ->  0 []
+11:42:0 Line   13 : Set Variable
+11:42:0 VOLUME = 4
+11:42:0 Line   14 : End Loop
+11:42:0 Line   11 : Begin Loop
+11:42:0 LOOP_VOLS = 3
+11:42:0 Line   12 : Transfer
+11:42:0 tip 1 : fetch DITIs 10, 2 DiTi10, 96 Tips 10ul [19,1]
+C2 RPX (Report current parameter for X-axis)  ['0']  ->  0 ['7056']
+C2 RPR (Report current parameter for rotator-axis)  ['0']  ->  0 ['1800']
+C5 RPX (Report current parameter for X-axis)  ['0']  ->  0 ['5125']
+C5 RPY (Report current parameter for Y-axis)  ['0']  ->  0 ['2603', '90']
+C2 RPX (Report current parameter for X-axis)  ['0']  ->  0 ['7056']
+C2 RPR (Report current parameter for rotator-axis)  ['0']  ->  0 ['1800']
+C5 SHZ (Set individual Z-travel height)  ['2080', '2080', '2080', '2080']  ->  0 []
+C5 PAA (Position absolute for all axis)  ['5445', '128', '90', '2080', '2080', '2080', '2080']  ->  0 []
+C5 AGT (Get a disposable tip)  ['1', '768', '210']  ->  0 []
+C5 RTS (Report tip status DiTi)  []  ->  0 ['1']
+C2 RPX (Report current parameter for X-axis)  ['0']  ->  0 ['7056']
+C2 RPR (Report current parameter for rotator-axis)  ['0']  ->  0 ['1800']
+11:42:1 tip 1 : aspirate 4.00µl 12, 8 HSP96xx on carrier [10,3]
+11:42:1                  4.00µl "Water-InLiquid" DITI <all volumes> Single 
+C5 SHZ (Set individual Z-travel height)  ['2080', '2080', '2080', '2080']  ->  0 []
+C5 RPX (Report current parameter for X-axis)  ['0']  ->  0 ['5445']
+C5 RPY (Report current parameter for Y-axis)  ['0']  ->  0 ['128', '90']
+C2 RPX (Report current parameter for X-axis)  ['0']  ->  0 ['7056']
+C2 RPR (Report current parameter for rotator-axis)  ['0']  ->  0 ['1800']
+C5 PAA (Position absolute for all axis)  ['3333', '2653', '90', '587', '2080', '2080', '2080']  ->  0 []
+C5 RTS (Report tip status DiTi)  []  ->  0 ['1']
+C5 PVL (UNDOCUMENTED)  ['0', '', '', '']  ->  0 []
+C5 SEP (UNDOCUMENTED)  ['480', '', '', '']  ->  0 []
+C5 PPR (UNDOCUMENTED)  ['60', '', '', '']  ->  0 []
+C5 SDM (Set liquid detection mode)  ['3', '1']  ->  0 []
+C5 SSL (Set search speed for liquid search commands)  ['600', '', '', '']  ->  0 []
+C5 SDL (Set individual save detection retract distance for liquid search command)  ['40', '', '', '']  ->  0 []
+C5 STL (Set individual z-start for liquid search command)  ['559', '', '', '']  ->  0 []
+C5 SML (Set individual z-max for liquid search command)  ['407', '2100', '2100', '2100']  ->  0 []
+C5 SBL (Set individual submerge for liquid search command)  ['20', '', '', '']  ->  0 []
+C5 MDT (Move tip, detect liquid, submerge)  ['1', '', '', '', '15', '0', '0', '0']  ->  0 []
+C5 RPZ (Report current parameter for Z-axis)  ['0']  ->  0 ['509', '2080', '2080', '2080']
+C5 SSZ (Set slow speed for z-axis)  ['12', '', '', '']  ->  0 []
+C5 SEP (UNDOCUMENTED)  ['480', '', '', '']  ->  0 []
+C5 STZ (UNDOCUMENTED)  ['-2', '', '', '']  ->  0 []
+C5 MTR (UNDOCUMENTED (?aspirate in units of 1/12 ul))  ['48', '', '', '']  ->  0 []
+C5 RPZ (Report current parameter for Z-axis)  ['0']  ->  0 ['507', '2080', '2080', '2080']
+C5 PVL (UNDOCUMENTED)  ['0', '', '', '']  ->  0 []
+C5 SEP (UNDOCUMENTED)  ['480', '', '', '']  ->  0 []
+C5 PPR (UNDOCUMENTED)  ['96', '', '', '']  ->  0 []
+C5 RTS (Report tip status DiTi)  []  ->  0 ['1']
+11:42:1 detected_volume_1 = 141
+11:42:1 detected_volume_2 = -1
+11:42:1 detected_volume_3 = -1
+11:42:1 detected_volume_4 = -1
+C2 RPX (Report current parameter for X-axis)  ['0']  ->  0 ['7056']
+C2 RPR (Report current parameter for rotator-axis)  ['0']  ->  0 ['1800']
+11:42:1 tip 1 : dispense 17.00µl  3, 3 HSP96xx on carrier [10,3]
+11:42:1                  4.00µl "Water-First" DITI <all volumes> Single 
+C5 SHZ (Set individual Z-travel height)  ['587', '2080', '2080', '2080']  ->  0 []
+C5 RPX (Report current parameter for X-axis)  ['0']  ->  0 ['3333']
+C5 RPY (Report current parameter for Y-axis)  ['0']  ->  0 ['2653', '90']
+C2 RPX (Report current parameter for X-axis)  ['0']  ->  0 ['7056']
+C2 RPR (Report current parameter for rotator-axis)  ['0']  ->  0 ['1800']
+C5 PAA (Position absolute for all axis)  ['2528', '2197', '90', '407', '2080', '2080', '2080']  ->  0 []
+C5 RTS (Report tip status DiTi)  []  ->  0 ['1']
+C5 RPP (UNDOCUMENTED)  ['0']  ->  0 ['444', '240', '240', '240']
+C5 RPZ (Report current parameter for Z-axis)  ['0']  ->  0 ['407', '2080', '2080', '2080']
+C5 SSZ (Set slow speed for z-axis)  ['752', '', '', '']  ->  0 []
+C5 SEP (UNDOCUMENTED)  ['5400', '', '', '']  ->  0 []
+C5 SPP (UNDOCUMENTED)  ['5400', '', '', '']  ->  28 []
+Error message: Unknown error
+C5 STZ (UNDOCUMENTED)  ['57', '', '', '']  ->  0 []
+C5 MTR (UNDOCUMENTED (?aspirate in units of 1/12 ul))  ['-204', '', '', '']  ->  0 []
+C5 MRX (Position relative slow speed for X axis)  ['-10', '100']  ->  0 []
+C5 PRX (Positive relative for X axis)  ['10']  ->  0 []
+C5 RPZ (Report current parameter for Z-axis)  ['0']  ->  0 ['464', '2080', '2080', '2080']
+C5 SSZ (Set slow speed for z-axis)  ['500', '', '', '']  ->  0 []
+C5 MAZ (Position absolute slow speed for Z axis)  ['552', '', '', '']  ->  0 []
+C5 PVL (UNDOCUMENTED)  ['0', '', '', '']  ->  0 []
+C5 SEP (UNDOCUMENTED)  ['480', '', '', '']  ->  0 []
+C5 PPR (UNDOCUMENTED)  ['96', '', '', '']  ->  0 []
+C5 RTS (Report tip status DiTi)  []  ->  0 ['1']
+11:42:1 detected_volume_1 = -1
+11:42:1 detected_volume_2 = -1
+11:42:1 detected_volume_3 = -1
+11:42:1 detected_volume_4 = -1
+11:42:1 drop DITIs, grid 19
+C2 RPX (Report current parameter for X-axis)  ['0']  ->  0 ['7056']
+C2 RPR (Report current parameter for rotator-axis)  ['0']  ->  0 ['1800']
+C5 SHZ (Set individual Z-travel height)  ['2080', '2080', '2080', '2080']  ->  0 []
+C5 RPX (Report current parameter for X-axis)  ['0']  ->  0 ['2528']
+C5 RPY (Report current parameter for Y-axis)  ['0']  ->  0 ['2197', '90']
+C2 RPX (Report current parameter for X-axis)  ['0']  ->  0 ['7056']
+C2 RPR (Report current parameter for rotator-axis)  ['0']  ->  0 ['1800']
+C5 SHZ (Set individual Z-travel height)  ['2080', '2080', '2080', '2080']  ->  0 []
+C5 PAA (Position absolute for all axis)  ['5125', '2603', '90', '700', '2100', '2100', '2100']  ->  0 []
+C5 AST (Spash free discard tip)  ['1', '1']  ->  0 []
+C5 RTS (Report tip status DiTi)  []  ->  0 ['0']
+C5 PVL (UNDOCUMENTED)  ['0', '', '', '']  ->  0 []
+C5 SEP (UNDOCUMENTED)  ['5400', '', '', '']  ->  0 []
+C5 PPA (UNDOCUMENTED)  ['240', '', '', '']  ->  0 []
+11:42:2 Line   13 : Set Variable
+11:42:2 VOLUME = 8
+11:42:2 Line   14 : End Loop
+11:42:2 Line   11 : Begin Loop
+11:42:2 LOOP_VOLS = 4
+11:42:2 Line   12 : Transfer
+11:42:2 tip 1 : fetch DITIs 10, 3 DiTi10, 96 Tips 10ul [19,1]
+C2 RPX (Report current parameter for X-axis)  ['0']  ->  0 ['7056']
+C2 RPR (Report current parameter for rotator-axis)  ['0']  ->  0 ['1800']
+C5 RPX (Report current parameter for X-axis)  ['0']  ->  0 ['5125']
+C5 RPY (Report current parameter for Y-axis)  ['0']  ->  0 ['2603', '90']
+C2 RPX (Report current parameter for X-axis)  ['0']  ->  0 ['7056']
+C2 RPR (Report current parameter for rotator-axis)  ['0']  ->  0 ['1800']
+C5 SHZ (Set individual Z-travel height)  ['2080', '2080', '2080', '2080']  ->  0 []
+C5 PAA (Position absolute for all axis)  ['5445', '219', '90', '2080', '2080', '2080', '2080']  ->  0 []
+C5 AGT (Get a disposable tip)  ['1', '768', '210']  ->  0 []
+C5 RTS (Report tip status DiTi)  []  ->  0 ['1']
+C2 RPX (Report current parameter for X-axis)  ['0']  ->  0 ['7056']
+C2 RPR (Report current parameter for rotator-axis)  ['0']  ->  0 ['1800']
+11:42:2 tip 1 : aspirate 8.00µl 12, 8 HSP96xx on carrier [10,3]
+11:42:2                  8.00µl "Water-InLiquid" DITI <all volumes> Single 
+C5 SHZ (Set individual Z-travel height)  ['2080', '2080', '2080', '2080']  ->  0 []
+C5 RPX (Report current parameter for X-axis)  ['0']  ->  0 ['5445']
+C5 RPY (Report current parameter for Y-axis)  ['0']  ->  0 ['219', '90']
+C2 RPX (Report current parameter for X-axis)  ['0']  ->  0 ['7056']
+C2 RPR (Report current parameter for rotator-axis)  ['0']  ->  0 ['1800']
+C5 PAA (Position absolute for all axis)  ['3333', '2653', '90', '587', '2080', '2080', '2080']  ->  0 []
+C5 RTS (Report tip status DiTi)  []  ->  0 ['1']
+C5 PVL (UNDOCUMENTED)  ['0', '', '', '']  ->  0 []
+C5 SEP (UNDOCUMENTED)  ['480', '', '', '']  ->  0 []
+C5 PPR (UNDOCUMENTED)  ['60', '', '', '']  ->  0 []
+C5 SDM (Set liquid detection mode)  ['3', '1']  ->  0 []
+C5 SSL (Set search speed for liquid search commands)  ['600', '', '', '']  ->  0 []
+C5 SDL (Set individual save detection retract distance for liquid search command)  ['40', '', '', '']  ->  0 []
+C5 STL (Set individual z-start for liquid search command)  ['559', '', '', '']  ->  0 []
+C5 SML (Set individual z-max for liquid search command)  ['407', '2100', '2100', '2100']  ->  0 []
+C5 SBL (Set individual submerge for liquid search command)  ['20', '', '', '']  ->  0 []
+C5 MDT (Move tip, detect liquid, submerge)  ['1', '', '', '', '24', '0', '0', '0']  ->  0 []
+C5 RPZ (Report current parameter for Z-axis)  ['0']  ->  0 ['503', '2080', '2080', '2080']
+C5 SSZ (Set slow speed for z-axis)  ['11', '', '', '']  ->  0 []
+C5 SEP (UNDOCUMENTED)  ['480', '', '', '']  ->  0 []
+C5 STZ (UNDOCUMENTED)  ['-4', '', '', '']  ->  0 []
+C5 MTR (UNDOCUMENTED (?aspirate in units of 1/12 ul))  ['96', '', '', '']  ->  0 []
+C5 RPZ (Report current parameter for Z-axis)  ['0']  ->  0 ['500', '2080', '2080', '2080']
+C5 PVL (UNDOCUMENTED)  ['0', '', '', '']  ->  0 []
+C5 SEP (UNDOCUMENTED)  ['480', '', '', '']  ->  0 []
+C5 PPR (UNDOCUMENTED)  ['96', '', '', '']  ->  0 []
+C5 RTS (Report tip status DiTi)  []  ->  0 ['1']
+11:42:2 detected_volume_1 = 127
+11:42:2 detected_volume_2 = -1
+11:42:2 detected_volume_3 = -1
+11:42:2 detected_volume_4 = -1
+C2 RPX (Report current parameter for X-axis)  ['0']  ->  0 ['7056']
+C2 RPR (Report current parameter for rotator-axis)  ['0']  ->  0 ['1800']
+11:42:2 tip 1 : dispense 21.00µl  3, 4 HSP96xx on carrier [10,3]
+11:42:2                  8.00µl "Water-First" DITI <all volumes> Single 
+C5 SHZ (Set individual Z-travel height)  ['587', '2080', '2080', '2080']  ->  0 []
+C5 RPX (Report current parameter for X-axis)  ['0']  ->  0 ['3333']
+C5 RPY (Report current parameter for Y-axis)  ['0']  ->  0 ['2653', '90']
+C2 RPX (Report current parameter for X-axis)  ['0']  ->  0 ['7056']
+C2 RPR (Report current parameter for rotator-axis)  ['0']  ->  0 ['1800']
+C5 PAA (Position absolute for all axis)  ['2528', '2288', '90', '407', '2080', '2080', '2080']  ->  0 []
+C5 RTS (Report tip status DiTi)  []  ->  0 ['1']
+C5 RPP (UNDOCUMENTED)  ['0']  ->  0 ['492', '240', '240', '240']
+C5 RPZ (Report current parameter for Z-axis)  ['0']  ->  0 ['407', '2080', '2080', '2080']
+C5 SSZ (Set slow speed for z-axis)  ['653', '', '', '']  ->  0 []
+C5 SEP (UNDOCUMENTED)  ['5400', '', '', '']  ->  0 []
+C5 SPP (UNDOCUMENTED)  ['5400', '', '', '']  ->  28 []
+Error message: Unknown error
+C5 STZ (UNDOCUMENTED)  ['61', '', '', '']  ->  0 []
+C5 MTR (UNDOCUMENTED (?aspirate in units of 1/12 ul))  ['-252', '', '', '']  ->  0 []
+C5 MRX (Position relative slow speed for X axis)  ['-10', '100']  ->  0 []
+C5 PRX (Positive relative for X axis)  ['10']  ->  0 []
+C5 RPZ (Report current parameter for Z-axis)  ['0']  ->  0 ['468', '2080', '2080', '2080']
+C5 SSZ (Set slow speed for z-axis)  ['500', '', '', '']  ->  0 []
+C5 MAZ (Position absolute slow speed for Z axis)  ['552', '', '', '']  ->  0 []
+C5 PVL (UNDOCUMENTED)  ['0', '', '', '']  ->  0 []
+C5 SEP (UNDOCUMENTED)  ['480', '', '', '']  ->  0 []
+C5 PPR (UNDOCUMENTED)  ['96', '', '', '']  ->  0 []
+C5 RTS (Report tip status DiTi)  []  ->  0 ['1']
+11:42:3 detected_volume_1 = -1
+11:42:3 detected_volume_2 = -1
+11:42:3 detected_volume_3 = -1
+11:42:3 detected_volume_4 = -1
+11:42:3 drop DITIs, grid 19
+C2 RPX (Report current parameter for X-axis)  ['0']  ->  0 ['7056']
+C2 RPR (Report current parameter for rotator-axis)  ['0']  ->  0 ['1800']
+C5 SHZ (Set individual Z-travel height)  ['2080', '2080', '2080', '2080']  ->  0 []
+C5 RPX (Report current parameter for X-axis)  ['0']  ->  0 ['2528']
+C5 RPY (Report current parameter for Y-axis)  ['0']  ->  0 ['2288', '90']
+C2 RPX (Report current parameter for X-axis)  ['0']  ->  0 ['7056']
+C2 RPR (Report current parameter for rotator-axis)  ['0']  ->  0 ['1800']
+C5 SHZ (Set individual Z-travel height)  ['2080', '2080', '2080', '2080']  ->  0 []
+C5 PAA (Position absolute for all axis)  ['5125', '2603', '90', '700', '2100', '2100', '2100']  ->  0 []
+C5 AST (Spash free discard tip)  ['1', '1']  ->  0 []
+C5 RTS (Report tip status DiTi)  []  ->  0 ['0']
+C5 PVL (UNDOCUMENTED)  ['0', '', '', '']  ->  0 []
+C5 SEP (UNDOCUMENTED)  ['5400', '', '', '']  ->  0 []
+C5 PPA (UNDOCUMENTED)  ['240', '', '', '']  ->  0 []
+11:42:3 Line   13 : Set Variable
+11:42:3 VOLUME = 16
+11:42:3 Line   14 : End Loop
+11:42:3 Line   15 : Get DITIs
+11:42:3 tip 1 : fetch DITIs 10, 4 DiTi10, 96 Tips 10ul [19,1]
+C2 RPX (Report current parameter for X-axis)  ['0']  ->  0 ['7056']
+C2 RPR (Report current parameter for rotator-axis)  ['0']  ->  0 ['1800']
+C5 RPX (Report current parameter for X-axis)  ['0']  ->  0 ['5125']
+C5 RPY (Report current parameter for Y-axis)  ['0']  ->  0 ['2603', '90']
+C2 RPX (Report current parameter for X-axis)  ['0']  ->  0 ['7056']
+C2 RPR (Report current parameter for rotator-axis)  ['0']  ->  0 ['1800']
+C5 SHZ (Set individual Z-travel height)  ['2080', '2080', '2080', '2080']  ->  0 []
+C5 PAA (Position absolute for all axis)  ['5445', '309', '90', '2080', '2080', '2080', '2080']  ->  0 []
+C5 AGT (Get a disposable tip)  ['1', '768', '210']  ->  0 []
+C5 RTS (Report tip status DiTi)  []  ->  0 ['1']
+11:42:3 Line   16 : Aspirate
+C2 RPX (Report current parameter for X-axis)  ['0']  ->  0 ['7056']
+C2 RPR (Report current parameter for rotator-axis)  ['0']  ->  0 ['1800']
+11:42:3 tip 1 : aspirate 12.00µl 12, 8 HSP96xx on carrier [10,3]
+11:42:3                  8.00µl "Water-InLiquid-2ul cond-excess" DITI <all volumes> Multi 
+C5 SHZ (Set individual Z-travel height)  ['2080', '2080', '2080', '2080']  ->  0 []
+C5 RPX (Report current parameter for X-axis)  ['0']  ->  0 ['5445']
+C5 RPY (Report current parameter for Y-axis)  ['0']  ->  0 ['309', '90']
+C2 RPX (Report current parameter for X-axis)  ['0']  ->  0 ['7056']
+C2 RPR (Report current parameter for rotator-axis)  ['0']  ->  0 ['1800']
+C5 PAA (Position absolute for all axis)  ['3333', '2653', '90', '559', '2080', '2080', '2080']  ->  0 []
+C5 RTS (Report tip status DiTi)  []  ->  0 ['1']
+C5 SDM (Set liquid detection mode)  ['3', '1']  ->  0 []
+C5 SSL (Set search speed for liquid search commands)  ['600', '', '', '']  ->  0 []
+C5 SDL (Set individual save detection retract distance for liquid search command)  ['40', '', '', '']  ->  0 []
+C5 STL (Set individual z-start for liquid search command)  ['559', '', '', '']  ->  0 []
+C5 SML (Set individual z-max for liquid search command)  ['407', '2100', '2100', '2100']  ->  0 []
+C5 SBL (Set individual submerge for liquid search command)  ['20', '', '', '']  ->  0 []
+C5 MDT (Move tip, detect liquid, submerge)  ['1', '', '', '', '31', '0', '0', '0']  ->  0 []
+C5 RPZ (Report current parameter for Z-axis)  ['0']  ->  0 ['496', '2080', '2080', '2080']
+C5 SSZ (Set slow speed for z-axis)  ['10', '', '', '']  ->  0 []
+C5 SEP (UNDOCUMENTED)  ['480', '', '', '']  ->  0 []
+C5 STZ (UNDOCUMENTED)  ['-6', '', '', '']  ->  0 []
+C5 MTR (UNDOCUMENTED (?aspirate in units of 1/12 ul))  ['144', '', '', '']  ->  0 []
+C5 RPZ (Report current parameter for Z-axis)  ['0']  ->  0 ['490', '2080', '2080', '2080']
+C5 PVL (UNDOCUMENTED)  ['0', '', '', '']  ->  0 []
+C5 SEP (UNDOCUMENTED)  ['5400', '', '', '']  ->  0 []
+C5 SPP (UNDOCUMENTED)  ['5400', '', '', '']  ->  28 []
+Error message: Unknown error
+C5 PPR (UNDOCUMENTED)  ['-24', '', '', '']  ->  0 []
+C5 RTS (Report tip status DiTi)  []  ->  0 ['1']
+11:42:4 detected_volume_1 = 111
+11:42:4 detected_volume_2 = -1
+11:42:4 detected_volume_3 = -1
+11:42:4 detected_volume_4 = -1
+11:42:4 Line   17 : Begin Loop
+11:42:4 LOOP_MULTI = 1
+11:42:4 Line   18 : Dispense
+C2 RPX (Report current parameter for X-axis)  ['0']  ->  0 ['7056']
+C2 RPR (Report current parameter for rotator-axis)  ['0']  ->  0 ['1800']
+11:42:4 tip 1 : dispense 2.00µl  1, 5 HSP96xx on carrier [10,3]
+11:42:4                  2.00µl "Water-InLiquid" DITI <all volumes> Multi 
+C5 SHZ (Set individual Z-travel height)  ['587', '2080', '2080', '2080']  ->  0 []
+C5 RPX (Report current parameter for X-axis)  ['0']  ->  0 ['3333']
+C5 RPY (Report current parameter for Y-axis)  ['0']  ->  0 ['2653', '90']
+C2 RPX (Report current parameter for X-axis)  ['0']  ->  0 ['7056']
+C2 RPR (Report current parameter for rotator-axis)  ['0']  ->  0 ['1800']
+C5 PAA (Position absolute for all axis)  ['2349', '2380', '90', '559', '2080', '2080', '2080']  ->  0 []
+C5 RTS (Report tip status DiTi)  []  ->  0 ['1']
+C5 RPP (UNDOCUMENTED)  ['0']  ->  0 ['360', '240', '240', '240']
+C5 SDM (Set liquid detection mode)  ['3', '1']  ->  0 []
+C5 SSL (Set search speed for liquid search commands)  ['600', '', '', '']  ->  0 []
+C5 SDL (Set individual save detection retract distance for liquid search command)  ['40', '', '', '']  ->  0 []
+C5 STL (Set individual z-start for liquid search command)  ['559', '', '', '']  ->  0 []
+C5 SML (Set individual z-max for liquid search command)  ['407', '2100', '2100', '2100']  ->  0 []
+C5 SBL (Set individual submerge for liquid search command)  ['20', '', '', '']  ->  0 []
+C5 MET (Move tip, detect liquid, submerge (staty at Z-max on error))  ['1', '', '', '', '0', '0', '0', '0']  ->  9 []
+Error message: Plate not fetched
+C5 REE (Report extended error code)  []  ->  0 ['@@@I@@@EEEE']
+C5 RPZ (Report current parameter for Z-axis)  ['0']  ->  0 ['407', '2080', '2080', '2080']
+C5 SEP (UNDOCUMENTED)  ['5400', '', '', '']  ->  0 []
+C5 SPP (UNDOCUMENTED)  ['5400', '', '', '']  ->  28 []
+Error message: Unknown error
+C5 STZ (UNDOCUMENTED)  ['0', '', '', '']  ->  0 []
+C5 MTR (UNDOCUMENTED (?aspirate in units of 1/12 ul))  ['-24', '', '', '']  ->  0 []
+C5 RPZ (Report current parameter for Z-axis)  ['0']  ->  0 ['407', '2080', '2080', '2080']
+C5 RTS (Report tip status DiTi)  []  ->  0 ['1']
+11:42:4 detected_volume_1 = -1
+11:42:4 detected_volume_2 = -1
+11:42:4 detected_volume_3 = -1
+11:42:4 detected_volume_4 = -1
+11:42:4 Line   19 : End Loop
+11:42:4 Line   17 : Begin Loop
+11:42:4 LOOP_MULTI = 2
+11:42:4 Line   18 : Dispense
+C2 RPX (Report current parameter for X-axis)  ['0']  ->  0 ['7056']
+C2 RPR (Report current parameter for rotator-axis)  ['0']  ->  0 ['1800']
+11:42:4 tip 1 : dispense 2.00µl  1, 6 HSP96xx on carrier [10,3]
+11:42:4                  2.00µl "Water-InLiquid" DITI <all volumes> Multi 
+C5 SHZ (Set individual Z-travel height)  ['587', '2080', '2080', '2080']  ->  0 []
+C5 RPX (Report current parameter for X-axis)  ['0']  ->  0 ['2349']
+C5 RPY (Report current parameter for Y-axis)  ['0']  ->  0 ['2380', '90']
+C2 RPX (Report current parameter for X-axis)  ['0']  ->  0 ['7056']
+C2 RPR (Report current parameter for rotator-axis)  ['0']  ->  0 ['1800']
+C5 PAA (Position absolute for all axis)  ['2349', '2471', '90', '559', '2080', '2080', '2080']  ->  0 []
+C5 RTS (Report tip status DiTi)  []  ->  0 ['1']
+C5 RPP (UNDOCUMENTED)  ['0']  ->  0 ['336', '240', '240', '240']
+C5 SDM (Set liquid detection mode)  ['3', '1']  ->  0 []
+C5 SSL (Set search speed for liquid search commands)  ['600', '', '', '']  ->  0 []
+C5 SDL (Set individual save detection retract distance for liquid search command)  ['40', '', '', '']  ->  0 []
+C5 STL (Set individual z-start for liquid search command)  ['559', '', '', '']  ->  0 []
+C5 SML (Set individual z-max for liquid search command)  ['407', '2100', '2100', '2100']  ->  0 []
+C5 SBL (Set individual submerge for liquid search command)  ['20', '', '', '']  ->  0 []
+C5 MET (Move tip, detect liquid, submerge (staty at Z-max on error))  ['1', '', '', '', '0', '0', '0', '0']  ->  9 []
+Error message: Plate not fetched
+C5 REE (Report extended error code)  []  ->  0 ['@@@I@@@EEEE']
+C5 RPZ (Report current parameter for Z-axis)  ['0']  ->  0 ['407', '2080', '2080', '2080']
+C5 SEP (UNDOCUMENTED)  ['5400', '', '', '']  ->  0 []
+C5 SPP (UNDOCUMENTED)  ['5400', '', '', '']  ->  28 []
+Error message: Unknown error
+C5 STZ (UNDOCUMENTED)  ['0', '', '', '']  ->  0 []
+C5 MTR (UNDOCUMENTED (?aspirate in units of 1/12 ul))  ['-24', '', '', '']  ->  0 []
+C5 RPZ (Report current parameter for Z-axis)  ['0']  ->  0 ['407', '2080', '2080', '2080']
+C5 RTS (Report tip status DiTi)  []  ->  0 ['1']
+11:42:4 detected_volume_1 = -1
+11:42:4 detected_volume_2 = -1
+11:42:4 detected_volume_3 = -1
+11:42:4 detected_volume_4 = -1
+11:42:4 Line   19 : End Loop
+11:42:4 Line   17 : Begin Loop
+11:42:4 LOOP_MULTI = 3
+11:42:4 Line   18 : Dispense
+C2 RPX (Report current parameter for X-axis)  ['0']  ->  0 ['7056']
+C2 RPR (Report current parameter for rotator-axis)  ['0']  ->  0 ['1800']
+11:42:4 tip 1 : dispense 2.00µl  1, 7 HSP96xx on carrier [10,3]
+11:42:4                  2.00µl "Water-InLiquid" DITI <all volumes> Multi 
+C5 SHZ (Set individual Z-travel height)  ['587', '2080', '2080', '2080']  ->  0 []
+C5 RPX (Report current parameter for X-axis)  ['0']  ->  0 ['2349']
+C5 RPY (Report current parameter for Y-axis)  ['0']  ->  0 ['2471', '90']
+C2 RPX (Report current parameter for X-axis)  ['0']  ->  0 ['7056']
+C2 RPR (Report current parameter for rotator-axis)  ['0']  ->  0 ['1800']
+C5 PAA (Position absolute for all axis)  ['2349', '2562', '90', '559', '2080', '2080', '2080']  ->  0 []
+C5 RTS (Report tip status DiTi)  []  ->  0 ['1']
+C5 RPP (UNDOCUMENTED)  ['0']  ->  0 ['312', '240', '240', '240']
+C5 SDM (Set liquid detection mode)  ['3', '1']  ->  0 []
+C5 SSL (Set search speed for liquid search commands)  ['600', '', '', '']  ->  0 []
+C5 SDL (Set individual save detection retract distance for liquid search command)  ['40', '', '', '']  ->  0 []
+C5 STL (Set individual z-start for liquid search command)  ['559', '', '', '']  ->  0 []
+C5 SML (Set individual z-max for liquid search command)  ['407', '2100', '2100', '2100']  ->  0 []
+C5 SBL (Set individual submerge for liquid search command)  ['20', '', '', '']  ->  0 []
+C5 MET (Move tip, detect liquid, submerge (staty at Z-max on error))  ['1', '', '', '', '0', '0', '0', '0']  ->  9 []
+Error message: Plate not fetched
+C5 REE (Report extended error code)  []  ->  0 ['@@@I@@@EEEE']
+C5 RPZ (Report current parameter for Z-axis)  ['0']  ->  0 ['407', '2080', '2080', '2080']
+C5 SEP (UNDOCUMENTED)  ['5400', '', '', '']  ->  0 []
+C5 SPP (UNDOCUMENTED)  ['5400', '', '', '']  ->  28 []
+Error message: Unknown error
+C5 STZ (UNDOCUMENTED)  ['0', '', '', '']  ->  0 []
+C5 MTR (UNDOCUMENTED (?aspirate in units of 1/12 ul))  ['-24', '', '', '']  ->  0 []
+C5 RPZ (Report current parameter for Z-axis)  ['0']  ->  0 ['407', '2080', '2080', '2080']
+C5 RTS (Report tip status DiTi)  []  ->  0 ['1']
+11:42:4 detected_volume_1 = -1
+11:42:4 detected_volume_2 = -1
+11:42:4 detected_volume_3 = -1
+11:42:4 detected_volume_4 = -1
+11:42:4 Line   19 : End Loop
+11:42:4 Line   17 : Begin Loop
+11:42:4 LOOP_MULTI = 4
+11:42:4 Line   18 : Dispense
+C2 RPX (Report current parameter for X-axis)  ['0']  ->  0 ['7056']
+C2 RPR (Report current parameter for rotator-axis)  ['0']  ->  0 ['1800']
+11:42:4 tip 1 : dispense 2.00µl  1, 8 HSP96xx on carrier [10,3]
+11:42:4                  2.00µl "Water-InLiquid" DITI <all volumes> Multi 
+C5 SHZ (Set individual Z-travel height)  ['587', '2080', '2080', '2080']  ->  0 []
+C5 RPX (Report current parameter for X-axis)  ['0']  ->  0 ['2349']
+C5 RPY (Report current parameter for Y-axis)  ['0']  ->  0 ['2562', '90']
+C2 RPX (Report current parameter for X-axis)  ['0']  ->  0 ['7056']
+C2 RPR (Report current parameter for rotator-axis)  ['0']  ->  0 ['1800']
+C5 PAA (Position absolute for all axis)  ['2349', '2653', '90', '559', '2080', '2080', '2080']  ->  0 []
+C5 RTS (Report tip status DiTi)  []  ->  0 ['1']
+C5 RPP (UNDOCUMENTED)  ['0']  ->  0 ['288', '240', '240', '240']
+C5 SDM (Set liquid detection mode)  ['3', '1']  ->  0 []
+C5 SSL (Set search speed for liquid search commands)  ['600', '', '', '']  ->  0 []
+C5 SDL (Set individual save detection retract distance for liquid search command)  ['40', '', '', '']  ->  0 []
+C5 STL (Set individual z-start for liquid search command)  ['559', '', '', '']  ->  0 []
+C5 SML (Set individual z-max for liquid search command)  ['407', '2100', '2100', '2100']  ->  0 []
+C5 SBL (Set individual submerge for liquid search command)  ['20', '', '', '']  ->  0 []
+C5 MET (Move tip, detect liquid, submerge (staty at Z-max on error))  ['1', '', '', '', '0', '0', '0', '0']  ->  9 []
+Error message: Plate not fetched
+C5 REE (Report extended error code)  []  ->  0 ['@@@I@@@EEEE']
+C5 RPZ (Report current parameter for Z-axis)  ['0']  ->  0 ['407', '2080', '2080', '2080']
+C5 SEP (UNDOCUMENTED)  ['5400', '', '', '']  ->  0 []
+C5 SPP (UNDOCUMENTED)  ['5400', '', '', '']  ->  28 []
+Error message: Unknown error
+C5 STZ (UNDOCUMENTED)  ['0', '', '', '']  ->  0 []
+C5 MTR (UNDOCUMENTED (?aspirate in units of 1/12 ul))  ['-24', '', '', '']  ->  0 []
+C5 RPZ (Report current parameter for Z-axis)  ['0']  ->  0 ['407', '2080', '2080', '2080']
+C5 RTS (Report tip status DiTi)  []  ->  0 ['1']
+11:42:4 detected_volume_1 = -1
+11:42:4 detected_volume_2 = -1
+11:42:4 detected_volume_3 = -1
+11:42:4 detected_volume_4 = -1
+11:42:4 Line   19 : End Loop
+11:42:4 Line   20 : Drop DITIs
+11:42:4 Excess Volume
+11:42:4 tip 1 : dispense 2.00µl 12, 8 HSP96xx on carrier [10,3]
+11:42:4                  2.00µl "Water-InLiquid-2ul cond-excess" DITI <all volumes> Multi 
+C5 SHZ (Set individual Z-travel height)  ['587', '2080', '2080', '2080']  ->  0 []
+C5 RPX (Report current parameter for X-axis)  ['0']  ->  0 ['2349']
+C5 RPY (Report current parameter for Y-axis)  ['0']  ->  0 ['2653', '90']
+C2 RPX (Report current parameter for X-axis)  ['0']  ->  0 ['7056']
+C2 RPR (Report current parameter for rotator-axis)  ['0']  ->  0 ['1800']
+C5 PAA (Position absolute for all axis)  ['3333', '2653', '90', '559', '2080', '2080', '2080']  ->  0 []
+C5 RTS (Report tip status DiTi)  []  ->  0 ['1']
+C5 RPP (UNDOCUMENTED)  ['0']  ->  0 ['264', '240', '240', '240']
+C5 SDM (Set liquid detection mode)  ['3', '1']  ->  0 []
+C5 SSL (Set search speed for liquid search commands)  ['600', '', '', '']  ->  0 []
+C5 SDL (Set individual save detection retract distance for liquid search command)  ['40', '', '', '']  ->  0 []
+C5 STL (Set individual z-start for liquid search command)  ['559', '', '', '']  ->  0 []
+C5 SML (Set individual z-max for liquid search command)  ['407', '2100', '2100', '2100']  ->  0 []
+C5 SBL (Set individual submerge for liquid search command)  ['20', '', '', '']  ->  0 []
+C5 MET (Move tip, detect liquid, submerge (staty at Z-max on error))  ['1', '', '', '', '0', '0', '0', '0']  ->  0 []
+C5 RPZ (Report current parameter for Z-axis)  ['0']  ->  0 ['492', '2080', '2080', '2080']
+C5 SEP (UNDOCUMENTED)  ['5400', '', '', '']  ->  0 []
+C5 SPP (UNDOCUMENTED)  ['5400', '', '', '']  ->  28 []
+Error message: Unknown error
+C5 STZ (UNDOCUMENTED)  ['0', '', '', '']  ->  0 []
+C5 MTR (UNDOCUMENTED (?aspirate in units of 1/12 ul))  ['-24', '', '', '']  ->  0 []
+C5 RPZ (Report current parameter for Z-axis)  ['0']  ->  0 ['492', '2080', '2080', '2080']
+C5 RTS (Report tip status DiTi)  []  ->  0 ['1']
+11:42:5 detected_volume_1 = 101
+11:42:5 detected_volume_2 = -1
+11:42:5 detected_volume_3 = -1
+11:42:5 detected_volume_4 = -1
+11:42:5 drop DITIs, grid 19
+C2 RPX (Report current parameter for X-axis)  ['0']  ->  0 ['7056']
+C2 RPR (Report current parameter for rotator-axis)  ['0']  ->  0 ['1800']
+C5 SHZ (Set individual Z-travel height)  ['2080', '2080', '2080', '2080']  ->  0 []
+C5 RPX (Report current parameter for X-axis)  ['0']  ->  0 ['3333']
+C5 RPY (Report current parameter for Y-axis)  ['0']  ->  0 ['2653', '90']
+C2 RPX (Report current parameter for X-axis)  ['0']  ->  0 ['7056']
+C2 RPR (Report current parameter for rotator-axis)  ['0']  ->  0 ['1800']
+C5 SHZ (Set individual Z-travel height)  ['2080', '2080', '2080', '2080']  ->  0 []
+C5 PAA (Position absolute for all axis)  ['5125', '2603', '90', '700', '2100', '2100', '2100']  ->  0 []
+C5 AST (Spash free discard tip)  ['1', '1']  ->  0 []
+C5 RTS (Report tip status DiTi)  []  ->  0 ['0']
+C5 PVL (UNDOCUMENTED)  ['0', '', '', '']  ->  0 []
+C5 SEP (UNDOCUMENTED)  ['5400', '', '', '']  ->  0 []
+C5 PPA (UNDOCUMENTED)  ['240', '', '', '']  ->  0 []
+11:42:5 Line   21 : End Loop
+11:42:5 Line    9 : Begin Loop
+11:42:5 LOOP_Replicates = 2
+11:42:5 Line   10 : Set Variable
+11:42:5 VOLUME = 1
+11:42:5 Line   11 : Begin Loop
+11:42:5 LOOP_VOLS = 1
+11:42:5 Line   12 : Transfer
+11:42:5 tip 1 : fetch DITIs 10, 5 DiTi10, 96 Tips 10ul [19,1]
+C2 RPX (Report current parameter for X-axis)  ['0']  ->  0 ['7056']
+C2 RPR (Report current parameter for rotator-axis)  ['0']  ->  0 ['1800']
+C5 RPX (Report current parameter for X-axis)  ['0']  ->  0 ['5125']
+C5 RPY (Report current parameter for Y-axis)  ['0']  ->  0 ['2603', '90']
+C2 RPX (Report current parameter for X-axis)  ['0']  ->  0 ['7056']
+C2 RPR (Report current parameter for rotator-axis)  ['0']  ->  0 ['1800']
+C5 SHZ (Set individual Z-travel height)  ['2080', '2080', '2080', '2080']  ->  0 []
+C5 PAA (Position absolute for all axis)  ['5445', '399', '90', '2080', '2080', '2080', '2080']  ->  0 []
+C5 AGT (Get a disposable tip)  ['1', '768', '210']  ->  25 []
+Unknown error: <25>
+Error message: Unknown error
+C5 RTS (Report tip status DiTi)  []  ->  0 ['0']
+O1 ALO (Activate door lock output)  ['1', '0']  ->  0 []
+O1 ALO (Activate door lock output)  ['2', '0']  ->  0 []
+11:42:5 tip 1 : DITI not fetched
+O1 RSL (UNDOCUMENTED)  ['1']  ->  0 ['1']
+O1 SSL (Set search speed for liquid search commands)  ['1', '0']  ->  0 []
+O1 SSL (Set search speed for liquid search commands)  ['2', '2']  ->  0 []
+11:43:0 button "Try at next position" has been pressed
+O1 ALO (Activate door lock output)  ['1', '1']  ->  0 []
+O1 ALO (Activate door lock output)  ['2', '1']  ->  0 []
+11:43:0 tip 1 : fetch DITIs 10, 6 DiTi10, 96 Tips 10ul [19,1]
+C2 RPX (Report current parameter for X-axis)  ['0']  ->  0 ['7056']
+Double cmd: C2,RPR0 AND  O1,RSL2
+O1 RSL (UNDOCUMENTED)  ['2']  ->  0 ['2']
+O1 SSL (Set search speed for liquid search commands)  ['2', '0']  ->  0 ['1800']
+C5 RPX (Report current parameter for X-axis)  ['0']  ->  0 ['5445']
+C5 RPY (Report current parameter for Y-axis)  ['0']  ->  0 []
+O1 SSL (Set search speed for liquid search commands)  ['1', '1']  ->  0 ['399', '90']
+C2 RPX (Report current parameter for X-axis)  ['0']  ->  0 []
+Missing cmd when received reply:  C2,0,7056

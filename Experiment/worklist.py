@@ -131,18 +131,11 @@ class WorkList(object):
 
     # Get DITI
     def getDITI(self, tipMask, volume, retry=True,multi=False):
-        ASPEXTRASINGLE=13
-        ASPEXTRAMULTI=20
-        MAXVOL10=23
-        MAXVOL200=220
+        MAXVOL10=10
+        MAXVOL200=200
         
-        if multi:
-            aspvolume=volume+ASPEXTRAMULTI
-        else:
-            aspvolume=volume+ASPEXTRASINGLE
-
         assert(tipMask>=1 and tipMask<=15)
-        assert(volume>0 and aspvolume<=MAXVOL200)
+        assert(volume>0 and volume<=MAXVOL200)
         if retry:
             options=1
         else:
@@ -150,7 +143,7 @@ class WorkList(object):
         if multi:
             type=__DITI200
             print "Forced to 200ul tip"
-        elif aspvolume<=MAXVOL10:
+        elif volume<=MAXVOL10:
             type=__DITI10
         else:
             type=__DITI200

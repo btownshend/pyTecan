@@ -5,49 +5,48 @@ qPCR(10,2)
 Water(17,2)
 Waste(19,3)
 
-DiTi usage: 10ul: 20, 200ul: 15
+DiTi usage: 10ul: 19, 200ul: 15
 
 Reagents:
-Water in Water(17,2).0 consume 575.0 ul, provide 632.5 ul
 MT7@2.00x in Reagents(3,1).0 consume 10.0 ul, provide 15.0 ul
 Theo@3.33x in Reagents(3,1).1 consume 3.0 ul, provide 8.0 ul
-L2b12@10.00x in Reagents(3,1).2 consume 2.0 ul, provide 7.0 ul
+L2b12@5.00x in Reagents(3,1).2 consume 4.0 ul, provide 9.0 ul
 MStp@2.00x in Reagents(3,1).4 consume 20.0 ul, provide 25.0 ul
-MRT@2.00x in Reagents(3,1).5 consume 5.0 ul, provide 10.0 ul
+MRT@2.00x in Reagents(3,1).5 consume 9.0 ul, provide 14.0 ul
 MRTNeg@2.00x in Reagents(3,1).6 consume 2.5 ul, provide 7.5 ul
-MLigB@1.25x in Reagents(3,1).7 consume 24.0 ul, provide 29.0 ul
+MLigB@1.25x in Reagents(3,1).7 consume 28.0 ul, provide 33.0 ul
 MLigase@2.00x in Reagents(3,1).8 consume 30.0 ul, provide 35.0 ul
-MQA@1.67x in Reagents(3,1).9 consume 18.0 ul, provide 23.0 ul
-MQB@1.67x in Reagents(3,1).10 consume 18.0 ul, provide 23.0 ul
+MQA@1.67x in Reagents(3,1).9 consume 22.0 ul, provide 27.0 ul
+MQB@1.67x in Reagents(3,1).10 consume 22.0 ul, provide 27.0 ul
 
 All Samples::
-Water(Water(17,2).0,-575.00 ul,LC=Water) 
-MT7(Reagents(3,1).0,2.00x,-10.00 ul,LC=Water) 
-Theo(Reagents(3,1).1,3.33x,-3.00 ul,LC=Water) 
-L2b12(Reagents(3,1).2,10.00x,-2.00 ul,LC=Water) 
-L2b12Cntl(Reagents(3,1).3,10.00x,0.00 ul,LC=Water) 
-MStp(Reagents(3,1).4,2.00x,-20.00 ul,LC=Water) 
-MRT(Reagents(3,1).5,2.00x,-5.00 ul,LC=Water) 
-MRTNeg(Reagents(3,1).6,2.00x,-2.50 ul,LC=Water) 
-MLigB(Reagents(3,1).7,1.25x,-24.00 ul,LC=Water) 
-MLigase(Reagents(3,1).8,2.00x,-30.00 ul,LC=Water) 
-MQA(Reagents(3,1).9,1.67x,-18.00 ul,LC=Water) 
-MQB(Reagents(3,1).10,1.67x,-18.00 ul,LC=Water) 
-R1.T7PLUS.0(Samples(10,3).0,2.00x,15.00 ul,LC=Water) Water[4.0]+MT7[5.0]+L2b12[1.0]+MStp[10.0]
-R1.T7MINUS.0(Samples(10,3).1,2.00x,17.50 ul,LC=Water) Water[1.0]+MT7[5.0]+Theo[3.0]+L2b12[1.0]+MStp[10.0]
-R1.RT.0(Samples(10,3).2,5.00x,3.00 ul,LC=Water) MRT[2.5]+R1.T7PLUS.0[2.5]
-R1.RT.1(Samples(10,3).3,5.00x,3.00 ul,LC=Water) MRT[2.5]+R1.T7MINUS.0[2.5]
-R1.RTNeg.0(Samples(10,3).4,5.00x,3.00 ul,LC=Water) MRTNeg[2.5]+R1.T7PLUS.0[2.5]
-R1.EXT.0(Samples(10,3).5,20.00x,10.00 ul,LC=Water) MLigB[8.0]+R1.RT.0[2.0]+MLigase[10.0]
-R1.EXT.1(Samples(10,3).6,20.00x,10.00 ul,LC=Water) MLigB[8.0]+R1.RT.1[2.0]+MLigase[10.0]
-R1.EXT.2(Samples(10,3).7,20.00x,10.00 ul,LC=Water) MLigB[8.0]+R1.RTNeg.0[2.0]+MLigase[10.0]
-R1.EXTDIL.0(Samples(10,3).8,2.50x,192.00 ul,LC=Water) Water[190.0]+R1.EXT.0[10.0]
-R1.EXTDIL.1(Samples(10,3).9,2.50x,192.00 ul,LC=Water) Water[190.0]+R1.EXT.1[10.0]
-R1.EXTDIL.2(Samples(10,3).10,2.50x,192.00 ul,LC=Water) Water[190.0]+R1.EXT.2[10.0]
-R1.QPCR.A.0(qPCR(10,2).0,1.00x,10.00 ul,LC=Water) MQA[6.0]+R1.EXTDIL.0[4.0]
-R1.QPCR.A.1(qPCR(10,2).1,1.00x,10.00 ul,LC=Water) MQA[6.0]+R1.EXTDIL.1[4.0]
-R1.QPCR.A.2(qPCR(10,2).2,1.00x,10.00 ul,LC=Water) MQA[6.0]+R1.EXTDIL.2[4.0]
-R1.QPCR.B.0(qPCR(10,2).3,1.00x,10.00 ul,LC=Water) MQB[6.0]+R1.EXTDIL.0[4.0]
-R1.QPCR.B.1(qPCR(10,2).4,1.00x,10.00 ul,LC=Water) MQB[6.0]+R1.EXTDIL.1[4.0]
-R1.QPCR.B.2(qPCR(10,2).5,1.00x,10.00 ul,LC=Water) MQB[6.0]+R1.EXTDIL.2[4.0]
+Water(Water(17,2).0,9427.00 ul,LC=[Water-First(5,2,2),Water-InLiquid(5,2,2)]) 
+MT7(Reagents(3,1).0,2.00x,-10.00 ul,LC=[Water-First(5,2,2),Water-InLiquid(5,2,2)]) 
+Theo(Reagents(3,1).1,3.33x,-3.00 ul,LC=[Water-First(5,2,2),Water-InLiquid(5,2,2)]) 
+L2b12(Reagents(3,1).2,5.00x,-4.00 ul,LC=[Water-First(5,2,2),Water-InLiquid(5,2,2)]) 
+L2b12Cntl(Reagents(3,1).3,5.00x,0.00 ul,LC=[Water-First(5,2,2),Water-InLiquid(5,2,2)]) 
+MStp(Reagents(3,1).4,2.00x,-20.00 ul,LC=[Water-First(5,2,2),Water-InLiquid(5,2,2)]) 
+MRT(Reagents(3,1).5,2.00x,-9.00 ul,LC=[Water-First(5,2,2),Water-InLiquid(5,2,2)]) 
+MRTNeg(Reagents(3,1).6,2.00x,-2.50 ul,LC=[Water-First(5,2,2),Water-InLiquid(5,2,2)]) 
+MLigB(Reagents(3,1).7,1.25x,-28.00 ul,LC=[Water-First(5,2,2),Water-InLiquid(5,2,2)]) 
+MLigase(Reagents(3,1).8,2.00x,-30.00 ul,LC=[Water-First(5,2,2),Water-InLiquid(5,2,2)]) 
+MQA(Reagents(3,1).9,1.67x,-22.00 ul,LC=[Water-First(5,2,2),Water-InLiquid(5,2,2)]) 
+MQB(Reagents(3,1).10,1.67x,-22.00 ul,LC=[Water-First(5,2,2),Water-InLiquid(5,2,2)]) 
+R1.T7PLUS.0(Samples(10,3).0,2.00x,15.00 ul,LC=[Water-First(5,2,2),Water-InLiquid(5,2,2)]) Water[3.0]+MT7[5.0]+L2b12[2.0]+MStp[10.0]
+R1.T7MINUS.0(Samples(10,3).1,2.00x,17.50 ul,LC=[Water-First(5,2,2),Water-InLiquid(5,2,2)]) MT7[5.0]+Theo[3.0]+L2b12[2.0]+MStp[10.0]
+R1.RT.0(Samples(10,3).2,5.00x,3.00 ul,LC=[Water-First(5,2,2),Water-InLiquid(5,2,2)]) MRT[2.5]+R1.T7PLUS.0[2.5]
+R1.RT.1(Samples(10,3).3,5.00x,3.00 ul,LC=[Water-First(5,2,2),Water-InLiquid(5,2,2)]) MRT[2.5]+R1.T7MINUS.0[2.5]
+R1.RTNeg.0(Samples(10,3).4,5.00x,3.00 ul,LC=[Water-First(5,2,2),Water-InLiquid(5,2,2)]) MRTNeg[2.5]+R1.T7PLUS.0[2.5]
+R1.EXT.0(Samples(10,3).5,20.00x,10.00 ul,LC=[Water-First(5,2,2),Water-InLiquid(5,2,2)]) MLigB[8.0]+R1.RT.0[2.0]+MLigase[10.0]
+R1.EXT.1(Samples(10,3).6,20.00x,10.00 ul,LC=[Water-First(5,2,2),Water-InLiquid(5,2,2)]) MLigB[8.0]+R1.RT.1[2.0]+MLigase[10.0]
+R1.EXT.2(Samples(10,3).7,20.00x,10.00 ul,LC=[Water-First(5,2,2),Water-InLiquid(5,2,2)]) MLigB[8.0]+R1.RTNeg.0[2.0]+MLigase[10.0]
+R1.EXTDIL.0(Samples(10,3).8,2.50x,192.00 ul,LC=[Water-First(5,2,2),Water-InLiquid(5,2,2)]) Water[190.0]+R1.EXT.0[10.0]
+R1.EXTDIL.1(Samples(10,3).9,2.50x,192.00 ul,LC=[Water-First(5,2,2),Water-InLiquid(5,2,2)]) Water[190.0]+R1.EXT.1[10.0]
+R1.EXTDIL.2(Samples(10,3).10,2.50x,192.00 ul,LC=[Water-First(5,2,2),Water-InLiquid(5,2,2)]) Water[190.0]+R1.EXT.2[10.0]
+R1.QPCR.A.0(qPCR(10,2).0,1.00x,10.00 ul,LC=[Water-First(5,2,2),Water-InLiquid(5,2,2)]) MQA[6.0]+R1.EXTDIL.0[4.0]
+R1.QPCR.A.1(qPCR(10,2).1,1.00x,10.00 ul,LC=[Water-First(5,2,2),Water-InLiquid(5,2,2)]) MQA[6.0]+R1.EXTDIL.1[4.0]
+R1.QPCR.A.2(qPCR(10,2).2,1.00x,10.00 ul,LC=[Water-First(5,2,2),Water-InLiquid(5,2,2)]) MQA[6.0]+R1.EXTDIL.2[4.0]
+R1.QPCR.B.0(qPCR(10,2).3,1.00x,10.00 ul,LC=[Water-First(5,2,2),Water-InLiquid(5,2,2)]) MQB[6.0]+R1.EXTDIL.0[4.0]
+R1.QPCR.B.1(qPCR(10,2).4,1.00x,10.00 ul,LC=[Water-First(5,2,2),Water-InLiquid(5,2,2)]) MQB[6.0]+R1.EXTDIL.1[4.0]
+R1.QPCR.B.2(qPCR(10,2).5,1.00x,10.00 ul,LC=[Water-First(5,2,2),Water-InLiquid(5,2,2)]) MQB[6.0]+R1.EXTDIL.2[4.0]
 

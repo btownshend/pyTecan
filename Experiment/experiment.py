@@ -1,8 +1,6 @@
 from worklist import *
 from sample import Sample
 
-#from .. import debughook
-
 class Experiment(object):
     REAGENTPLATE=Plate("Reagents",3,1,12,8)
     SAMPLEPLATE=Plate("Samples",10,3,12,8)
@@ -12,7 +10,7 @@ class Experiment(object):
     HOTELPOS=Plate("Hotel",25,0,1,1)
     WASTE=Plate("Waste",19,3,1,1)
 
-    WATER=Sample("Water",WATERLOC,0,None)
+    WATER=Sample("Water",WATERLOC,0,None,10000)
 
     RPTEXTRA=0   # Extra amount when repeat pipetting
     MAXVOLUME=200  # Maximum volume for pipetting in ul
@@ -71,7 +69,7 @@ class Experiment(object):
                 cmt=cmt+" with mix"
             print "*",cmt
             self.w.comment(cmt)
-            v=sum(volumes)*(1+self.RPTEXTRA)
+            v=sum(volumes)+src.inliquidLC.multicond+src.inliquidLC.multiexcess
             self.w.getDITI(1,v,True,True)
             src.aspirate(self.w,v)
             for i in range(len(dests)):
@@ -91,7 +89,7 @@ class Experiment(object):
             return
         
         cmt="Add %.1f ul of %s to %s"%(volume, src.name, dest.name)
-        ditivolume=volume
+        ditivolume=volume+src.inliquidLC.singletag
         if mix:
             cmt=cmt+" with mix"
             ditivolume=max(volume,volume+dest.volume)
