@@ -47,14 +47,14 @@ class Experiment(object):
         Sample.printprep(fd)
         Sample.printallsamples("All Samples:",fd)
         
-    def multitransfer(self, volumes, src, dests,mix=False,getDITI=True,dropDITI=True):
-        'Multi pipette from src to multiple dest'
+    def multitransfer(self, volumes, src, dests,mix=(False,False),getDITI=True,dropDITI=True):
+        'Multi pipette from src to multiple dest.  mix is (src,dest) mixing'
         #print "multitransfer(",volumes,",",src,",",dests,",",mix,",",getDITI,",",dropDITI,")"
         if isinstance(volumes,(int,long,float)):
             # Same volume for each dest
             volumes=[volumes for i in range(len(dests))]
         assert(len(volumes)==len(dests))
-        if mix==False and len(volumes)>1:
+        if mix[1]==False and len(volumes)>1:
             if sum(volumes)>self.MAXVOLUME:
                 print "sum(volumes)=%.1f, MAXVOL=%.1f"%(sum(volumes),self.MAXVOLUME)
                 for i in range(1,len(volumes)):
@@ -67,7 +67,7 @@ class Experiment(object):
                         else:
                             print "without tip reuse"
                         self.multitransfer(volumes[0:i],src,dests[0:i],mix,getDITI,not reuseTip)
-                        self.multitransfer(volumes[i:],src,dests[i:],mix,not reuseTip,dropDITI)
+                        self.multitransfer(volumes[i:],src,dests[i:],(mix[0] and not reuseTip,mix[1]),not reuseTip,dropDITI)
                         return
                     
             cmt="Multi-add  %s to samples %s"%(src.name,",".join("%s[%.1f]"%(dests[i].name,volumes[i]) for i in range(len(dests))))
@@ -88,7 +88,7 @@ class Experiment(object):
             for i in range(len(dests)):
                 self.transfer(volumes[i],src,dests[i],mix,getDITI,dropDITI)
 
-    def transfer(self, volume, src, dest, mix=False, getDITI=True, dropDITI=True):
+    def transfer(self, volume, src, dest, mix=(False,False), getDITI=True, dropDITI=True):
         if volume>self.MAXVOLUME:
             destvol=max([d.volume for d in dests[0:i]])
             reuseTip=destvol<=0
@@ -98,23 +98,27 @@ class Experiment(object):
             else:
                 print "without tip reuse"
             self.transfer(self.MAXVOLUME,src,dest,mix,getDITI,False)
-            self.transfer(volume-self.MAXVOLUME,src,dest,mix,False,dropDITI)
+            self.transfer(volume-self.MAXVOLUME,src,dest,(mix[0] and not reuseTip,mix[1]),False,dropDITI)
             return
         
         cmt="Add %.1f ul of %s to %s"%(volume, src.name, dest.name)
         ditivolume=volume+src.inliquidLC.singletag
-        if mix:
-            cmt=cmt+" with mix"
+        if mix[0]:
+            cmt=cmt+" with src mix"
+        if mix[1]:
+            cmt=cmt+" with dest mix"
             ditivolume=max(volume,volume+dest.volume)
             #            print "Mix volume=%.1f ul"%(ditivolume)
         print "*",cmt
         self.w.comment(cmt)
         if getDITI:
             self.w.getDITI(1,ditivolume)
+        if mix[0]:
+            src.mix(self.w)
         src.aspirate(self.w,volume)
         dest.dispense(self.w,volume,src.conc)
         dest.addhistory(src.name,volume)
-        if mix:
+        if mix[1]:
             dest.mix(self.w)
         if dropDITI:
             self.w.dropDITI(1,self.WASTE)
@@ -137,15 +141,15 @@ class Experiment(object):
 
         assert(min(watervols)>=0)
         if sum(watervols)>0:
-            self.multitransfer(watervols,self.WATER,samples,False)
+            self.multitransfer(watervols,self.WATER,samples,(False,False))
 
         for i in range(len(reagents)):
-            self.multitransfer(reagentvols[i],reagents[i],samples,len(sources)==0)
+            self.multitransfer(reagentvols[i],reagents[i],samples,(True,len(sources)==0))
 
         if len(sources)>0:
             assert(len(sources)==len(samples))
             for i in range(len(sources)):
-                self.transfer(sourcevols[i],sources[i],samples[i],True)
+                self.transfer(sourcevols[i],sources[i],samples[i],(True,True))
 
 
     def runpgm(self,pgm):
