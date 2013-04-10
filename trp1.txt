@@ -5,7 +5,7 @@ qPCR(10,2)
 Water(17,2)
 Waste(19,3)
 
-DiTi usage: 10ul: 23, 200ul: 17
+DiTi usage: 10ul: 11, 200ul: 29
 
 Reagents:
 MT7@2.00x in Reagents(3,1).0 consume 10.0 ul, provide 15.0 ul

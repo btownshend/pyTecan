@@ -19,6 +19,7 @@ class Experiment(object):
         'Create a new experiment with given sample locations for water and self.WASTE'
         self.w=WorkList()
         self.w.wash(15)
+        self.w.periodicWash(15,4)
         
     def setreagenttemp(self,temp=None):
         if temp==None:
@@ -105,9 +106,10 @@ class Experiment(object):
         ditivolume=volume+src.inliquidLC.singletag
         if mix[0]:
             cmt=cmt+" with src mix"
+            ditivolume=max(ditivolume,src.volume)
         if mix[1]:
             cmt=cmt+" with dest mix"
-            ditivolume=max(volume,volume+dest.volume)
+            ditivolume=max(ditivolume,volume+dest.volume)
             #            print "Mix volume=%.1f ul"%(ditivolume)
         print "*",cmt
         self.w.comment(cmt)

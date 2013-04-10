@@ -8,6 +8,7 @@ class LC(object):
         self.singletag=singletag
 
     def __str__(self):
-        return "%s(%d,%d,%d)"%(self.name,self.singletag,self.multicond,self.multiexcess)
+        #        return "%s(%d,%d,%d)"%(self.name,self.singletag,self.multicond,self.multiexcess)
+        return self.name
 
 LCDefault = LC("Water",5,2,2)

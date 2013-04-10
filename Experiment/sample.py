@@ -27,7 +27,8 @@ class Sample(object):
         self.volume=volume
         self.bottomLC=liquidclass.LC("%s-Bottom"%liquidClass.name,liquidClass.singletag,liquidClass.multicond,liquidClass.multiexcess)
         self.inliquidLC=liquidclass.LC("%s-InLiquid"%liquidClass.name,liquidClass.singletag,liquidClass.multicond,liquidClass.multiexcess)
-        self.emptyLC=liquidclass.LC("%s-Empty"%liquidClass.name,liquidClass.singletag,liquidClass.multicond,liquidClass.multiexcess)
+        # Same as empty for now 
+        self.emptyLC=liquidclass.LC("%s-Bottom"%liquidClass.name,liquidClass.singletag,liquidClass.multicond,liquidClass.multiexcess)
         self.history=""
         __allsamples.append(self)
         
