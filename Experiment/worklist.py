@@ -175,7 +175,7 @@ class WorkList(object):
         airgap=10  # ul
         airgapSpeed=70 # ul/sec
         retractSpeed=30 # mm/sec
-        fastWash=0
+        fastWash=1
         lowVolume=0
         atFreq=1000  # Hz, For Active tip
         self.list.append('Wash(%d,%d,%d,%d,%d,%.1f,%d,%.1f,%d,%.1f,%d,%d,%d,%d,%d)'%(tipMask,wasteLoc[0],wasteLoc[1],cleanerLoc[0],cleanerLoc[1],wasteVol,wasteDelay,cleanerVol,cleanerDelay,airgap, airgapSpeed, retractSpeed, fastWash, lowVolume, atFreq))
