@@ -1,0 +1,15 @@
+Deck layout:
+Reagents(3,1)
+Samples(10,3)
+qPCR(10,2)
+Water(17,2)
+Waste(19,3)
+
+DiTi usage: 10ul: 0, 200ul: 40
+
+Reagents:
+
+All Samples::
+Water(Water(17,2).0,10000.00 ul,LC=Water-Bottom) 
+DYE(Reagents(3,1).96,100.00x,0.00 ul,LC=Water-Bottom) 
+
