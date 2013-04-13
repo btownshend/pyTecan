@@ -6,11 +6,11 @@ syscmds={
       'RFV':['Report firmare revision',[],['version']],
       'RLO':['Read door lock output',['locknum'],['setting']],
       'RLS':['UNDOCUMENTED Report',[],[]],
-      'RSL':['UNDOCUMENTED Report',[],[]],
+      'RSL':['UNDOCUMENTED Report ?light/alarm',['selector'],['value']],
       'SLO':['UNDOCUMENTED Set',[],[]],
       'SPN':['UNDOCUMENTED Set',[],[]],
       'SPS':['UNDOCUMENTED Set',[],[]],
-      'SSL':['UNDOCUMENTED Set',[],[]],
+      'SSL':['UNDOCUMENTED Set ?light/alarm',['selector','value'],[]],
 }
 romacmds={
       'AAA':['Action move to coordinate position',[]],
