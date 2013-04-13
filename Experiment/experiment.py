@@ -4,12 +4,13 @@ from sample import Sample
 class Experiment(object):
     REAGENTPLATE=Plate("Reagents",3,1,12,8)
     SAMPLEPLATE=Plate("Samples",10,3,12,8)
+    READERPLATE=Plate("Reader",10,2,12,8)
     QPCRPLATE=Plate("qPCR",10,2,12,8)
     WATERLOC=Plate("Water",17,2,1,4)
     PTCPOS=Plate("PTC",25,1,1,1)
     HOTELPOS=Plate("Hotel",25,0,1,1)
     WASTE=Plate("Waste",19,3,1,1)
-
+    EPPENDORFS=Plate("Eppendorfs",25,1,1,16)
     WATER=Sample("Water",WATERLOC,0,None,10000)
 
     RPTEXTRA=0   # Extra amount when repeat pipetting
@@ -19,7 +20,7 @@ class Experiment(object):
         'Create a new experiment with given sample locations for water and self.WASTE'
         self.w=WorkList()
         self.w.wash(15)
-        self.w.periodicWash(15,4)
+        #        self.w.periodicWash(15,4)
         
     def setreagenttemp(self,temp=None):
         if temp==None:
