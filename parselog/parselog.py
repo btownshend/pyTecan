@@ -1,50 +1,106 @@
 'Parse a GEMINI log file'
 debug=False
 
-cmds={
-      'AGT':'Get a disposable tip',
-      'ALO':'Activate door lock output',
-      'AST':'Spash free discard tip',
-      'MAX':'Position absolute slow speed for X axis',
-      'MAY':'Position absolute slow speed for Y axis',
-      'MAZ':'Position absolute slow speed for Z axis',
-      'MDT':'Move tip, detect liquid, submerge',
-      'MET':'Move tip, detect liquid, submerge (staty at Z-max on error)',
-      'MRX':'Position relative slow speed for X axis',
-      'MRY':'Position relative slow speed for Y axis',
-      'MRY':'Position relative slow speed for Z axis',
-      'MTR':'UNDOCUMENTED (?aspirate in units of 1/12 ul)',
-      'PAA':'Position absolute for all axis',
-      'PPA':'UNDOCUMENTED',
-      'PPR':'UNDOCUMENTED',
-      'PRX':'Positive relative for X axis',
-      'PRY':'Positive relative for Y axis',
-      'PRZ':'Positive relative for Z axis',
-      'PVL':'UNDOCUMENTED',
-      'RDZ':'Report diagnotic functions Z-Axis',
-      'REE':'Report extended error code',
-      'RPP':'UNDOCUMENTED',
-      'RPX':'Report current parameter for X-axis',
-      'RPY':'Report current parameter for Y-axis',
-      'RPZ':'Report current parameter for Z-axis',
-      'RPR':'Report current parameter for rotator-axis',
-      'RTS':'Report tip status DiTi',
-      'RSL':'UNDOCUMENTED',
-      'SBL':'Set individual submerge for liquid search command',
-      'SDL':'Set individual save detection retract distance for liquid search command',
-      'SDM':'Set liquid detection mode',
-      'SEP':'UNDOCUMENTED',
-      'SHZ':'Set individual Z-travel height',
-      'SML':'Set individual z-max for liquid search command',
-      'STL':'Set individual z-start for liquid search command',
-      'SPN':'UNDOCUMENTED',
-      'SPP':'UNDOCUMENTED',
-      'SPS':'Set pierce speed for piercing commands',
-      'SSL':'Set search speed for liquid search commands',
-      'SSZ':'Set slow speed for z-axis',
-      'STZ':'UNDOCUMENTED',
+syscmds={
+      'ALO':['Activate door lock output',['locknum','setting'],[]],
+      'RFV':['Report firmare revision',[],['version']],
+      'RLO':['Read door lock output',['locknum'],['setting']],
+      'RLS':['UNDOCUMENTED Report',[],[]],
+      'RSL':['UNDOCUMENTED Report',[],[]],
+      'SLO':['UNDOCUMENTED Set',[],[]],
+      'SPN':['UNDOCUMENTED Set',[],[]],
+      'SPS':['UNDOCUMENTED Set',[],[]],
+      'SSL':['UNDOCUMENTED Set',[],[]],
+}
+romacmds={
+      'AAA':['Action move to coordinate position',[]],
+      'PAG':['Position absolute for gripper axis',['G'],[]],
+      'PAX':['Position absolute for X-axis',['X'],[]],
+      'PIA':['Position initialization',[],[]],
+      'REE':['Report extended error code',[],['extError']],
+      'RFV':['Report firmare revision',[],['version']],
+      'RHW':['Report ROMA hardware version',[],['version']],
+      'ROD':['Report gripper outrigger distance',[],['speed','PWMlimit','currLimit']],
+      'RPG':['Report current parameter for gripper-axis',['selector'],['p1','p2','p3','p4','p5','p6','p7','p8']],
+      'RPX':['Report current parameter for X-axis',['selector'],['p1','p2','p3','p4','p5','p6','p7','p8']],
+      'RPY':['Report current parameter for Y-axis',['selector'],['p1','p2','p3','p4','p5','p6','p7','p8']],
+      'RPZ':['Report current parameter for Z-axis',['selector'],['p1','p2','p3','p4','p5','p6','p7','p8']],
+      'RPR':['Report current parameter for rotator-axis',['selector'],['p1','p2','p3','p4','p5','p6','p7','p8']],
+      'SAA':['Set coordinate position into table',['tableindex','X','Y','Z','R','G','speed'],[]],
+      'SRA':['Set range for absolute field',['X','Y','Z','R','G'],[]],
+}      
+m1cmds={
+      'RFV':['Report firmare revision',[],['version']],
+      'RSD':['UNDOCUMENTED Report',[],[]],
       }
-errors={1:'Initialization Error',
+lihacmds={
+      'AGT':['Get a disposable tip',['TipSelect','Zstart','searchDist'],[]],
+      'AST':['Spash free discard tip',['tipSelect','logPos'],[]],
+      'BMX':['Stop X drive movement immediately',[]],
+      'BMY':['Stop Y drive movement immediately',[]],
+      'BMZ':['Stop Z drive movement immediately',[]],
+      'MAX':['Position absolute slow speed for X axis',['speed1','speed2','speed3','speed4','speed5','speed6','speed7','speed8'],[]],
+      'MAY':['Position absolute slow speed for Y axis',['speed1','speed2','speed3','speed4','speed5','speed6','speed7','speed8'],[]],
+      'MAZ':['Position absolute slow speed for Z axis',['speed1','speed2','speed3','speed4','speed5','speed6','speed7','speed8'],[]],
+      'MDT':['Move tip, detect liquid, submerge',['tipSelect','submerge','Zstart','Zmax','Zadd1','Zadd2','Zadd3','Zadd4','Zadd5','Zadd6','Zadd7','Zadd8'],[]],
+      'MET':['Move tip, detect liquid, submerge (staty at Z-max on error)',['tipSelect','submerge','Zstart','Zmax','Zadd1','Zadd2','Zadd3','Zadd4','Zadd5','Zadd6','Zadd7','Zadd8'],[]],
+      'MRX':['Position relative slow speed for X axis',['X','slowSpeed'],[]],
+      'MRY':['Position relative slow speed for Y axis',['Y','slowSpeed'],[]],
+      'MRZ':['Position relative slow speed for Z axis',['Z','slowSpeed'],[]],
+      'MTR':['UNDOCUMENTED (?aspirate in units of 1/12 ul)',['vol1','vol2','vol3','vol4','vol5','vol6','vol7','vol8'],[]],
+      'PAA':['Position absolute for all axis',['X','Y','Ys','Z1','Z2','Z3','Z4','Z5','Z6','Z7','Z8'],[]],
+      'PAZ':['Position aboslute for Z-axis',['Z1','Z2','Z3','Z4','Z5','Z6','Z7','Z8'],[]],
+      'PIA':['Position initialization',[],[]],
+      'PID':['UNDOCUMENTED ?Position',[],[]],
+      'PIX':['Position initialization X axis',[],[]],
+      'PPA':['UNDOCUMENTED ?Position',[],[]],
+      'PPR':['UNDOCUMENTED ?Position',[],[]],
+      'PRX':['Position relative for X axis',['X'],[]],
+      'PRY':['Position relative for Y axis',['Y'],[]],
+      'PRZ':['Position relative for Z axis',['Z'],[]],
+      'PRR':['Position relative for rotator axis',['R'],[]],
+      'PRG':['Position relative for gripper axis',['gripper'],[]],
+      'PSY':['Y spacing of tips',['spacing'],[]],
+      'PVL':['UNDOCUMENTED',[],[]],
+      'RDA':['Report liquid detection acceleration',[],['acceleration']],
+      'RDS':['UNDOCUMENTED Report',[],[]],
+      'RDZ':['Report diagnotic functions Z-Axis',['selector'],['d1','d2','d3','d4','d5','d6','d7','d8']],
+      'REE':['Report extended error code',[],['extError']],
+      'RFV':['Report firmare revision',[],['version']],
+      'RGD':['UNDOCUMENTED Report',[],[]],
+      'RNT':['Report number of tips on arm',['decimalNotBinary'],['numtips']],
+      'RPP':['UNDOCUMENTED (get max of each tip?)',[],['vol1','vol2','vol3','vol4','vol5','vol6','vol7','vol8']],
+      'RPX':['Report current parameter for X-axis',['selector'],['p1','p2','p3','p4','p5','p6','p7','p8']],
+      'RPY':['Report current parameter for Y-axis',['selector'],['p1','p2','p3','p4','p5','p6','p7','p8']],
+      'RPZ':['Report current parameter for Z-axis',['selector'],['p1','p2','p3','p4','p5','p6','p7','p8']],
+      'RSD':['Report presence of splash-free DiTi eject option',[],['isPresent']],
+      'RST':['Report presence of splash-free DiTi eject logical positions',[],['upperPos','lowerPos','discardDist']],
+      'RTS':['Report tip status DiTi',[],['fetched']],
+      'RVZ':['Report Z-axis values and parameters',['selector'],['p1','p2','p3','p4','p5','p6','p7','p8']],
+      'SBL':['Set individual submerge for liquid search command',['submerge1','submerge2','submerge3','submerge4','submerge5','submerge6','submerge7','submerge8'],[]],
+      'SDL':['Set individual safe detection retract distance for liquid search command',['safeDRD1','safeDRD2','safeDRD3','safeDRD4','safeDRD5','safeDRD6','safeDRD7','safeDRD8',],[]],
+      'SDM':['Set liquid detection mode',['detProc(0-common,1-commonsafe,2-semi,3-semisafe,4-full,5-fullsafe,6-delay,7-trough)','sensitivity','phase','dipIn','dipOut'],[]],
+      'SEP':['UNDOCUMENTED Set',[],[]],
+      'SHZ':['Set individual Z-travel height',['Ztravel1','Ztravel2','Ztravel3','Ztravel4','Ztravel5','Ztravel6','Ztravel7','Ztravel8'],[]],
+      'SML':['Set individual z-max for liquid search command',['Zmax1','Zmax2','Zmax3','Zmax4','Zmax5','Zmax6','Zmax7','Zmax8'],[]],
+      'STL':['Set individual z-start for liquid search command',['Zstart1','Zstart2','Zstart3','Zstart4','Zstart5','Zstart6','Zstart7','Zstart8'],[]],
+      'SPP':['UNDOCUMENTED Set',[],[]],
+      'SPS':['Set pierce speed for piercing commands',['speed','pwmlimit','curlimit'],[]],
+      'SSL':['Set search speed for liquid search commands',['speed1','speed2','speed3','speed4','speed5','speed6','speed7','speed8'],[]],
+      'SSX':['Set slow speed for X-axis',['speed1','speed2','speed3','speed4','speed5','speed6','speed7','speed8'],[]],
+      'SSY':['Set slow speed for Y-axis',['speed1','speed2','speed3','speed4','speed5','speed6','speed7','speed8'],[]],
+      'SSZ':['Set slow speed for Z-axis',['speed1','speed2','speed3','speed4','speed5','speed6','speed7','speed8'],[]],
+      'STZ':['UNDOCUMENTED Set',[],[]],
+      'T20':['UNDOCUMENTED',[],[]],
+      'T21':['UNDOCUMENTED',[],[]],
+      'T22':['UNDOCUMENTED',[],[]],
+      'T23':['UNDOCUMENTED',[],[]],
+      'T30':['UNDOCUMENTED',[],[]],
+      'T32':['UNDOCUMENTED',[],[]],
+      }
+devnames={'C1':['RoMa',romacmds],'C2':[ 'RoM2',romacmds], 'C5':['LiHa',lihacmds],'C6':['LiH6',lihacmds], 'O1':['Syst',syscmds],'M1':['M1',m1cmds] }
+
+errors={1:'Initialization Error',  # Common errors
         2:'Invalid Command',
         3:'Invalid Operand',
         4:'Invalid Cmd Sequence',
@@ -52,57 +108,102 @@ errors={1:'Initialization Error',
         6:'Time-out Error',
         7:'Device not initialized',
         8:'Command overflow of CU',
-        15:'Command overflow of subdevice',
-        # ROMA Errors (R)
-        9:'Plate not fetched',
+        15:'Command overflow of subdevice'}
+errorsA={9:'No liquid detected',    # Device A error codes (LiHa)
+        10:'Drive no load',
+        11:'Not enough liquid',
+        12:'Not enough liquid',
+        13:'Arm collision avoided with PosId',
+        16:'Power fail circuit error',
+        17:'Arm collision avoided with RoMa',
+        18:'Clot limit passed',
+        19:'No clot exit detected',
+        20:'No liquid exit detected',
+        23:'Not yet moved',
+        24:'Ilid pulse error',
+        25:'Tip not fetched',
+        26:'Tip not mounted',
+        27:'Tip mounted'}
+errorsR={9:'Plate not fetched',         # ROMA Errors (R)
         10:'Drive no load',
         16:'Power fail circuit error',
-        17:'Arm collision avoided with LiHa',
-        # #M errors
-        13:'No access to serial EEPROM',
+        17:'Arm collision avoided with LiHa'}
+errorsM={13:'No access to serial EEPROM',   # System errors (M)
+        16:'Power fail circuit error',
+        17:'Arm collision avoided between LiHa and RoMa',
         18:'Door lock 1 failed',
         19:'Door lock 2 failed',
         20:'No new device node detected',
-        21:'Device node already defined'
-        }
-def fwparse(send,reply,error):
+        21:'Device node already defined'}
+def fwparse(dev,send,reply,error):
     if debug:
         if error:
-            print "\tSEND:%s  ERROR:%s"%(send,reply)
+            print "\tSEND:%s  ERROR:%s"%(str(send),str(reply))
         else:
-            print "\tSEND:%s  REPLY:%s"%(send,reply)
-    cmd=send.split(',')
-    reply=reply.split(',')
-    replydev=reply[0]
-    replyecode=int(reply[1])
-    reply=reply[2:]
-    dev=cmd[0]
-    op=cmd[1]
-    args=cmd[2:]
+            print "\tSEND:%s  REPLY:%s"%(str(send),str(reply))
+    if  reply[0].isdigit():
+        replyecode=int(reply[0])
+    else:
+        print "First reply argument is not an integer: %s"%reply[0]
+        replyecode=-1
+    reply=reply[1:]
+    op=send[0]
+    args=send[1:]
     if len(op)>3:
         args.insert(0,op[3:])
         op=op[0:3]
-    if op not in cmds:
-        cmds[op]='UNKNOWN'
-    print "%s %s (%s) "%(dev,op,cmds[op]),args," -> ",replyecode,reply
+    if dev in devnames:
+        devname=devnames[dev][0]
+        cmds=devnames[dev][1]
+        if op in cmds:
+              cmd=cmds[op]
+        else:
+              cmd=['UNKNOWN',[],[]]
+    else:
+       devname='UNKNOWN(%s)'%dev
+       cmd=['UNKNOWN',[],[]]
+
+    print "  %s %s (%s) "%(devname,op,cmd[0]),
+    for i in range(len(args)):
+        if i<len(cmd[1]):
+            print "%s=%s, "%(cmd[1][i],args[i]),
+        else:
+            print "?=%s, "%args[i],
+    print " ->  ecode=%d, "%replyecode,
+    for i in range(len(reply)):
+        if i<len(cmd[2]):
+            print "%s=%s, "%(cmd[2][i],reply[i]),
+        else:
+            print "?=%s, "%reply[i],
+    print 
     if error or replyecode!=0:
-        if replyecode not in errors:
-            print 'Unknown error: <%s>'%replyecode
-            errors[replyecode]='Unknown error'
-        print "Error message: %s"%errors[replyecode]
+        if replyecode in errors:
+            emsg=errors[replyecode]
+        elif devname[0:3]=='LiH' and replyecode in errorsA:
+            emsg=errorsA[replyecode]
+        elif devname[0:3]=='RoM' and replyecode in errorsR:
+            emsg=errorsR[replyecode]
+        elif devname=='System' and replyecode in errorsM:
+            emsg=errorsM[replyecode]
+        else:
+            emsg='Unknown error: <%s>'%replyecode
+        print "**** Error message: %s"%emsg
         
 import sys
-if len(sys.argv)!=2:
-    print "Usage: %s logfile"%sys.argv[0]
+if len(sys.argv)!=2 and len(sys.argv)!=1:
+    print "Usage: %s [logfile]"%sys.argv[0]
     exit(1)
-fd=open(sys.argv[1],'r')
+if len(sys.argv)==2:
+      fd=open(sys.argv[1],'r')
+else:
+      fd=sys.stdin
+
 csum=fd.readline()
 hdr=fd.readline()
 version=fd.readline()
 prevcode='?'
 prevtime='?'
-send=""
-reply=""
+send={}
 error=False
 while True:
     line=fd.readline()
@@ -112,7 +213,7 @@ while True:
     if len(line)==0:
         continue
     code=line[0]
-    time=line[2:9]
+    time=line[2:10]
     cmd=line[11:]
     if debug:
         print "\tcode=%s(%d),time=%s,cmd=%s"%(code,ord(code[0]),time,cmd)
@@ -123,30 +224,25 @@ while True:
     prevcode=code
     prevtime=time
     if code[0]=='F':
+        spcmd=cmd[1:].split(',')
+        dev=spcmd[0][1:]
+        spcmd=spcmd[1:]
         if cmd[0]=='>':
-            if send!="":
-                print "Double cmd: %s AND %s"%(send, cmd[1:])
-            send=cmd[2:]
+            if dev in send:
+                print "Double cmd to %s: %s AND %s"%(dev,send[dev],str(spcmd))
+            send[dev]=spcmd
         elif cmd[0]=='-' or cmd[0]=='*':
-            if reply!="":
-                print "Double reply: %s AND %s"%(reply, cmd[1:])
+            if dev not in send:
+                print "Missing cmd when received reply from %s: %s"%(dev,str(spcmd))
                 exit(1)
-            if send=="":
-                print "Missing cmd when received reply: %s"%cmd[1:]
-                exit(1)
-            if cmd[0]=='*':
-                error=True
-            reply=reply+cmd[2:]
+            error=cmd[0]=='*'
+            fwparse(dev,send[dev],spcmd,error)
+            send.pop(dev)
         else:
             print "Bad cmd: %s"%cmd
             exit(1)
-        if reply!="":
-            fwparse(send,reply,error)
-            send=''
-            reply=''
-            error=False
     else:
-        print "%s %s"%(time,cmd)
+        print "Gemini %s"%(cmd)
         
 
     
