@@ -1,5 +1,6 @@
 from worklist import *
 from sample import Sample
+import os.path
 
 class Experiment(object):
     REAGENTPLATE=Plate("Reagents",3,1,12,8)
@@ -9,9 +10,11 @@ class Experiment(object):
     WATERLOC=Plate("Water",17,2,1,4)
     PTCPOS=Plate("PTC",25,1,1,1)
     HOTELPOS=Plate("Hotel",25,0,1,1)
-    WASTE=Plate("Waste",19,3,1,1)
-    EPPENDORFS=Plate("Eppendorfs",25,1,1,16)
+    WASTE=Plate("Waste",20,3,1,1)
+    EPPENDORFS=Plate("Eppendorfs",19,1,1,16)
     WATER=Sample("Water",WATERLOC,0,None,10000)
+    DITIMASK=12   # Which tips are DiTis
+    headerfile=os.path.expanduser("~/Dropbox/Synbio/src/pyTecan/header.gem")
 
     RPTEXTRA=0   # Extra amount when repeat pipetting
     MAXVOLUME=200  # Maximum volume for pipetting in ul
@@ -31,8 +34,8 @@ class Experiment(object):
     def saveworklist(self,filename):
         self.w.saveworklist(filename)
 
-    def savegem(self,headerfile,filename):
-        self.w.savegem(headerfile,filename)
+    def savegem(self,filename):
+        self.w.savegem(self.headerfile,filename)
         
     def savesummary(self,filename):
         # Print amount of samples needed
@@ -49,7 +52,7 @@ class Experiment(object):
         Sample.printprep(fd)
         Sample.printallsamples("All Samples:",fd)
         
-    def multitransfer(self, volumes, src, dests,mix=(False,False),getDITI=True,dropDITI=True):
+    def multitransfer(self, tipMask,volumes, src, dests,mix=(False,False),getDITI=True,dropDITI=True):
         'Multi pipette from src to multiple dest.  mix is (src,dest) mixing'
         #print "multitransfer(",volumes,",",src,",",dests,",",mix,",",getDITI,",",dropDITI,")"
         if isinstance(volumes,(int,long,float)):
@@ -68,29 +71,31 @@ class Experiment(object):
                             print "with tip reuse"
                         else:
                             print "without tip reuse"
-                        self.multitransfer(volumes[0:i],src,dests[0:i],mix,getDITI,not reuseTip)
-                        self.multitransfer(volumes[i:],src,dests[i:],(mix[0] and not reuseTip,mix[1]),not reuseTip,dropDITI)
+                        self.multitransfer(tipMask,volumes[0:i],src,dests[0:i],mix,getDITI,not reuseTip)
+                        self.multitransfer(tipMask,volumes[i:],src,dests[i:],(mix[0] and not reuseTip,mix[1]),not reuseTip,dropDITI)
                         return
                     
             cmt="Multi-add  %s to samples %s"%(src.name,",".join("%s[%.1f]"%(dests[i].name,volumes[i]) for i in range(len(dests))))
             print "*",cmt
             self.w.comment(cmt)
-            if  getDITI:
+            if  getDITI and (tipMask&self.DITIMASK != 0):
                 ditivol=sum(volumes)+src.inliquidLC.multicond+src.inliquidLC.multiexcess
-                self.w.getDITI(1,min(self.MAXVOLUME,ditivol),True,True)
+                self.w.getDITI(tipMask&self.DITIMASK,min(self.MAXVOLUME,ditivol),True,True)
 
-            src.aspirate(self.w,sum(volumes))
+            if tipMask&~self.DITIMASK != 0:
+                self.w.wash(tipMask)
+            src.aspirate(tipMask,self.w,sum(volumes))
             for i in range(len(dests)):
                 if volumes[i]>0:
-                    dests[i].dispense(self.w,volumes[i],src.conc)
+                    dests[i].dispense(tipMask,self.w,volumes[i],src.conc)
                     dests[i].addhistory(src.name,volumes[i])
-            if dropDITI:
-                self.w.dropDITI(1,self.WASTE)
+            if dropDITI and (tipMask&self.DITIMASK != 0):
+                self.w.dropDITI(tipMask&self.DITIMASK,self.WASTE)
         else:
             for i in range(len(dests)):
-                self.transfer(volumes[i],src,dests[i],mix,getDITI,dropDITI)
+                self.transfer(tipMask,volumes[i],src,dests[i],mix,getDITI,dropDITI)
 
-    def transfer(self, volume, src, dest, mix=(False,False), getDITI=True, dropDITI=True):
+    def transfer(self, tipMask,volume, src, dest, mix=(False,False), getDITI=True, dropDITI=True):
         if volume>self.MAXVOLUME:
             destvol=max([d.volume for d in dests[0:i]])
             reuseTip=destvol<=0
@@ -99,8 +104,8 @@ class Experiment(object):
                 print "with tip reuse"
             else:
                 print "without tip reuse"
-            self.transfer(self.MAXVOLUME,src,dest,mix,getDITI,False)
-            self.transfer(volume-self.MAXVOLUME,src,dest,(mix[0] and not reuseTip,mix[1]),False,dropDITI)
+            self.transfer(tipMask,self.MAXVOLUME,src,dest,mix,getDITI,False)
+            self.transfer(tipMask,volume-self.MAXVOLUME,src,dest,(mix[0] and not reuseTip,mix[1]),False,dropDITI)
             return
         
         cmt="Add %.1f ul of %s to %s"%(volume, src.name, dest.name)
@@ -114,23 +119,28 @@ class Experiment(object):
             #            print "Mix volume=%.1f ul"%(ditivolume)
         print "*",cmt
         self.w.comment(cmt)
-        if getDITI:
-            self.w.getDITI(1,ditivolume)
+        if getDITI and (tipMask & self.DITIMASK != 0):
+            self.w.getDITI(tipMask&self.DITIMASK,ditivolume)
+
+        if tipMask&~self.DITIMASK != 0:
+            self.w.wash(tipMask)
+
         if mix[0]:
-            src.mix(self.w)
-        src.aspirate(self.w,volume)
-        dest.dispense(self.w,volume,src.conc)
+            src.mix(tipMask,self.w)
+        src.aspirate(tipMask,self.w,volume)
+        dest.dispense(tipMask,self.w,volume,src.conc)
         dest.addhistory(src.name,volume)
         if mix[1]:
-            dest.mix(self.w)
-        if dropDITI:
-            self.w.dropDITI(1,self.WASTE)
+            dest.mix(tipMask,self.w)
+        if dropDITI and (tipMask & self.DITIMASK != 0):
+            self.w.dropDITI(tipMask&self.DITIMASK,self.WASTE)
 
     def stage(self,stagename,reagents,sources,samples,volume):
         # Add water to sample wells as needed (multi)
         # Pipette reagents into sample wells (multi)
         # Pipette sources into sample wells
         # Concs are in x (>=1)
+        tipMask=1
         Sample.printallsamples("Before "+stagename)
         self.w.comment(stagename)
         assert(volume>0)
@@ -144,15 +154,19 @@ class Experiment(object):
 
         assert(min(watervols)>=0)
         if sum(watervols)>0:
-            self.multitransfer(watervols,self.WATER,samples,(False,False))
+            self.multitransfer(tipMask,watervols,self.WATER,samples,(False,False))
 
         for i in range(len(reagents)):
-            self.multitransfer(reagentvols[i],reagents[i],samples,(True,len(sources)==0))
+            self.multitransfer(tipMask,reagentvols[i],reagents[i],samples,(True,len(sources)==0))
 
         if len(sources)>0:
             assert(len(sources)==len(samples))
             for i in range(len(sources)):
-                self.transfer(sourcevols[i],sources[i],samples[i],(True,True))
+                self.transfer(tipMask,sourcevols[i],sources[i],samples[i],(True,True))
+
+        # Final clean and get LiHa out of the way
+        if tipMask&~self.DITIMASK:
+            self.w.wash(tipMask);
 
 
     def runpgm(self,pgm):

@@ -3,7 +3,8 @@ import liquidclass
 from worklist import WorkList
 
 defaultMixFrac = 0.9
-MINLIQUIDDETECTVOLUME=20
+defaultMixLeave = 5
+MINLIQUIDDETECTVOLUME=50
 
 _Sample__allsamples = []
 
@@ -36,14 +37,14 @@ class Sample(object):
         'Dilute sample -- just increases its recorded concentration'
         self.conc=self.conc*factor
 
-    def aspirate(self,w,volume):
-        w.aspirate([self.well],self.chooseLC(True),volume,self.plate)
+    def aspirate(self,tipMask,w,volume):
+        w.aspirate(tipMask,[self.well],self.chooseLC(True),volume,self.plate)
         self.volume=self.volume-volume
         if self.volume<0:
             print "Warning: %s is now short by %.1f ul"%(self.name,-self.volume)
             
-    def dispense(self,w,volume,conc):
-        w.dispense([self.well],self.chooseLC(),volume,self.plate)
+    def dispense(self,tipMask,w,volume,conc):
+        w.dispense(tipMask,[self.well],self.chooseLC(),volume,self.plate)
 
         # Assume we're diluting the contents
         if self.conc==None and conc==None:
@@ -74,8 +75,12 @@ class Sample(object):
         else:
             return self.bottomLC
         
-    def mix(self,w,mixFrac=defaultMixFrac):
-        w.mix([self.well],self.chooseLC(),self.volume*mixFrac,self.plate,3)
+    def mix(self,tipMask,w,mixFrac=defaultMixFrac):
+        mixvol=min(self.volume*mixFrac,self.volume-defaultMixLeave)
+        if mixvol<2:
+            print "Not enough volume in sample %s to mix"%self.name
+        else:
+            w.mix(tipMask,[self.well],self.chooseLC(),mixvol,self.plate,3)
 
     def __str__(self):
         if self.conc==None:

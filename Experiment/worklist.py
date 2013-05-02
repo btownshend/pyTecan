@@ -18,7 +18,7 @@ class WorkList(object):
         self.debug=False
         self.list=[]
         self.volumes={}
-        self.diticnt=[0,0,0,0]
+        self.diticnt=[0,0,0,0]   # Indexed by DiTi Type
         
     def bin(s):
         return str(s) if s<=1 else bin(s>>1) + str(s&1)
@@ -44,18 +44,17 @@ class WorkList(object):
             s=s+chr(0x30+bitMask)
         return s
 
-
     #def aspirate(tipMask, liquidClass, volume, loc, spacing, ws):
-    def aspirate(self,wells, liquidClass, volume, loc):
-        self.aspirateDispense('Aspirate',wells, liquidClass, volume, loc)
+    def aspirate(self,tipMask,wells, liquidClass, volume, loc):
+        self.aspirateDispense('Aspirate',tipMask,wells, liquidClass, volume, loc)
 
-    def dispense(self,wells, liquidClass, volume, loc):
-        self.aspirateDispense('Dispense',wells, liquidClass, volume, loc)
+    def dispense(self,tipMask,wells, liquidClass, volume, loc):
+        self.aspirateDispense('Dispense',tipMask,wells, liquidClass, volume, loc)
 
-    def mix(self,wells, liquidClass, volume, loc, cycles=3):
-        self.aspirateDispense('Mix',wells, liquidClass, volume, loc, cycles)
+    def mix(self,tipMask,wells, liquidClass, volume, loc, cycles=3):
+        self.aspirateDispense('Mix',tipMask,wells, liquidClass, volume, loc, cycles)
         
-    def aspirateDispense(self,op,wells, liquidClass, volume, loc, cycles=None):
+    def aspirateDispense(self,op,tipMask,wells, liquidClass, volume, loc, cycles=None):
         assert(isinstance(loc,Plate))
 
         print "%s %s.%s %.2f"%(op,str(loc),str(wells),volume)
@@ -76,8 +75,6 @@ class WorkList(object):
                 else:
                     self.volumes[loc][well]=self.volumes[loc][well]+vincr
                     
-            
-        tipMask=0
         spacing=1
         pos=[0 for x in range(len(wells))]
         for i in range(len(wells)):
@@ -102,19 +99,23 @@ class WorkList(object):
         else:
             spacing=2
         allvols=[0 for x in range(12)]
+        tip=0
+        tipTmp=tipMask;
         for i in range(len(wells)):
-            if i==0:
-                tip=0
-            else:
-                dm=divmod(pos[i]-pos[0],spacing)
-                assert(dm[1]==0)
-                tip=dm[0]
-            tipMask=tipMask | (1<<tip)
+            while tipTmp&1 == 0:
+                tipTmp=tipTmp>>1
+                tip=tip+1
             if type(volume)==type([]):
                 allvols[tip]=volume[i]
             else:
                 allvols[tip]=volume
+            tipTmp = tipTmp>>1
+            tip+=1
 
+        if tipTmp!=0:
+            print "Number of tips (mask=%d) != number of wells (%d)"%tipMask, len(wells)
+            assert(0)
+            
         if self.debug:
             print "allvols=",allvols
             print "pos[0]=",pos[0]
