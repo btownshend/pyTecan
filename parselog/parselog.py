@@ -242,7 +242,7 @@ while True:
             print "Bad cmd: %s"%cmd
             exit(1)
     else:
-        print "Gemini %s"%(cmd)
+        print "Gemini %s %s"%(time,cmd)
         
 
     
