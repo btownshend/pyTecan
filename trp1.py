@@ -45,7 +45,7 @@ for i in range(nreplicates):
     e.stage('T7M',[R_MT7],templates,S_T7MINUS[i*nTemplates:(i+1)*nTemplates],10*scale)
     e.stage('T7P',[R_MT7,R_Theo],templates,S_T7PLUS[i*nTemplates:(i+1)*nTemplates],10*scale)
 nT7*=2
-e.runpgm("37-15MIN")
+e.runpgm("37-15MIN",15)
 
 ## Stop
 e.dilute(S_T7,2);totaldilution*=2
@@ -62,18 +62,18 @@ S_RTNeg=[Sample("R1.RTNeg.%d"%i,e.SAMPLEPLATE,i+spos) for i in range(negRT)]; sp
 e.stage('RTNeg',[R_MRTNeg],S_T7[0:negRT],S_RTNeg,5*scale)
 S_RT=S_RTPos+S_RTNeg
 nRT=len(S_RT)
-e.runpgm("TRP-SS")
+e.runpgm("TRP-SS",65)
 
 ## Extension
 e.dilute(S_RT,5);totaldilution*=5
 nExt=nRT
 S_EXT=[Sample("R1.EXT.%d"%i,e.SAMPLEPLATE,i+spos) for i in range(nExt)]; spos=spos+nExt
 e.stage('LigAnneal',[R_MLigB],S_RT,S_EXT,10*scale)
-e.runpgm("TRP-ANNEAL")
+e.runpgm("TRP-ANNEAL",5)
 
 e.dilute(S_EXT,2)
 e.stage('Ligation',[R_MLigase],[],S_EXT,20*scale)
-e.runpgm("TRP-EXTEND")
+e.runpgm("TRP-EXTEND",40)
 
 ## Dilute for PCR
 e.dilute(S_EXT,20);totaldilution*=20
@@ -113,7 +113,7 @@ S_QPCR=S_QPCR_A+S_QPCR_B
 nQPCR=nQPCR*2
 
 # Run PCR program
-e.runpgm("PCR")
+e.runpgm("PCR",60)
 
 e.w.userprompt("Process complete. Continue to turn off reagent cooler")
 e.setreagenttemp(None)
