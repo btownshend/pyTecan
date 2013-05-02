@@ -1,7 +1,8 @@
 from Experiment.sample import Sample
 from Experiment.experiment import *
 import debughook
-
+import os.path
+import sys
 
 scale=1   # Overall scale of reactions
 nreplicates=1  
@@ -15,17 +16,17 @@ e.setreagenttemp(4.0)
 spos=0;qpos=0
 
 allReagents=[];
-R_MT7=Sample("MT7",e.REAGENTPLATE,len(allReagents),2); allReagents.append(R_MT7)
-R_Theo=Sample("Theo",e.REAGENTPLATE,len(allReagents),25/7.5); allReagents.append(R_Theo)
-R_L2b12=Sample("L2b12",e.REAGENTPLATE,len(allReagents),5); allReagents.append(R_L2b12)
-R_L2b12Cntl=Sample("L2b12Cntl",e.REAGENTPLATE,len(allReagents),5); allReagents.append(R_L2b12Cntl)
-R_MStop=Sample("MStp",e.REAGENTPLATE,len(allReagents),2); allReagents.append(R_MStop)
-R_MRT=Sample("MRT",e.REAGENTPLATE,len(allReagents),2); allReagents.append(R_MRT)
-R_MRTNeg=Sample("MRTNeg",e.REAGENTPLATE,len(allReagents),2); allReagents.append(R_MRTNeg)
-R_MLigB=Sample("MLigB",e.REAGENTPLATE,len(allReagents),1.25); allReagents.append(R_MLigB)
-R_MLigase=Sample("MLigase",e.REAGENTPLATE,len(allReagents),2); allReagents.append(R_MLigase)
-R_MQA=Sample("MQA",e.REAGENTPLATE,len(allReagents),20.0/12); allReagents.append(R_MQA)
-R_MQB=Sample("MQB",e.REAGENTPLATE,len(allReagents),20.0/12); allReagents.append(R_MQB)
+R_MT7=Sample("MT7",e.REAGENTPLATE,len(allReagents),2,15); allReagents.append(R_MT7)
+R_Theo=Sample("Theo",e.REAGENTPLATE,len(allReagents),25/7.5,8); allReagents.append(R_Theo)
+R_L2b12=Sample("L2b12",e.REAGENTPLATE,len(allReagents),5,9); allReagents.append(R_L2b12)
+R_L2b12Cntl=Sample("L2b12Cntl",e.REAGENTPLATE,len(allReagents),5,0); allReagents.append(R_L2b12Cntl)
+R_MStop=Sample("MStp",e.REAGENTPLATE,len(allReagents),2,25); allReagents.append(R_MStop)
+R_MRT=Sample("MRT",e.REAGENTPLATE,len(allReagents),2,10); allReagents.append(R_MRT)
+R_MRTNeg=Sample("MRTNeg",e.REAGENTPLATE,len(allReagents),2,7.5); allReagents.append(R_MRTNeg)
+R_MLigB=Sample("MLigB",e.REAGENTPLATE,len(allReagents),1.25,29); allReagents.append(R_MLigB)
+R_MLigase=Sample("MLigase",e.REAGENTPLATE,len(allReagents),2,35); allReagents.append(R_MLigase)
+R_MQA=Sample("MQA",e.REAGENTPLATE,len(allReagents),20.0/12,23); allReagents.append(R_MQA)
+R_MQB=Sample("MQB",e.REAGENTPLATE,len(allReagents),20.0/12,23); allReagents.append(R_MQB)
 R_PCRA=Sample("MPCRA",e.REAGENTPLATE,len(allReagents),2.0); allReagents.append(R_PCRA)
 R_PCRB=Sample("MPCRB",e.REAGENTPLATE,len(allReagents),2.0); allReagents.append(R_PCRB)
 
@@ -118,14 +119,16 @@ e.w.userprompt("Process complete. Continue to turn off reagent cooler")
 e.setreagenttemp(None)
 
 # Save worklist to a file
-e.saveworklist("trp1.gwl")
-e.savegem("header.gem","trp1.gem")
-e.savesummary("trp1.txt")
+#e.saveworklist("trp1.gwl")
+(scriptname,ext)=os.path.splitext(sys.argv[0])
+e.savegem(scriptname+".gem")
+e.savesummary(scriptname+".txt")
 
 # Build a script to prefill the reagent wells for testing
 pre=Experiment()
 #print "e=",e,"e.worklist=",e.w,",e.w.l=",e.w.list
 #print "pre=",pre,"pre.worklist=",pre.w,",pre.w.l=",pre.w.list
 pre.stage('Prefill',[],[],allReagents,20)  
-pre.savegem("header.gem","prefill.gem")
-pre.savesummary("prefill.txt")
+
+e.savegem(scriptname+"-prefill.gem")
+e.savesummary(scriptname+"-prefill.txt")
