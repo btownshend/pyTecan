@@ -3,36 +3,26 @@ Reagents(3,1)
 Samples(10,3)
 qPCR(10,2)
 Water(17,2)
-Waste(19,3)
+Waste(20,3)
 
-DiTi usage: 10ul: 11, 200ul: 29
+DiTi usage: 10ul: 0, 200ul: 0
 
 Reagents:
-MT7@2.00x in Reagents(3,1).0 consume 10.0 ul, provide 15.0 ul
-Theo@3.33x in Reagents(3,1).1 consume 3.0 ul, provide 8.0 ul
-L2b12@5.00x in Reagents(3,1).2 consume 4.0 ul, provide 9.0 ul
-MStp@2.00x in Reagents(3,1).4 consume 20.0 ul, provide 25.0 ul
-MRT@2.00x in Reagents(3,1).5 consume 5.0 ul, provide 10.0 ul
-MRTNeg@2.00x in Reagents(3,1).6 consume 2.5 ul, provide 7.5 ul
-MLigB@1.25x in Reagents(3,1).7 consume 24.0 ul, provide 29.0 ul
-MLigase@2.00x in Reagents(3,1).8 consume 30.0 ul, provide 35.0 ul
-MQA@1.67x in Reagents(3,1).9 consume 18.0 ul, provide 23.0 ul
-MQB@1.67x in Reagents(3,1).10 consume 18.0 ul, provide 23.0 ul
 MPCRA@2.00x in Reagents(3,1).11 consume 15.0 ul, provide 20.0 ul
 
 All Samples::
 Water(Water(17,2).0,8977.00 ul,LC=Water-Bottom) 
-MT7(Reagents(3,1).0,2.00x,-10.00 ul,LC=Water-Bottom) 
-Theo(Reagents(3,1).1,3.33x,-3.00 ul,LC=Water-Bottom) 
-L2b12(Reagents(3,1).2,5.00x,-4.00 ul,LC=Water-Bottom) 
+MT7(Reagents(3,1).0,2.00x,5.00 ul,LC=Water-Bottom) 
+Theo(Reagents(3,1).1,3.33x,5.00 ul,LC=Water-Bottom) 
+L2b12(Reagents(3,1).2,5.00x,5.00 ul,LC=Water-Bottom) 
 L2b12Cntl(Reagents(3,1).3,5.00x,0.00 ul,LC=Water-Bottom) 
-MStp(Reagents(3,1).4,2.00x,-20.00 ul,LC=Water-Bottom) 
-MRT(Reagents(3,1).5,2.00x,-5.00 ul,LC=Water-Bottom) 
-MRTNeg(Reagents(3,1).6,2.00x,-2.50 ul,LC=Water-Bottom) 
-MLigB(Reagents(3,1).7,1.25x,-24.00 ul,LC=Water-Bottom) 
-MLigase(Reagents(3,1).8,2.00x,-30.00 ul,LC=Water-Bottom) 
-MQA(Reagents(3,1).9,1.67x,-18.00 ul,LC=Water-Bottom) 
-MQB(Reagents(3,1).10,1.67x,-18.00 ul,LC=Water-Bottom) 
+MStp(Reagents(3,1).4,2.00x,5.00 ul,LC=Water-Bottom) 
+MRT(Reagents(3,1).5,2.00x,5.00 ul,LC=Water-Bottom) 
+MRTNeg(Reagents(3,1).6,2.00x,5.00 ul,LC=Water-Bottom) 
+MLigB(Reagents(3,1).7,1.25x,5.00 ul,LC=Water-Bottom) 
+MLigase(Reagents(3,1).8,2.00x,5.00 ul,LC=Water-Bottom) 
+MQA(Reagents(3,1).9,1.67x,5.00 ul,LC=Water-Bottom) 
+MQB(Reagents(3,1).10,1.67x,5.00 ul,LC=Water-Bottom) 
 MPCRA(Reagents(3,1).11,2.00x,-15.00 ul,LC=Water-Bottom) 
 MPCRB(Reagents(3,1).12,2.00x,0.00 ul,LC=Water-Bottom) 
 R1.T7PLUS.0(Samples(10,3).0,2.00x,15.00 ul,LC=Water-Bottom) Water[3.0]+MT7[5.0]+L2b12[2.0]+MStp[10.0]
