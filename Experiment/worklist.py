@@ -19,7 +19,8 @@ class WorkList(object):
         self.list=[]
         self.volumes={}
         self.diticnt=[0,0,0,0]   # Indexed by DiTi Type
-        
+        self.elapsed=0   # Self.Elapsed time in seconds
+
     def bin(s):
         return str(s) if s<=1 else bin(s>>1) + str(s&1)
 
@@ -57,7 +58,7 @@ class WorkList(object):
     def aspirateDispense(self,op,tipMask,wells, liquidClass, volume, loc, cycles=None):
         assert(isinstance(loc,Plate))
 
-        print "%s %s.%s %.2f"%(op,str(loc),str(wells),volume)
+        print "%s %d %s.%s %.2f"%(op,tipMask,str(loc),str(wells),volume)
         # Update volumes
         if op=='Aspirate':
             vincr=-volume
@@ -129,7 +130,8 @@ class WorkList(object):
             self.list.append( '%s(%d,"%s",%s,%d,%d,%d,"%s",%d,0)'%(op,tipMask,liquidClass,volstr,loc.grid,loc.pos-1,spacing,ws,cycles))
         else:
             self.list.append( '%s(%d,"%s",%s,%d,%d,%d,"%s",0)'%(op,tipMask,liquidClass,volstr,loc.grid,loc.pos-1,spacing,ws))
-
+        self.elapsed+=4
+        
     # Get DITI
     def getDITI(self, tipMask, volume, retry=True,multi=False):
         MAXVOL10=10
@@ -147,6 +149,7 @@ class WorkList(object):
             type=__DITI200
 
         self.list.append('GetDITI(%d,%d,%d)'%(tipMask,type,options))
+        self.elapsed+=2
         if tipMask&1:
             self.diticnt[type]+=1
         if tipMask&2:
@@ -155,7 +158,7 @@ class WorkList(object):
             self.diticnt[type]+=1
         if tipMask&8:
             self.diticnt[type]+=1
-
+        
     def getDITIcnt(self):
         return "10ul: %d, 200ul: %d"%(self.diticnt[__DITI10],self.diticnt[__DITI200])
 
@@ -165,7 +168,8 @@ class WorkList(object):
         assert(airgap>=0 and airgap<=100)
         assert(airgapSpeed>=1 and airgapSpeed<1000)
         self.list.append('DropDITI(%d,%d,%d,%f,%d)'%(tipMask,loc.grid,loc.pos-1,airgap,airgapSpeed))
-
+        self.elapsed+=2
+        
     def wash(self, tipMask):
         wasteLoc=(1,1)
         cleanerLoc=(1,0)
@@ -180,7 +184,9 @@ class WorkList(object):
         lowVolume=0
         atFreq=1000  # Hz, For Active tip
         self.list.append('Wash(%d,%d,%d,%d,%d,%.1f,%d,%.1f,%d,%.1f,%d,%d,%d,%d,%d)'%(tipMask,wasteLoc[0],wasteLoc[1],cleanerLoc[0],cleanerLoc[1],wasteVol,wasteDelay,cleanerVol,cleanerDelay,airgap, airgapSpeed, retractSpeed, fastWash, lowVolume, atFreq))
-
+        print "Wash %d"%tipMask
+        self.elapsed+=11
+        
     def periodicWash(self,tipMask,period):
         wasteLoc=(1,1)
         cleanerLoc=(1,0)
@@ -207,9 +213,11 @@ class WorkList(object):
         else:
             andBack=0
         self.list.append('Vector("%s",%d,%d,%d,%d,%d,%d,%d,0)'%(vector,loc.grid,loc.pos,direction,andBack,safeAction, endAction, speed))
-
+        self.elapsed+=12
+        
     def romahome(self):
         self.list.append('ROMA(2,0,0,0,0,0,60,0,0)')
+        self.elapsed+=5
         
     def userprompt(self, text, beeps=0, closetime=-1):
         'Prompt the user with text.  Beeps = 0 (no sound), 1 (once), 2 (three times), 3 (every 3 seconds).  Close after closetime seconds if > -1'
@@ -238,7 +246,8 @@ class WorkList(object):
         else:
             resultvar=""
         self.list.append('Execute("%s",%d,"%s")'%(command,flags,resultvar))
-
+        self.elapsed+=5
+        
     def pyrun(self, cmd):
         self.execute("C:\Python27\python.exe C:\cygwin\Home\Admin\%s"%cmd)
         
@@ -252,7 +261,7 @@ class WorkList(object):
         for loc in self.volumes:
             for well in self.volumes[loc]:
                 print "%-14s\t%s\t%6.1f"%(str(loc),str(well),self.volumes[loc][well])
-
+        
     def saveworklist(self,filename):
         'Save worklist in a file in format that Gemini can load as a worklist'
         fd=open(filename,'w')

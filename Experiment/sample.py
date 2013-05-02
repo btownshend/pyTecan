@@ -3,7 +3,7 @@ import liquidclass
 from worklist import WorkList
 
 defaultMixFrac = 0.9
-defaultMixLeave = 5
+defaultMixLeave = 3
 MINLIQUIDDETECTVOLUME=50
 
 _Sample__allsamples = []
@@ -26,6 +26,7 @@ class Sample(object):
         self.well=well
         self.conc=conc
         self.volume=volume
+        self.initvolume=volume
         self.bottomLC=liquidclass.LC("%s-Bottom"%liquidClass.name,liquidClass.singletag,liquidClass.multicond,liquidClass.multiexcess)
         self.inliquidLC=liquidclass.LC("%s-InLiquid"%liquidClass.name,liquidClass.singletag,liquidClass.multicond,liquidClass.multiexcess)
         # Same as empty for now 
@@ -33,10 +34,11 @@ class Sample(object):
         self.history=""
         __allsamples.append(self)
         self.isMixed=volume==0
-        
+
     def dilute(self,factor):
         'Dilute sample -- just increases its recorded concentration'
-        self.conc=self.conc*factor
+        if self.conc!=None:
+            self.conc=self.conc*factor
 
     def aspirate(self,tipMask,w,volume):
         w.aspirate(tipMask,[self.well],self.chooseLC(True),volume,self.plate)
@@ -58,10 +60,11 @@ class Sample(object):
             # Both have concentrations, they should match
             c1=(self.conc*self.volume)/(self.volume+volume)
             c2=(conc*volume)/(self.volume+volume)
-            assert(c1==c2)
+            assert(abs(c1-c2)<.01)
             self.conc=c1
+         # Set to not mixed after second ingredient added
+        self.isMixed=self.volume==0
         self.volume=self.volume+volume
-        self.isMixed=False
 
     def addhistory(self,name,vol):
         if len(self.history)>0:
@@ -97,17 +100,13 @@ class Sample(object):
     
     @staticmethod
     def printprep(fd=sys.stdout):
-        REAGENTEXTRA=5	# Absoute amount of extra in each supply well of reagents
-        REAGENTFRAC=0.1	# Relative amount of extra in each supply well of reagents (use max of EXTRA and FRAC)
-
         notes="Reagents:"
         for s in __allsamples:
-            if s.volume<0:
-                extra=max(REAGENTEXTRA,-REAGENTFRAC*s.volume)
+            if s.initvolume>0:
                 if s.conc!=None:
                     c="@%.2fx"%s.conc
                 else:
                     c=""   
-                note="%s%s in %s.%s consume %.1f ul, provide %.1f ul"%(s.name,c,str(s.plate),str(s.well),-s.volume,extra-s.volume)
+                note="%s%s in %s.%s consume %.1f ul, provide %.1f ul"%(s.name,c,str(s.plate),str(s.well),s.initvolume-s.volume,s.initvolume)
                 notes=notes+"\n"+note
         print >>fd,notes

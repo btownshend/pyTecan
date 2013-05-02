@@ -51,6 +51,8 @@ class Experiment(object):
         print >>fd
         print >>fd,"DiTi usage:",self.w.getDITIcnt()
         print >>fd
+
+        print >>fd,"Total run time (except thermocycler): %d minutes\n"%(self.w.elapsed/60.0)
         Sample.printprep(fd)
         Sample.printallsamples("All Samples:",fd)
         
@@ -129,9 +131,8 @@ class Experiment(object):
         ditivolume=volume+src.inliquidLC.singletag
         if mix[0] and not src.isMixed:
             cmt=cmt+" with src mix"
-            print "src.isMixed=",src.isMixed
             ditivolume=max(ditivolume,src.volume)
-        if mix[1]:
+        if mix[1] and dest.volume>0:
             cmt=cmt+" with dest mix"
             ditivolume=max(ditivolume,volume+dest.volume)
             #            print "Mix volume=%.1f ul"%(ditivolume)
@@ -166,24 +167,26 @@ class Experiment(object):
         reagentvols=[volume/x.conc for x in reagents]
         if len(sources)>0:
             sourcevols=[volume/x.conc for x in sources]
+            while len(sourcevols)<len(samples):
+                sourcevols.append(0)
             watervols=[volume-sum(reagentvols)-samples[i].volume-sourcevols[i] for i in range(len(samples))]
         else:
             watervols=[volume-sum(reagentvols)-samples[i].volume for i in range(len(samples))]
 
         assert(min(watervols)>=0)
-        if sum(watervols)>0:
+        if sum(watervols)>0.01:
             self.multitransfer(watervols,self.WATER,samples,(False,False))
 
         for i in range(len(reagents)):
             self.multitransfer(reagentvols[i],reagents[i],samples,(True,len(sources)==0))
 
         if len(sources)>0:
-            assert(len(sources)==len(samples))
+            assert(len(sources)<=len(samples))
             for i in range(len(sources)):
                 self.transfer(sourcevols[i],sources[i],samples[i],(True,True))
 
 
-    def runpgm(self,pgm):
+    def runpgm(self,pgm,duration):
         # move to thermocycler
         cmt="run %s"%pgm
         self.w.comment(cmt)
@@ -198,6 +201,7 @@ class Experiment(object):
         self.w.pyrun("PTC\\ptclid.py CLOSE")
         pgm="PAUSE30"  # For debugging
         self.w.pyrun('PTC\\ptcrun.py %s CALC ON'%pgm)
+        self.w.elapsed+=duration*60
         self.w.pyrun('PTC\\ptcwait.py')
         self.w.pyrun("PTC\\ptclid.py OPEN")
         self.w.vector("PTC200lid",self.PTCPOS,self.w.SAFETOEND,True,self.w.DONOTMOVE,self.w.CLOSE)
