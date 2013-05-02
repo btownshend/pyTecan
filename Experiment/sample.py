@@ -32,6 +32,7 @@ class Sample(object):
         self.emptyLC=liquidclass.LC("%s-Bottom"%liquidClass.name,liquidClass.singletag,liquidClass.multicond,liquidClass.multiexcess)
         self.history=""
         __allsamples.append(self)
+        self.isMixed=volume==0
         
     def dilute(self,factor):
         'Dilute sample -- just increases its recorded concentration'
@@ -60,6 +61,7 @@ class Sample(object):
             assert(c1==c2)
             self.conc=c1
         self.volume=self.volume+volume
+        self.isMixed=False
 
     def addhistory(self,name,vol):
         if len(self.history)>0:
@@ -76,12 +78,16 @@ class Sample(object):
             return self.bottomLC
         
     def mix(self,tipMask,w,mixFrac=defaultMixFrac):
+        if self.isMixed:
+            print "Sample %s is already mixed"%self.name
+            return
         mixvol=min(self.volume*mixFrac,self.volume-defaultMixLeave)
         if mixvol<2:
             print "Not enough volume in sample %s to mix"%self.name
         else:
             w.mix(tipMask,[self.well],self.chooseLC(),mixvol,self.plate,3)
-
+            self.isMixed=True
+            
     def __str__(self):
         if self.conc==None:
             return "%s(%s.%s,%.2f ul,LC=%s) %s"%(self.name,str(self.plate),str(self.well),self.volume,self.bottomLC.name,self.history)
