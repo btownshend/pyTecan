@@ -178,7 +178,7 @@ class WorkList(object):
         cleanerVol=0.5 # in ml
         cleanerDelay=500 # in msec
         airgap=10  # ul
-        airgapSpeed=70 # ul/sec
+        airgapSpeed=20 # ul/sec
         retractSpeed=30 # mm/sec
         fastWash=1
         lowVolume=0
@@ -194,7 +194,7 @@ class WorkList(object):
         wasteDelay=500 # in msec
         cleanerVol=0.5 # in ml
         cleanerDelay=500 # in msec
-        airgap=20  # ul
+        airgap=10  # ul
         airgapSpeed=20 # ul/sec
         retractSpeed=30 # mm/sec
         fastWash=1
