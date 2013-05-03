@@ -1,5 +1,6 @@
 from Experiment.sample import Sample
 from Experiment.experiment import *
+from Experiment.sample import MULTIEXCESS
 import debughook
 import os.path
 import sys
@@ -66,14 +67,14 @@ else:
     R_MStopWT=Sample("MStpWithTheo",e.REAGENTPLATE,len(allReagents),2,R_MStopNT.volume); allReagents.append(R_MStopWT)
 
 #R_MSS=Sample("MSS",e.REAGENTPLATE,len(allReagents),2); allReagents.append(R_MSS)
-R_MOS=Sample("MOS",e.REAGENTPLATE,len(allReagents),2,nT7*volRT/2+volExtra); allReagents.append(R_MOS)
-R_MNegRT=Sample("MNegRT",e.REAGENTPLATE,len(allReagents),2,negRT*volRT/2+volExtra); allReagents.append(R_MNegRT)
+R_MOS=Sample("MOS",e.REAGENTPLATE,len(allReagents),2,nT7*volRT/2+volExtra+MULTIEXCESS); allReagents.append(R_MOS)
+R_MNegRT=Sample("MNegRT",e.REAGENTPLATE,len(allReagents),2,negRT*volRT/2+volExtra+MULTIEXCESS); allReagents.append(R_MNegRT)
 
-R_MLigB=Sample("MLigB",e.REAGENTPLATE,len(allReagents),1.25,nExt*volExt/1.25+volExtra); allReagents.append(R_MLigB)
+R_MLigB=Sample("MLigB",e.REAGENTPLATE,len(allReagents),1.25,nExt*volExt/1.25+volExtra+MULTIEXCESS); allReagents.append(R_MLigB)
 R_MLigase=Sample("MLigase",e.REAGENTPLATE,len(allReagents),2,nExt*volExt*2/2+volExtra); allReagents.append(R_MLigase)
 
-R_MQA=Sample("MQA",e.REAGENTPLATE,len(allReagents),20.0/12,nQPCRAB*volQPCR/(20.0/12)+volExtra); allReagents.append(R_MQA)
-R_MQB=Sample("MQB",e.REAGENTPLATE,len(allReagents),20.0/12,nQPCRAB*volQPCR/(20.0/12)+volExtra); allReagents.append(R_MQB)
+R_MQA=Sample("MQA",e.REAGENTPLATE,len(allReagents),20.0/12,nQPCRAB*volQPCR/(20.0/12)+volExtra+MULTIEXCESS); allReagents.append(R_MQA)
+R_MQB=Sample("MQB",e.REAGENTPLATE,len(allReagents),20.0/12,nQPCRAB*volQPCR/(20.0/12)+volExtra+MULTIEXCESS); allReagents.append(R_MQB)
 
 #R_PCRA=Sample("MPCRA",e.REAGENTPLATE,len(allReagents),2.0); allReagents.append(R_PCRA)
 #R_PCRB=Sample("MPCRB",e.REAGENTPLATE,len(allReagents),2.0); allReagents.append(R_PCRB)
@@ -168,6 +169,8 @@ if len(S_PCR)>0:
 
 e.w.userprompt("Process complete. Continue to turn off reagent cooler")
 e.setreagenttemp(None)
+
+Sample.printallsamples("At completion")
 
 # Save worklist to a file
 #e.saveworklist("trp1.gwl")
