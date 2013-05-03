@@ -197,12 +197,12 @@ class WorkList(object):
         airgap=20  # ul
         airgapSpeed=20 # ul/sec
         retractSpeed=30 # mm/sec
-        fastWash=0
+        fastWash=1
         lowVolume=0
         atFreq=1000  # Hz, For Active tip
         self.list.append('Periodic_Wash(%d,%d,%d,%d,%d,%.1f,%d,%.1f,%d,%.1f,%d,%d,%d,%d,%d,%d)'%(tipMask,wasteLoc[0],wasteLoc[1],cleanerLoc[0],cleanerLoc[1],wasteVol,wasteDelay,cleanerVol,cleanerDelay,airgap, airgapSpeed, retractSpeed, fastWash, lowVolume, period, atFreq))
                          
-    def vector(self, vector,loc, direction, andBack, safeAction, endAction, slow=True):
+    def vector(self, vector,loc, direction, andBack, safeAction, endAction, slow=False):
         'Move ROMA.  Gripper actions=0 (open), 1 (close), 2 (do not move).'
         if slow:
             speed=1
