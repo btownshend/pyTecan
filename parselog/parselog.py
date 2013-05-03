@@ -218,7 +218,12 @@ while True:
     if debug:
         print "\tcode=%s(%d),time=%s,cmd=%s"%(code,ord(code[0]),time,cmd)
     if code[0]==' ':
-        code=prevcode
+          if prevcode[0]!='D':
+                # print "Copying previous code: %c"%prevcode
+                code=prevcode
+          else:
+                print "Blank code, previous=D, assuming new one is F"
+                code='F';
     if len(time)<1 or time[0]==' ':
         time=prevtime
     prevcode=code
