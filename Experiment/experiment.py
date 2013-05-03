@@ -103,7 +103,7 @@ class Experiment(object):
 
             if mix[0] and not src.isMixed:
                 src.mix(tipMask,self.w)
-            src.aspirate(tipMask,self.w,sum(volumes))
+            src.aspirate(tipMask,self.w,sum(volumes),True)
             for i in range(len(dests)):
                 if volumes[i]>0:
                     dests[i].dispense(tipMask,self.w,volumes[i],src.conc)

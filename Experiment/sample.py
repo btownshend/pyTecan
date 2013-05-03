@@ -5,7 +5,7 @@ from worklist import WorkList
 defaultMixFrac = 0.9
 defaultMixLeave = 3
 MINLIQUIDDETECTVOLUME=50
-
+MULTIEXCESS=2  # Excess volume aspirate when using multi-dispense
 _Sample__allsamples = []
 
 class Sample(object):
@@ -40,9 +40,11 @@ class Sample(object):
         if self.conc!=None:
             self.conc=self.conc*factor
 
-    def aspirate(self,tipMask,w,volume):
+    def aspirate(self,tipMask,w,volume,multi=False):
         w.aspirate(tipMask,[self.well],self.chooseLC(True),volume,self.plate)
         self.volume=self.volume-volume
+        if multi:
+            self.volume=self.volume-MULTIEXCESS
         if self.volume<0:
             print "Warning: %s is now short by %.1f ul"%(self.name,-self.volume)
             
