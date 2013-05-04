@@ -148,3 +148,15 @@ class PTC:
     def erase(self, pgm):
         res = self.execute('ERASE "%s"'%pgm)
         return res
+
+    def program(self,folder,name,cmds):
+        self.execute('ERASE "%s"'%name)
+        self.execute('PROGRAM "%s"'%name)
+        self.execute('METHOD CALC')
+        for cmd in cmds:
+            self.execute(cmd)
+        self.execute('END')
+        result=self.execute('BURN "%s","%s"'%(name,folder))
+        print "Programmed %s: %s"%(name,result)
+        
+        
