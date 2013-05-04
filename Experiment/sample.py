@@ -29,6 +29,7 @@ class Sample(object):
         self.initvolume=volume
         self.bottomLC=liquidclass.LC("%s-Bottom"%liquidClass.name,liquidClass.singletag,liquidClass.multicond,liquidClass.multiexcess)
         self.inliquidLC=liquidclass.LC("%s-InLiquid"%liquidClass.name,liquidClass.singletag,liquidClass.multicond,liquidClass.multiexcess)
+        self.mixLC=liquidclass.LC("%s-Mix"%liquidClass.name,liquidClass.singletag,liquidClass.multicond,liquidClass.multiexcess)
         # Same as empty for now 
         self.emptyLC=liquidclass.LC("%s-Bottom"%liquidClass.name,liquidClass.singletag,liquidClass.multicond,liquidClass.multiexcess)
         self.history=""
@@ -89,8 +90,12 @@ class Sample(object):
         mixvol=min(self.volume*mixFrac,self.volume-defaultMixLeave)
         if mixvol<2:
             print "Not enough volume in sample %s to mix"%self.name
-        else:
+        elif mixvol<20:
             w.mix(tipMask,[self.well],self.chooseLC(),mixvol,self.plate,3)
+            self.isMixed=True
+        else:
+            # Use special mix LC which aspirates from bottom, dispenses above, faster aspirate
+            w.mix(tipMask,[self.well],self.mixLC,mixvol,self.plate,3)
             self.isMixed=True
             
     def __str__(self):

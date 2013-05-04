@@ -1,0 +1,13 @@
+# Setup TRP programs on PTC
+import ptc
+
+p=ptc.PTC()   # 10s timeout
+p.setdebug()
+p.execute('FOLDER "TRP"')
+p.program('TRP','TRPOMNI',['TEMP 37,3000'])
+p.program('TRP','TRPT7',['TEMP 37,900'])
+p.program('TRP','TRPANN',['TEMP 95,60','TEMP 25,1','RATE 0.5'])
+p.program('TRP','TRPLIG',['TEMP 16,1800','TEMP 65,600'])
+
+pgms=p.programs("TRP")
+print "pgms=",pgms

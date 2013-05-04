@@ -73,13 +73,15 @@ R_MNegRT=Sample("MNegRT",e.REAGENTPLATE,len(allReagents),2,negRT*volRT/2+volExtr
 R_MLigB=Sample("MLigB",e.REAGENTPLATE,len(allReagents),1.25,nExt*volExt/1.25+volExtra+MULTIEXCESS); allReagents.append(R_MLigB)
 R_MLigase=Sample("MLigase",e.REAGENTPLATE,len(allReagents),2,nExt*volExt*2/2+volExtra); allReagents.append(R_MLigase)
 
-R_MQA=Sample("MQA",e.REAGENTPLATE,len(allReagents),20.0/12,nQPCRAB*volQPCR/(20.0/12)+volExtra+MULTIEXCESS); allReagents.append(R_MQA)
-R_MQB=Sample("MQB",e.REAGENTPLATE,len(allReagents),20.0/12,nQPCRAB*volQPCR/(20.0/12)+volExtra+MULTIEXCESS); allReagents.append(R_MQB)
+R_MQA=Sample("MQA",e.REAGENTPLATE,len(allReagents),20.0/12,nQPCRAB*volQPCR/(20.0/12)+volExtra); allReagents.append(R_MQA)
+R_MQB=Sample("MQB",e.REAGENTPLATE,len(allReagents),20.0/12,nQPCRAB*volQPCR/(20.0/12)+volExtra); allReagents.append(R_MQB)
 
 #R_PCRA=Sample("MPCRA",e.REAGENTPLATE,len(allReagents),2.0); allReagents.append(R_PCRA)
 #R_PCRB=Sample("MPCRB",e.REAGENTPLATE,len(allReagents),2.0); allReagents.append(R_PCRB)
 
 totaldilution=1
+
+Sample.printallsamples("At start")
 
 ### T7 
 
@@ -97,7 +99,7 @@ for i in range(nreplicates):
     e.stage('T7M',[R_MT7],templates,S_T7MINUS[i*nTemplates:(i+1)*nTemplates],volT7)
     if plusTheo:
         e.stage('T7P',[R_MT7,R_Theo],templates,S_T7PLUS[i*nTemplates:(i+1)*nTemplates],volT7)
-e.runpgm("37-15MIN",15)
+e.runpgm("TRPT7",15)
 
 ## Stop
 e.dilute(S_T7,2);totaldilution*=2
@@ -112,23 +114,27 @@ e.stage('RTPos',[R_MOS],S_T7,S_RTPos,volRT)
 
 S_RTNeg=[Sample("R1.RTNeg.%d"%i,e.SAMPLEPLATE,i+spos) for i in range(negRT)]; spos=spos+negRT
 e.stage('RTNeg',[R_MNegRT],S_T7[0:negRT],S_RTNeg,volRT)
-e.runpgm("TRP-OS",50)
 
 S_RT=S_RTPos+S_RTNeg
 assert(nRT==len(S_RT))
+e.runpgm("TRPOMNI",50)
 
+## RT dilution
+e.dilute(S_RT,10); totaldilution*=10
+e.stage('RTDilute',[],[],S_RT,volRT*10)
+        
 ## Extension
 e.dilute(S_RT,5);totaldilution*=5
 S_EXT=[Sample("R1.EXT.%d"%i,e.SAMPLEPLATE,i+spos) for i in range(nExt)]; spos=spos+nExt
 e.stage('LigAnneal',[R_MLigB],S_RT,S_EXT,volExt)
-e.runpgm("TRP-ANNEAL",5)
+e.runpgm("TRPANN",5)
 
 e.dilute(S_EXT,2); totaldilution*=2
 e.stage('Ligation',[R_MLigase],[],S_EXT,2*volExt)
-e.runpgm("TRP-EXTEND",40)
+e.runpgm("TRPLIG",40)
 
 ## Dilute for PCR
-e.dilute(S_EXT,20);totaldilution*=200/(20*scale)
+e.dilute(S_EXT,200/(20*scale));totaldilution*=200/(20*scale)
 e.stage('PrePCR-Dilute',[],[],S_EXT,200)
         
 ## PCR
@@ -148,9 +154,9 @@ S_PCR=S_PCRA+S_PCRB
 e.dilute(S_EXT,0.5); totaldilution*=0.5   # Back out dilution used for qPCR setup
 
 ## qPCR
-if totaldilution<2000:
+if totaldilution<40000:
     S_QPCRDIL=[Sample("R1.QPCRDIL.%d"%i,e.SAMPLEPLATE,i+spos) for i in range(nExt)]; spos=spos+nExt
-    e.dilute(S_EXT,2000/totaldilution); 
+    e.dilute(S_EXT,40000/totaldilution); 
     e.stage('qPCR-Dilute',[],S_EXT,S_QPCRDIL,200)
 else:
     S_QPCRDIL=S_EXT
@@ -159,6 +165,8 @@ e.dilute(S_QPCRDIL,20.0/8);
 
 S_QPCR_A=[Sample("R1.QPCR.A.%d"%i,e.QPCRPLATE,i+qpos) for i in range(nQPCRAB)]; qpos=qpos+nQPCRAB
 e.stage('QPCRA',[R_MQA],S_QPCRDIL,S_QPCR_A,volQPCR)
+(col,row)=divmod(qpos,8)
+qpos=(col+1)*8  # Start in next column for B
 S_QPCR_B=[Sample("R1.QPCR.B.%d"%i,e.QPCRPLATE,i+qpos) for i in range(nQPCRAB)]; qpos=qpos+nQPCRAB
 e.stage('QPCRA',[R_MQB],S_QPCRDIL,S_QPCR_B,volQPCR)
 S_QPCR=S_QPCR_A+S_QPCR_B

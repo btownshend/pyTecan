@@ -74,7 +74,7 @@ class Experiment(object):
             # Same volume for each dest
             volumes=[volumes for i in range(len(dests))]
         assert(len(volumes)==len(dests))
-        if mix[1]==False and len(volumes)>1:
+        if mix[1]==False and len(volumes)>1 and max([d.volume for d in dests])<.01:
             if sum(volumes)>self.MAXVOLUME:
                 print "sum(volumes)=%.1f, MAXVOL=%.1f"%(sum(volumes),self.MAXVOLUME)
                 for i in range(1,len(volumes)):
@@ -160,7 +160,8 @@ class Experiment(object):
         # Pipette reagents into sample wells (multi)
         # Pipette sources into sample wells
         # Concs are in x (>=1)
-        Sample.printallsamples("Before "+stagename)
+        #        Sample.printallsamples("Before "+stagename)
+        print "\nStage: ", stagename
         self.w.comment(stagename)
         assert(volume>0)
         volume=float(volume)
@@ -173,9 +174,9 @@ class Experiment(object):
         else:
             watervols=[volume-sum(reagentvols)-samples[i].volume for i in range(len(samples))]
 
-        assert(min(watervols)>=0)
+        assert(min(watervols)>=-0.01)
         if sum(watervols)>0.01:
-            self.multitransfer(watervols,self.WATER,samples,(False,False))
+            self.multitransfer(watervols,self.WATER,samples,(False,len(reagents)+len(sources)==0))
 
         for i in range(len(reagents)):
             self.multitransfer(reagentvols[i],reagents[i],samples,(True,len(sources)==0))
@@ -199,7 +200,7 @@ class Experiment(object):
         self.w.vector("PTC200lid",self.PTCPOS,self.w.SAFETOEND,True,self.w.DONOTMOVE,self.w.OPEN)
         self.w.romahome()
         self.w.pyrun("PTC\\ptclid.py CLOSE")
-        pgm="PAUSE30"  # For debugging
+        #        pgm="PAUSE30"  # For debugging
         self.w.pyrun('PTC\\ptcrun.py %s CALC ON'%pgm)
         self.w.elapsed+=duration*60
         self.w.pyrun('PTC\\ptcwait.py')
