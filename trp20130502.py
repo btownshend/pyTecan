@@ -10,7 +10,7 @@ import sys
 templates=[]
 #templates=[R_L2b12,R_L2b12Cntl]
 nTemplates=max(1,len(templates))
-nreplicates=1   # Number of replicates of each template
+nreplicates=2   # Number of replicates of each template
 plusTheo=True
 
 ## RT parameters
@@ -100,6 +100,7 @@ for i in range(nreplicates):
     if plusTheo:
         e.stage('T7P',[R_MT7,R_Theo],templates,S_T7PLUS[i*nTemplates:(i+1)*nTemplates],volT7)
 e.runpgm("TRPT7",15)
+e.w.userprompt("T7 complete, plate should be back on deck. Press return to continue")
 
 ## Stop
 e.dilute(S_T7,2);totaldilution*=2
@@ -118,6 +119,7 @@ e.stage('RTNeg',[R_MNegRT],S_T7[0:negRT],S_RTNeg,volRT)
 S_RT=S_RTPos+S_RTNeg
 assert(nRT==len(S_RT))
 e.runpgm("TRPOMNI",50)
+e.w.userprompt("Omniscript complete, plate should be back on deck. Press return to continue")
 
 ## RT dilution
 e.dilute(S_RT,10); totaldilution*=10
@@ -128,10 +130,12 @@ e.dilute(S_RT,5);totaldilution*=5
 S_EXT=[Sample("R1.EXT.%d"%i,e.SAMPLEPLATE,i+spos) for i in range(nExt)]; spos=spos+nExt
 e.stage('LigAnneal',[R_MLigB],S_RT,S_EXT,volExt)
 e.runpgm("TRPANN",5)
+e.w.userprompt("Anneal complete, plate should be back on deck. Press return to continue")
 
 e.dilute(S_EXT,2); totaldilution*=2
 e.stage('Ligation',[R_MLigase],[],S_EXT,2*volExt)
 e.runpgm("TRPLIG",40)
+e.w.userprompt("Ligation complete, plate should be back on deck. Press return to continue")
 
 ## Dilute for PCR
 e.dilute(S_EXT,200/(20*scale));totaldilution*=200/(20*scale)
@@ -174,6 +178,7 @@ S_QPCR=S_QPCR_A+S_QPCR_B
 # Run PCR program
 if len(S_PCR)>0:
     e.runpgm("PCR",60)
+    e.w.userprompt("PCR complete, plate should be back on deck. Press return to continue")
 
 e.w.userprompt("Process complete. Continue to turn off reagent cooler")
 e.setreagenttemp(None)
