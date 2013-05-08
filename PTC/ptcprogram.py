@@ -8,6 +8,6 @@ p.program('TRP','TRPOMNI',['TEMP 37,3000'])
 p.program('TRP','TRPT7',['TEMP 37,900'])
 p.program('TRP','TRPANN',['TEMP 95,60','TEMP 25,1','RATE 0.5'])
 p.program('TRP','TRPLIG',['TEMP 16,1800','TEMP 65,600'])
-
+p.program('TRP','COOLDOWN',['TEMP 16,60'])
 pgms=p.programs("TRP")
 print "pgms=",pgms

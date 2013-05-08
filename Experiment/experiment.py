@@ -205,6 +205,8 @@ class Experiment(object):
         self.w.elapsed+=duration*60
         self.w.pyrun('PTC\\ptcwait.py')
         self.w.pyrun("PTC\\ptclid.py OPEN")
+        self.w.pyrun('PTC\\ptcrun.py %s CALC ON'%"COOLDOWN")
+        self.w.pyrun('PTC\\ptcwait.py')
         self.w.vector("PTC200lid",self.PTCPOS,self.w.SAFETOEND,True,self.w.DONOTMOVE,self.w.CLOSE)
         self.w.vector("Hotel 1 Lid",self.HOTELPOS,self.w.SAFETOEND,True,self.w.DONOTMOVE,self.w.OPEN)
         self.w.vector("PTC200",self.PTCPOS,self.w.SAFETOEND,True,self.w.DONOTMOVE,self.w.CLOSE)
