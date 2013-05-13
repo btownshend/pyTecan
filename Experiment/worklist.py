@@ -45,15 +45,23 @@ class WorkList(object):
             s=s+chr(0x30+bitMask)
         return s
 
+    def moveliha(self, loc):
+        self.delayedDispense(15)
+        tipMask=1
+        speed=10   # 0.1-400 (mm/s)
+        self.list.append( 'MoveLiha(%d,%d,%d,1,"01041",0,4,0,%.1f,0)'%(tipMask,loc.grid,loc.pos-1,speed))
+   
     #def aspirate(tipMask, liquidClass, volume, loc, spacing, ws):
     def aspirate(self,tipMask,wells, liquidClass, volume, loc):
         self.aspirateDispense('Aspirate',tipMask,wells, liquidClass, volume, loc)
+        self.elapsed+=6.1
 
     def dispense(self,tipMask,wells, liquidClass, volume, loc):
         self.aspirateDispense('Dispense',tipMask,wells, liquidClass, volume, loc)
 
     def mix(self,tipMask,wells, liquidClass, volume, loc, cycles=3):
         self.aspirateDispense('Mix',tipMask,wells, liquidClass, volume, loc, cycles)
+        self.elapsed+=9.8
         
     def aspirateDispense(self,op,tipMask,wells, liquidClass, volume, loc, cycles=None):
         assert(isinstance(loc,Plate))
@@ -130,7 +138,6 @@ class WorkList(object):
             self.list.append( '%s(%d,"%s",%s,%d,%d,%d,"%s",%d,0)'%(op,tipMask,liquidClass,volstr,loc.grid,loc.pos-1,spacing,ws,cycles))
         else:
             self.list.append( '%s(%d,"%s",%s,%d,%d,%d,"%s",0)'%(op,tipMask,liquidClass,volstr,loc.grid,loc.pos-1,spacing,ws))
-        self.elapsed+=4
         
     # Get DITI
     def getDITI(self, tipMask, volume, retry=True,multi=False):
@@ -185,7 +192,7 @@ class WorkList(object):
         atFreq=1000  # Hz, For Active tip
         self.list.append('Wash(%d,%d,%d,%d,%d,%.1f,%d,%.1f,%d,%.1f,%d,%d,%d,%d,%d)'%(tipMask,wasteLoc[0],wasteLoc[1],cleanerLoc[0],cleanerLoc[1],wasteVol,wasteDelay,cleanerVol,cleanerDelay,airgap, airgapSpeed, retractSpeed, fastWash, lowVolume, atFreq))
         print "Wash %d"%tipMask
-        self.elapsed+=11
+        self.elapsed+=11.8
         
     def periodicWash(self,tipMask,period):
         wasteLoc=(1,1)
@@ -213,11 +220,12 @@ class WorkList(object):
         else:
             andBack=0
         self.list.append('Vector("%s",%d,%d,%d,%d,%d,%d,%d,0)'%(vector,loc.grid,loc.pos,direction,andBack,safeAction, endAction, speed))
-        self.elapsed+=12
+        self.elapsed+=6.7
         
     def romahome(self):
         self.list.append('ROMA(2,0,0,0,0,0,60,0,0)')
-        self.elapsed+=5
+        self.elapsed+=1.5
+
         
     def userprompt(self, text, beeps=0, closetime=-1):
         'Prompt the user with text.  Beeps = 0 (no sound), 1 (once), 2 (three times), 3 (every 3 seconds).  Close after closetime seconds if > -1'
@@ -246,7 +254,7 @@ class WorkList(object):
         else:
             resultvar=""
         self.list.append('Execute("%s",%d,"%s")'%(command,flags,resultvar))
-        self.elapsed+=5
+        self.elapsed+=5   # Just overhead time, not actually time that command itself takes
         
     def pyrun(self, cmd):
         self.execute("C:\Python27\python.exe C:\cygwin\Home\Admin\%s"%cmd)
