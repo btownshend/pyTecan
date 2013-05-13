@@ -3,18 +3,22 @@ from sample import Sample
 import os.path
 
 class Experiment(object):
+    WASHLOC=Plate("Wash",1,2,1,8)
     REAGENTPLATE=Plate("Reagents",3,1,12,8)
     SAMPLEPLATE=Plate("Samples",10,3,12,8)
     READERPLATE=Plate("Reader",10,2,12,8)
     QPCRPLATE=Plate("qPCR",10,2,12,8)
     WATERLOC=Plate("Water",17,2,1,4)
+    RNASEAWAYLOC=Plate("Water",17,1,1,4)
     PTCPOS=Plate("PTC",25,1,1,1)
     HOTELPOS=Plate("Hotel",25,0,1,1)
     WASTE=Plate("Waste",20,3,1,1)
     EPPENDORFS=Plate("Eppendorfs",19,1,1,16)
     WATER=Sample("Water",WATERLOC,0,None,10000)
+    RNASEAWAY=Sample("RNase-Away",RNASEAWAYLOC,0,None,10000)
+    
     DITIMASK=12   # Which tips are DiTis
-    headerfile=os.path.expanduser("~/Dropbox/Synbio/src/pyTecan/header.gem")
+    headerfile=os.path.expanduser("~/Dropbox/Synbio/Robot/pyTecan/header.gem")
 
     RPTEXTRA=0   # Extra amount when repeat pipetting
     MAXVOLUME=200  # Maximum volume for pipetting in ul
@@ -25,6 +29,8 @@ class Experiment(object):
         self.w.wash(15)
         self.cleanTips=(~self.DITIMASK)&15
         self.useDiTis=False
+        self.thermotime=0
+        
         #        self.w.periodicWash(15,4)
         
     def setreagenttemp(self,temp=None):
@@ -48,14 +54,23 @@ class Experiment(object):
         print >>fd,self.QPCRPLATE
         print >>fd,self.WATERLOC
         print >>fd,self.WASTE
+        print >>fd,self.RNASEAWAYLOC
+        print >>fd,self.WASHLOC
+        
         print >>fd
         print >>fd,"DiTi usage:",self.w.getDITIcnt()
         print >>fd
 
-        print >>fd,"Total run time (except thermocycler): %d minutes\n"%(self.w.elapsed/60.0)
+        print >>fd,"Run time: %d (pipetting) + %d (thermocycling) = %d minutes\n"%(self.w.elapsed/60.0,self.thermotime/60, (self.w.elapsed+self.thermotime)/60)
         Sample.printprep(fd)
         Sample.printallsamples("All Samples:",fd)
         
+    def sanitize(self):
+        'Deep wash including RNase-Away treatment'
+        self.w.wash(15,1,2)
+        self.w.mix(3,[0,1],self.RNASEAWAY.bottomLC,190,self.RNASEAWAY.plate,3);
+        self.w.wash(3,1,10,True)
+                
     def cleantip(self):
         'Get the mask for a clean tip, washing if needed'
         if self.cleanTips==0:
@@ -105,14 +120,15 @@ class Experiment(object):
                 src.mix(tipMask,self.w)
             src.aspirate(tipMask,self.w,sum(volumes),True)
             for i in range(len(dests)):
-                if volumes[i]>0:
+                if volumes[i]>0.01:
                     dests[i].dispense(tipMask,self.w,volumes[i],src.conc)
                     dests[i].addhistory(src.name,volumes[i])
             if self.useDiTis and dropDITI:
                 self.w.dropDITI(tipMask&self.DITIMASK,self.WASTE)
         else:
             for i in range(len(dests)):
-                self.transfer(volumes[i],src,dests[i],(mix[0] and i==0,mix[1]),getDITI,dropDITI)
+                if volumes[i]>0.01:
+                    self.transfer(volumes[i],src,dests[i],(mix[0] and i==0,mix[1]),getDITI,dropDITI)
 
     def transfer(self, volume, src, dest, mix=(False,False), getDITI=True, dropDITI=True):
         if volume>self.MAXVOLUME:
@@ -155,7 +171,7 @@ class Experiment(object):
         if self.useDiTis and dropDITI:
             self.w.dropDITI(tipMask&self.DITIMASK,self.WASTE)
 
-    def stage(self,stagename,reagents,sources,samples,volume):
+    def stage(self,stagename,reagents,sources,samples,volume,finalconc=1):
         # Add water to sample wells as needed (multi)
         # Pipette reagents into sample wells (multi)
         # Pipette sources into sample wells
@@ -165,16 +181,19 @@ class Experiment(object):
         self.w.comment(stagename)
         assert(volume>0)
         volume=float(volume)
-        reagentvols=[volume/x.conc for x in reagents]
+        reagentvols=[volume/x.conc*finalconc for x in reagents]
         if len(sources)>0:
-            sourcevols=[volume/x.conc for x in sources]
+            sourcevols=[volume/x.conc*finalconc for x in sources]
             while len(sourcevols)<len(samples):
                 sourcevols.append(0)
             watervols=[volume-sum(reagentvols)-samples[i].volume-sourcevols[i] for i in range(len(samples))]
         else:
             watervols=[volume-sum(reagentvols)-samples[i].volume for i in range(len(samples))]
 
-        assert(min(watervols)>=-0.01)
+        if min(watervols)<-0.01:
+            print "Error: Ingredients add up to more than desired volume;  need to add water=",watervols
+            assert(False)
+
         if sum(watervols)>0.01:
             self.multitransfer(watervols,self.WATER,samples,(False,len(reagents)+len(sources)==0))
 
@@ -187,11 +206,15 @@ class Experiment(object):
                 self.transfer(sourcevols[i],sources[i],samples[i],(True,True))
 
 
+    def lihahome(self):
+        'Move LiHa to left of deck'
+        self.w.moveliha(self.WASHLOC)
+        
     def runpgm(self,pgm,duration):
         # move to thermocycler
         cmt="run %s"%pgm
         self.w.comment(cmt)
-        self.w.wash(15)   # Get LiHa out of the way
+        self.lihahome()
         print "*",cmt
         self.w.pyrun("PTC\\ptclid.py OPEN")
         self.w.vector("Microplate Landscape",self.SAMPLEPLATE,self.w.SAFETOEND,True,self.w.DONOTMOVE,self.w.CLOSE)
@@ -202,7 +225,9 @@ class Experiment(object):
         self.w.pyrun("PTC\\ptclid.py CLOSE")
         #        pgm="PAUSE30"  # For debugging
         self.w.pyrun('PTC\\ptcrun.py %s CALC ON'%pgm)
-        self.w.elapsed+=duration*60
+        e1=self.w.elapsed
+        self.sanitize()   # Sanitize tips before waiting for this to be done
+        self.thermotime+=duration*60-(self.w.elapsed-e1)
         self.w.pyrun('PTC\\ptcwait.py')
         self.w.pyrun("PTC\\ptclid.py OPEN")
         self.w.pyrun('PTC\\ptcrun.py %s CALC ON'%"COOLDOWN")

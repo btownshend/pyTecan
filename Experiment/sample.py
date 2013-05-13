@@ -36,6 +36,16 @@ class Sample(object):
         __allsamples.append(self)
         self.isMixed=volume==0
 
+    @classmethod
+    def clearall(cls):
+        'Clear all samples'
+        for s in __allsamples:
+            s.volume=s.initvolume
+            s.history=""
+            s.isMixed=s.volume==0
+            if s.volume==0:
+                s.conc=None
+            
     def dilute(self,factor):
         'Dilute sample -- just increases its recorded concentration'
         if self.conc!=None:
@@ -46,6 +56,9 @@ class Sample(object):
         self.volume=self.volume-volume
         if multi:
             self.volume=self.volume-MULTIEXCESS
+            self.addhistory("",-volume-MULTIEXCESS)
+        else:
+            self.addhistory("",-volume)
         if self.volume<0:
             print "Warning: %s is now short by %.1f ul"%(self.name,-self.volume)
             
@@ -70,10 +83,18 @@ class Sample(object):
         self.volume=self.volume+volume
 
     def addhistory(self,name,vol):
-        if len(self.history)>0:
-            self.history=self.history+"+%s[%.1f]"%(name,vol)
-        else:
-            self.history="%s[%.1f]"%(name,vol)
+        if vol>0:
+            str="%s[%.1f]"%(name,vol)
+            if len(self.history)>0:
+                self.history=self.history+"+"+str
+            else:
+                self.history=str
+        elif vol<0:
+            str="-%.1f"%(-vol)
+            if len(self.history)>0:
+                self.history=self.history+str
+            else:
+                self.history=str
         
     def chooseLC(self,isAspirate=False):
         if self.volume>MINLIQUIDDETECTVOLUME:
