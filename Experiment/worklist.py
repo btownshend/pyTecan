@@ -177,12 +177,14 @@ class WorkList(object):
         self.list.append('DropDITI(%d,%d,%d,%f,%d)'%(tipMask,loc.grid,loc.pos-1,airgap,airgapSpeed))
         self.elapsed+=2
         
-    def wash(self, tipMask):
+    def wash(self, tipMask,wasteVol=1,cleanerVol=2,deepClean=False):
+        self.delayedDispense(tipMask)
         wasteLoc=(1,1)
-        cleanerLoc=(1,0)
-        wasteVol=1  # in ml
+        if deepClean:
+            cleanerLoc=(1,2)
+        else:
+            cleanerLoc=(1,0)
         wasteDelay=500 # in msec
-        cleanerVol=0.5 # in ml
         cleanerDelay=500 # in msec
         airgap=10  # ul
         airgapSpeed=20 # ul/sec
@@ -191,7 +193,6 @@ class WorkList(object):
         lowVolume=0
         atFreq=1000  # Hz, For Active tip
         self.list.append('Wash(%d,%d,%d,%d,%d,%.1f,%d,%.1f,%d,%.1f,%d,%d,%d,%d,%d)'%(tipMask,wasteLoc[0],wasteLoc[1],cleanerLoc[0],cleanerLoc[1],wasteVol,wasteDelay,cleanerVol,cleanerDelay,airgap, airgapSpeed, retractSpeed, fastWash, lowVolume, atFreq))
-        print "Wash %d"%tipMask
         self.elapsed+=11.8
         
     def periodicWash(self,tipMask,period):
