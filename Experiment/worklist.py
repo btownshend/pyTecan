@@ -20,7 +20,9 @@ class WorkList(object):
         self.volumes={}
         self.diticnt=[0,0,0,0]   # Indexed by DiTi Type
         self.elapsed=0   # Self.Elapsed time in seconds
-
+        self.delayEnabled=True
+        self.dispenseQueue=[]
+        
     def bin(s):
         return str(s) if s<=1 else bin(s>>1) + str(s&1)
 
@@ -53,13 +55,37 @@ class WorkList(object):
    
     #def aspirate(tipMask, liquidClass, volume, loc, spacing, ws):
     def aspirate(self,tipMask,wells, liquidClass, volume, loc):
+        self.delayedDispense(tipMask,loc,wells)
         self.aspirateDispense('Aspirate',tipMask,wells, liquidClass, volume, loc)
         self.elapsed+=6.1
 
-    def dispense(self,tipMask,wells, liquidClass, volume, loc):
-        self.aspirateDispense('Dispense',tipMask,wells, liquidClass, volume, loc)
+    def delayedDispense(self,tipMask,loc=None,wells=None):
+        'Execute any delayed dispense if any in queue use tipMask or dispense into given (loc,wells)'
+        doFlush=False
+        for d in self.dispenseQueue:
+            if (tipMask&d[0]) != 0:
+                doFlush=True
+                break
+            print "loc=",loc, "wells=",wells, "d=",d
+            if loc!=None and d[4]==loc and wells!=None and len([val for val in wells if val in d[1]])>0:
+                print "Flushing due to well contention"
+                doFlush=True
+                break
+            
+        if doFlush:
+            for d in self.dispenseQueue:
+                self.dispense(d[0],d[1],d[2],d[3],d[4],False)
+            self.dispenseQueue=[]
+        
+    def dispense(self,tipMask,wells, liquidClass, volume, loc,allowDelay=True):
+        if self.delayEnabled and allowDelay:
+            self.dispenseQueue.append([tipMask,wells,liquidClass,volume,loc])
+        else:
+            self.aspirateDispense('Dispense',tipMask,wells, liquidClass, volume, loc)
+            self.elapsed+=4.1
 
     def mix(self,tipMask,wells, liquidClass, volume, loc, cycles=3):
+        self.delayedDispense(tipMask)
         self.aspirateDispense('Mix',tipMask,wells, liquidClass, volume, loc, cycles)
         self.elapsed+=9.8
         
@@ -141,6 +167,7 @@ class WorkList(object):
         
     # Get DITI
     def getDITI(self, tipMask, volume, retry=True,multi=False):
+        self.delayedDispense(tipMask)
         MAXVOL10=10
         MAXVOL200=200
         
@@ -171,6 +198,7 @@ class WorkList(object):
 
     def dropDITI(self, tipMask, loc, airgap=10, airgapSpeed=70):
         'Drop DITI, airgap is in ul, speed in ul/sec'
+        self.delayedDispense(tipMask)
         assert(tipMask>=1 and tipMask<=15)
         assert(airgap>=0 and airgap<=100)
         assert(airgapSpeed>=1 and airgapSpeed<1000)
@@ -193,6 +221,7 @@ class WorkList(object):
         lowVolume=0
         atFreq=1000  # Hz, For Active tip
         self.list.append('Wash(%d,%d,%d,%d,%d,%.1f,%d,%.1f,%d,%.1f,%d,%d,%d,%d,%d)'%(tipMask,wasteLoc[0],wasteLoc[1],cleanerLoc[0],cleanerLoc[1],wasteVol,wasteDelay,cleanerVol,cleanerDelay,airgap, airgapSpeed, retractSpeed, fastWash, lowVolume, atFreq))
+        print "Wash %d,%.1fml,%.1fml,deep="%(tipMask,wasteVol,cleanerVol),deepClean
         self.elapsed+=11.8
         
     def periodicWash(self,tipMask,period):
