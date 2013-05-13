@@ -1,3 +1,6 @@
+import debughook
+import time
+
 'Parse a GEMINI log file'
 debug=False
 
@@ -205,6 +208,10 @@ prevcode='?'
 prevtime='?'
 send={}
 error=False
+lastgeminicmd=None
+lastgeminitime=None
+geminicmdtimes={}
+geminicmdcnt={}
 while True:
     line=fd.readline()
     if len(line)==0:
@@ -213,10 +220,10 @@ while True:
     if len(line)==0:
         continue
     code=line[0]
-    time=line[2:10]
+    gtime=line[2:10]
     cmd=line[11:]
     if debug:
-        print "\tcode=%s(%d),time=%s,cmd=%s"%(code,ord(code[0]),time,cmd)
+        print "\tcode=%s(%d),time=%s,cmd=%s"%(code,ord(code[0]),gtime,cmd)
     if code[0]==' ':
           if prevcode[0]!='D':
                 # print "Copying previous code: %c"%prevcode
@@ -224,10 +231,10 @@ while True:
           else:
                 print "Blank code, previous=D, assuming new one is F"
                 code='F';
-    if len(time)<1 or time[0]==' ':
-        time=prevtime
+    if len(gtime)<1 or gtime[0]==' ':
+        gtime=prevtime
     prevcode=code
-    prevtime=time
+    prevtime=gtime
     if code[0]=='F':
         spcmd=cmd[1:].split(',')
         dev=spcmd[0][1:]
@@ -247,7 +254,22 @@ while True:
             print "Bad cmd: %s"%cmd
             exit(1)
     else:
-        print "Gemini %s %s"%(time,cmd)
-        
+          print "Gemini %s %s"%(gtime,cmd)
+          if cmd.startswith('Line'):
+                colon=cmd.find(':')
+                cname=cmd[(colon+2):]
+                print "cname=",cname
+                tdata=time.strptime("2013 "+gtime,"%Y %H:%M:%S")
+                t=time.mktime(tdata)
+                if lastgeminicmd!=None:
+                      if lastgeminicmd in geminicmdtimes.keys():
+                            geminicmdtimes[lastgeminicmd]+=(t-lasttime)
+                            geminicmdcnt[lastgeminicmd]+=1
+                      else:
+                            geminicmdtimes[lastgeminicmd]=(t-lasttime)
+                            geminicmdcnt[lastgeminicmd]=1
+                lastgeminicmd=cname
+                lasttime=t
 
-    
+for cmd in geminicmdtimes.keys():
+      print "%s: %.0f seconds for %.0f occurrences:   %.1f second/call"%(cmd,geminicmdtimes[cmd],geminicmdcnt[cmd], geminicmdtimes[cmd]*1.0/geminicmdcnt[cmd])
