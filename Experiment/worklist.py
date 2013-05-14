@@ -52,19 +52,20 @@ class WorkList(object):
         tipMask=15
         speed=10   # 0.1-400 (mm/s)
         self.list.append( 'MoveLiha(%d,%d,%d,1,"0104?",0,4,0,%.1f,0)'%(tipMask,loc.grid,loc.pos-1,speed))
-        self.elapsed+=1.0
+        self.elapsed+=1.8
         
     #def aspirate(tipMask, liquidClass, volume, loc, spacing, ws):
     def aspirate(self,tipMask,wells, liquidClass, volume, loc):
         self.delayedDispense(tipMask,loc,wells)
         self.aspirateDispense('Aspirate',tipMask,wells, liquidClass, volume, loc)
-        self.elapsed+=6.1
+        self.elapsed+=7.0
 
     def delayedDispense(self,tipMask,loc=None,wells=None):
         'Execute any delayed dispense if any in queue use tipMask or dispense into given (loc,wells)'
         doFlush=False
         for d in self.dispenseQueue:
             if (tipMask&d[0]) != 0:
+                print "flushQueue: tipMask=%d, d[0]=%d"%(tipMask,d[0])
                 doFlush=True
                 break
             print "loc=",loc, "wells=",wells, "d=",d
@@ -88,7 +89,7 @@ class WorkList(object):
     def mix(self,tipMask,wells, liquidClass, volume, loc, cycles=3):
         self.delayedDispense(tipMask)
         self.aspirateDispense('Mix',tipMask,wells, liquidClass, volume, loc, cycles)
-        self.elapsed+=9.1
+        self.elapsed+=10.0
         
     def aspirateDispense(self,op,tipMask,wells, liquidClass, volume, loc, cycles=None):
         assert(isinstance(loc,Plate))
@@ -223,7 +224,7 @@ class WorkList(object):
         atFreq=1000  # Hz, For Active tip
         self.list.append('Wash(%d,%d,%d,%d,%d,%.1f,%d,%.1f,%d,%.1f,%d,%d,%d,%d,%d)'%(tipMask,wasteLoc[0],wasteLoc[1],cleanerLoc[0],cleanerLoc[1],wasteVol,wasteDelay,cleanerVol,cleanerDelay,airgap, airgapSpeed, retractSpeed, fastWash, lowVolume, atFreq))
         print "Wash %d,%.1fml,%.1fml,deep="%(tipMask,wasteVol,cleanerVol),deepClean
-        self.elapsed+=11.8
+        self.elapsed+=13.6
         
     def periodicWash(self,tipMask,period):
         wasteLoc=(1,1)
@@ -240,7 +241,7 @@ class WorkList(object):
         atFreq=1000  # Hz, For Active tip
         self.list.append('Periodic_Wash(%d,%d,%d,%d,%d,%.1f,%d,%.1f,%d,%.1f,%d,%d,%d,%d,%d,%d)'%(tipMask,wasteLoc[0],wasteLoc[1],cleanerLoc[0],cleanerLoc[1],wasteVol,wasteDelay,cleanerVol,cleanerDelay,airgap, airgapSpeed, retractSpeed, fastWash, lowVolume, period, atFreq))
                          
-    def vector(self, vector,loc, direction, andBack, safeAction, endAction, slow=False):
+    def vector(self, vector,loc, direction, andBack, initialAction, finalAction, slow=False):
         'Move ROMA.  Gripper actions=0 (open), 1 (close), 2 (do not move).'
         if slow:
             speed=1
@@ -250,8 +251,8 @@ class WorkList(object):
             andBack=1
         else:
             andBack=0
-        self.list.append('Vector("%s",%d,%d,%d,%d,%d,%d,%d,0)'%(vector,loc.grid,loc.pos,direction,andBack,safeAction, endAction, speed))
-        self.elapsed+=6.7
+        self.list.append('Vector("%s",%d,%d,%d,%d,%d,%d,%d,0)'%(vector,loc.grid,loc.pos,direction,andBack,initialAction, finalAction, speed))
+        self.elapsed+=6.0
         
     def romahome(self):
         self.list.append('ROMA(2,0,0,0,0,0,60,0,0)')
