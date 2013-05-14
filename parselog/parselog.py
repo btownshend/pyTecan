@@ -252,7 +252,7 @@ while True:
             send.pop(dev)
         else:
             print "Bad cmd: %s"%cmd
-            exit(1)
+            break
     else:
           print "Gemini %s %s"%(gtime,cmd)
           if cmd.startswith('Line'):
