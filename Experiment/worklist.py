@@ -49,10 +49,11 @@ class WorkList(object):
 
     def moveliha(self, loc):
         self.delayedDispense(15)
-        tipMask=1
+        tipMask=15
         speed=10   # 0.1-400 (mm/s)
-        self.list.append( 'MoveLiha(%d,%d,%d,1,"01041",0,4,0,%.1f,0)'%(tipMask,loc.grid,loc.pos-1,speed))
-   
+        self.list.append( 'MoveLiha(%d,%d,%d,1,"0104?",0,4,0,%.1f,0)'%(tipMask,loc.grid,loc.pos-1,speed))
+        self.elapsed+=1.0
+        
     #def aspirate(tipMask, liquidClass, volume, loc, spacing, ws):
     def aspirate(self,tipMask,wells, liquidClass, volume, loc):
         self.delayedDispense(tipMask,loc,wells)
@@ -82,12 +83,12 @@ class WorkList(object):
             self.dispenseQueue.append([tipMask,wells,liquidClass,volume,loc])
         else:
             self.aspirateDispense('Dispense',tipMask,wells, liquidClass, volume, loc)
-            self.elapsed+=4.1
+            self.elapsed+=3.5
 
     def mix(self,tipMask,wells, liquidClass, volume, loc, cycles=3):
         self.delayedDispense(tipMask)
         self.aspirateDispense('Mix',tipMask,wells, liquidClass, volume, loc, cycles)
-        self.elapsed+=9.8
+        self.elapsed+=9.1
         
     def aspirateDispense(self,op,tipMask,wells, liquidClass, volume, loc, cycles=None):
         assert(isinstance(loc,Plate))

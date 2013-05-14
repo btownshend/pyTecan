@@ -26,8 +26,8 @@ class Experiment(object):
     def __init__(self):
         'Create a new experiment with given sample locations for water and self.WASTE'
         self.w=WorkList()
-        self.w.wash(15)
-        self.cleanTips=(~self.DITIMASK)&15
+        self.cleanTips=0
+        self.sanitize()
         self.useDiTis=False
         self.thermotime=0
         
@@ -68,9 +68,10 @@ class Experiment(object):
     def sanitize(self):
         'Deep wash including RNase-Away treatment'
         self.w.wash(15,1,2)
-        self.w.mix(3,[0,1],self.RNASEAWAY.bottomLC,190,self.RNASEAWAY.plate,3);
+        self.w.mix(3,[0,1],self.RNASEAWAY.mixLC,200,self.RNASEAWAY.plate,3);
         self.w.wash(3,1,10,True)
-                
+        self.cleanTips|=(~self.DITIMASK)&15
+        
     def cleantip(self):
         'Get the mask for a clean tip, washing if needed'
         if self.cleanTips==0:
