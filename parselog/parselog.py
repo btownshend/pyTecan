@@ -31,6 +31,8 @@ romacmds={
       'RPR':['Report current parameter for rotator-axis',['selector'],['p1','p2','p3','p4','p5','p6','p7','p8']],
       'SAA':['Set coordinate position into table',['tableindex','X','Y','Z','R','G','speed'],[]],
       'SRA':['Set range for absolute field',['X','Y','Z','R','G'],[]],
+      'SGG':['Set gripper parameter',['speed','PWMlimit','CurLimit'],[]],
+      'AGR':['Grip plate',['pos'],[]],
 }      
 m1cmds={
       'RFV':['Report firmare revision',[],['version']],
