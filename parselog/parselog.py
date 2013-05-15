@@ -264,12 +264,14 @@ while True:
                 tdata=time.strptime("2013 "+gtime,"%Y %H:%M:%S")
                 t=time.mktime(tdata)
                 if lastgeminicmd!=None:
-                      if lastgeminicmd in geminicmdtimes.keys():
-                            geminicmdtimes[lastgeminicmd]+=(t-lasttime)
-                            geminicmdcnt[lastgeminicmd]+=1
-                      else:
-                            geminicmdtimes[lastgeminicmd]=(t-lasttime)
-                            geminicmdcnt[lastgeminicmd]=1
+                    if t-lasttime > 30:
+                        print  "Skipping long pause of %d seconds for %s"%(t-lasttime,lastgeminicmd)
+                    elif lastgeminicmd in geminicmdtimes.keys():
+                        geminicmdtimes[lastgeminicmd]+=(t-lasttime)
+                        geminicmdcnt[lastgeminicmd]+=1
+                    else:
+                        geminicmdtimes[lastgeminicmd]=(t-lasttime)
+                        geminicmdcnt[lastgeminicmd]=1
                 lastgeminicmd=cname
                 lasttime=t
 
