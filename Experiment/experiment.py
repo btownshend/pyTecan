@@ -199,7 +199,7 @@ class Experiment(object):
             self.multitransfer(watervols,self.WATER,samples,(False,len(reagents)+len(sources)==0))
 
         for i in range(len(reagents)):
-            self.multitransfer(reagentvols[i],reagents[i],samples,(True,len(sources)==0))
+            self.multitransfer(reagentvols[i],reagents[i],samples,(True,len(sources)==0 and i==len(reagents)-1))
 
         if len(sources)>0:
             assert(len(sources)<=len(samples))
