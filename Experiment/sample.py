@@ -2,8 +2,9 @@ import sys
 import liquidclass
 from worklist import WorkList
 
-defaultMixFrac = 0.9
+defaultMixFrac = 0.6
 defaultMixLeave = 3
+ASPIRATEFACTOR=1.1
 MINLIQUIDDETECTVOLUME=50
 MULTIEXCESS=2  # Excess volume aspirate when using multi-dispense
 _Sample__allsamples = []
@@ -34,7 +35,7 @@ class Sample(object):
         self.emptyLC=liquidclass.LC("%s-Bottom"%liquidClass.name,liquidClass.singletag,liquidClass.multicond,liquidClass.multiexcess)
         self.history=""
         __allsamples.append(self)
-        self.isMixed=volume==0
+        self.isMixed=True
 
     @classmethod
     def clearall(cls):
@@ -42,7 +43,7 @@ class Sample(object):
         for s in __allsamples:
             s.volume=s.initvolume
             s.history=""
-            s.isMixed=s.volume==0
+            s.isMixed=True
             if s.volume==0:
                 s.conc=None
             
@@ -52,7 +53,15 @@ class Sample(object):
             self.conc=self.conc*factor
 
     def aspirate(self,tipMask,w,volume,multi=False):
+        if volume<2 and not multi:
+            print "WARNING: Inaccurate for < 2ul:  attempting to aspirate %.1f ul"%volume
         w.aspirate(tipMask,[self.well],self.chooseLC(True),volume,self.plate)
+        if volume<6:
+            volume=volume+1
+        else:
+            # Aspirates more than dispensed
+            volume=volume*ASPIRATEFACTOR
+            
         self.volume=self.volume-volume
         if multi:
             self.volume=self.volume-MULTIEXCESS
@@ -113,17 +122,21 @@ class Sample(object):
             print "Not enough volume in sample %s to mix"%self.name
         elif mixvol<20:
             w.mix(tipMask,[self.well],self.chooseLC(),mixvol,self.plate,3)
+            self.history+="(MB)"
             self.isMixed=True
         else:
             # Use special mix LC which aspirates from bottom, dispenses above, faster aspirate
-            w.mix(tipMask,[self.well],self.mixLC,mixvol,self.plate,3)
+            for i in range(3):
+                w.aspirate(tipMask,[self.well],self.mixLC,mixvol,self.plate)
+                w.dispense(tipMask,[self.well],self.mixLC,mixvol,self.plate)
+            self.history+="(MT)"
             self.isMixed=True
             
     def __str__(self):
         if self.conc==None:
-            return "%s(%s.%s,%.2f ul,LC=%s) %s"%(self.name,str(self.plate),str(self.well),self.volume,self.bottomLC.name,self.history)
+            return "%s(%s.%s,%.2f ul) %s"%(self.name,str(self.plate),str(self.well),self.volume,self.history)
         else:
-            return "%s(%s.%s,%.2fx,%.2f ul,LC=%s) %s"%(self.name,str(self.plate),str(self.well),self.conc,self.volume,self.bottomLC.name,self.history)
+            return "%s(%s.%s,%.2fx,%.2f ul) %s"%(self.name,str(self.plate),str(self.well),self.conc,self.volume,self.history)
 
     
     @staticmethod
