@@ -90,7 +90,12 @@ class Experiment(object):
             # Same volume for each dest
             volumes=[volumes for i in range(len(dests))]
         assert(len(volumes)==len(dests))
-        if mix[1]==False and len(volumes)>1 and max([d.volume for d in dests])<.01:
+        if len([d.volume for d in dests if d.conc!=None])==0:
+            maxval=0
+        else:
+            maxval=max([d.volume for d in dests if d.conc != None])
+        #print "volumes=",[d.volume for d in dests],", conc=",[d.conc for d in dests],", maxval=",maxval
+        if mix[1]==False and len(volumes)>1 and maxval<.01:
             if sum(volumes)>self.MAXVOLUME:
                 print "sum(volumes)=%.1f, MAXVOL=%.1f"%(sum(volumes),self.MAXVOLUME)
                 for i in range(1,len(volumes)):
