@@ -21,7 +21,7 @@ class WorkList(object):
         self.diticnt=[0,0,0,0]   # Indexed by DiTi Type
         self.elapsed=0   # Self.Elapsed time in seconds
         self.delayEnabled=True
-        self.dispenseQueue=[]
+        self.opQueue=[]
         
     def bin(s):
         return str(s) if s<=1 else bin(s>>1) + str(s&1)
@@ -56,34 +56,34 @@ class WorkList(object):
         
     def optimizeQueue(self):
         'Optimize operations in queue'
-        #for d in self.dispenseQueue:
+        #for d in self.opQueue:
         #   print "PRE-OPT %s:\tTip %d, Loc (%d,%d) Wells %s"%(d[0],d[1],d[5].grid,d[5].pos,str(d[2]))
         # As much as possible, move together operations on a single plate
         newQueue=[]
-        while len(self.dispenseQueue)>0:
-            d1=self.dispenseQueue[0]
+        while len(self.opQueue)>0:
+            d1=self.opQueue[0]
             newQueue.append(d1)
             dirtyTips=0;
-            for d in self.dispenseQueue[1:]:
+            for d in self.opQueue[1:]:
                 if d[5].grid==d1[5].grid and d[5].pos==d1[5].pos:
                     'Same grid,loc'
                     if d[1]&dirtyTips != 0:
                         'Tip used in intervening operations'
-                        print 'Intervening tip use'
+                        print 'Intervening tip use:',d
                         break
                     newQueue.append(d)
                 else:
                     dirtyTips|=d[1]
-            self.dispenseQueue=[x for x in self.dispenseQueue if x not in newQueue]
+            self.opQueue=[x for x in self.opQueue if x not in newQueue]
         #for d in newQueue:
         #print "POSTOPT %s:\tTip %d, Loc (%d,%d) Wells %s"%(d[0],d[1],d[5].grid,d[5].pos,str(d[2]))
-        self.dispenseQueue=newQueue
+        self.opQueue=newQueue
 
-        # Try to combine multiple aspirates into 1
+        # Try to combine multiple operations into one command
         todelete=[]
-        for i in range(len(self.dispenseQueue)-1):
-            d1=self.dispenseQueue[i];
-            d2=self.dispenseQueue[i+1];
+        for i in range(len(self.opQueue)-1):
+            d1=self.opQueue[i];
+            d2=self.opQueue[i+1];
             if d1[0]==d2[0] and d1[5]==d2[5]:
                 print "COMBINE %s:\tTip %d, Loc (%d,%d) Wells %s"%(d1[0],d1[1],d1[5].grid,d1[5].pos,str(d1[2]))
                 print "   WITH %s:\tTip %d, Loc (%d,%d) Wells %s"%(d2[0],d2[1],d2[5].grid,d2[5].pos,str(d2[2]))
@@ -100,15 +100,16 @@ class WorkList(object):
                 else:
                     merge=[d1[0],d1[1]|d2[1],d1[2]+d2[2],d1[3],[d1[4],d2[4]],d1[5],d1[6]];
                     print " MERGED %s:\tTip %d, Loc (%d,%d) Wells %s"%(merge[0],merge[1],merge[5].grid,merge[5].pos,str(merge[2]))
-                    self.dispenseQueue[i+1]=merge
+                    self.comment("Merged operations")
+                    self.opQueue[i+1]=merge
                     todelete.append(i)
-        self.dispenseQueue[:]=[self.dispenseQueue[z] for z in range(len(self.dispenseQueue)) if z not in todelete]
+        self.opQueue[:]=[self.opQueue[z] for z in range(len(self.opQueue)) if z not in todelete]
         
     def flushQueue(self):
         self.optimizeQueue()
-        for d in self.dispenseQueue:
+        for d in self.opQueue:
             self.aspirateDispense(d[0],d[1],d[2],d[3],d[4],d[5],d[6],False);
-        self.dispenseQueue=[]
+        self.opQueue=[]
         
     #def aspirate(tipMask, liquidClass, volume, loc, spacing, ws):
     def aspirate(self,tipMask,wells, liquidClass, volume, loc):
@@ -128,7 +129,7 @@ class WorkList(object):
         assert(isinstance(loc,Plate))
 
         if self.delayEnabled and allowDelay:
-            self.dispenseQueue.append([op,tipMask,wells,liquidClass,volume,loc,cycles])
+            self.opQueue.append([op,tipMask,wells,liquidClass,volume,loc,cycles])
             #print "Queued: %s %d %s.%s %.2f"%(op,tipMask,str(loc),str(wells),volume)
             return
 
