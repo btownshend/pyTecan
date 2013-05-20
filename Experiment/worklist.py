@@ -58,6 +58,7 @@ class WorkList(object):
         'Optimize operations in queue'
         #for d in self.dispenseQueue:
         #   print "PRE-OPT %s:\tTip %d, Loc (%d,%d) Wells %s"%(d[0],d[1],d[5].grid,d[5].pos,str(d[2]))
+        # As much as possible, move together operations on a single plate
         newQueue=[]
         while len(self.dispenseQueue)>0:
             d1=self.dispenseQueue[0]
@@ -77,6 +78,31 @@ class WorkList(object):
         #for d in newQueue:
         #print "POSTOPT %s:\tTip %d, Loc (%d,%d) Wells %s"%(d[0],d[1],d[5].grid,d[5].pos,str(d[2]))
         self.dispenseQueue=newQueue
+
+        # Try to combine multiple aspirates into 1
+        todelete=[]
+        for i in range(len(self.dispenseQueue)-1):
+            d1=self.dispenseQueue[i];
+            d2=self.dispenseQueue[i+1];
+            if d1[0]==d2[0] and d1[5]==d2[5]:
+                print "COMBINE %s:\tTip %d, Loc (%d,%d) Wells %s"%(d1[0],d1[1],d1[5].grid,d1[5].pos,str(d1[2]))
+                print "   WITH %s:\tTip %d, Loc (%d,%d) Wells %s"%(d2[0],d2[1],d2[5].grid,d2[5].pos,str(d2[2]))
+                if d1[1]!=1 or d2[1]!=2:
+                    print "tipmasks out of order"
+                elif d2[2][0] != d1[2][0]+1:
+                    print "wells not adjacent"
+                elif d1[2][0]/8 != d2[2][0]/8:
+                    print "wells in different columns"
+                elif d1[3].name!=d2[3].name:
+                    print "liquid classes different",d1[3],d2[3]
+                elif d1[6]!=d2[6]:
+                    print "mix cycles different"
+                else:
+                    merge=[d1[0],d1[1]|d2[1],d1[2]+d2[2],d1[3],[d1[4],d2[4]],d1[5],d1[6]];
+                    print " MERGED %s:\tTip %d, Loc (%d,%d) Wells %s"%(merge[0],merge[1],merge[5].grid,merge[5].pos,str(merge[2]))
+                    self.dispenseQueue[i+1]=merge
+                    todelete.append(i)
+        self.dispenseQueue[:]=[self.dispenseQueue[z] for z in range(len(self.dispenseQueue)) if z not in todelete]
         
     def flushQueue(self):
         self.optimizeQueue()
@@ -106,24 +132,29 @@ class WorkList(object):
             #print "Queued: %s %d %s.%s %.2f"%(op,tipMask,str(loc),str(wells),volume)
             return
 
-        print "%s %d %s.%s %.2f"%(op,tipMask,str(loc),str(wells),volume)
+        print "%s %d %s.%s %s"%(op,tipMask,str(loc),str(wells),str(volume))
         # Update volumes
-        if op=='Aspirate':
-            vincr=-volume
-        elif op=='Dispense':
-            vincr=volume
-        else:
-            vincr=0
+        for i in range(len(wells)):
+            well=wells[i]
+            if type(volume)==type([]):
+                v=volume[i]
+            else:
+                v=volume
+            if op=='Aspirate':
+                vincr=-v
+            elif op=='Dispense':
+                vincr=v
+            else:
+                vincr=0
             
-        if vincr != 0:
-            if loc not in self.volumes:
-                self.volumes[loc]={}
-            for well in wells:
+            if vincr != 0:
+                if loc not in self.volumes:
+                    self.volumes[loc]={}
                 if well not in self.volumes[loc]:
                     self.volumes[loc][well]=vincr
                 else:
                     self.volumes[loc][well]=self.volumes[loc][well]+vincr
-                    
+            
         spacing=1
         pos=[0 for x in range(len(wells))]
         for i in range(len(wells)):
