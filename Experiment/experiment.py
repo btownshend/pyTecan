@@ -106,9 +106,6 @@ class Experiment(object):
                         self.multitransfer(volumes[i:],src,dests[i:],(False,mix[1]),not reuseTip,dropDITI)
                         return
                     
-            cmt="Multi-add  %s to samples %s"%(src.name,",".join("%s[%.1f]"%(dests[i].name,volumes[i]) for i in range(len(dests))))
-            print "*",cmt
-            self.w.comment(cmt)
             if self.useDiTis:
                 tipMask=4
                 if  getDITI:
@@ -116,6 +113,10 @@ class Experiment(object):
                     self.w.getDITI(tipMask&self.DITIMASK,min(self.MAXVOLUME,ditivol),True,True)
             else:
                 tipMask=self.cleantip()
+
+            cmt="Multi-add  %s to samples %s"%(src.name,",".join("%s[%.1f]"%(dests[i].name,volumes[i]) for i in range(len(dests))))
+            print "*",cmt
+            self.w.comment(cmt)
 
             if mix[0] and not src.isMixed:
                 src.mix(tipMask,self.w)
@@ -153,14 +154,14 @@ class Experiment(object):
             cmt=cmt+" with dest mix"
             ditivolume=max(ditivolume,volume+dest.volume)
             #            print "Mix volume=%.1f ul"%(ditivolume)
-        print "*",cmt
-        self.w.comment(cmt)
         if self.useDiTis:
             tipMask=4
             if getDITI:
                 self.w.getDITI(tipMask&self.DITIMASK,ditivolume)
         else:
             tipMask=self.cleantip()
+        print "*",cmt
+        self.w.comment(cmt)
 
         if mix[0] and not src.isMixed:
             src.mix(tipMask,self.w)
@@ -213,9 +214,9 @@ class Experiment(object):
         
     def runpgm(self,pgm,duration):
         # move to thermocycler
+        self.lihahome()
         cmt="run %s"%pgm
         self.w.comment(cmt)
-        self.lihahome()
         print "*",cmt
         self.w.pyrun("PTC\\ptclid.py OPEN")
         self.w.vector("Microplate Landscape",self.SAMPLEPLATE,self.w.SAFETOEND,True,self.w.DONOTMOVE,self.w.CLOSE)
