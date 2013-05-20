@@ -55,14 +55,14 @@ class Sample(object):
     def aspirate(self,tipMask,w,volume,multi=False):
         if volume<2 and not multi:
             print "WARNING: Inaccurate for < 2ul:  attempting to aspirate %.1f ul"%volume
-        w.aspirate(tipMask,[self.well],self.chooseLC(True),volume,self.plate)
         if volume<6:
-            volume=volume+1
+            aspVolume=volume+1
         else:
             # Aspirates more than dispensed
-            volume=volume*ASPIRATEFACTOR
+            aspVolume=volume*ASPIRATEFACTOR
             
-        self.volume=self.volume-volume
+        w.aspirate(tipMask,[self.well],self.chooseLC(aspVolume),volume,self.plate)
+        self.volume=self.volume-aspVolume
         if multi:
             self.volume=self.volume-MULTIEXCESS
             self.addhistory("",-volume-MULTIEXCESS)
@@ -105,10 +105,10 @@ class Sample(object):
             else:
                 self.history=str
         
-    def chooseLC(self,isAspirate=False):
-        if self.volume>MINLIQUIDDETECTVOLUME:
+    def chooseLC(self,aspirateVolume=0):
+        if self.volume-aspirateVolume>MINLIQUIDDETECTVOLUME:
             return self.inliquidLC
-        elif self.volume==0 and not isAspirate:
+        elif self.volume==0 and aspirateVolume==0:
             return self.emptyLC
         else:
             return self.bottomLC
@@ -121,7 +121,7 @@ class Sample(object):
         if mixvol<2:
             print "Not enough volume in sample %s to mix"%self.name
         elif mixvol<20:
-            w.mix(tipMask,[self.well],self.chooseLC(),mixvol,self.plate,3)
+            w.mix(tipMask,[self.well],self.chooseLC(mixvol),mixvol,self.plate,3)
             self.history+="(MB)"
             self.isMixed=True
         else:
