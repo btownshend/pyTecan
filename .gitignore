@@ -4,3 +4,4 @@
 *.gwl
 tmp
 *.LOG
+.DS_Store
