@@ -48,51 +48,63 @@ class WorkList(object):
         return s
 
     def moveliha(self, loc):
-        self.delayedDispense(15)
+        self.flushQueue()
         tipMask=15
         speed=10   # 0.1-400 (mm/s)
         self.list.append( 'MoveLiha(%d,%d,%d,1,"0104?",0,4,0,%.1f,0)'%(tipMask,loc.grid,loc.pos-1,speed))
         self.elapsed+=1.8
         
+    def optimizeQueue(self):
+        'Optimize operations in queue'
+        #for d in self.dispenseQueue:
+        #   print "PRE-OPT %s:\tTip %d, Loc (%d,%d) Wells %s"%(d[0],d[1],d[5].grid,d[5].pos,str(d[2]))
+        newQueue=[]
+        while len(self.dispenseQueue)>0:
+            d1=self.dispenseQueue[0]
+            newQueue.append(d1)
+            dirtyTips=0;
+            for d in self.dispenseQueue[1:]:
+                if d[5].grid==d1[5].grid and d[5].pos==d1[5].pos:
+                    'Same grid,loc'
+                    if d[1]&dirtyTips != 0:
+                        'Tip used in intervening operations'
+                        print 'Intervening tip use'
+                        break
+                    newQueue.append(d)
+                else:
+                    dirtyTips|=d[1]
+            self.dispenseQueue=[x for x in self.dispenseQueue if x not in newQueue]
+        #for d in newQueue:
+        #print "POSTOPT %s:\tTip %d, Loc (%d,%d) Wells %s"%(d[0],d[1],d[5].grid,d[5].pos,str(d[2]))
+        self.dispenseQueue=newQueue
+        
+    def flushQueue(self):
+        self.optimizeQueue()
+        for d in self.dispenseQueue:
+            self.aspirateDispense(d[0],d[1],d[2],d[3],d[4],d[5],d[6],False);
+        self.dispenseQueue=[]
+        
     #def aspirate(tipMask, liquidClass, volume, loc, spacing, ws):
     def aspirate(self,tipMask,wells, liquidClass, volume, loc):
-        self.delayedDispense(tipMask,loc,wells)
         self.aspirateDispense('Aspirate',tipMask,wells, liquidClass, volume, loc)
         self.elapsed+=4.1
 
-    def delayedDispense(self,tipMask,loc=None,wells=None):
-        'Execute any delayed dispense if any in queue use tipMask or dispense into given (loc,wells)'
-        doFlush=False
-        for d in self.dispenseQueue:
-            if (tipMask&d[0]) != 0:
-                print "flushQueue: tipMask=%d, d[0]=%d"%(tipMask,d[0])
-                doFlush=True
-                break
-            print "loc=",loc, "wells=",wells, "d=",d
-            if loc!=None and d[4]==loc and wells!=None and len([val for val in wells if val in d[1]])>0:
-                print "Flushing due to well contention"
-                doFlush=True
-                break
-            
-        if doFlush:
-            for d in self.dispenseQueue:
-                self.dispense(d[0],d[1],d[2],d[3],d[4],False)
-            self.dispenseQueue=[]
-        
-    def dispense(self,tipMask,wells, liquidClass, volume, loc,allowDelay=True):
-        if self.delayEnabled and allowDelay:
-            self.dispenseQueue.append([tipMask,wells,liquidClass,volume,loc])
-        else:
-            self.aspirateDispense('Dispense',tipMask,wells, liquidClass, volume, loc)
+    def dispense(self,tipMask,wells, liquidClass, volume, loc):
+        self.aspirateDispense('Dispense',tipMask,wells, liquidClass, volume, loc)
         self.elapsed+=2.7
 
     def mix(self,tipMask,wells, liquidClass, volume, loc, cycles=3):
-        self.delayedDispense(tipMask)
         self.aspirateDispense('Mix',tipMask,wells, liquidClass, volume, loc, cycles)
         self.elapsed+=9.5
         
-    def aspirateDispense(self,op,tipMask,wells, liquidClass, volume, loc, cycles=None):
+    def aspirateDispense(self,op,tipMask,wells, liquidClass, volume, loc, cycles=None,allowDelay=True):
+        'Execute or queue liquid handling operation'
         assert(isinstance(loc,Plate))
+
+        if self.delayEnabled and allowDelay:
+            self.dispenseQueue.append([op,tipMask,wells,liquidClass,volume,loc,cycles])
+            #print "Queued: %s %d %s.%s %.2f"%(op,tipMask,str(loc),str(wells),volume)
+            return
 
         print "%s %d %s.%s %.2f"%(op,tipMask,str(loc),str(wells),volume)
         # Update volumes
@@ -166,10 +178,10 @@ class WorkList(object):
             self.list.append( '%s(%d,"%s",%s,%d,%d,%d,"%s",%d,0)'%(op,tipMask,liquidClass,volstr,loc.grid,loc.pos-1,spacing,ws,cycles))
         else:
             self.list.append( '%s(%d,"%s",%s,%d,%d,%d,"%s",0)'%(op,tipMask,liquidClass,volstr,loc.grid,loc.pos-1,spacing,ws))
-        
+    
     # Get DITI
     def getDITI(self, tipMask, volume, retry=True,multi=False):
-        self.delayedDispense(tipMask)
+        self.flushQueue()
         MAXVOL10=10
         MAXVOL200=200
         
@@ -200,7 +212,7 @@ class WorkList(object):
 
     def dropDITI(self, tipMask, loc, airgap=10, airgapSpeed=70):
         'Drop DITI, airgap is in ul, speed in ul/sec'
-        self.delayedDispense(tipMask)
+        self.flushQueue()
         assert(tipMask>=1 and tipMask<=15)
         assert(airgap>=0 and airgap<=100)
         assert(airgapSpeed>=1 and airgapSpeed<1000)
@@ -208,7 +220,7 @@ class WorkList(object):
         self.elapsed+=2
         
     def wash(self, tipMask,wasteVol=1,cleanerVol=2,deepClean=False):
-        self.delayedDispense(tipMask)
+        self.flushQueue()
         wasteLoc=(1,1)
         if deepClean:
             cleanerLoc=(1,2)
