@@ -61,7 +61,8 @@ class Sample(object):
             # Aspirates more than dispensed
             aspVolume=volume*ASPIRATEFACTOR
             
-        w.aspirate(tipMask,[self.well],self.chooseLC(aspVolume),volume,self.plate)
+        well=[self.well if self.well!=None else 2**(tipMask-1)-1 ]
+        w.aspirate(tipMask,well,self.chooseLC(aspVolume),volume,self.plate)
         self.volume=self.volume-aspVolume
         if multi:
             self.volume=self.volume-MULTIEXCESS
@@ -72,7 +73,8 @@ class Sample(object):
             print "Warning: %s is now short by %.1f ul"%(self.name,-self.volume)
             
     def dispense(self,tipMask,w,volume,conc):
-        w.dispense(tipMask,[self.well],self.chooseLC(),volume,self.plate)
+        well=[self.well if self.well!=None else 2**(tipMask-1)-1 ]
+        w.dispense(tipMask,well,self.chooseLC(),volume,self.plate)
 
         # Assume we're diluting the contents
         if self.conc==None and conc==None:
@@ -118,17 +120,19 @@ class Sample(object):
             print "Sample %s is already mixed"%self.name
             return
         mixvol=min(self.volume*mixFrac,self.volume-defaultMixLeave)
+        well=[self.well if self.well!=None else 2**(tipMask-1)-1 ]
         if mixvol<2:
             print "Not enough volume in sample %s to mix"%self.name
         elif mixvol<20:
-            w.mix(tipMask,[self.well],self.chooseLC(mixvol),mixvol,self.plate,3)
+            w.mix(tipMask,well,self.chooseLC(mixvol),mixvol,self.plate,3)
             self.history+="(MB)"
             self.isMixed=True
         else:
             # Use special mix LC which aspirates from bottom, dispenses above, faster aspirate
+            well=[self.well if self.well!=None else 2**(tipMask-1)-1 ]
             for i in range(3):
-                w.aspirate(tipMask,[self.well],self.mixLC,mixvol,self.plate)
-                w.dispense(tipMask,[self.well],self.mixLC,mixvol,self.plate)
+                w.aspirate(tipMask,well,self.mixLC,mixvol,self.plate)
+                w.dispense(tipMask,well,self.mixLC,mixvol,self.plate)
             self.history+="(MT)"
             self.isMixed=True
             
