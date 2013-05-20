@@ -58,7 +58,7 @@ class WorkList(object):
     def aspirate(self,tipMask,wells, liquidClass, volume, loc):
         self.delayedDispense(tipMask,loc,wells)
         self.aspirateDispense('Aspirate',tipMask,wells, liquidClass, volume, loc)
-        self.elapsed+=7.0
+        self.elapsed+=4.1
 
     def delayedDispense(self,tipMask,loc=None,wells=None):
         'Execute any delayed dispense if any in queue use tipMask or dispense into given (loc,wells)'
@@ -84,12 +84,12 @@ class WorkList(object):
             self.dispenseQueue.append([tipMask,wells,liquidClass,volume,loc])
         else:
             self.aspirateDispense('Dispense',tipMask,wells, liquidClass, volume, loc)
-            self.elapsed+=3.5
+        self.elapsed+=2.7
 
     def mix(self,tipMask,wells, liquidClass, volume, loc, cycles=3):
         self.delayedDispense(tipMask)
         self.aspirateDispense('Mix',tipMask,wells, liquidClass, volume, loc, cycles)
-        self.elapsed+=10.0
+        self.elapsed+=9.5
         
     def aspirateDispense(self,op,tipMask,wells, liquidClass, volume, loc, cycles=None):
         assert(isinstance(loc,Plate))
@@ -224,7 +224,7 @@ class WorkList(object):
         atFreq=1000  # Hz, For Active tip
         self.list.append('Wash(%d,%d,%d,%d,%d,%.1f,%d,%.1f,%d,%.1f,%d,%d,%d,%d,%d)'%(tipMask,wasteLoc[0],wasteLoc[1],cleanerLoc[0],cleanerLoc[1],wasteVol,wasteDelay,cleanerVol,cleanerDelay,airgap, airgapSpeed, retractSpeed, fastWash, lowVolume, atFreq))
         print "Wash %d,%.1fml,%.1fml,deep="%(tipMask,wasteVol,cleanerVol),deepClean
-        self.elapsed+=13.6
+        self.elapsed+=13.3
         
     def periodicWash(self,tipMask,period):
         wasteLoc=(1,1)
@@ -252,11 +252,11 @@ class WorkList(object):
         else:
             andBack=0
         self.list.append('Vector("%s",%d,%d,%d,%d,%d,%d,%d,0)'%(vector,loc.grid,loc.pos,direction,andBack,initialAction, finalAction, speed))
-        self.elapsed+=6.0
+        self.elapsed+=6.1
         
     def romahome(self):
         self.list.append('ROMA(2,0,0,0,0,0,60,0,0)')
-        self.elapsed+=1.5
+        self.elapsed+=1.2
 
         
     def userprompt(self, text, beeps=0, closetime=-1):
@@ -286,7 +286,7 @@ class WorkList(object):
         else:
             resultvar=""
         self.list.append('Execute("%s",%d,"%s")'%(command,flags,resultvar))
-        self.elapsed+=5   # Just overhead time, not actually time that command itself takes
+        self.elapsed+=5.3   # Just overhead time, not actually time that command itself takes
         
     def pyrun(self, cmd):
         self.execute("C:\Python27\python.exe C:\cygwin\Home\Admin\%s"%cmd)
