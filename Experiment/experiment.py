@@ -1,5 +1,6 @@
 from worklist import *
 from sample import Sample
+from concentration import Concentration
 import os.path
 
 class Experiment(object):
@@ -94,7 +95,7 @@ class Experiment(object):
             maxval=0
         else:
             maxval=max([d.volume for d in dests if d.conc != None])
-        #print "volumes=",[d.volume for d in dests],", conc=",[d.conc for d in dests],", maxval=",maxval
+        #print "volumes=",[d.volume for d in dests],", conc=",[str(d.conc) for d in dests],", maxval=",maxval
         if mix[1]==False and len(volumes)>1 and maxval<.01:
             if sum(volumes)>self.MAXVOLUME:
                 print "sum(volumes)=%.1f, MAXVOL=%.1f"%(sum(volumes),self.MAXVOLUME)
@@ -178,7 +179,7 @@ class Experiment(object):
         if self.useDiTis and dropDITI:
             self.w.dropDITI(tipMask&self.DITIMASK,self.WASTE)
 
-    def stage(self,stagename,reagents,sources,samples,volume,finalconc=1):
+    def stage(self,stagename,reagents,sources,samples,volume,finalx=1.0):
         # Add water to sample wells as needed (multi)
         # Pipette reagents into sample wells (multi)
         # Pipette sources into sample wells
@@ -188,9 +189,9 @@ class Experiment(object):
         self.w.comment(stagename)
         assert(volume>0)
         volume=float(volume)
-        reagentvols=[volume/x.conc*finalconc for x in reagents]
+        reagentvols=[volume/x.conc.dilutionneeded()*finalx for x in reagents]
         if len(sources)>0:
-            sourcevols=[volume/x.conc*finalconc for x in sources]
+            sourcevols=[volume/x.conc.dilutionneeded()*finalx for x in sources]
             while len(sourcevols)<len(samples):
                 sourcevols.append(0)
             watervols=[volume-sum(reagentvols)-samples[i].volume-sourcevols[i] for i in range(len(samples))]

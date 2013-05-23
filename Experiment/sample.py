@@ -1,6 +1,7 @@
 import sys
 import liquidclass
 from worklist import WorkList
+from concentration import Concentration
 
 defaultMixFrac = 0.6
 defaultMixLeave = 3
@@ -25,7 +26,10 @@ class Sample(object):
         self.name=name
         self.plate=plate
         self.well=well
-        self.conc=conc
+	if isinstance(conc,Concentration) or conc==None:
+		self.conc=conc
+	else:
+		self.conc=Concentration(conc)
         self.volume=volume
         self.initvolume=volume
         self.bottomLC=liquidclass.LC("%s-Bottom"%liquidClass.name,liquidClass.singletag,liquidClass.multicond,liquidClass.multiexcess)
@@ -50,7 +54,7 @@ class Sample(object):
     def dilute(self,factor):
         'Dilute sample -- just increases its recorded concentration'
         if self.conc!=None:
-            self.conc=self.conc*factor
+		self.conc=self.conc.dilute(1.0/factor)
 
     def aspirate(self,tipMask,w,volume,multi=False):
         if volume<2 and not multi:
@@ -80,15 +84,15 @@ class Sample(object):
         if self.conc==None and conc==None:
             pass
         elif conc==None or volume==0:
-            self.conc=(self.conc*self.volume)/(self.volume+volume)
+            self.conc=self.conc.dilute((self.volume+volume)/self.volume)
         elif self.conc==None or self.volume==0:
-            self.conc=(conc*volume)/(self.volume+volume)
+            self.conc=conc.dilute((self.volume+volume)/volume)
         else:
             # Both have concentrations, they should match
-            c1=(self.conc*self.volume)/(self.volume+volume)
-            c2=(conc*volume)/(self.volume+volume)
-            assert(abs(c1-c2)<.01)
-            self.conc=c1
+            c1=self.conc.dilute((self.volume+volume)/self.volume)
+            c2=conc.dilute((self.volume+volume)/volume)
+            assert(abs(c1.stock/c1.final-c2.stock/c2.final)<.01)
+            self.conc=Concentration(c1.stock/c1.final,1.0,'x')  # Since there are multiple ingredients express concentration as x
          # Set to not mixed after second ingredient added
         self.isMixed=self.volume==0
         self.volume=self.volume+volume
@@ -140,7 +144,7 @@ class Sample(object):
         if self.conc==None:
             return "%s(%s.%s,%.2f ul) %s"%(self.name,str(self.plate),str(self.well),self.volume,self.history)
         else:
-            return "%s(%s.%s,%.2fx,%.2f ul) %s"%(self.name,str(self.plate),str(self.well),self.conc,self.volume,self.history)
+            return "%s[%s](%s.%s,%.2f ul) %s"%(self.name,str(self.conc),str(self.plate),str(self.well),self.volume,self.history)
 
     
     @staticmethod
@@ -149,7 +153,7 @@ class Sample(object):
         for s in __allsamples:
             if s.initvolume>0:
                 if s.conc!=None:
-                    c="@%.2fx"%s.conc
+                    c="[%s]"%str(s.conc)
                 else:
                     c=""   
                 note="%s%s in %s.%s consume %.1f ul, provide %.1f ul"%(s.name,c,str(s.plate),str(s.well),s.initvolume-s.volume,s.initvolume)
