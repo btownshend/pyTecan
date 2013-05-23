@@ -266,6 +266,8 @@ while True:
                 if lastgeminicmd!=None:
                     if t-lasttime > 30:
                         print  "Skipping long pause of %d seconds for %s"%(t-lasttime,lastgeminicmd)
+                    elif t<lasttime:
+                        print  "Skipping negative elapsed time of %d seconds for %s"%(t-lasttime,lastgeminicmd)
                     elif lastgeminicmd in geminicmdtimes.keys():
                         geminicmdtimes[lastgeminicmd]+=(t-lasttime)
                         geminicmdcnt[lastgeminicmd]+=1

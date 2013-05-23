@@ -52,7 +52,7 @@ class WorkList(object):
         tipMask=15
         speed=10   # 0.1-400 (mm/s)
         self.list.append( 'MoveLiha(%d,%d,%d,1,"0104?",0,4,0,%.1f,0)'%(tipMask,loc.grid,loc.pos-1,speed))
-        self.elapsed+=1.8
+        self.elapsed+=1.3
         
     def optimizeQueue(self):
         'Optimize operations in queue'
@@ -114,15 +114,15 @@ class WorkList(object):
     #def aspirate(tipMask, liquidClass, volume, loc, spacing, ws):
     def aspirate(self,tipMask,wells, liquidClass, volume, loc):
         self.aspirateDispense('Aspirate',tipMask,wells, liquidClass, volume, loc)
-        self.elapsed+=4.1
+        self.elapsed+=3.9
 
     def dispense(self,tipMask,wells, liquidClass, volume, loc):
         self.aspirateDispense('Dispense',tipMask,wells, liquidClass, volume, loc)
-        self.elapsed+=2.7
+        self.elapsed+=2.6
 
     def mix(self,tipMask,wells, liquidClass, volume, loc, cycles=3):
         self.aspirateDispense('Mix',tipMask,wells, liquidClass, volume, loc, cycles)
-        self.elapsed+=9.5
+        self.elapsed+=8.8
         
     def aspirateDispense(self,op,tipMask,wells, liquidClass, volume, loc, cycles=None,allowDelay=True):
         'Execute or queue liquid handling operation'
@@ -268,7 +268,7 @@ class WorkList(object):
         atFreq=1000  # Hz, For Active tip
         self.list.append('Wash(%d,%d,%d,%d,%d,%.1f,%d,%.1f,%d,%.1f,%d,%d,%d,%d,%d)'%(tipMask,wasteLoc[0],wasteLoc[1],cleanerLoc[0],cleanerLoc[1],wasteVol,wasteDelay,cleanerVol,cleanerDelay,airgap, airgapSpeed, retractSpeed, fastWash, lowVolume, atFreq))
         print "Wash %d,%.1fml,%.1fml,deep="%(tipMask,wasteVol,cleanerVol),deepClean
-        self.elapsed+=13.3
+        self.elapsed+=13.4
         
     def periodicWash(self,tipMask,period):
         wasteLoc=(1,1)
