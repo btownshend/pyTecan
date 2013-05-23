@@ -1,5 +1,5 @@
-F76FC50E
-20130511_160906 Admin           
+E7F91648
+20130523_113559 Admin           
                                                                                                                                 
 Administrator                                                                                                                   
 --{ RES }--
@@ -11,7 +11,7 @@ V;200
 998;3;Cleaner shallow, 8 Pos.;Waste;Cleaner deep, 8 Pos.;
 998;;;;
 998;0;
-998;2;HSP96xx on carrier;;
+998;2;RIC Eppendorfs;;
 998;Reagents;;
 998;0;
 998;0;
@@ -19,8 +19,8 @@ V;200
 998;0;
 998;0;
 998;0;
-998;3;Microplate - platereader;QPCR on HSP96xx;HSP96xx on carrier;
-998;Reader;QPCR;Sample;
+998;3;;QPCR on HSP96xx;HSP96xx on carrier;
+998;;QPCR;Sample;
 998;0;
 998;0;
 998;0;
@@ -28,7 +28,7 @@ V;200
 998;0;
 998;0;
 998;3;Trough 100ml;Trough 100ml;;
-998;RNASEAWAY;Water;;
+998;RNase Away;Water;;
 998;0;
 998;1;Eppendorf Tube, 16 Pos.;
 998;tubes;
