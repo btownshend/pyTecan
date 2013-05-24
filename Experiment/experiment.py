@@ -1,6 +1,7 @@
 from worklist import *
 from sample import Sample
 from concentration import Concentration
+import liquidclass
 import os.path
 
 class Experiment(object):
@@ -30,6 +31,7 @@ class Experiment(object):
         self.sanitize()
         self.useDiTis=False
         self.thermotime=0
+        self.RNASEAWAY.mixLC=liquidclass.LC("RNaseAway-Mix")
         
         #        self.w.periodicWash(15,4)
         
