@@ -25,6 +25,10 @@ class Sample(object):
                 
         self.name=name
         self.plate=plate
+	if well>=plate.nx*plate.ny:
+		print "Overflow of plate %s"%str(plate)
+		assert(False)
+		
         self.well=well
 	if isinstance(conc,Concentration) or conc==None:
 		self.conc=conc
