@@ -91,7 +91,7 @@ class WorkList(object):
                     print "tipmasks out of order"
                 elif d2[2][0] != d1[2][0]+1:
                     print "wells not adjacent"
-                elif d1[2][0]/8 != d2[2][0]/8:
+                elif d1[2][0]/8 != d2[2][0]/8 or d1[2][0]/5 != d2[2][0]/5:
                     print "wells in different columns"
                 elif d1[3].name!=d2[3].name:
                     print "liquid classes different",d1[3],d2[3]

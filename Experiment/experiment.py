@@ -5,7 +5,7 @@ import os.path
 
 class Experiment(object):
     WASHLOC=Plate("Wash",1,2,1,8)
-    REAGENTPLATE=Plate("Reagents",3,1,12,8)
+    REAGENTPLATE=Plate("Reagents",3,1,6,5,True)
     SAMPLEPLATE=Plate("Samples",10,3,12,8)
     READERPLATE=Plate("Reader",10,2,12,8)
     QPCRPLATE=Plate("qPCR",10,2,12,8)
@@ -17,7 +17,6 @@ class Experiment(object):
     EPPENDORFS=Plate("Eppendorfs",19,1,1,16)
     WATER=Sample("Water",WATERLOC,None,None,10000)
     RNASEAWAY=Sample("RNase-Away",RNASEAWAYLOC,0,None,10000)
-    
     DITIMASK=12   # Which tips are DiTis
     headerfile=os.path.expanduser("~/Dropbox/Synbio/Robot/pyTecan/header.gem")
 
