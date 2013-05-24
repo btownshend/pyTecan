@@ -158,7 +158,11 @@ class Sample(object):
     def printprep(fd=sys.stdout):
         notes="Reagents:"
         for s in __allsamples:
-            if s.initvolume>0:
+	    if s.volume==s.initvolume:
+		'Not used'
+                note="%s%s in %s.%s not consumed"%(s.name,c,str(s.plate),str(s.well))
+                notes=notes+"\n"+note
+            elif s.initvolume>0:
                 if s.conc!=None:
                     c="[%s]"%str(s.conc)
                 else:
