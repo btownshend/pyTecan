@@ -74,7 +74,13 @@ class Sample(object):
             # Aspirates more than dispensed
             aspVolume=volume*ASPIRATEFACTOR
             
-        well=[self.well if self.well!=None else 2**(tipMask-1)-1 ]
+	if self.well==None:
+		well=[]
+		for i in range(4):
+			if (tipMask & (1<<i)) != 0:
+			    well.append(i)
+	else:
+		well=[self.well]
         w.aspirate(tipMask,well,self.chooseLC(aspVolume),volume,self.plate)
         self.volume=self.volume-aspVolume
         if multi:
