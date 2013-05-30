@@ -69,10 +69,16 @@ class Experiment(object):
         
     def sanitize(self):
         'Deep wash including RNase-Away treatment'
+        self.w.comment("Sanitize")
         self.w.wash(15,1,2)
-        self.w.mix(3,[0,1],self.RNASEAWAY.mixLC,200,self.RNASEAWAY.plate,3);
-        self.w.wash(3,1,10,True)
-        self.cleanTips|=(~self.DITIMASK)&15
+        fixedTips=(~self.DITIMASK)&15
+        fixedWells=[]
+        for i in range(4):
+            if (fixedTips & (1<<i)) != 0:
+                fixedWells.append(i)
+        self.w.mix(fixedTips,fixedWells,self.RNASEAWAY.mixLC,200,self.RNASEAWAY.plate,3);
+        self.w.wash(fixedTips,1,10,True)
+        self.cleanTips|=fixedTips
         
     def cleantip(self):
         'Get the mask for a clean tip, washing if needed'
