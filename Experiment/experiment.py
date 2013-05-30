@@ -18,7 +18,7 @@ class Experiment(object):
     EPPENDORFS=Plate("Eppendorfs",19,1,1,16)
     WATER=Sample("Water",WATERLOC,None,None,10000)
     RNASEAWAY=Sample("RNase-Away",RNASEAWAYLOC,0,None,10000)
-    DITIMASK=12   # Which tips are DiTis
+    DITIMASK=0   # Which tips are DiTis
     headerfile=os.path.expanduser("~/Dropbox/Synbio/Robot/pyTecan/header.gem")
 
     RPTEXTRA=0   # Extra amount when repeat pipetting
