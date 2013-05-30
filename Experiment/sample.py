@@ -22,7 +22,9 @@ class Sample(object):
             if s.plate==plate and s.well==well:
                 print "Aliasing %s as %s"%(s.name,name)
                 assert(False)
-                
+	    if s.name==name:
+		print "Already have a sample called %s"%name
+                assert(False)
         self.name=name
         self.plate=plate
 	if well>=plate.nx*plate.ny:
