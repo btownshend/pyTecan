@@ -59,33 +59,25 @@ class WorkList(object):
         for d in self.opQueue:
             print "PRE-OPT %s:\tTip %d, Loc (%d,%d) Wells %s"%(d[0],d[1],d[5].grid,d[5].pos,str(d[2]))
         # As much as possible, move together operations on a single plate
-        newAspQueue=[]
-        newDispQueue=[]
-        newMixQueue=[]
+        newQueue=[]
         while len(self.opQueue)>0:
             d1=self.opQueue[0]
+            newQueue.append(d1)
             dirtyTips=0;
-            for d in self.opQueue:
+            for d in self.opQueue[1:]:
                 if d[5].grid==d1[5].grid and d[5].pos==d1[5].pos:
                     'Same grid,loc'
                     if d[1]&dirtyTips != 0:
                         'Tip used in intervening operations'
                         print 'Intervening tip use:',d
                         break
-                    if d[0]=='Aspirate':
-                        newAspQueue.append(d)
-                    elif d[0]=='Dispense':
-                        newDispQueue.append(d)
-                    else:
-                        assert(d[0]=='Mix')
-                        newMixQueue.append(d)
+                    newQueue.append(d)
                 else:
                     dirtyTips|=d[1]
-            self.opQueue=[x for x in self.opQueue if x not in newAspQueue and x not in newDispQueue and x not in newMixQueue]
-        for d in newAspQueue+newDispQueue+newMixQueue:
+            self.opQueue=[x for x in self.opQueue if x not in newQueue]
+        for d in newQueue:
             print "POSTOPT %s:\tTip %d, Loc (%d,%d) Wells %s"%(d[0],d[1],d[5].grid,d[5].pos,str(d[2]))
-        self.opQueue=newAspQueue+newDispQueue+newMixQueue
-        # TODO - what if we try to mix before aspirating?
+        self.opQueue=newQueue
 
         # Try to combine multiple operations into one command
         todelete=[]
