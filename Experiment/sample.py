@@ -59,7 +59,14 @@ class Sample(object):
             s.isMixed=True
             if s.volume==0:
                 s.conc=None
-            
+
+    @classmethod
+    def lookup(cls,name):
+        for s in __allsamples:
+	    if s.name==name:
+                return s
+        return None
+                
     def dilute(self,factor):
         'Dilute sample -- just increases its recorded concentration'
         if self.conc!=None:
