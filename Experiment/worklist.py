@@ -56,49 +56,57 @@ class WorkList(object):
         
     def optimizeQueue(self):
         'Optimize operations in queue'
-        #for d in self.opQueue:
-        #   print "PRE-OPT %s:\tTip %d, Loc (%d,%d) Wells %s"%(d[0],d[1],d[5].grid,d[5].pos,str(d[2]))
+        for d in self.opQueue:
+            print "PRE-OPT %s:\tTip %d, Loc (%d,%d) Wells %s"%(d[0],d[1],d[5].grid,d[5].pos,str(d[2]))
         # As much as possible, move together operations on a single plate
-        newQueue=[]
+        newAspQueue=[]
+        newDispQueue=[]
+        newMixQueue=[]
         while len(self.opQueue)>0:
             d1=self.opQueue[0]
-            newQueue.append(d1)
             dirtyTips=0;
-            for d in self.opQueue[1:]:
+            for d in self.opQueue:
                 if d[5].grid==d1[5].grid and d[5].pos==d1[5].pos:
                     'Same grid,loc'
                     if d[1]&dirtyTips != 0:
                         'Tip used in intervening operations'
                         print 'Intervening tip use:',d
                         break
-                    newQueue.append(d)
+                    if d[0]=='Aspirate':
+                        newAspQueue.append(d)
+                    elif d[0]=='Dispense':
+                        newDispQueue.append(d)
+                    else:
+                        assert(d[0]=='Mix')
+                        newMixQueue.append(d)
                 else:
                     dirtyTips|=d[1]
-            self.opQueue=[x for x in self.opQueue if x not in newQueue]
-        #for d in newQueue:
-        #print "POSTOPT %s:\tTip %d, Loc (%d,%d) Wells %s"%(d[0],d[1],d[5].grid,d[5].pos,str(d[2]))
-        self.opQueue=newQueue
+            self.opQueue=[x for x in self.opQueue if x not in newAspQueue and x not in newDispQueue and x not in newMixQueue]
+        for d in newAspQueue+newDispQueue+newMixQueue:
+            print "POSTOPT %s:\tTip %d, Loc (%d,%d) Wells %s"%(d[0],d[1],d[5].grid,d[5].pos,str(d[2]))
+        self.opQueue=newAspQueue+newDispQueue+newMixQueue
+        # TODO - what if we try to mix before aspirating?
 
         # Try to combine multiple operations into one command
         todelete=[]
         for i in range(len(self.opQueue)-1):
             d1=self.opQueue[i];
             d2=self.opQueue[i+1];
-            if d1[0]==d2[0] and d1[5]==d2[5]:
+            if d1[0]==d2[0]  and d1[1]!=d2[1] and d1[5]==d2[5]:
                 print "COMBINE %s:\tTip %d, Loc (%d,%d) Wells %s"%(d1[0],d1[1],d1[5].grid,d1[5].pos,str(d1[2]))
                 print "   WITH %s:\tTip %d, Loc (%d,%d) Wells %s"%(d2[0],d2[1],d2[5].grid,d2[5].pos,str(d2[2]))
-                if d1[1]!=1 or d2[1]!=2:
-                    print "tipmasks out of order"
-                elif d2[2][0] != d1[2][0]+1:
+                if (d2[1]<d1[1]) or (((d2[1]>>1) &d1[1])==0):
+                    print "tipmasks out of order (%d,%d)"%(d2[1],d1[1])
+                elif d2[2][0] != max(d1[2])+1:
                     print "wells not adjacent"
-                elif d1[2][0]/8 != d2[2][0]/8 or d1[2][0]/5 != d2[2][0]/5:
-                    print "wells in different columns"
+                elif d1[2][0]/d1[5].ny != d2[2][0]/d2[5].ny:
+                    print "wells in different columns of %d-row plate"%d1[5].ny
                 elif d1[3].name!=d2[3].name:
                     print "liquid classes different",d1[3],d2[3]
                 elif d1[6]!=d2[6]:
                     print "mix cycles different"
                 else:
-                    merge=[d1[0],d1[1]|d2[1],d1[2]+d2[2],d1[3],[d1[4],d2[4]],d1[5],d1[6]];
+                    merge=[d1[0],d1[1]|d2[1],d1[2]+d2[2],d1[3],d1[4]+d2[4],d1[5],d1[6]];
                     print " MERGED %s:\tTip %d, Loc (%d,%d) Wells %s"%(merge[0],merge[1],merge[5].grid,merge[5].pos,str(merge[2]))
                     self.comment("Merged operations")
                     self.opQueue[i+1]=merge
@@ -140,9 +148,6 @@ class WorkList(object):
         # Update volumes
         for i in range(len(wells)):
             well=wells[i]
-                v=volume[i]
-            else:
-                v=volume
             v=volume[i]
             if op=='Aspirate':
                 vincr=-v
