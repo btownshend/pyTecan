@@ -128,6 +128,9 @@ class WorkList(object):
         'Execute or queue liquid handling operation'
         assert(isinstance(loc,Plate))
 
+        if type(volume)!=type([]):
+            volume=[volume for w in wells]
+            
         if self.delayEnabled and allowDelay:
             self.opQueue.append([op,tipMask,wells,liquidClass,volume,loc,cycles])
             #print "Queued: %s %d %s.%s %.2f"%(op,tipMask,str(loc),str(wells),volume)
@@ -137,10 +140,10 @@ class WorkList(object):
         # Update volumes
         for i in range(len(wells)):
             well=wells[i]
-            if type(volume)==type([]):
                 v=volume[i]
             else:
                 v=volume
+            v=volume[i]
             if op=='Aspirate':
                 vincr=-v
             elif op=='Dispense':
@@ -186,15 +189,12 @@ class WorkList(object):
             while tipTmp&1 == 0:
                 tipTmp=tipTmp>>1
                 tip=tip+1
-            if type(volume)==type([]):
-                allvols[tip]=volume[i]
-            else:
-                allvols[tip]=volume
+            allvols[tip]=volume[i]
             tipTmp = tipTmp>>1
             tip+=1
 
         if tipTmp!=0:
-            print "Number of tips (mask=%d) != number of wells (%d)"%tipMask, len(wells)
+            print "Number of tips (mask=%d) != number of wells (%d)"%(tipMask, len(wells))
             assert(0)
             
         if self.debug:
