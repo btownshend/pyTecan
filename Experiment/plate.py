@@ -9,6 +9,13 @@ class Plate(object):
         self.ny=ny
         self.pierce=pierce
 
+    def wellname(self,well):
+        if well==None:
+            return "None"
+        col=int(well/self.ny)
+        row=well-col*self.ny
+        return "%c%d"%(chr(65+row),col+1)
+    
     def __str__(self):
         return "%s(%s,%s)"%(self.name,self.grid,self.pos)
         
