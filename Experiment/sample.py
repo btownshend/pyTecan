@@ -3,7 +3,7 @@ import liquidclass
 from worklist import WorkList
 from concentration import Concentration
 
-defaultMixFrac = 0.6
+defaultMixFrac = 0.8
 defaultMixLeave = 3
 ASPIRATEFACTOR=1.1
 MINLIQUIDDETECTVOLUME=50
@@ -149,7 +149,7 @@ class Sample(object):
         well=[self.well if self.well!=None else 2**(tipMask-1)-1 ]
         if mixvol<2:
             print "Not enough volume in sample %s to mix"%self.name
-        elif mixvol<20:
+	elif True:  # mixvol<20:
             w.mix(tipMask,well,self.chooseLC(mixvol),mixvol,self.plate,3)
             self.history+="(MB)"
             self.isMixed=True
@@ -164,9 +164,9 @@ class Sample(object):
             
     def __str__(self):
         if self.conc==None:
-            return "%s(%s.%s,%.2f ul) %s"%(self.name,str(self.plate),str(self.well),self.volume,self.history)
+            return "%s(%s.%s,%.2f ul) %s"%(self.name,str(self.plate),self.plate.wellname(self.well),self.volume,self.history)
         else:
-            return "%s[%s](%s.%s,%.2f ul) %s"%(self.name,str(self.conc),str(self.plate),str(self.well),self.volume,self.history)
+            return "%s[%s](%s.%s,%.2f ul) %s"%(self.name,str(self.conc),str(self.plate),self.plate.wellname(self.well),self.volume,self.history)
 
     
     @staticmethod
