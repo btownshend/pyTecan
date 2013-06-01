@@ -186,7 +186,7 @@ class Experiment(object):
         if self.useDiTis and dropDITI:
             self.w.dropDITI(tipMask&self.DITIMASK,self.WASTE)
 
-    def stage(self,stagename,reagents,sources,samples,volume,finalx=1.0):
+    def stage(self,stagename,reagents,sources,samples,volume,finalx=1.0,destMix=True):
         # Add water to sample wells as needed (multi)
         # Pipette reagents into sample wells (multi)
         # Pipette sources into sample wells
@@ -196,9 +196,9 @@ class Experiment(object):
         self.w.comment(stagename)
         assert(volume>0)
         volume=float(volume)
-        reagentvols=[volume/x.conc.dilutionneeded()*finalx for x in reagents]
+        reagentvols=[volume*1.0/x.conc.dilutionneeded()*finalx for x in reagents]
         if len(sources)>0:
-            sourcevols=[volume/x.conc.dilutionneeded()*finalx for x in sources]
+            sourcevols=[volume*1.0/x.conc.dilutionneeded()*finalx for x in sources]
             while len(sourcevols)<len(samples):
                 sourcevols.append(0)
             watervols=[volume-sum(reagentvols)-samples[i].volume-sourcevols[i] for i in range(len(samples))]
@@ -210,15 +210,15 @@ class Experiment(object):
             assert(False)
 
         if sum(watervols)>0.01:
-            self.multitransfer(watervols,self.WATER,samples,(False,len(reagents)+len(sources)==0))
+            self.multitransfer(watervols,self.WATER,samples,(False,destMix and (len(reagents)+len(sources)==0)))
 
         for i in range(len(reagents)):
-            self.multitransfer(reagentvols[i],reagents[i],samples,(True,len(sources)==0 and i==len(reagents)-1))
+            self.multitransfer(reagentvols[i],reagents[i],samples,(True,destMix and (len(sources)==0 and i==len(reagents)-1)))
 
         if len(sources)>0:
             assert(len(sources)<=len(samples))
             for i in range(len(sources)):
-                self.transfer(sourcevols[i],sources[i],samples[i],(True,True))
+                self.transfer(sourcevols[i],sources[i],samples[i],(True,destMix))
 
 
     def lihahome(self):
