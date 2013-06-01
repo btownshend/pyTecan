@@ -5,9 +5,9 @@ class Concentration(object):
         self.units=units
     def __str__(self):
         if self.final==1.0 and self.units=='x':
-            return "%.1f%s"%(self.stock,self.units)
+            return "%.2f%s"%(self.stock,self.units)
         else:
-            return "%.1f%s->%.1f%s"%(self.stock,self.units,self.final,self.units)
+            return "%.2f%s->%.2f%s"%(self.stock,self.units,self.final,self.units)
     def dilute(self,factor):
         return Concentration(self.stock/factor,self.final,self.units)
     def dilutionneeded(self):
