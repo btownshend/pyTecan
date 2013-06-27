@@ -65,7 +65,7 @@ class WorkList(object):
             newQueue.append(d1)
             dirtyTips=0;
             for d in self.opQueue[1:]:
-                if d[5].grid==d1[5].grid and d[5].pos==d1[5].pos:
+                if d[5].grid==d1[5].grid and d[5].pos==d1[5].pos and d[0]==d1[0]:
                     'Same grid,loc'
                     if d[1]&dirtyTips != 0:
                         'Tip used in intervening operations'
@@ -84,6 +84,12 @@ class WorkList(object):
         for i in range(len(self.opQueue)-1):
             d1=self.opQueue[i];
             d2=self.opQueue[i+1];
+            if False and d1[0]=='Dispense' and d2[0]=='Mix' and d1[1]==d2[1] and i+2<len(self.opQueue):
+                # Special case of dispense/mix
+                print "DISPENSE/MIX"
+                d2=self.opQueue[i+2]
+                self.opQueue[i+2]=self.opQueue[i+1]
+                self.opQueue[i+1]=d2
             if d1[0]==d2[0]  and d1[1]!=d2[1] and d1[5]==d2[5]:
                 print "COMBINE %s:\tTip %d, Loc (%d,%d) Wells %s"%(d1[0],d1[1],d1[5].grid,d1[5].pos,str(d1[2]))
                 print "   WITH %s:\tTip %d, Loc (%d,%d) Wells %s"%(d2[0],d2[1],d2[5].grid,d2[5].pos,str(d2[2]))
@@ -103,6 +109,7 @@ class WorkList(object):
                     self.comment("Merged operations")
                     self.opQueue[i+1]=merge
                     todelete.append(i)
+                
         self.opQueue[:]=[self.opQueue[z] for z in range(len(self.opQueue)) if z not in todelete]
         
     def flushQueue(self):
@@ -114,15 +121,12 @@ class WorkList(object):
     #def aspirate(tipMask, liquidClass, volume, loc, spacing, ws):
     def aspirate(self,tipMask,wells, liquidClass, volume, loc):
         self.aspirateDispense('Aspirate',tipMask,wells, liquidClass, volume, loc)
-        self.elapsed+=5.8
 
     def dispense(self,tipMask,wells, liquidClass, volume, loc):
         self.aspirateDispense('Dispense',tipMask,wells, liquidClass, volume, loc)
-        self.elapsed+=2.9
 
     def mix(self,tipMask,wells, liquidClass, volume, loc, cycles=3):
         self.aspirateDispense('Mix',tipMask,wells, liquidClass, volume, loc, cycles)
-        self.elapsed+=6.2
         
     def aspirateDispense(self,op,tipMask,wells, liquidClass, volume, loc, cycles=None,allowDelay=True):
         'Execute or queue liquid handling operation'
@@ -136,6 +140,13 @@ class WorkList(object):
             #print "Queued: %s %d %s.%s %.2f"%(op,tipMask,str(loc),str(wells),volume)
             return
 
+        if op=='Mix':
+            self.elapsed+=10.7
+        elif op=='Dispense':
+            self.elapsed+=3.1
+        elif op=='Aspirate':
+            self.elapsed+=8.3
+            
         print "%s %d %s.%s %s"%(op,tipMask,str(loc),str(wells),str(volume))
         # Update volumes
         for i in range(len(wells)):
@@ -265,7 +276,7 @@ class WorkList(object):
         atFreq=1000  # Hz, For Active tip
         self.list.append('Wash(%d,%d,%d,%d,%d,%.1f,%d,%.1f,%d,%.1f,%d,%d,%d,%d,%d)'%(tipMask,wasteLoc[0],wasteLoc[1],cleanerLoc[0],cleanerLoc[1],wasteVol,wasteDelay,cleanerVol,cleanerDelay,airgap, airgapSpeed, retractSpeed, fastWash, lowVolume, atFreq))
         print "Wash %d,%.1fml,%.1fml,deep="%(tipMask,wasteVol,cleanerVol),deepClean
-        self.elapsed+=12.7
+        self.elapsed+=13.2
         
     def periodicWash(self,tipMask,period):
         wasteLoc=(1,1)
@@ -293,11 +304,11 @@ class WorkList(object):
         else:
             andBack=0
         self.list.append('Vector("%s",%d,%d,%d,%d,%d,%d,%d,0)'%(vector,loc.grid,loc.pos,direction,andBack,initialAction, finalAction, speed))
-        self.elapsed+=6.1
+        self.elapsed+=5.1
         
     def romahome(self):
         self.list.append('ROMA(2,0,0,0,0,0,60,0,0)')
-        self.elapsed+=1.5
+        self.elapsed+=1.0
 
         
     def userprompt(self, text, beeps=0, closetime=-1):
@@ -327,7 +338,7 @@ class WorkList(object):
         else:
             resultvar=""
         self.list.append('Execute("%s",%d,"%s")'%(command,flags,resultvar))
-        self.elapsed+=5.3   # Just overhead time, not actually time that command itself takes
+        self.elapsed+=5.5   # Just overhead time, not actually time that command itself takes
         
     def pyrun(self, cmd):
         self.execute("C:\Python27\python.exe C:\cygwin\Home\Admin\%s"%cmd)
