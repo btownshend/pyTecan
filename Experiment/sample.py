@@ -182,6 +182,6 @@ class Sample(object):
                     c="[%s]"%str(s.conc)
                 else:
                     c=""   
-                note="%s%s in %s.%s consume %.1f ul, provide %.1f ul"%(s.name,c,str(s.plate),str(s.well),s.initvolume-s.volume,s.initvolume)
+                note="%s%s in %s.%s consume %.1f ul, provide %.1f ul"%(s.name,c,str(s.plate),s.plate.wellname(s.well),s.initvolume-s.volume,s.initvolume)
                 notes=notes+"\n"+note
         print >>fd,notes
