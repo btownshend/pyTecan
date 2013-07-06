@@ -106,7 +106,7 @@ class WorkList(object):
                 else:
                     merge=[d1[0],d1[1]|d2[1],d1[2]+d2[2],d1[3],d1[4]+d2[4],d1[5],d1[6]];
                     print " MERGED %s:\tTip %d, Loc (%d,%d) Wells %s"%(merge[0],merge[1],merge[5].grid,merge[5].pos,str(merge[2]))
-                    self.comment("Merged operations")
+                    # self.comment("Merged operations")
                     self.opQueue[i+1]=merge
                     todelete.append(i)
                 
@@ -141,13 +141,13 @@ class WorkList(object):
             return
 
         if op=='Mix':
-            self.elapsed+=10.7
+            self.elapsed+=16.1
         elif op=='Dispense':
-            self.elapsed+=3.1
+            self.elapsed+=3.2
         elif op=='Aspirate':
-            self.elapsed+=8.3
+            self.elapsed+=9.2
             
-        print "%s %d %s.%s %s"%(op,tipMask,str(loc),str(wells),str(volume))
+        print "%s %d %s.%s %s %s"%(op,tipMask,str(loc),str(wells),str(volume),str(liquidClass))
         # Update volumes
         for i in range(len(wells)):
             well=wells[i]
@@ -276,7 +276,7 @@ class WorkList(object):
         atFreq=1000  # Hz, For Active tip
         self.list.append('Wash(%d,%d,%d,%d,%d,%.1f,%d,%.1f,%d,%.1f,%d,%d,%d,%d,%d)'%(tipMask,wasteLoc[0],wasteLoc[1],cleanerLoc[0],cleanerLoc[1],wasteVol,wasteDelay,cleanerVol,cleanerDelay,airgap, airgapSpeed, retractSpeed, fastWash, lowVolume, atFreq))
         print "Wash %d,%.1fml,%.1fml,deep="%(tipMask,wasteVol,cleanerVol),deepClean
-        self.elapsed+=13.2
+        self.elapsed+=16.3
         
     def periodicWash(self,tipMask,period):
         wasteLoc=(1,1)
