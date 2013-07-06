@@ -105,13 +105,18 @@ class Sample(object):
 			    well.append(i)
 	else:
 		well=[self.well]
-        w.aspirate(tipMask,well,self.chooseLC(aspVolume),volume,self.plate)
+	# Manual conditioning
+	condVolume=2;
+	
+	lc=self.chooseLC(aspVolume+condVolume)
+        w.aspirate(tipMask,well,lc,volume+condVolume,self.plate)
+        w.dispense(tipMask,well,lc,condVolume,self.plate)   # Manual conditioning
         self.volume=self.volume-aspVolume
         if multi:
             self.volume=self.volume-MULTIEXCESS
-            self.addhistory("",-volume-MULTIEXCESS)
+            self.addhistory("",-volume-MULTIEXCESS,tipMask)
         else:
-            self.addhistory("",-volume)
+            self.addhistory("",-volume,tipMask)
         if self.volume<0:
             print "Warning: %s is now short by %.1f ul"%(self.name,-self.volume)
             
@@ -136,9 +141,9 @@ class Sample(object):
         self.isMixed=self.volume==0
         self.volume=self.volume+volume
 
-    def addhistory(self,name,vol):
+    def addhistory(self,name,vol,tip):
         if vol>0:
-            str="%s[%.1f]"%(name,vol)
+            str="%s[%.1f#%d]"%(name,vol,tip)
             if len(self.history)>0:
                 self.history=self.history+"+"+str
             else:

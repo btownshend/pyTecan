@@ -138,7 +138,7 @@ class Experiment(object):
             for i in range(len(dests)):
                 if volumes[i]>0.01:
                     dests[i].dispense(tipMask,self.w,volumes[i],src.conc)
-                    dests[i].addhistory(src.name,volumes[i])
+                    dests[i].addhistory(src.name,volumes[i],tipMask)
             if self.useDiTis and dropDITI:
                 self.w.dropDITI(tipMask&self.DITIMASK,self.WASTE)
         else:
@@ -181,7 +181,7 @@ class Experiment(object):
             src.mix(tipMask,self.w)
         src.aspirate(tipMask,self.w,volume)
         dest.dispense(tipMask,self.w,volume,src.conc)
-        dest.addhistory(src.name,volume)
+        dest.addhistory(src.name,volume,tipMask)
         if mix[1]:
             dest.mix(tipMask,self.w)
         if self.useDiTis and dropDITI:
