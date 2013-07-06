@@ -76,7 +76,7 @@ class Experiment(object):
         for i in range(4):
             if (fixedTips & (1<<i)) != 0:
                 fixedWells.append(i)
-        self.w.mix(fixedTips,fixedWells,self.RNASEAWAY.mixLC,200,self.RNASEAWAY.plate,3);
+        self.w.mix(fixedTips,fixedWells,self.RNASEAWAY.mixLC,200,self.RNASEAWAY.plate,1);
         self.w.wash(fixedTips,1,10,True)
         self.cleanTips|=fixedTips
         
@@ -84,7 +84,8 @@ class Experiment(object):
         'Get the mask for a clean tip, washing if needed'
         if self.cleanTips==0:
             self.cleanTips=(~self.DITIMASK)&15
-            self.w.wash(self.cleanTips)
+            #self.w.wash(self.cleanTips)
+            self.sanitize()
         tipMask=1
         while (self.cleanTips & tipMask)==0:
             tipMask<<=1
