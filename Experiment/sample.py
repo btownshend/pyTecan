@@ -10,6 +10,23 @@ MINLIQUIDDETECTVOLUME=50
 MULTIEXCESS=2  # Excess volume aspirate when using multi-dispense
 _Sample__allsamples = []
 
+#Updated LC's:
+# Water-Bottom
+# Fixed Aspirate (single): 20ul/s, 200ms, STAG=20,LAG=1 (WAS 0),TAG=0,EXC=0,COND=0, zmax-1mm (WAS -0.2mm), retract to z-dispense  20mm/s
+# Fixed Aspirate (multi): 20ul/s, 200ms, STAG=20,LAG=0,TAG=0,EXC=2 (to waste),COND=0 (WAS 2ul)
+# Fixed Dispense (single): 100ul/s, 100ul/s, 500ms, no TAG after each dispense, no LD, z-max -1mm (WAS -2mm), touch left @10mm/s;100ms (WAS no touch), retract to z-dispense 20 mm/s
+# Fixed Dispense (multi): 100ul/s (WAS 600), 100ul/s(WAS 400), 500ms(WAS 0), no TAG after each dispense
+# Water-InLiquid
+# Fixed Aspirate (single): 20ul/s, 200ms, STAG=20,LAG=1 (WAS 0),TAG=0,EXC=0,COND=0, liquid detect +1mm center with tracking, retract to liquid level-5mm  20mm/s
+# Fixed Aspirate (multi): 20ul/s, 200ms, STAG=20,LAG=0,TAG=0,EXC=2 (to waste),COND=0 (WAS 2ul)
+# Fixed Dispense (single): 100ul/s, 100ul/s, 500ms, no TAG after each dispense, no LD, liquid detect +1mm center with tracking, retract to liquid level-5mm (WAS -2) 20 mm/s
+# Fixed Dispense (multi): 100ul/s (WAS 600), 100ul/s(WAS 400), 500ms(WAS 0), no TAG after each dispense
+# Water-Mix
+# Fixed Aspirate (single): 100ul/s, 200ms, STAG=20,LAG=0,TAG=0,EXC=0,COND=0,zmax-1mm, retract to z-dispense  20mm/s
+# Fixed Aspirate (multi): 20ul/s, 200ms, STAG=20,LAG=0,TAG=0,EXC=2 (to waste),COND=0
+# Fixed Dispense (single): 100ul/s, 100ul/s, 500ms, no TAG after each dispense, no LD, z-max -5mm, no touch, retract to current-pos 20 mm/s
+# Fixed Dispense (multi): 100ul/s (WAS 600), 100ul/s(WAS 400), 500ms(WAS 0), no TAG after each dispense
+
 class Sample(object):
     @staticmethod
     def printallsamples(txt="",fd=sys.stdout):
@@ -173,15 +190,15 @@ class Sample(object):
     def printprep(fd=sys.stdout):
         notes="Reagents:"
         for s in __allsamples:
+            if s.conc!=None:
+                c="[%s]"%str(s.conc)
+            else:
+                c=""   
 	    if s.volume==s.initvolume:
 		'Not used'
-                note="%s%s in %s.%s not consumed"%(s.name,c,str(s.plate),str(s.well))
+                note="%s%s in %s.%s not consumed"%(s.name,c,str(s.plate),s.plate.wellname(s.well))
                 notes=notes+"\n"+note
             elif s.initvolume>0:
-                if s.conc!=None:
-                    c="[%s]"%str(s.conc)
-                else:
-                    c=""   
                 note="%s%s in %s.%s consume %.1f ul, provide %.1f ul"%(s.name,c,str(s.plate),s.plate.wellname(s.well),s.initvolume-s.volume,s.initvolume)
                 notes=notes+"\n"+note
         print >>fd,notes
