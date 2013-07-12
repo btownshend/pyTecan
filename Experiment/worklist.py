@@ -145,7 +145,7 @@ class WorkList(object):
         elif op=='Dispense':
             self.elapsed+=3.2
         elif op=='Aspirate':
-            self.elapsed+=9.2
+            self.elapsed+=9.2+3.2   # Extra for conditioning volume
             
         print "%s %d %s.%s %s %s"%(op,tipMask,str(loc),str(wells),str(volume),str(liquidClass))
         # Update volumes
