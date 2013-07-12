@@ -12,4 +12,4 @@ class Concentration(object):
         return Concentration(self.stock/factor,self.final,self.units)
     def dilutionneeded(self):
         'Return dilution factor needed to dilute from stock to final'
-        return self.stock/self.final
+        return self.stock*1.0/self.final
