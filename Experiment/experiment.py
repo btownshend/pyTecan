@@ -292,5 +292,10 @@ class Experiment(object):
 
 
     def dilute(self,samples,factor):
-        for s in samples:
-            s.dilute(factor)
+        if isinstance(factor,list):
+            assert(len(samples)==len(factor))
+            for i in range(len(samples)):
+                samples[i].dilute(factor[i])
+        else:
+            for s in samples:
+                s.dilute(factor)
