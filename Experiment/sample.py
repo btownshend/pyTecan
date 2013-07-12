@@ -109,10 +109,10 @@ class Sample(object):
         if volume<2 and not multi and self.name!="Water":
             print "WARNING: Inaccurate for < 2ul:  attempting to aspirate %.1f ul"%volume
         if volume<6:
-            aspVolume=volume+1
+            aspVolume=volume+1+MULTIEXCESS
         else:
             # Aspirates more than dispensed
-            aspVolume=volume*ASPIRATEFACTOR
+            aspVolume=volume*ASPIRATEFACTOR+MULTIEXCESS
             
 	if self.well==None:
 		well=[]
@@ -126,11 +126,7 @@ class Sample(object):
         w.aspirate(tipMask,well,lc,volume,self.plate)
         # Manual conditioning handled in worklist
         self.volume=self.volume-aspVolume
-        if multi:
-            self.volume=self.volume-MULTIEXCESS
-            self.addhistory("",-volume-MULTIEXCESS,tipMask)
-        else:
-            self.addhistory("",-volume,tipMask)
+        self.addhistory("",-aspVolume,tipMask)
         if self.volume<0:
             print "Warning: %s is now short by %.1f ul"%(self.name,-self.volume)
             
