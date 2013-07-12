@@ -56,8 +56,8 @@ class WorkList(object):
         
     def optimizeQueue(self):
         'Optimize operations in queue'
-        #        for d in self.opQueue:
-        #  print "PRE-OPT %s:\tTip %d, Loc (%d,%d) Wells %s"%(d[0],d[1],d[5].grid,d[5].pos,str(d[2]))
+        for d in self.opQueue:
+            print "PRE-OPT %s:\tTip %d, Loc (%d,%d) Wells %s"%(d[0],d[1],d[5].grid,d[5].pos,str(d[2]))
         # As much as possible, move together operations on a single plate
         newQueue=[]
         while len(self.opQueue)>0:
@@ -75,8 +75,8 @@ class WorkList(object):
                 else:
                     dirtyTips|=d[1]
             self.opQueue=[x for x in self.opQueue if x not in newQueue]
-        #        for d in newQueue:
-        #            print "POSTOPT %s:\tTip %d, Loc (%d,%d) Wells %s"%(d[0],d[1],d[5].grid,d[5].pos,str(d[2]))
+        for d in newQueue:
+            print "POSTOPT %s:\tTip %d, Loc (%d,%d) Wells %s"%(d[0],d[1],d[5].grid,d[5].pos,str(d[2]))
         self.opQueue=newQueue
 
         # Try to combine multiple operations into one command
@@ -293,7 +293,7 @@ class WorkList(object):
         lowVolume=0
         atFreq=1000  # Hz, For Active tip
         self.list.append('Wash(%d,%d,%d,%d,%d,%.1f,%d,%.1f,%d,%.1f,%d,%d,%d,%d,%d)'%(tipMask,wasteLoc[0],wasteLoc[1],cleanerLoc[0],cleanerLoc[1],wasteVol,wasteDelay,cleanerVol,cleanerDelay,airgap, airgapSpeed, retractSpeed, fastWash, lowVolume, atFreq))
-        print "Wash %d,%.1fml,%.1fml,deep="%(tipMask,wasteVol,cleanerVol),deepClean
+        #print "Wash %d,%.1fml,%.1fml,deep="%(tipMask,wasteVol,cleanerVol),deepClean
         self.elapsed+=16.3
         
     def periodicWash(self,tipMask,period):

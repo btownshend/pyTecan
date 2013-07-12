@@ -79,6 +79,7 @@ class Experiment(object):
         self.w.mix(fixedTips,fixedWells,self.RNASEAWAY.mixLC,200,self.RNASEAWAY.plate,1);
         self.w.wash(fixedTips,1,10,True)
         self.cleanTips|=fixedTips
+        print "* Sanitize"
         
     def cleantip(self):
         'Get the mask for a clean tip, washing if needed'
@@ -193,7 +194,11 @@ class Experiment(object):
         # Pipette sources into sample wells
         # Concs are in x (>=1)
         #        Sample.printallsamples("Before "+stagename)
-        print "\nStage: ", stagename
+        print "\nStage: ", stagename, "reagents=",[str(r) for r in reagents], ",sources=",[str(s) for s in sources],",samples=",[str(s) for s in samples],str(volume)
+        if len(samples)==0:
+            print "No samples\n"
+            return
+
         self.w.comment(stagename)
         assert(volume>0)
         volume=float(volume)
