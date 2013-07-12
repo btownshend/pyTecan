@@ -243,6 +243,10 @@ class Experiment(object):
         self.w.moveliha(self.WASHLOC)
         
     def runpgm(self,pgm,duration,waitForCompletion=True):
+        if self.ptcrunning:
+            print "ERROR: Attempt to start a progam on PTC when it is already running"
+            assert(False)
+
         # move to thermocycler
         self.w.flushQueue()
         self.lihahome()
