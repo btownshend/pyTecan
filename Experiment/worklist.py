@@ -237,6 +237,15 @@ class WorkList(object):
         if op=="Aspirate":
             # Return conditioning volume
              self.list.append( '%s(%d,"%s",%s,%d,%d,%d,"%s",0)'%("Dispense",tipMask,liquidClass,condvol,loc.grid,loc.pos-1,spacing,ws))
+        ptr=0
+        for i in range(len(allvols)):
+            if allvols[i]>0:
+                self.SIM(i,op,allvols[i],loc,pos[ptr])
+                ptr+=1
+
+    def SIM(self,tip,op,vol,loc,pos):
+        print "SIM",tip,op,vol,loc,pos
+        
     # Get DITI
     def getDITI(self, tipMask, volume, retry=True,multi=False):
         self.flushQueue()
