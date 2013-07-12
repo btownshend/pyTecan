@@ -64,13 +64,14 @@ class Sample(object):
         self.initvolume=volume
         if plate.pierce:
             self.bottomLC=liquidclass.LC("%s-Pierce"%liquidClass.name,liquidClass.singletag,liquidClass.multicond,liquidClass.multiexcess)
+            self.inliquidLC=self.bottomLC  # Can't use liquid detection when piercing
         else:
             self.bottomLC=liquidclass.LC("%s-Bottom"%liquidClass.name,liquidClass.singletag,liquidClass.multicond,liquidClass.multiexcess)
             self.inliquidLC=liquidclass.LC("%s-InLiquid"%liquidClass.name,liquidClass.singletag,liquidClass.multicond,liquidClass.multiexcess)
 
         self.mixLC=liquidclass.LC("%s-Mix"%liquidClass.name,liquidClass.singletag,liquidClass.multicond,liquidClass.multiexcess)
-        # Same as empty for now 
-        self.emptyLC=liquidclass.LC("%s-Bottom"%liquidClass.name,liquidClass.singletag,liquidClass.multicond,liquidClass.multiexcess)
+        # Same as bottom for now 
+        self.emptyLC=self.bottomLC
         self.history=""
         __allsamples.append(self)
         self.isMixed=True
@@ -88,7 +89,7 @@ class Sample(object):
     @classmethod
     def lookup(cls,name):
         for s in __allsamples:
-	    if s.name==name:
+            if s.name==name:
                 return s
         return None
     
@@ -155,11 +156,11 @@ class Sample(object):
         if vol>0:
             str="%s[%.1f#%d]"%(name,vol,tip)
             if len(self.history)>0:
-                self.history=self.history+"+"+str
+                self.history=self.history+" +"+str
             else:
                 self.history=str
         elif vol<0:
-            str="-%.1f"%(-vol)
+            str=" -%.1f"%(-vol)
             if len(self.history)>0:
                 self.history=self.history+str
             else:
