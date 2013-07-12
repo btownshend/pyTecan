@@ -211,14 +211,32 @@ class WorkList(object):
             print "spacing=",spacing
 
         ws=WorkList.wellSelection(loc.nx,loc.ny,pos)
-        volstr="%.2f"%allvols[0]
-        for i in range(1,12):
-            volstr="%s,%.2f"%(volstr,allvols[i]);
+        if op=='Aspirate':
+            if allvols[0]>0:
+                volstr="%.2f"%(allvols[0]+2)
+                condvol="2"
+            else:
+                volstr="%.2f"%(allvols[0])
+                condvol="0"
+            for i in range(1,12):
+                if allvols[i]>0:
+                    c=2
+                else:
+                    c=0
+                volstr="%s,%.2f"%(volstr,allvols[i]+c)
+                condvol="%s,%.2f"%(condvol,c)
+        else:
+            volstr="%.2f"%allvols[0]
+            for i in range(1,12):
+                volstr="%s,%.2f"%(volstr,allvols[i])
+                
         if op=="Mix":
             self.list.append( '%s(%d,"%s",%s,%d,%d,%d,"%s",%d,0)'%(op,tipMask,liquidClass,volstr,loc.grid,loc.pos-1,spacing,ws,cycles))
         else:
             self.list.append( '%s(%d,"%s",%s,%d,%d,%d,"%s",0)'%(op,tipMask,liquidClass,volstr,loc.grid,loc.pos-1,spacing,ws))
-    
+        if op=="Aspirate":
+            # Return conditioning volume
+             self.list.append( '%s(%d,"%s",%s,%d,%d,%d,"%s",0)'%("Dispense",tipMask,liquidClass,condvol,loc.grid,loc.pos-1,spacing,ws))
     # Get DITI
     def getDITI(self, tipMask, volume, retry=True,multi=False):
         self.flushQueue()

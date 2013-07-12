@@ -105,12 +105,10 @@ class Sample(object):
 			    well.append(i)
 	else:
 		well=[self.well]
-	# Manual conditioning
-	condVolume=2;
 	
-	lc=self.chooseLC(aspVolume+condVolume)
-        w.aspirate(tipMask,well,lc,volume+condVolume,self.plate)
-        w.dispense(tipMask,well,lc,condVolume,self.plate)   # Manual conditioning
+	lc=self.chooseLC(aspVolume)
+        w.aspirate(tipMask,well,lc,volume,self.plate)
+        # Manual conditioning handled in worklist
         self.volume=self.volume-aspVolume
         if multi:
             self.volume=self.volume-MULTIEXCESS
