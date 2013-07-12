@@ -34,7 +34,14 @@ class Sample(object):
         for s in __allsamples:
             print >>fd,s
         print >>fd
-    def __init__(self,name,plate,well,conc=None,volume=0,liquidClass=liquidclass.LCDefault):
+    def __init__(self,name,plate,well=None,conc=None,volume=0,liquidClass=liquidclass.LCDefault):
+        if well==None:
+            # Find first unused well
+            well=0
+            for s in __allsamples:
+                if s.plate==plate and s.well>=well:
+                    well=s.well+1
+                    
         for s in __allsamples:
             if s.plate==plate and s.well==well:
                 print "Aliasing %s as %s"%(s.name,name)
