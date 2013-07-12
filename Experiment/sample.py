@@ -7,7 +7,7 @@ defaultMixFrac = 0.8
 defaultMixLeave = 3
 ASPIRATEFACTOR=1.1
 MINLIQUIDDETECTVOLUME=50
-MULTIEXCESS=2  # Excess volume aspirate when using multi-dispense
+MULTIEXCESS=1  # Excess volume aspirate when using multi-dispense
 _Sample__allsamples = []
 
 #Updated LC's:
