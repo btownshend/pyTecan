@@ -62,11 +62,12 @@ class Sample(object):
 		self.conc=Concentration(conc)
         self.volume=volume
         self.initvolume=volume
-        self.bottomLC=liquidclass.LC("%s-Bottom"%liquidClass.name,liquidClass.singletag,liquidClass.multicond,liquidClass.multiexcess)
-	if plate.pierce:
-		self.inliquidLC=self.bottomLC  # Can't use liquid detection when piercing
-	else:
-		self.inliquidLC=liquidclass.LC("%s-InLiquid"%liquidClass.name,liquidClass.singletag,liquidClass.multicond,liquidClass.multiexcess)
+        if plate.pierce:
+            self.bottomLC=liquidclass.LC("%s-Pierce"%liquidClass.name,liquidClass.singletag,liquidClass.multicond,liquidClass.multiexcess)
+        else:
+            self.bottomLC=liquidclass.LC("%s-Bottom"%liquidClass.name,liquidClass.singletag,liquidClass.multicond,liquidClass.multiexcess)
+            self.inliquidLC=liquidclass.LC("%s-InLiquid"%liquidClass.name,liquidClass.singletag,liquidClass.multicond,liquidClass.multiexcess)
+
         self.mixLC=liquidclass.LC("%s-Mix"%liquidClass.name,liquidClass.singletag,liquidClass.multicond,liquidClass.multiexcess)
         # Same as empty for now 
         self.emptyLC=liquidclass.LC("%s-Bottom"%liquidClass.name,liquidClass.singletag,liquidClass.multicond,liquidClass.multiexcess)
