@@ -106,7 +106,7 @@ class Sample(object):
 		self.conc=self.conc.dilute(1.0/factor)
 
     def aspirate(self,tipMask,w,volume,multi=False):
-        if volume<2 and not multi:
+        if volume<2 and not multi and self.name!="Water":
             print "WARNING: Inaccurate for < 2ul:  attempting to aspirate %.1f ul"%volume
         if volume<6:
             aspVolume=volume+1
