@@ -4,6 +4,8 @@ from concentration import Concentration
 import liquidclass
 import os.path
 
+ptcrunning=False
+
 class Experiment(object):
     WASHLOC=Plate("Wash",1,2,1,8)
     REAGENTPLATE=Plate("Reagents",3,1,6,5,True)
@@ -32,7 +34,7 @@ class Experiment(object):
         self.useDiTis=False
         self.thermotime=0
         self.RNASEAWAY.mixLC=liquidclass.LC("RNaseAway-Mix")
-        
+        self.ptcrunning=False
         #        self.w.periodicWash(15,4)
         
     def setreagenttemp(self,temp=None):
@@ -96,6 +98,9 @@ class Experiment(object):
     def multitransfer(self, volumes, src, dests,mix=(False,False),getDITI=True,dropDITI=True):
         'Multi pipette from src to multiple dest.  mix is (src,dest) mixing'
         #print "multitransfer(",volumes,",",src,",",dests,",",mix,",",getDITI,",",dropDITI,")"
+        if self.ptcrunning and (src.plate==Experiment.SAMPLEPLATE or len([1 for d in dests if d.plate==Experiment.SAMPLEPLATE])>0):
+            self.waitpgm()
+            
         if isinstance(volumes,(int,long,float)):
             # Same volume for each dest
             volumes=[volumes for i in range(len(dests))]
@@ -148,6 +153,8 @@ class Experiment(object):
                     self.transfer(volumes[i],src,dests[i],(mix[0] and i==0,mix[1]),getDITI,dropDITI)
 
     def transfer(self, volume, src, dest, mix=(False,False), getDITI=True, dropDITI=True):
+        if self.ptcrunning and (src.plate==Experiment.SAMPLEPLATE or dest.plate==Experiment.SAMPLEPLATE)>0:
+            self.waitpgm()
         if volume>self.MAXVOLUME:
             destvol=max([d.volume for d in dests[0:i]])
             reuseTip=destvol<=0
@@ -231,7 +238,7 @@ class Experiment(object):
         'Move LiHa to left of deck'
         self.w.moveliha(self.WASHLOC)
         
-    def runpgm(self,pgm,duration):
+    def runpgm(self,pgm,duration,waitForCompletion=True):
         # move to thermocycler
         self.lihahome()
         cmt="run %s"%pgm
@@ -246,9 +253,17 @@ class Experiment(object):
         self.w.pyrun("PTC\\ptclid.py CLOSE")
         #        pgm="PAUSE30"  # For debugging
         self.w.pyrun('PTC\\ptcrun.py %s CALC ON'%pgm)
-        e1=self.w.elapsed
+        self.thermotime+=duration*60+self.w.elapsed   # Add on elapsed time so we can cancel out intervening time in waitpgm()
+        self.ptcrunning=True
+        if waitForCompletion:
+            self.waitpgm()
+            
+    def waitpgm(self):
+        if not self.ptcrunning:
+            return
+        print "* Wait for PTC to finish"
         self.sanitize()   # Sanitize tips before waiting for this to be done
-        self.thermotime+=duration*60-(self.w.elapsed-e1)
+        self.thermotime-=self.w.elapsed
         self.w.pyrun('PTC\\ptcwait.py')
         self.w.pyrun("PTC\\ptclid.py OPEN")
         #        self.w.pyrun('PTC\\ptcrun.py %s CALC ON'%"COOLDOWN")
@@ -267,6 +282,7 @@ class Experiment(object):
         self.w.vector("Microplate Landscape",self.SAMPLEPLATE,self.w.SAFETOEND,False,self.w.DONOTMOVE,self.w.CLOSE)
         self.w.vector("Microplate Landscape",self.SAMPLEPLATE,self.w.ENDTOSAFE,False,self.w.OPEN,self.w.DONOTMOVE)
         self.w.romahome()
+        self.ptcrunning=False
         #self.w.userprompt("Plate should be back on deck. Press return to continue")
 
 
