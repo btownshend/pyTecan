@@ -233,7 +233,7 @@ class Experiment(object):
             self.multitransfer([reagentvols[i]*v for v in volume],reagents[i],samples,(True,destMix and (len(sources)==0 and i==len(reagents)-1)))
 
         if len(sources)>0:
-            assert(len(sources)<=len(samples))
+            assert(len(sources)==len(samples))
             for i in range(len(sources)):
                 self.transfer(sourcevols[i],sources[i],samples[i],(True,destMix))
 
