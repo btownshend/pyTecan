@@ -207,16 +207,20 @@ class Experiment(object):
             return
 
         self.w.comment(stagename)
-        assert(volume>0)
-        volume=float(volume)
-        reagentvols=[volume*1.0/x.conc.dilutionneeded()*finalx for x in reagents]
+        if not isinstance(volume,list):
+            volume=[volume for i in range(len(samples))]
+        for i in range(len(volume)):
+            assert(volume[i]>0)
+            volume[i]=float(volume[i])
+            
+        reagentvols=[1.0/x.conc.dilutionneeded()*finalx for x in reagents]
         if len(sources)>0:
-            sourcevols=[volume*1.0/x.conc.dilutionneeded()*finalx for x in sources]
+            sourcevols=[volume[i]*1.0/sources[i].conc.dilutionneeded()*finalx for i in range(len(sources))]
             while len(sourcevols)<len(samples):
                 sourcevols.append(0)
-            watervols=[volume-sum(reagentvols)-samples[i].volume-sourcevols[i] for i in range(len(samples))]
+            watervols=[volume[i]*(1-sum(reagentvols))-samples[i].volume-sourcevols[i] for i in range(len(samples))]
         else:
-            watervols=[volume-sum(reagentvols)-samples[i].volume for i in range(len(samples))]
+            watervols=[volume[i]*(1-sum(reagentvols))-samples[i].volume for i in range(len(samples))]
 
         if min(watervols)<-0.01:
             print "Error: Ingredients add up to more than desired volume;  need to add water=",watervols
@@ -226,7 +230,7 @@ class Experiment(object):
             self.multitransfer(watervols,self.WATER,samples,(False,destMix and (len(reagents)+len(sources)==0)))
 
         for i in range(len(reagents)):
-            self.multitransfer(reagentvols[i],reagents[i],samples,(True,destMix and (len(sources)==0 and i==len(reagents)-1)))
+            self.multitransfer([reagentvols[i]*v for v in volume],reagents[i],samples,(True,destMix and (len(sources)==0 and i==len(reagents)-1)))
 
         if len(sources)>0:
             assert(len(sources)<=len(samples))
