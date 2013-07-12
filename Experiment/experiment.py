@@ -244,6 +244,7 @@ class Experiment(object):
         
     def runpgm(self,pgm,duration,waitForCompletion=True):
         # move to thermocycler
+        self.w.flushQueue()
         self.lihahome()
         cmt="run %s"%pgm
         self.w.comment(cmt)
