@@ -84,7 +84,7 @@ class WorkList(object):
         for i in range(len(self.opQueue)-1):
             d1=self.opQueue[i];
             d2=self.opQueue[i+1];
-            if False and d1[0]=='Dispense' and d2[0]=='Mix' and d1[1]==d2[1] and i+2<len(self.opQueue):
+            if False and d1[0]=='Dispense' and d2[0]=='Mix' and d1[1]==d2[1] and i+2<len(self.opQueue) and self.opQueue[i+2][1]!=d1[1]:
                 # Special case of dispense/mix
                 print "DISPENSE/MIX"
                 d2=self.opQueue[i+2]
