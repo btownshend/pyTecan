@@ -91,7 +91,15 @@ class Sample(object):
 	    if s.name==name:
                 return s
         return None
-                
+    
+    @classmethod
+    def getAllOnPlate(cls,plate=None):  
+        result=[]
+        for s in __allsamples:
+            if plate==None or s.plate==plate:
+                result.append(s)  
+        return result 
+                 
     def dilute(self,factor):
         'Dilute sample -- just increases its recorded concentration'
         if self.conc!=None:
