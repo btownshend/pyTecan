@@ -6,7 +6,7 @@ from concentration import Concentration
 defaultMixFrac = 0.8
 defaultMixLeave = 3
 ASPIRATEFACTOR=1.1
-MINLIQUIDDETECTVOLUME=50
+MINLIQUIDDETECTVOLUME=70
 MULTIEXCESS=1  # Excess volume aspirate when using multi-dispense
 _Sample__allsamples = []
 
