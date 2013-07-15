@@ -211,15 +211,16 @@ class TRP(object):
         ssrc=findsamps(src,False)
         adjustSrcDil(ssrc,[d for d in srcdil])
         
-        self.e.stage('QPCRDIL',[],ssrc,stgtdil,vol)
+        self.e.stage('QPCRDIL',[],ssrc,stgtdil,max(vol))
         return tgtdil
         
     def runQPCR(self,src,vol,srcdil):
         ## QPCR setup
         # e.g. trp.runQPCR(src=["1.RT-B","1.RT+B","1.RTNeg-B","1.RTNeg+B","2.RT-A","2.RT-B","2.RTNeg+B","2.RTNeg+B"],vol=10,srcdil=100)
         [src,vol,srcdil]=listify([src,vol,srcdil])
-        tgtqpcrA=["%s.QA"%(src[i]) for i in range(len(src))]
-        tgtqpcrB=["%s.QB"%(src[i]) for i in range(len(src))]
+        tgtqpcrA=["%s.QA"%(src[i]) for i in range(len(src))]+["Water.QA"]   # Extra sample for water
+        tgtqpcrB=["%s.QB"%(src[i]) for i in range(len(src))] +["Water.QB"]
+        vol=vol+[vol[1]]   # For water sample
         stgtqpcrA=findsamps(tgtqpcrA,True,Experiment.QPCRPLATE)
         stgtqpcrB=findsamps(tgtqpcrB,True,Experiment.QPCRPLATE)
         ssrc=findsamps(src,False)
