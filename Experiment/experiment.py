@@ -242,7 +242,7 @@ class Experiment(object):
         'Move LiHa to left of deck'
         self.w.moveliha(self.WASHLOC)
         
-    def runpgm(self,pgm,duration,waitForCompletion=True):
+    def runpgm(self,pgm,duration,waitForCompletion=True,volume=10):
         if self.ptcrunning:
             print "ERROR: Attempt to start a progam on PTC when it is already running"
             assert(False)
@@ -261,7 +261,7 @@ class Experiment(object):
         self.w.romahome()
         self.w.pyrun("PTC\\ptclid.py CLOSE")
         #        pgm="PAUSE30"  # For debugging
-        self.w.pyrun('PTC\\ptcrun.py %s CALC ON'%pgm)
+        self.w.pyrun('PTC\\ptcrun.py %s CALC ON %d'%(pgm,volume))
         self.thermotime+=duration*60+self.w.elapsed   # Add on elapsed time so we can cancel out intervening time in waitpgm()
         self.ptcrunning=True
         if waitForCompletion:

@@ -125,7 +125,7 @@ class TRP(object):
 
         self.e.stage('T7M',[self.r.MT7],[ssrc[i] for i in range(len(ssrc)) if not theo[i]],[stgt[i] for i in range(len(ssrc)) if not theo[i]],[vol[i] for i in range(len(ssrc)) if not theo[i]])
         self.e.stage('T7P',[self.r.MT7,self.r.Theo],[ssrc[i] for i in range(len(ssrc)) if theo[i]],[stgt[i] for i in range(len(ssrc)) if theo[i]],[vol[i] for i in range(len(ssrc)) if theo[i]])
-        self.e.runpgm("TRP37-15",15, False)
+        self.e.runpgm("TRP37-15",15, False,max(vol))
 
         ## Stop
         self.e.dilute(stgt,2)
@@ -154,7 +154,7 @@ class TRP(object):
         #    e.stage('MNegRT',[self.r.MOSBuffer],[],[self.r.MNegRT],ASPIRATEFACTOR*(self.vol.RT*negRT)/2+self.vol.Extra+MULTIEXCESS,2)
         self.e.stage('RTPos',[self.r.MPosRT],[ssrc[i] for i in range(len(ssrc)) if pos[i]],[stgt[i] for i in range(len(stgt)) if pos[i]],[vol[i] for i in range(len(vol)) if pos[i]])
         self.e.stage('RTNeg',[self.r.MNegRT],[ssrc[i] for i in range(len(ssrc)) if not pos[i]],[stgt[i] for i in range(len(stgt)) if not pos[i]],[vol[i] for i in range(len(vol)) if not pos[i]])
-        self.e.runpgm("TRP37-20",20,False)
+        self.e.runpgm("TRP37-20",20,False,max(vol))
         return tgt
  
     def runLig(self,prefix,src,tgt,vol,srcdil):
@@ -181,9 +181,9 @@ class TRP(object):
         self.e.stage('LigAnnealA',[self.r.MLigA],[ssrc[i] for i in range(len(ssrc)) if prefix[i]=='A'],[stgt[i] for i in range(len(stgt)) if prefix[i]=='A'],[vol[i]/1.5 for i in range(len(vol)) if prefix[i]=='A'],1.5)
         self.e.stage('LigAnnealB',[self.r.MLigB],[ssrc[i] for i in range(len(ssrc)) if prefix[i]=='B'],[stgt[i] for i in range(len(stgt)) if prefix[i]=='B'],[vol[i]/1.5 for i in range(len(vol)) if prefix[i]=='B'],1.5)
  
-        self.e.runpgm("TRPANN",5)
+        self.e.runpgm("TRPANN",5,False,max(vol))
         self.e.stage('Ligation',[self.r.MLigase],[],stgt,vol)
-        self.e.runpgm("TRPLIG",40,False)
+        self.e.runpgm("TRPLIG",40,False,max(vol))
         return tgt
  
     def runPCR(self,prefix,src,tgt,vol,srcdil):
@@ -199,7 +199,7 @@ class TRP(object):
         
         self.e.stage('PCRA',[self.r.PCRA],[ssrc[i] for i in range(len(ssrc)) if prefix[i]=='A'],[stgt[i] for i in range(len(stgt)) if prefix[i]=='A'],[vol[i] for i in range(len(vol)) if prefix[i]=='A'])
         self.e.stage('PCRB',[self.r.PCRB],[ssrc[i] for i in range(len(ssrc)) if prefix[i]=='B'],[stgt[i] for i in range(len(stgt)) if prefix[i]=='B'],[vol[i] for i in range(len(vol)) if prefix[i]=='B'])
-        self.e.runpgm("PCR",60,False)
+        self.e.runpgm("PCR20",60,False,max(vol))
         return tgt
     
     def runQPCRDIL(self,src,vol,srcdil):
