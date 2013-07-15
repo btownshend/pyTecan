@@ -202,6 +202,15 @@ class TRP(object):
         self.e.runpgm("PCR20",60,False,max(vol))
         return tgt
     
+    def diluteInPlace(self,tgt,dil):
+        # Dilute in place
+        # e.g.: trp.diluteInPlace(tgt=rt1,dil=2)
+        [tgt,dil]=listify([tgt,dil])
+        stgt=findsamps(tgt,False)
+        adjustSrcDil(stgt,dil);
+        self.e.stage('Dilute',[],[],stgt,[stgt[i].volume*dil[i] for i in range(len(stgt))])
+        return tgt
+        
     def runQPCRDIL(self,src,vol,srcdil):
         ## QPCR setup
         # e.g. trp.runQPCR(src=["1.RT-B","1.RT+B","1.RTNeg-B","1.RTNeg+B","2.RT-A","2.RT-B","2.RTNeg+B","2.RTNeg+B"],vol=10,srcdil=100)
