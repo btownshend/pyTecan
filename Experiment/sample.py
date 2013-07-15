@@ -128,8 +128,8 @@ class Sample(object):
         # Manual conditioning handled in worklist
         self.volume=self.volume-aspVolume
         self.addhistory("",-aspVolume,tipMask)
-        if self.volume<0:
-            print "Warning: %s is now short by %.1f ul"%(self.name,-self.volume)
+        if self.volume<self.plate.unusableVolume:
+            print "Warning: Aspiration from %s brings volume down to %.1ful which is less than its unusable volume of %.1f ul"%(self.name,self.volume,self.plate.unusableVolume)
             
     def dispense(self,tipMask,w,volume,conc):
         well=[self.well if self.well!=None else 2**(tipMask-1)-1 ]

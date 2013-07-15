@@ -7,17 +7,17 @@ import os.path
 ptcrunning=False
 
 class Experiment(object):
-    WASHLOC=Plate("Wash",1,2,1,8)
-    REAGENTPLATE=Plate("Reagents",3,1,6,5,True)
-    SAMPLEPLATE=Plate("Samples",10,3,12,8)
-    READERPLATE=Plate("Reader",10,2,12,8)
-    QPCRPLATE=Plate("qPCR",10,2,12,8)
-    WATERLOC=Plate("Water",17,2,1,4)
-    RNASEAWAYLOC=Plate("Water",17,1,1,4)
+    WASHLOC=Plate("Wash",1,2,1,8,False,0)
+    REAGENTPLATE=Plate("Reagents",3,1,6,5,True,15)
+    SAMPLEPLATE=Plate("Samples",10,3,12,8,False,5)
+    READERPLATE=Plate("Reader",10,2,12,8,False,5)
+    QPCRPLATE=Plate("qPCR",10,2,12,8,False,5)
+    WATERLOC=Plate("Water",17,2,1,4,False,100)
+    RNASEAWAYLOC=Plate("Water",17,1,1,4,False,0)
     PTCPOS=Plate("PTC",25,1,1,1)
     HOTELPOS=Plate("Hotel",25,0,1,1)
     WASTE=Plate("Waste",20,3,1,1)
-    EPPENDORFS=Plate("Eppendorfs",19,1,1,16)
+    EPPENDORFS=Plate("Eppendorfs",19,1,1,16,False,15)
     WATER=Sample("Water",WATERLOC,None,None,10000)
     RNASEAWAY=Sample("RNase-Away",RNASEAWAYLOC,0,None,10000)
     DITIMASK=0   # Which tips are DiTis
