@@ -30,10 +30,15 @@ _Sample__allsamples = []
 class Sample(object):
     @staticmethod
     def printallsamples(txt="",fd=sys.stdout):
-        print >>fd,"\n%s:"%txt
-        for s in __allsamples:
-            print >>fd,s
-        print >>fd
+        print >>fd,"\n%s by plate:"%txt
+        plates=set([s.plate for s in __allsamples]);
+        for p in plates:
+            print >>fd,"Samples in plate: ",p
+            for s in __allsamples:
+                if s.plate==p:
+                    print >>fd,s
+            print >>fd
+
     def __init__(self,name,plate,well=None,conc=None,volume=0,liquidClass=liquidclass.LCDefault):
         if well==None:
             # Find first unused well
@@ -129,6 +134,7 @@ class Sample(object):
         self.volume=self.volume-aspVolume
         self.addhistory("",-aspVolume,tipMask)
         if self.volume<self.plate.unusableVolume:
+            # TODO - this hould be more visible in output
             print "Warning: Aspiration from %s brings volume down to %.1ful which is less than its unusable volume of %.1f ul"%(self.name,self.volume,self.plate.unusableVolume)
             
     def dispense(self,tipMask,w,volume,conc):
