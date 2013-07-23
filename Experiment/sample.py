@@ -133,7 +133,7 @@ class Sample(object):
         # Manual conditioning handled in worklist
         self.volume=self.volume-aspVolume
         self.addhistory("",-aspVolume,tipMask)
-        if self.volume<self.plate.unusableVolume:
+        if self.volume+.001<self.plate.unusableVolume:
             # TODO - this hould be more visible in output
             print "Warning: Aspiration from %s brings volume down to %.1ful which is less than its unusable volume of %.1f ul"%(self.name,self.volume,self.plate.unusableVolume)
             
