@@ -212,17 +212,18 @@ class TRP(object):
         self.e.stage('Dilute',[],[],stgt,[stgt[i].volume*dil[i] for i in range(len(stgt))])
         return tgt
         
-    def runQPCRDIL(self,src,vol,srcdil):
+    def runQPCRDIL(self,src,tgt,vol,srcdil):
         ## QPCR setup
         # e.g. trp.runQPCR(src=["1.RT-B","1.RT+B","1.RTNeg-B","1.RTNeg+B","2.RT-A","2.RT-B","2.RTNeg+B","2.RTNeg+B"],vol=10,srcdil=100)
         [src,vol,srcdil]=listify([src,vol,srcdil])
-        tgtdil=["%s.D"%(src[i]) for i in range(len(src))]
-        stgtdil=findsamps(tgtdil,True,Experiment.QPCRPLATE)
+        if len(tgt)==0:
+            tgt=["%s.D"%(src[i]) for i in range(len(src))]
+        stgt=findsamps(tgt,True,Experiment.QPCRPLATE)
         ssrc=findsamps(src,False)
         adjustSrcDil(ssrc,[d for d in srcdil])
         
-        self.e.stage('QPCRDIL',[],ssrc,stgtdil,max(vol))
-        return tgtdil
+        self.e.stage('QPCRDIL',[],ssrc,stgt,max(vol))
+        return tgt
         
     def runQPCR(self,src,vol,srcdil):
         ## QPCR setup
