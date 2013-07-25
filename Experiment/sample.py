@@ -8,6 +8,7 @@ defaultMixLeave = 3
 ASPIRATEFACTOR=1.1
 MINLIQUIDDETECTVOLUME=70
 MULTIEXCESS=1  # Excess volume aspirate when using multi-dispense
+SHOWTIPS=False
 _Sample__allsamples = []
 
 #Updated LC's:
@@ -160,7 +161,10 @@ class Sample(object):
 
     def addhistory(self,name,vol,tip):
         if vol>0:
-            str="%s[%.1f#%d]"%(name,vol,tip)
+	    if SHOWTIPS:
+		    str="%s[%.1f#%d]"%(name,vol,tip)
+	    else:
+		    str="%s[%.1f]"%(name,vol)
             if len(self.history)>0:
                 self.history=self.history+" +"+str
             else:
