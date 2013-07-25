@@ -9,6 +9,7 @@ ASPIRATEFACTOR=1.1
 MINLIQUIDDETECTVOLUME=70
 MULTIEXCESS=1  # Excess volume aspirate when using multi-dispense
 SHOWTIPS=False
+SHOWINGREDIENTS=False
 _Sample__allsamples = []
 
 #Updated LC's:
@@ -68,6 +69,11 @@ class Sample(object):
 		self.conc=Concentration(conc)
         self.volume=volume
         self.initvolume=volume
+        if volume>0:
+            self.ingredients={name:volume}
+        else:
+            self.ingredients={}
+            
         if plate.pierce:
             self.bottomLC=liquidclass.LC("%s-Pierce"%liquidClass.name,liquidClass.singletag,liquidClass.multicond,liquidClass.multiexcess)
             self.inliquidLC=self.bottomLC  # Can't use liquid detection when piercing
@@ -91,6 +97,9 @@ class Sample(object):
             s.isMixed=True
             if s.volume==0:
                 s.conc=None
+                s.ingredients={}
+            else:
+                s.ingredients={s.name:s.volume}
 
     @classmethod
     def lookup(cls,name):
@@ -132,6 +141,8 @@ class Sample(object):
 	lc=self.chooseLC(aspVolume)
         w.aspirate(tipMask,well,lc,volume,self.plate)
         # Manual conditioning handled in worklist
+        for k in self.ingredients:
+            self.ingredients[k] *= (self.volume-aspVolume)/self.volume
         self.volume=self.volume-aspVolume
         self.addhistory("",-aspVolume,tipMask)
         if self.volume+.001<self.plate.unusableVolume:
@@ -175,7 +186,16 @@ class Sample(object):
                 self.history=self.history+str
             else:
                 self.history=str
-        
+
+    def addingredients(self,src,vol):
+        'Update ingredients by adding ingredients from src'
+        for k in src.ingredients:
+            addition=src.ingredients[k]/src.volume*vol
+            if k in self.ingredients:
+                self.ingredients[k]+=addition
+            else:
+                self.ingredients[k]=addition
+            
     def chooseLC(self,aspirateVolume=0):
         if self.volume-aspirateVolume>MINLIQUIDDETECTVOLUME:
             return self.inliquidLC
@@ -206,12 +226,21 @@ class Sample(object):
             self.isMixed=True
             
     def __str__(self):
-        if self.conc==None:
-            return "%s(%s.%s,%.2f ul) %s"%(self.name,str(self.plate),self.plate.wellname(self.well),self.volume,self.history)
-        else:
-            return "%s[%s](%s.%s,%.2f ul) %s"%(self.name,str(self.conc),str(self.plate),self.plate.wellname(self.well),self.volume,self.history)
+        s=self.name
+        if self.conc!=None:
+            s+="["+str(self.conc)+"]"
+        s+="(%s.%s,%.2f ul) %s"%(str(self.plate),self.plate.wellname(self.well),self.volume,self.history)
+	if SHOWINGREDIENTS:
+		s+=self.ingredients()
+        return s
 
-    
+    def ingredients(self):
+	s="{"
+        for k in self.ingredients:
+            s+="%s:%.2g "%(k,self.ingredients[k])
+        s+="}"
+	return s
+
     @staticmethod
     def printprep(fd=sys.stdout):
         notes="Reagents:"
