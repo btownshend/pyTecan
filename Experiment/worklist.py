@@ -69,7 +69,7 @@ class WorkList(object):
                     'Same grid,loc'
                     if d[1]&dirtyTips != 0:
                         'Tip used in intervening operations'
-                        print 'Intervening tip use:',d
+                        print 'Intervening tip use:',[str(item) for item in d]
                         break
                     newQueue.append(d)
                 else:
