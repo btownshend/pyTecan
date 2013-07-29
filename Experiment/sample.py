@@ -204,22 +204,24 @@ class Sample(object):
         else:
             return self.bottomLC
         
-    def mix(self,tipMask,w,mixFrac=defaultMixFrac):
+    def mix(self,tipMask,w):
+	nmix=4
         if self.isMixed:
             print "Sample %s is already mixed"%self.name
             return
-        mixvol=min(self.volume*mixFrac,self.volume-defaultMixLeave)
+        mixvol=self.volume-self.plate.unusableVolume-2;
         well=[self.well if self.well!=None else 2**(tipMask-1)-1 ]
         if mixvol<2:
             print "Not enough volume in sample %s to mix"%self.name
-	elif True:  # mixvol<20:
-            w.mix(tipMask,well,self.chooseLC(mixvol),mixvol,self.plate,3)
+	    self.history+="(UNMIXED)"
+	elif mixvol<20:
+            w.mix(tipMask,well,self.chooseLC(mixvol),mixvol,self.plate,nmix)
             self.history+="(MB)"
             self.isMixed=True
         else:
             # Use special mix LC which aspirates from bottom, dispenses above, faster aspirate
             well=[self.well if self.well!=None else 2**(tipMask-1)-1 ]
-            for i in range(3):
+            for i in range(nmix):
                 w.aspirate(tipMask,well,self.mixLC,mixvol,self.plate)
                 w.dispense(tipMask,well,self.mixLC,mixvol,self.plate)
             self.history+="(MT)"
