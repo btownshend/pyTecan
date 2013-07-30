@@ -4,12 +4,17 @@ class Concentration(object):
         self.final=final
         self.units=units
     def __str__(self):
-        if self.final==1.0 and self.units=='x':
+        if self.stock==None:
+            return "None"
+        elif self.final==None or (self.final==1.0 and self.units=='x'):
             return "%.2f%s"%(self.stock,self.units)
         else:
             return "%.2f%s->%.2f%s"%(self.stock,self.units,self.final,self.units)
     def dilute(self,factor):
-        return Concentration(self.stock/factor,self.final,self.units)
+        if self.stock==None:
+            return Concentration(None,None,'x')
+        else:
+            return Concentration(self.stock/factor,self.final,self.units)
     def dilutionneeded(self):
         'Return dilution factor needed to dilute from stock to final'
         return self.stock*1.0/self.final
