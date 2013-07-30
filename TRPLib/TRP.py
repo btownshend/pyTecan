@@ -195,7 +195,7 @@ class TRP(object):
  
         self.e.runpgm("TRPANN",5,False,max(vol))
         self.e.stage('Ligation',[self.r.MLigase],[],stgt,vol)
-        self.e.runpgm("TRPLIG",40,False,max(vol))
+        self.e.runpgm("TRPLIG",41,False,max(vol))
         return tgt
  
     def runPCR(self,prefix,src,vol,srcdil,tgt=None):
@@ -213,7 +213,7 @@ class TRP(object):
         
         self.e.stage('PCRA',[self.r.PCRA],[ssrc[i] for i in range(len(ssrc)) if prefix[i]=='A'],[stgt[i] for i in range(len(stgt)) if prefix[i]=='A'],[vol[i] for i in range(len(vol)) if prefix[i]=='A'])
         self.e.stage('PCRB',[self.r.PCRB],[ssrc[i] for i in range(len(ssrc)) if prefix[i]=='B'],[stgt[i] for i in range(len(stgt)) if prefix[i]=='B'],[vol[i] for i in range(len(vol)) if prefix[i]=='B'])
-        self.e.runpgm("PCR20",60,False,max(vol))
+        self.e.runpgm("PCR15",49,False,max(vol))
         return tgt
     
     def diluteInPlace(self,tgt,dil):
