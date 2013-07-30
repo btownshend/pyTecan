@@ -70,9 +70,9 @@ class TRP(object):
         self.r=Reagents();
         self.e.setreagenttemp(14.0)
         
-    def addTemplates(self,names,stockconc):
+    def addTemplates(self,names,stockconc,finalconc=1.0,units="nM"):
         for s in names:
-            Sample(s,Experiment.REAGENTPLATE,None,Concentration(stockconc,None,"nM"))
+            Sample(s,Experiment.REAGENTPLATE,None,Concentration(stockconc,finalconc,units))
 
     def finish(self):
         self.e.lihahome()
