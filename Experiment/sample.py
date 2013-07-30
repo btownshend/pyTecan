@@ -219,7 +219,7 @@ class Sample(object):
             # Use special mix LC which aspirates from bottom, dispenses above, faster aspirate
             well=[self.well if self.well!=None else 2**(tipMask-1)-1 ]
             for i in range(nmix):
-                w.aspirate(tipMask,well,self.mixLC,mixvol,self.plate)
+                w.aspirateNC(tipMask,well,self.mixLC,mixvol,self.plate)
                 w.dispense(tipMask,well,self.mixLC,mixvol,self.plate)
             self.history+="(MT)"
             self.isMixed=True

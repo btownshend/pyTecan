@@ -122,6 +122,10 @@ class WorkList(object):
     def aspirate(self,tipMask,wells, liquidClass, volume, loc):
         self.aspirateDispense('Aspirate',tipMask,wells, liquidClass, volume, loc)
 
+    # aspirate without manual conditioning
+    def aspirateNC(self,tipMask,wells, liquidClass, volume, loc):
+        self.aspirateDispense('AspirateNC',tipMask,wells, liquidClass, volume, loc)
+
     def dispense(self,tipMask,wells, liquidClass, volume, loc):
         self.aspirateDispense('Dispense',tipMask,wells, liquidClass, volume, loc)
 
@@ -146,13 +150,15 @@ class WorkList(object):
             self.elapsed+=3.2
         elif op=='Aspirate':
             self.elapsed+=9.2+3.2   # Extra for conditioning volume
+        elif op=='AspirateNC':
+            self.elapsed+=3.4
             
         print "%s %d %s.%s %s %s"%(op,tipMask,str(loc),str(wells),str(volume),str(liquidClass))
         # Update volumes
         for i in range(len(wells)):
             well=wells[i]
             v=volume[i]
-            if op=='Aspirate':
+            if op=='Aspirate' or op=='AspirateNC':
                 vincr=-v
             elif op=='Dispense':
                 vincr=v
@@ -232,6 +238,8 @@ class WorkList(object):
                 
         if op=="Mix":
             self.list.append( '%s(%d,"%s",%s,%d,%d,%d,"%s",%d,0)'%(op,tipMask,liquidClass,volstr,loc.grid,loc.pos-1,spacing,ws,cycles))
+        elif op=="AspirateNC":
+            self.list.append( '%s(%d,"%s",%s,%d,%d,%d,"%s",0)'%("Aspirate",tipMask,liquidClass,volstr,loc.grid,loc.pos-1,spacing,ws))
         else:
             self.list.append( '%s(%d,"%s",%s,%d,%d,%d,"%s",0)'%(op,tipMask,liquidClass,volstr,loc.grid,loc.pos-1,spacing,ws))
         if op=="Aspirate":
