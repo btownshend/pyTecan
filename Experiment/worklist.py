@@ -52,7 +52,7 @@ class WorkList(object):
         tipMask=15
         speed=10   # 0.1-400 (mm/s)
         self.list.append( 'MoveLiha(%d,%d,%d,1,"0104?",0,4,0,%.1f,0)'%(tipMask,loc.grid,loc.pos-1,speed))
-        self.elapsed+=1.4
+        self.elapsed+=1.3
         
     def optimizeQueue(self):
         'Optimize operations in queue'
@@ -145,11 +145,11 @@ class WorkList(object):
             return
 
         if op=='Mix':
-            self.elapsed+=16.1
+            self.elapsed+=10.3
         elif op=='Dispense':
-            self.elapsed+=3.2
+            self.elapsed+=3.4
         elif op=='Aspirate':
-            self.elapsed+=9.2+3.2   # Extra for conditioning volume
+            self.elapsed+=3.4+3.4   # Extra for conditioning volume
         elif op=='AspirateNC':
             self.elapsed+=3.4
             
@@ -252,7 +252,8 @@ class WorkList(object):
                 ptr+=1
 
     def SIM(self,tip,op,vol,loc,pos):
-        print "SIM",tip,op,vol,loc,pos
+        #print "SIM",tip,op,vol,loc,pos
+        pass
         
     # Get DITI
     def getDITI(self, tipMask, volume, retry=True,multi=False):
@@ -339,11 +340,11 @@ class WorkList(object):
         else:
             andBack=0
         self.list.append('Vector("%s",%d,%d,%d,%d,%d,%d,%d,0)'%(vector,loc.grid,loc.pos,direction,andBack,initialAction, finalAction, speed))
-        self.elapsed+=5.1
+        self.elapsed+=4.9
         
     def romahome(self):
         self.list.append('ROMA(2,0,0,0,0,0,60,0,0)')
-        self.elapsed+=1.0
+        self.elapsed+=1.3
 
         
     def userprompt(self, text, beeps=0, closetime=-1):
@@ -373,7 +374,7 @@ class WorkList(object):
         else:
             resultvar=""
         self.list.append('Execute("%s",%d,"%s")'%(command,flags,resultvar))
-        self.elapsed+=5.5   # Just overhead time, not actually time that command itself takes
+        self.elapsed+=6.5   # Just overhead time, not actually time that command itself takes
         
     def pyrun(self, cmd):
         self.execute("C:\Python27\python.exe C:\cygwin\Home\Admin\%s"%cmd)
