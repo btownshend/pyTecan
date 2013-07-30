@@ -3,9 +3,8 @@ import liquidclass
 from worklist import WorkList
 from concentration import Concentration
 
-defaultMixFrac = 0.8
-defaultMixLeave = 3
-ASPIRATEFACTOR=1.1
+ASPIRATEFACTOR=1.02
+ASPIRATEEXTRA=1.0
 MINLIQUIDDETECTVOLUME=70
 MULTIEXCESS=1  # Excess volume aspirate when using multi-dispense
 SHOWTIPS=False
@@ -124,11 +123,9 @@ class Sample(object):
     def aspirate(self,tipMask,w,volume,multi=False):
         if volume<2 and not multi and self.name!="Water":
             print "WARNING: Inaccurate for < 2ul:  attempting to aspirate %.1f ul"%volume
-        if volume<6:
-            aspVolume=volume+1+MULTIEXCESS
-        else:
-            # Aspirates more than dispensed
-            aspVolume=volume*ASPIRATEFACTOR+MULTIEXCESS
+        
+        # Aspirates more than dispensed
+        aspVolume=volume*ASPIRATEFACTOR+ASPIRATEEXTRA+MULTIEXCESS
             
 	if self.well==None:
 		well=[]
