@@ -68,7 +68,7 @@ class TRP(object):
         'Create a new TRP run'
         self.e=Experiment()
         self.r=Reagents();
-        self.e.setreagenttemp(16.0)
+        self.e.setreagenttemp(14.0)
         
     def addTemplates(self,names,stockconc):
         for s in names:
