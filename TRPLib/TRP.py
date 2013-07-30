@@ -98,7 +98,9 @@ class TRP(object):
         self.e.savegem(scriptname+".gem")
         self.e.savesummary(scriptname+".txt")
             
-    def saveSamps(self,src,tgt,vol,dil):
+    def saveSamps(self,src,vol,dil,tgt=None,dilutant=None):
+        if tgt==None:
+            tgt=[]
         [src,vol,dil]=listify([src,vol,dil])
         if len(tgt)==0:
             tgt=["%s.SAVE"%s for s in src]
@@ -110,7 +112,9 @@ class TRP(object):
         self.e.dilute(ssrc,[1.0/d for d in dil])
         return tgt
             
-    def runT7(self,theo,src,tgt,vol,srcdil):
+    def runT7(self,theo,src,vol,srcdil,tgt=None):
+        if tgt==None:
+            tgt=[]
         [theo,src,tgt,vol,srcdil]=listify([theo,src,tgt,vol,srcdil])
         if len(tgt)==0:
             for i in range(len(src)):
@@ -138,7 +142,9 @@ class TRP(object):
             self.e.stage('StopNT',[self.r.MStopWT],[],stgt,[2*v for v in vol])
         return tgt
     
-    def runRT(self,pos,src,tgt,vol,srcdil):
+    def runRT(self,pos,src,vol,srcdil,tgt=None):
+        if tgt==None:
+            tgt=[]
         [pos,src,tgt,vol,srcdil]=listify([pos,src,tgt,vol,srcdil])
         if len(tgt)==0:
             for i in range(len(src)):
@@ -158,7 +164,9 @@ class TRP(object):
         self.e.runpgm("TRP37-20",20,False,max(vol))
         return tgt
  
-    def runLig(self,prefix,src,tgt,vol,srcdil):
+    def runLig(self,prefix,src,vol,srcdil,tgt=None):
+        if tgt==None:
+            tgt=[]
         #Extension
         # e.g: trp.runLig(prefix=["B","B","B","B","B","B","B","B"],src=["1.RT-","1.RT+","1.RTNeg-","1.RTNeg+","2.RT-","2.RT-","2.RTNeg+","2.RTNeg+"],tgt=["1.RT-B","1.RT+B","1.RTNeg-B","1.RTNeg+B","2.RT-A","2.RT-B","2.RTNeg+B","2.RTNeg+B"],vol=[10,10,10,10,10,10,10,10],srcdil=[2,2,2,2,2,2,2,2])
         [prefix,src,tgt,vol,srcdil]=listify([prefix,src,tgt,vol,srcdil])
@@ -187,7 +195,9 @@ class TRP(object):
         self.e.runpgm("TRPLIG",40,False,max(vol))
         return tgt
  
-    def runPCR(self,prefix,src,tgt,vol,srcdil):
+    def runPCR(self,prefix,src,vol,srcdil,tgt=None):
+        if tgt==None:
+            tgt=[]
         ## PCR
         # e.g. trp.runPCR(prefix=["A"],src=["1.RT+"],tgt=["1.PCR"],vol=[50],srcdil=[5])
         [prefix,src,tgt,vol,srcdil]=listify([prefix,src,tgt,vol,srcdil])
@@ -212,7 +222,9 @@ class TRP(object):
         self.e.stage('Dilute',[],[],stgt,[stgt[i].volume*dil[i] for i in range(len(stgt))])
         return tgt
         
-    def runQPCRDIL(self,src,tgt,vol,srcdil):
+    def runQPCRDIL(self,src,vol,srcdil,tgt=None):
+        if tgt==None:
+            tgt=[]
         ## QPCR setup
         # e.g. trp.runQPCR(src=["1.RT-B","1.RT+B","1.RTNeg-B","1.RTNeg+B","2.RT-A","2.RT-B","2.RTNeg+B","2.RTNeg+B"],vol=10,srcdil=100)
         [src,vol,srcdil]=listify([src,vol,srcdil])
