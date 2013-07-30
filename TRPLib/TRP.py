@@ -107,7 +107,10 @@ class TRP(object):
         stgt=findsamps(tgt,True,self.e.REAGENTPLATE)
         ssrc=findsamps(src,False)
         self.e.dilute(ssrc,dil)
-        self.e.stage('SAVE',[],ssrc,stgt,[vol[i]*dil[i] for i in range(len(vol))])
+        if dilutant!=None:
+            self.e.stage('SAVE',[],ssrc,stgt,[vol[i]*dil[i] for i in range(len(vol))],dilutant=dilutant)
+        else:
+            self.e.stage('SAVE',[],ssrc,stgt,[vol[i]*dil[i] for i in range(len(vol))])
         # Back out the dilution
         self.e.dilute(ssrc,[1.0/d for d in dil])
         return tgt
