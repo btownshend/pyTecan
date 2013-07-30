@@ -198,7 +198,7 @@ class Experiment(object):
         if self.useDiTis and dropDITI:
             self.w.dropDITI(tipMask&self.DITIMASK,self.WASTE)
 
-    def stage(self,stagename,reagents,sources,samples,volume,finalx=1.0,destMix=True):
+    def stage(self,stagename,reagents,sources,samples,volume,finalx=1.0,destMix=True,dilutant=None):
         # Add water to sample wells as needed (multi)
         # Pipette reagents into sample wells (multi)
         # Pipette sources into sample wells
@@ -209,6 +209,9 @@ class Experiment(object):
             print "No samples\n"
             return
 
+        if dilutant==None:
+            dilutant=self.WATER
+            
         self.w.comment(stagename)
         if not isinstance(volume,list):
             volume=[volume for i in range(len(samples))]
@@ -230,7 +233,7 @@ class Experiment(object):
             assert(False)
 
         if sum(watervols)>0.01:
-            self.multitransfer(watervols,self.WATER,samples,(False,destMix and (len(reagents)+len(sources)==0)))
+            self.multitransfer(watervols,dilutant,samples,(False,destMix and (len(reagents)+len(sources)==0)))
 
         for i in range(len(reagents)):
             self.multitransfer([reagentvols[i]*v for v in volume],reagents[i],samples,(True,destMix and (len(sources)==0 and i==len(reagents)-1)))
