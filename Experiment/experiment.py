@@ -3,6 +3,7 @@ from sample import Sample
 from concentration import Concentration
 import liquidclass
 import os.path
+from datetime import datetime
 
 ptcrunning=False
 
@@ -29,6 +30,7 @@ class Experiment(object):
     def __init__(self):
         'Create a new experiment with given sample locations for water and self.WASTE'
         self.w=WorkList()
+        self.w.comment("Generated %s"%(datetime.now().ctime()));
         self.cleanTips=0
         self.sanitize()
         self.useDiTis=False
