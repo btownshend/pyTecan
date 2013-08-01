@@ -132,7 +132,7 @@ class TRP(object):
         adjustSrcDil(ssrc,srcdil)
 
         self.e.stage('T7M',[self.r.MT7],[ssrc[i] for i in range(len(ssrc)) if not theo[i]],[stgt[i] for i in range(len(ssrc)) if not theo[i]],[vol[i] for i in range(len(ssrc)) if not theo[i]])
-        self.e.stage('T7P',[self.r.MT7,self.r.Theo],[ssrc[i] for i in range(len(ssrc)) if theo[i]],[stgt[i] for i in range(len(ssrc)) if theo[i]],[vol[i] for i in range(len(ssrc)) if theo[i]])
+        self.e.stage('T7P',[self.r.Theo,self.r.MT7],[ssrc[i] for i in range(len(ssrc)) if theo[i]],[stgt[i] for i in range(len(ssrc)) if theo[i]],[vol[i] for i in range(len(ssrc)) if theo[i]])
         self.e.runpgm("TRP37-15",15, False,max(vol))
 
         ## Stop
