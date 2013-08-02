@@ -64,7 +64,7 @@ class PTCStatus:
         self.besrhold=0
     
 class PTC:
-    debug=False
+    debug=True
     ser=None
     PORT=2
     stat=PTCStatus()
@@ -73,6 +73,8 @@ class PTC:
         pass
     
     def __init__(self,to=1):
+        if self.debug:
+            print "About to open serial port",self.PORT
         self.ser = serial.Serial(self.PORT,baudrate=9600,timeout=to)
         if self.debug:
             print self.ser.portstr
