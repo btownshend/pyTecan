@@ -66,7 +66,7 @@ class PTCStatus:
 class PTC:
     debug=True
     ser=None
-    PORT=2
+    PORT=1
     stat=PTCStatus()
     
     class CmdError(BaseException):
