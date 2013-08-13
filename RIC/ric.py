@@ -4,7 +4,7 @@ import string
 
 class RIC:
     debug=False
-    PORT=2
+    PORT=3
     
     def open(self):
         self.ser = serial.Serial(self.PORT,baudrate=9600,timeout=1)
