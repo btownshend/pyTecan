@@ -38,6 +38,7 @@ def listify(x):
     result=[]
     for i in x:
         if isinstance(i,list):
+            assert(len(i)==n or len(i)==0)
             result.append(i)
         else:
             result.append([i for j in range(n)])
@@ -213,7 +214,7 @@ class TRP(object):
         
         self.e.stage('PCRA',[self.r.PCRA],[ssrc[i] for i in range(len(ssrc)) if prefix[i]=='A'],[stgt[i] for i in range(len(stgt)) if prefix[i]=='A'],[vol[i] for i in range(len(vol)) if prefix[i]=='A'])
         self.e.stage('PCRB',[self.r.PCRB],[ssrc[i] for i in range(len(ssrc)) if prefix[i]=='B'],[stgt[i] for i in range(len(stgt)) if prefix[i]=='B'],[vol[i] for i in range(len(vol)) if prefix[i]=='B'])
-        self.e.runpgm("PCR20",49,False,max(vol))
+        self.e.runpgm("PCR20",64,False,max(vol))
         return tgt
     
     def diluteInPlace(self,tgt,dil):
