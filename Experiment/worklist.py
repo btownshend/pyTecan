@@ -352,6 +352,8 @@ class WorkList(object):
         self.list.append('UserPrompt("%s",%d,%d)'%(text,beeps,closetime))
 
     def comment(self, text,prepend=False):
+        if len(text) > 200:
+            text=text[0:197]+"..."
         if prepend:
             self.list.insert(0,'Comment("%s")'%text)
         else:
