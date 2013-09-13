@@ -13,6 +13,7 @@ class Experiment(object):
     SAMPLEPLATE=Plate("Samples",10,3,12,8,False,10)
     READERPLATE=Plate("Reader",10,2,12,8,False,10)
     QPCRPLATE=Plate("qPCR",10,2,12,8,False,10)
+    DILPLATE=Plate("Dilutions",10,1,12,8,False,10)
     WATERLOC=Plate("Water",17,2,1,4,False,100)
     RNASEAWAYLOC=Plate("Water",17,1,1,4,False,0)
     PTCPOS=Plate("PTC",25,1,1,1)

@@ -227,7 +227,7 @@ class TRP(object):
         self.e.stage('Dilute',[],[],stgt,[stgt[i].volume*dil[i] for i in range(len(stgt))])
         return tgt
         
-    def runQPCRDIL(self,src,vol,srcdil,tgt=None):
+    def runQPCRDIL(self,src,vol,srcdil,tgt=None,dilPlate=False):
         if tgt==None:
             tgt=[]
         ## QPCR setup
@@ -235,7 +235,10 @@ class TRP(object):
         [src,vol,srcdil]=listify([src,vol,srcdil])
         if len(tgt)==0:
             tgt=["%s.D"%(src[i]) for i in range(len(src))]
-        stgt=findsamps(tgt,True,Experiment.QPCRPLATE)
+        if dilPlate:
+            stgt=findsamps(tgt,True,Experiment.DILPLATE)
+        else:
+            stgt=findsamps(tgt,True,Experiment.QPCRPLATE)
         ssrc=findsamps(src,False)
         adjustSrcDil(ssrc,[d for d in srcdil])
         

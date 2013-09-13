@@ -1,5 +1,5 @@
-5E91A3CB
-20130627_114315 Admin           
+9767C282
+20130912_164953 Admin           
                                                                                                                                 
 Administrator                                                                                                                   
 --{ RES }--
@@ -19,8 +19,8 @@ V;200
 998;0;
 998;0;
 998;0;
-998;3;;QPCR on HSP96xx;HSP96xx on carrier;
-998;;QPCR;Sample;
+998;3;HSP96xx on carrier;QPCR on HSP96xx;HSP96xx on carrier;
+998;Dilutions;QPCR;Sample;
 998;0;
 998;0;
 998;0;
