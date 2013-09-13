@@ -116,7 +116,7 @@ class TRP(object):
         self.e.dilute(ssrc,[1.0/d for d in dil])
         return tgt
             
-    def runT7(self,theo,src,vol,srcdil,tgt=None):
+    def runT7(self,theo,src,vol,srcdil,tgt=None,dur=15):
         if tgt==None:
             tgt=[]
         [theo,src,tgt,vol,srcdil]=listify([theo,src,tgt,vol,srcdil])
@@ -134,7 +134,8 @@ class TRP(object):
 
         self.e.stage('T7M',[self.r.MT7],[ssrc[i] for i in range(len(ssrc)) if not theo[i]],[stgt[i] for i in range(len(ssrc)) if not theo[i]],[vol[i] for i in range(len(ssrc)) if not theo[i]])
         self.e.stage('T7P',[self.r.Theo,self.r.MT7],[ssrc[i] for i in range(len(ssrc)) if theo[i]],[stgt[i] for i in range(len(ssrc)) if theo[i]],[vol[i] for i in range(len(ssrc)) if theo[i]])
-        self.e.runpgm("TRP37-15",15, False,max(vol))
+        assert(dur==15 or dur==20 or dur==30 or dur==45 or dur==60)
+        self.e.runpgm("TRP37-%d"%dur,dur, False,max(vol))
 
         ## Stop
         self.e.dilute(stgt,2)
