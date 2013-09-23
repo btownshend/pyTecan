@@ -7,9 +7,10 @@ ASPIRATEFACTOR=1.02
 ASPIRATEEXTRA=1.0
 MINLIQUIDDETECTVOLUME=70
 MULTIEXCESS=1  # Excess volume aspirate when using multi-dispense
-SHOWTIPS=False
+SHOWTIPS=True
 SHOWINGREDIENTS=False
 _Sample__allsamples = []
+tiphistory={}
 
 #Updated LC's:
 # Water-Bottom
@@ -39,7 +40,10 @@ class Sample(object):
                 if s.plate==p:
                     print >>fd,s
             print >>fd
-
+        print >>fd,"\nTip history:\n"
+        for t in tiphistory:
+            print >>fd,"%d: %s\n"%(t,tiphistory[t])
+            
     def __init__(self,name,plate,well=None,conc=None,volume=0,liquidClass=liquidclass.LCDefault):
         if well==None:
             # Find first unused well
@@ -183,7 +187,23 @@ class Sample(object):
                 self.history=self.history+str
             else:
                 self.history=str
-
+        name=self.name
+        if name=="RNase-Away":
+            if tip in tiphistory and tiphistory[tip][-1]=='\n':
+                tiphistory[tip]=tiphistory[tip][:-1]
+            fstr="*\n"
+        elif vol==0:
+            fstr=name
+        elif vol>0:
+            fstr="%s+%d"%(name,vol)
+        else:
+            fstr="%s%d"%(name,vol)
+        if tip in tiphistory:
+            tiphistory[tip]+=" %s"%fstr
+        else:
+            tiphistory[tip]=fstr
+            
+        
     def addingredients(self,src,vol):
         'Update ingredients by adding ingredients from src'
         for k in src.ingredients:
@@ -221,6 +241,7 @@ class Sample(object):
             for i in range(nmix):
                 w.aspirateNC(tipMask,well,self.mixLC,mixvol,self.plate)
                 w.dispense(tipMask,well,self.mixLC,mixvol,self.plate)
+            tiphistory[tipMask]+=" %s-Mix%d"%(self.name,mixvol)
             self.history+="(MT)"
             self.isMixed=True
             

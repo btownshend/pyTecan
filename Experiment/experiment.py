@@ -81,6 +81,7 @@ class Experiment(object):
         for i in range(4):
             if (fixedTips & (1<<i)) != 0:
                 fixedWells.append(i)
+                self.RNASEAWAY.addhistory("SANITIZE",0,1<<i)
         self.w.mix(fixedTips,fixedWells,self.RNASEAWAY.mixLC,200,self.RNASEAWAY.plate,nmix);
         self.w.wash(fixedTips,1,deepvol,True)
         self.cleanTips|=fixedTips
