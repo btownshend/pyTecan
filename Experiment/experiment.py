@@ -72,7 +72,7 @@ class Experiment(object):
         Sample.printprep(fd)
         Sample.printallsamples("All Samples:",fd)
         
-    def sanitize(self):
+    def sanitize(self,nmix=1,deepvol=10):
         'Deep wash including RNase-Away treatment'
         self.w.comment("Sanitize")
         self.w.wash(15,1,2)
@@ -81,8 +81,8 @@ class Experiment(object):
         for i in range(4):
             if (fixedTips & (1<<i)) != 0:
                 fixedWells.append(i)
-        self.w.mix(fixedTips,fixedWells,self.RNASEAWAY.mixLC,200,self.RNASEAWAY.plate,1);
-        self.w.wash(fixedTips,1,10,True)
+        self.w.mix(fixedTips,fixedWells,self.RNASEAWAY.mixLC,200,self.RNASEAWAY.plate,nmix);
+        self.w.wash(fixedTips,1,deepvol,True)
         self.cleanTips|=fixedTips
         print "* Sanitize"
         
