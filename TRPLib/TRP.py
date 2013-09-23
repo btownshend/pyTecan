@@ -61,7 +61,10 @@ def findsamps(x,createIfMissing=True,plate=Experiment.SAMPLEPLATE):
 def adjustSrcDil(src,srcdil):
     'Adjust source concentration to give desired dilution'
     for i in range(len(src)):
-        src[i].conc.final=src[i].conc.stock/srcdil[i]
+        if src[i].conc==None:
+            src[i].conc=Concentration(srcdil[i],1)
+        else:
+            src[i].conc.final=src[i].conc.stock*1.0/srcdil[i]
 
 class TRP(object):
            
