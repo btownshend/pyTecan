@@ -50,6 +50,7 @@ class Experiment(object):
         self.w.saveworklist(filename)
 
     def savegem(self,filename):
+        self.w.flushQueue()
         self.w.savegem(self.headerfile,filename)
         
     def savesummary(self,filename):
