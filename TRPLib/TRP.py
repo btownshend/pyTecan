@@ -223,11 +223,15 @@ class TRP(object):
         # e.g.: trp.diluteInPlace(tgt=rt1,dil=2)
         [tgt,dil]=listify([tgt,dil])
         stgt=findsamps(tgt,False)
-        adjustSrcDil(stgt,dil);
+        adjustSrcDil(stgt,dil)
         self.e.stage('Dilute',[],[],stgt,[stgt[i].volume*dil[i] for i in range(len(stgt))])
         return tgt
         
     def runQPCRDIL(self,src,vol,srcdil,tgt=None,dilPlate=False):
+        if len(srcdil)!=len(src):
+            print "Cannot have multiple dilutions for a single sample"
+            assert(FALSE)
+            
         if tgt==None:
             tgt=[]
         ## QPCR setup
