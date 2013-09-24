@@ -194,10 +194,8 @@ class Sample(object):
             fstr="*\n"
         elif vol==0:
             fstr=name
-        elif vol>0:
-            fstr="%s+%d"%(name,vol)
         else:
-            fstr="%s%d"%(name,vol)
+            fstr="%s[%d]"%(name,vol)
         if tip in tiphistory:
             tiphistory[tip]+=" %s"%fstr
         else:
@@ -241,7 +239,7 @@ class Sample(object):
             for i in range(nmix):
                 w.aspirateNC(tipMask,well,self.mixLC,mixvol,self.plate)
                 w.dispense(tipMask,well,self.mixLC,mixvol,self.plate)
-            tiphistory[tipMask]+=" %s-Mix%d"%(self.name,mixvol)
+            tiphistory[tipMask]+=" %s-Mix[%d]"%(self.name,mixvol)
             self.history+="(MT)"
             self.isMixed=True
             
