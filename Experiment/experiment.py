@@ -73,7 +73,7 @@ class Experiment(object):
         Sample.printprep(fd)
         Sample.printallsamples("All Samples:",fd)
         
-    def sanitize(self,nmix=1,deepvol=10):
+    def sanitize(self,nmix=1,deepvol=20):
         'Deep wash including RNase-Away treatment'
         self.w.comment("Sanitize")
         self.w.wash(15,1,2)
