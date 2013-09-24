@@ -73,7 +73,8 @@ class TRP(object):
         self.e=Experiment()
         self.r=Reagents();
         self.e.setreagenttemp(14.0)
-        
+        self.e.sanitize(3,50)    # Heavy sanitize
+            
     def addTemplates(self,names,stockconc,finalconc=1.0,units="nM"):
         for s in names:
             Sample(s,Experiment.REAGENTPLATE,None,Concentration(stockconc,finalconc,units))
@@ -231,7 +232,7 @@ class TRP(object):
         return tgt
         
     def runQPCRDIL(self,src,vol,srcdil,tgt=None,dilPlate=False):
-        if len(srcdil)!=len(src):
+        if isinstance(srcdil,list) and ( not isinstance(src,list) or len(srcdil)!=len(src)):
             print "Cannot have multiple dilutions for a single sample"
             assert(FALSE)
             
