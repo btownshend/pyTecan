@@ -38,6 +38,9 @@ class Experiment(object):
         self.thermotime=0
         self.RNASEAWAY.mixLC=liquidclass.LC("RNaseAway-Mix")
         self.ptcrunning=False
+        # Access PTC and RIC early to be sure they are working
+        self.w.pyrun("PTC\\ptctest.py")
+        self.w.pyrun("RIC\\ricget.py")
         #        self.w.periodicWash(15,4)
         
     def setreagenttemp(self,temp=None):
