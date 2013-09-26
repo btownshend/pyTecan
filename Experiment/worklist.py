@@ -52,7 +52,7 @@ class WorkList(object):
         tipMask=15
         speed=10   # 0.1-400 (mm/s)
         self.list.append( 'MoveLiha(%d,%d,%d,1,"0104?",0,4,0,%.1f,0)'%(tipMask,loc.grid,loc.pos-1,speed))
-        self.elapsed+=1.6
+        self.elapsed+=1.38
         
     def optimizeQueue(self):
         'Optimize operations in queue'
@@ -145,9 +145,9 @@ class WorkList(object):
             return
 
         if op=='Mix':
-            self.elapsed+=11.4
+            self.elapsed+=11.22
         elif op=='Dispense':
-            self.elapsed+=4.0
+            self.elapsed+=3.52
         elif op=='Aspirate':
             self.elapsed+=3.4+3.4   # Extra for conditioning volume
         elif op=='AspirateNC':
@@ -312,7 +312,7 @@ class WorkList(object):
         atFreq=1000  # Hz, For Active tip
         self.list.append('Wash(%d,%d,%d,%d,%d,%.1f,%d,%.1f,%d,%.1f,%d,%d,%d,%d,%d)'%(tipMask,wasteLoc[0],wasteLoc[1],cleanerLoc[0],cleanerLoc[1],wasteVol,wasteDelay,cleanerVol,cleanerDelay,airgap, airgapSpeed, retractSpeed, fastWash, lowVolume, atFreq))
         #print "Wash %d,%.1fml,%.1fml,deep="%(tipMask,wasteVol,cleanerVol),deepClean
-        self.elapsed+=16.4
+        self.elapsed+=19.49
         
     def periodicWash(self,tipMask,period):
         wasteLoc=(1,1)
@@ -340,11 +340,11 @@ class WorkList(object):
         else:
             andBack=0
         self.list.append('Vector("%s",%d,%d,%d,%d,%d,%d,%d,0)'%(vector,loc.grid,loc.pos,direction,andBack,initialAction, finalAction, speed))
-        self.elapsed+=5.1
+        self.elapsed+=4.84
         
     def romahome(self):
         self.list.append('ROMA(2,0,0,0,0,0,60,0,0)')
-        self.elapsed+=1.7
+        self.elapsed+=1.43
 
         
     def userprompt(self, text, beeps=0, closetime=-1):
@@ -376,7 +376,7 @@ class WorkList(object):
         else:
             resultvar=""
         self.list.append('Execute("%s",%d,"%s")'%(command,flags,resultvar))
-        self.elapsed+=7.1   # Just overhead time, not actually time that command itself takes
+        self.elapsed+=5.58   # Just overhead time, not actually time that command itself takes
         
     def pyrun(self, cmd):
         self.execute("C:\Python27\python.exe C:\cygwin\Home\Admin\%s"%cmd)
