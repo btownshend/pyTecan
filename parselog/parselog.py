@@ -278,4 +278,4 @@ while True:
                 lasttime=t
 
 for cmd in geminicmdtimes.keys():
-      print "%s: %.0f seconds for %.0f occurrences:   %.1f second/call"%(cmd,geminicmdtimes[cmd],geminicmdcnt[cmd], geminicmdtimes[cmd]*1.0/geminicmdcnt[cmd])
+      print "%s: %.0f seconds for %.0f occurrences:   %.2f second/call"%(cmd,geminicmdtimes[cmd],geminicmdcnt[cmd], geminicmdtimes[cmd]*1.0/geminicmdcnt[cmd])
