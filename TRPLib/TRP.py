@@ -214,9 +214,9 @@ class TRP(object):
         self.e.stage('LigAnnealA',[self.r.MLigA],[ssrc[i] for i in range(len(ssrc)) if prefix[i]=='A'],[stgt[i] for i in range(len(stgt)) if prefix[i]=='A'],[vol[i]/1.5 for i in range(len(vol)) if prefix[i]=='A'],1.5)
         self.e.stage('LigAnnealB',[self.r.MLigB],[ssrc[i] for i in range(len(ssrc)) if prefix[i]=='B'],[stgt[i] for i in range(len(stgt)) if prefix[i]=='B'],[vol[i]/1.5 for i in range(len(vol)) if prefix[i]=='B'],1.5)
  
-        self.e.runpgm("TRPANN",5,False,max(vol))
+        self.e.runpgm("TRPANN",5,False,max(vol),hotlidmode="CONSTANT",hotlidtemp=100)
         self.e.stage('Ligation',[self.r.MLigase],[],stgt,vol)
-        self.e.runpgm("TRPLIG",41,False,max(vol))
+        self.e.runpgm("TRPLIG",41,False,max(vol),hotlidmode="CONSTANT",hotlidtemp=100)
         return tgt
  
     def runPCR(self,prefix,src,vol,srcdil,tgt=None):
@@ -235,9 +235,9 @@ class TRP(object):
         
         self.e.stage('PCRA',[self.r.PCRA],[ssrc[i] for i in range(len(ssrc)) if prefix[i]=='A'],[stgt[i] for i in range(len(stgt)) if prefix[i]=='A'],[vol[i] for i in range(len(vol)) if prefix[i]=='A'])
         self.e.stage('PCRB',[self.r.PCRB],[ssrc[i] for i in range(len(ssrc)) if prefix[i]=='B'],[stgt[i] for i in range(len(stgt)) if prefix[i]=='B'],[vol[i] for i in range(len(vol)) if prefix[i]=='B'])
-        #self.e.runpgm("PCR30",88,False,max(vol))
-        self.e.runpgm("PCR25",74,False,max(vol))
-        #self.e.runpgm("PCR20",63,False,max(vol))
+        #self.e.runpgm("PCR30",88,False,max(vol),hotlidmode="CONSTANT",hotlidtemp=100)
+        self.e.runpgm("PCR25",74,False,max(vol),hotlidmode="CONSTANT",hotlidtemp=100)
+        #self.e.runpgm("PCR20",63,False,max(vol),hotlidmode="CONSTANT",hotlidtemp=100)
         return tgt
     
     def diluteInPlace(self,tgt,dil):
