@@ -64,9 +64,9 @@ class PTCStatus:
         self.besrhold=0
     
 class PTC:
-    debug=True
+    debug=False
     ser=None
-    PORT=1
+    PORT=3
     stat=PTCStatus()
     
     class CmdError(BaseException):
