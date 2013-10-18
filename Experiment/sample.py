@@ -7,7 +7,7 @@ ASPIRATEFACTOR=1.02
 ASPIRATEEXTRA=1.0
 MINLIQUIDDETECTVOLUME=70
 MULTIEXCESS=1  # Excess volume aspirate when using multi-dispense
-SHOWTIPS=True
+SHOWTIPS=False
 SHOWINGREDIENTS=False
 _Sample__allsamples = []
 tiphistory={}
@@ -40,9 +40,10 @@ class Sample(object):
                 if s.plate==p:
                     print >>fd,s
             print >>fd
-        print >>fd,"\nTip history:\n"
-        for t in tiphistory:
-            print >>fd,"%d: %s\n"%(t,tiphistory[t])
+        if SHOWTIPS:
+            print >>fd,"\nTip history:\n"
+            for t in tiphistory:
+                print >>fd,"%d: %s\n"%(t,tiphistory[t])
             
     def __init__(self,name,plate,well=None,conc=None,volume=0,liquidClass=liquidclass.LCDefault):
         if well==None:
