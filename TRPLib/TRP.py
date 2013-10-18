@@ -44,6 +44,17 @@ def listify(x):
             result.append([i for j in range(n)])
     return result
 
+# Make sure all target names are uniques
+def uniqueTargets(tgts):
+    for i in range(len(tgts)):
+        if tgts[i] in tgts[:i]:
+            for k in range(100):
+                nm="%s.%d"%(tgts[i],k+2)
+                if nm not in tgts:
+                    tgts[i]=nm;
+                    break
+    return tgts
+
 def findsamps(x,createIfMissing=True,plate=Experiment.SAMPLEPLATE):
     'Find or create samples for given sample names'
     s=[]
@@ -109,6 +120,7 @@ class TRP(object):
         [src,vol,dil]=listify([src,vol,dil])
         if len(tgt)==0:
             tgt=["%s.SAVE"%s for s in src]
+        tgt=uniqueTargets(tgt)
         stgt=findsamps(tgt,True,self.e.REAGENTPLATE)
         ssrc=findsamps(src,False)
         self.e.dilute(ssrc,dil)
@@ -131,6 +143,7 @@ class TRP(object):
                 else:
                     tgt.append("%s.T-"%src[i])
 
+        tgt=uniqueTargets(tgt)
         # Convert sample names to actual samples
         stgt=findsamps(tgt)
         ssrc=findsamps(src,False)
@@ -162,6 +175,7 @@ class TRP(object):
                 else:
                     tgt.append("%s.RT-"%src[i])
 
+        tgt=uniqueTargets(tgt)
         stgt=findsamps(tgt)
         ssrc=findsamps(src,False)
         adjustSrcDil(ssrc,srcdil)
@@ -192,6 +206,7 @@ class TRP(object):
         if len(tgt)==0:
             tgt=["%s.L%c"%(src[i],prefix[i]) for i in range(len(src))]
 
+        tgt=uniqueTargets(tgt)
         stgt=findsamps(tgt)
         ssrc=findsamps(src,False)
         adjustSrcDil(ssrc,srcdil)
@@ -213,6 +228,7 @@ class TRP(object):
         if len(tgt)==0:
             tgt=["%s.P%c"%(src[i],prefix[i]) for i in range(len(src))]
 
+        tgt=uniqueTargets(tgt)
         stgt=findsamps(tgt)
         ssrc=findsamps(src,False)
         adjustSrcDil(ssrc,srcdil)
@@ -228,6 +244,7 @@ class TRP(object):
         # Dilute in place
         # e.g.: trp.diluteInPlace(tgt=rt1,dil=2)
         [tgt,dil]=listify([tgt,dil])
+        tgt=uniqueTargets(tgt)
         stgt=findsamps(tgt,False)
         adjustSrcDil(stgt,dil)
         self.e.stage('Dilute',[],[],stgt,[stgt[i].volume*dil[i] for i in range(len(stgt))])
@@ -245,6 +262,7 @@ class TRP(object):
         [src,vol,srcdil]=listify([src,vol,srcdil])
         if len(tgt)==0:
             tgt=["%s.D"%(src[i]) for i in range(len(src))]
+        tgt=uniqueTargets(tgt)
         if dilPlate:
             stgt=findsamps(tgt,True,Experiment.DILPLATE)
         else:
