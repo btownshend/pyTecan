@@ -114,14 +114,17 @@ class TRP(object):
         self.e.savegem(scriptname+".gem")
         self.e.savesummary(scriptname+".txt")
             
-    def saveSamps(self,src,vol,dil,tgt=None,dilutant=None):
+    def saveSamps(self,src,vol,dil,tgt=None,dilutant=None,plate=None):
         if tgt==None:
             tgt=[]
         [src,vol,dil]=listify([src,vol,dil])
         if len(tgt)==0:
             tgt=["%s.SAVE"%s for s in src]
         tgt=uniqueTargets(tgt)
-        stgt=findsamps(tgt,True,self.e.REAGENTPLATE)
+        if plate==None:
+            plate=self.e.REAGENTPLATE
+            
+        stgt=findsamps(tgt,True,plate)
         ssrc=findsamps(src,False)
         self.e.dilute(ssrc,dil)
         if dilutant!=None:
