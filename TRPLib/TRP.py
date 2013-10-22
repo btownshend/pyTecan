@@ -239,7 +239,8 @@ class TRP(object):
         self.e.stage('PCRA',[self.r.PCRA],[ssrc[i] for i in range(len(ssrc)) if prefix[i]=='A'],[stgt[i] for i in range(len(stgt)) if prefix[i]=='A'],[vol[i] for i in range(len(vol)) if prefix[i]=='A'])
         self.e.stage('PCRB',[self.r.PCRB],[ssrc[i] for i in range(len(ssrc)) if prefix[i]=='B'],[stgt[i] for i in range(len(stgt)) if prefix[i]=='B'],[vol[i] for i in range(len(vol)) if prefix[i]=='B'])
         #self.e.runpgm("PCR30",88,False,max(vol),hotlidmode="CONSTANT",hotlidtemp=100)
-        self.e.runpgm("PCR25",74,False,max(vol),hotlidmode="CONSTANT",hotlidtemp=100)
+        self.e.runpgm("PCR30",66,False,max(vol),hotlidmode="CONSTANT",hotlidtemp=100)
+        #self.e.runpgm("PCR25",74,False,max(vol),hotlidmode="CONSTANT",hotlidtemp=100)
         #self.e.runpgm("PCR20",63,False,max(vol),hotlidmode="CONSTANT",hotlidtemp=100)
         return tgt
     
