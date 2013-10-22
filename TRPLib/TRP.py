@@ -219,7 +219,7 @@ class TRP(object):
  
         self.e.runpgm("TRPANN",5,False,max(vol),hotlidmode="CONSTANT",hotlidtemp=100)
         self.e.stage('Ligation',[self.r.MLigase],[],stgt,vol)
-        self.e.runpgm("TRPLIG",41,False,max(vol),hotlidmode="CONSTANT",hotlidtemp=100)
+        self.e.runpgm("TRPLIG",41,False,max(vol),hotlidmode="TRACKING",hotlidtemp=10)
         return tgt
  
     def runPCR(self,prefix,src,vol,srcdil,tgt=None):
