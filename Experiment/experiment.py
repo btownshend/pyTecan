@@ -309,6 +309,8 @@ class Experiment(object):
         self.w.romahome()
         self.ptcrunning=False
         #self.w.userprompt("Plate should be back on deck. Press return to continue")
+        # Wash tips again to remove any drips that may have formed while waiting for PTC
+        self.w.wash(15,1,5,True)
 
 
     def dilute(self,samples,factor):
