@@ -241,7 +241,7 @@ class TRP(object):
         #self.e.runpgm("PCR30",88,False,max(vol),hotlidmode="CONSTANT",hotlidtemp=100)
         self.e.runpgm("PCR30",66,False,max(vol),hotlidmode="CONSTANT",hotlidtemp=100)
         #self.e.runpgm("PCR25",74,False,max(vol),hotlidmode="CONSTANT",hotlidtemp=100)
-        #self.e.runpgm("PCR20",63,False,max(vol),hotlidmode="CONSTANT",hotlidtemp=100)
+        #self.e.runpgm("PCR20",44,False,max(vol),hotlidmode="CONSTANT",hotlidtemp=100)
         return tgt
     
     def diluteInPlace(self,tgt,dil):
