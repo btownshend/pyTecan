@@ -83,7 +83,7 @@ class TRP(object):
         'Create a new TRP run'
         self.e=Experiment()
         self.r=Reagents();
-        self.e.setreagenttemp(14.0)
+        self.e.setreagenttemp(10.0)
         self.e.sanitize(3,50)    # Heavy sanitize
             
     def addTemplates(self,names,stockconc,finalconc=1.0,units="nM"):
