@@ -164,7 +164,7 @@ class Experiment(object):
         if self.ptcrunning and (src.plate==Experiment.SAMPLEPLATE or dest.plate==Experiment.SAMPLEPLATE)>0:
             self.waitpgm()
         if volume>self.MAXVOLUME:
-            destvol=max([d.volume for d in dests[0:i]])
+            destvol=dest.volume
             reuseTip=destvol<=0
             print "Splitting large transfer of %.1f ul into smaller chunks < %.1f ul "%(volume,self.MAXVOLUME),
             if reuseTip:
