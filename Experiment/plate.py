@@ -18,5 +18,6 @@ class Plate(object):
         return "%c%d"%(chr(65+row),col+1)
     
     def __str__(self):
-        return "%s(%s,%s)"%(self.name,self.grid,self.pos)
+        return self.name
+    #return "%s(%s,%s)"%(self.name,self.grid,self.pos)
         
