@@ -255,7 +255,7 @@ class TRP(object):
         self.e.runpgm("TRPLIG",41,False,max(vol),hotlidmode="TRACKING",hotlidtemp=10)
         return tgt
  
-    def runPCR(self,prefix,src,vol,srcdil,tgt=None):
+    def runPCR(self,prefix,src,vol,srcdil,tgt=None,ncycles=20):
         if tgt==None:
             tgt=[]
         ## PCR
@@ -271,10 +271,9 @@ class TRP(object):
         
         self.e.stage('PCRA',[self.r.PCRA],[ssrc[i] for i in range(len(ssrc)) if prefix[i]=='A'],[stgt[i] for i in range(len(stgt)) if prefix[i]=='A'],[vol[i] for i in range(len(vol)) if prefix[i]=='A'])
         self.e.stage('PCRB',[self.r.PCRB],[ssrc[i] for i in range(len(ssrc)) if prefix[i]=='B'],[stgt[i] for i in range(len(stgt)) if prefix[i]=='B'],[vol[i] for i in range(len(vol)) if prefix[i]=='B'])
-        #self.e.runpgm("PCR30",88,False,max(vol),hotlidmode="CONSTANT",hotlidtemp=100)
-        self.e.runpgm("PCR30",66,False,max(vol),hotlidmode="CONSTANT",hotlidtemp=100)
-        #self.e.runpgm("PCR25",74,False,max(vol),hotlidmode="CONSTANT",hotlidtemp=100)
-        #self.e.runpgm("PCR20",44,False,max(vol),hotlidmode="CONSTANT",hotlidtemp=100)
+        pgm="PCR%d"%ncycles;
+        self.e.w.pyrun('PTC\\ptcsetpgm.py %s TEMP@95,120 TEMP@95,30 TEMP@55,30 TEMP@72,25 GOTO@2,%d TEMP@72,180 TEMP@16,2'%(pgm,ncycles-1));
+        self.e.runpgm(pgm,6+2*ncycles,False,max(vol),hotlidmode="CONSTANT",hotlidtemp=100)
         return tgt
     
     def diluteInPlace(self,tgt,dil):
