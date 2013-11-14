@@ -255,7 +255,8 @@ while True:
         else:
             print "Bad cmd: %s"%cmd
     else:
-          print "Gemini %s %s"%(gtime,cmd)
+          if cmd.find('detected_volume_')==-1 or cmd.find('= -1')==-1:
+                print "Gemini %s %s"%(gtime,cmd)
           if cmd.startswith('Line'):
                 colon=cmd.find(':')
                 cname=cmd[(colon+2):]
