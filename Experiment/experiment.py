@@ -201,7 +201,10 @@ class Experiment(object):
         dest.addingredients(src,volume)
         if mix[1]:
             tipMask=self.cleantip()   # Get a clean tip since excess volume in current tip will mix into destination
-            dest.mix(tipMask,self.w)
+            if not dest.mix(tipMask,self.w):
+                # Didn't use tip, mark it as clean
+                self.cleanTips |= tipMask
+
         if self.useDiTis and dropDITI:
             self.w.dropDITI(tipMask&self.DITIMASK,self.WASTE)
 

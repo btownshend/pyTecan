@@ -220,20 +220,23 @@ class Sample(object):
         else:
             return self.bottomLC
         
+        # Mix, return true if actually did a mix, false otherwise
     def mix(self,tipMask,w):
 	nmix=4
         if self.isMixed:
             print "Sample %s is already mixed"%self.name
-            return
+            return False
         mixvol=self.volume-self.plate.unusableVolume-2;
         well=[self.well if self.well!=None else 2**(tipMask-1)-1 ]
         if mixvol<2:
             print "Not enough volume in sample %s to mix"%self.name
 	    self.history+="(UNMIXED)"
+            return False
 	elif mixvol<20:
             w.mix(tipMask,well,self.chooseLC(mixvol),mixvol,self.plate,nmix)
             self.history+="(MB)"
             self.isMixed=True
+            return True
         else:
             # Use special mix LC which aspirates from bottom, dispenses above, faster aspirate
             well=[self.well if self.well!=None else 2**(tipMask-1)-1 ]
@@ -243,6 +246,7 @@ class Sample(object):
             tiphistory[tipMask]+=" %s-Mix[%d]"%(self.name,mixvol)
             self.history+="(MT)"
             self.isMixed=True
+            return True
             
     def __str__(self):
         s=self.name
