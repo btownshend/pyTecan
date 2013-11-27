@@ -32,6 +32,8 @@ class Experiment(object):
         'Create a new experiment with given sample locations for water and self.WASTE'
         self.w=WorkList()
         self.w.comment("Generated %s"%(datetime.now().ctime()));
+        self.w.email(dest='bst@tc.com',subject='Run started (Generate: %s)'%(datetime.now().ctime()))
+        self.w.email(dest='bst@tc.com',subject='Tecan error',onerror=1)
         self.cleanTips=0
         self.sanitize()
         self.useDiTis=False

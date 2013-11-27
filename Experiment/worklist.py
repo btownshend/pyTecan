@@ -351,6 +351,9 @@ class WorkList(object):
         'Prompt the user with text.  Beeps = 0 (no sound), 1 (once), 2 (three times), 3 (every 3 seconds).  Close after closetime seconds if > -1'
         self.list.append('UserPrompt("%s",%d,%d)'%(text,beeps,closetime))
 
+    def email(self,dest,subject,body='',profile='cdsrobot',onerror=0,attachscreen=1):
+        self.list.append('Notification(%d,"%s","%s","%s","%s",%d)'%(attachscreen,profile,dest,subject,body,onerror));
+
     def comment(self, text,prepend=False):
         if len(text) > 200:
             text=text[0:197]+"..."
