@@ -27,7 +27,8 @@ class Reagents:
     MQB=Sample("MQB",Experiment.REAGENTPLATE,None,10.0/6)
     PCRA=Sample("MPCRA",Experiment.REAGENTPLATE,None,4.0/3)
     PCRB=Sample("MPCRB",Experiment.REAGENTPLATE,None,4.0/3)
-    all=[MT7,MPosRT,MNegRT,MLigA,MLigB,MLigase,Theo,MStopNT,MStopWT,MQA,MQB,PCRA,PCRB]
+    MQM=Sample("MQM",Experiment.REAGENTPLATE,None,10.0/6)
+    all=[MT7,MPosRT,MNegRT,MLigA,MLigB,MLigase,Theo,MStopNT,MStopWT,MQA,MQB,PCRA,PCRB,MQM]
 
 def listify(x):
     'Convert a list of (lists or scalars) into a list of equal length lists'
@@ -83,7 +84,7 @@ class TRP(object):
         'Create a new TRP run'
         self.e=Experiment()
         self.r=Reagents();
-        self.e.setreagenttemp(10.0)
+        self.e.setreagenttemp(6.0)
         self.e.sanitize(3,50)    # Heavy sanitize
             
     def addTemplates(self,names,stockconc,finalconc=1.0,units="nM"):
@@ -252,7 +253,7 @@ class TRP(object):
  
         self.e.runpgm("TRPANN",5,False,max(vol),hotlidmode="CONSTANT",hotlidtemp=100)
         self.e.stage('Ligation',[self.r.MLigase],[],stgt,vol)
-        self.e.runpgm("TRPLIG",41,False,max(vol),hotlidmode="TRACKING",hotlidtemp=10)
+        self.e.runpgm("TRPLIG15RT",26,False,max(vol),hotlidmode="TRACKING",hotlidtemp=10)
         return tgt
  
     def runPCR(self,prefix,src,vol,srcdil,tgt=None,ncycles=20):
@@ -272,8 +273,9 @@ class TRP(object):
         self.e.stage('PCRA',[self.r.PCRA],[ssrc[i] for i in range(len(ssrc)) if prefix[i]=='A'],[stgt[i] for i in range(len(stgt)) if prefix[i]=='A'],[vol[i] for i in range(len(vol)) if prefix[i]=='A'])
         self.e.stage('PCRB',[self.r.PCRB],[ssrc[i] for i in range(len(ssrc)) if prefix[i]=='B'],[stgt[i] for i in range(len(stgt)) if prefix[i]=='B'],[vol[i] for i in range(len(vol)) if prefix[i]=='B'])
         pgm="PCR%d"%ncycles;
-        self.e.w.pyrun('PTC\\ptcsetpgm.py %s TEMP@95,120 TEMP@95,30 TEMP@55,30 TEMP@72,25 GOTO@2,%d TEMP@72,180 TEMP@16,2'%(pgm,ncycles-1));
-        self.e.runpgm(pgm,6+2*ncycles,False,max(vol),hotlidmode="CONSTANT",hotlidtemp=100)
+        #        self.e.w.pyrun('PTC\\ptcsetpgm.py %s TEMP@95,120 TEMP@95,30 TEMP@55,30 TEMP@72,25 GOTO@2,%d TEMP@72,180 TEMP@16,2'%(pgm,ncycles-1));
+        self.e.w.pyrun('PTC\\ptcsetpgm.py %s TEMP@95,120 TEMP@95,10 TEMP@57,10 GOTO@2,%d TEMP@72,120 TEMP@25,2'%(pgm,ncycles-1));
+        self.e.runpgm(pgm,5+1*ncycles,False,max(vol),hotlidmode="CONSTANT",hotlidtemp=100)
         return tgt
     
     def diluteInPlace(self,tgt,dil):
@@ -309,19 +311,27 @@ class TRP(object):
         self.e.stage('QPCRDIL',[],ssrc,stgt,max(vol))
         return tgt
         
-    def runQPCR(self,src,vol,srcdil):
+    def runQPCR(self,src,vol,srcdil,useMid=False):
         ## QPCR setup
         # e.g. trp.runQPCR(src=["1.RT-B","1.RT+B","1.RTNeg-B","1.RTNeg+B","2.RT-A","2.RT-B","2.RTNeg+B","2.RTNeg+B"],vol=10,srcdil=100)
         [src,vol,srcdil]=listify([src,vol,srcdil])
-        tgtqpcrA=["%s.QA"%(src[i]) for i in range(len(src))]+["Water.QA"]   # Extra sample for water
-        tgtqpcrB=["%s.QB"%(src[i]) for i in range(len(src))] +["Water.QB"]
         vol=vol+[vol[1]]   # For water sample
-        stgtqpcrA=findsamps(tgtqpcrA,True,Experiment.QPCRPLATE)
-        stgtqpcrB=findsamps(tgtqpcrB,True,Experiment.QPCRPLATE)
         ssrc=findsamps(src,False)
         adjustSrcDil(ssrc,[d for d in srcdil])
+
+        tgtqpcrA=["%s.QA"%(src[i]) for i in range(len(src))]+["Water.QA"]   # Extra sample for water
+        stgtqpcrA=findsamps(tgtqpcrA,True,Experiment.QPCRPLATE)
+        tgtqpcrB=["%s.QB"%(src[i]) for i in range(len(src))] +["Water.QB"]
+        stgtqpcrB=findsamps(tgtqpcrB,True,Experiment.QPCRPLATE)
+        if useMid:
+            tgtqpcrM=["%s.QM"%(src[i]) for i in range(len(src))] +["Water.QM"]
+            stgtqpcrM=findsamps(tgtqpcrM,True,Experiment.QPCRPLATE)
         
         self.e.stage('QPCRA',[self.r.MQA],ssrc,stgtqpcrA,vol,1.0,False)  # No dest mix
         self.e.stage('QPCRB',[self.r.MQB],ssrc,stgtqpcrB,vol,1.0,False)
-        return stgtqpcrA+stgtqpcrB
 
+        if useMid:
+            self.e.stage('QPCRM',[self.r.MQM],ssrc,stgtqpcrM,vol,1.0,False)  # No dest mix
+            return stgtqpcrA+stgtqpcrB+stgtqpcrM
+        else:
+            return stgtqpcrA+stgtqpcrB
