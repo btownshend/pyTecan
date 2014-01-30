@@ -349,6 +349,7 @@ class WorkList(object):
         
     def userprompt(self, text, beeps=0, closetime=-1):
         'Prompt the user with text.  Beeps = 0 (no sound), 1 (once), 2 (three times), 3 (every 3 seconds).  Close after closetime seconds if > -1'
+        self.flushQueue();
         self.list.append('UserPrompt("%s",%d,%d)'%(text,beeps,closetime))
 
     def email(self,dest,subject,body='',profile='cdsrobot',onerror=0,attachscreen=1):
