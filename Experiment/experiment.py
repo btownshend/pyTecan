@@ -9,7 +9,7 @@ ptcrunning=False
 
 class Experiment(object):
     WASHLOC=Plate("Wash",1,2,1,8,False,0)
-    REAGENTPLATE=Plate("Reagents",3,1,6,5,True,20)
+    REAGENTPLATE=Plate("Reagents",3,1,6,5,False,20)
     SAMPLEPLATE=Plate("Samples",10,3,12,8,False,10)
     READERPLATE=Plate("Reader",10,2,12,8,False,10)
     QPCRPLATE=Plate("qPCR",10,2,12,8,False,10)
