@@ -267,7 +267,9 @@ class Experiment(object):
         if self.ptcrunning:
             print "ERROR: Attempt to start a progam on PTC when it is already running"
             assert(False)
-
+        if len(pgm)>8:
+            print "ERROR: PTC program name too long"
+            assert(False)
         # move to thermocycler
         self.w.flushQueue()
         self.lihahome()
