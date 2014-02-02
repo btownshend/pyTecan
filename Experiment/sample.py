@@ -213,7 +213,7 @@ class Sample(object):
                 self.ingredients[k]=addition
             
     def chooseLC(self,aspirateVolume=0):
-        if self.volume-aspirateVolume>MINLIQUIDDETECTVOLUME:
+        if self.volume-aspirateVolume>=MINLIQUIDDETECTVOLUME:
             return self.inliquidLC
         elif self.volume==0 and aspirateVolume==0:
             return self.emptyLC
@@ -237,12 +237,21 @@ class Sample(object):
             self.history+="(MB)"
             self.isMixed=True
             return True
+        elif self.volume-mixvol>=MINLIQUIDDETECTVOLUME:
+            w.mix(tipMask,well,self.chooseLC(mixvol),mixvol,self.plate,nmix)
+            self.history+="(MLD)"
+            self.isMixed=True
+            return True
         else:
-            # Use special mix LC which aspirates from bottom, dispenses above, faster aspirate
+            # Use special mix LC which aspirates from bottom, dispenses above, faster aspirate;  do last dispense at bottom to avoid droplet on tip
             well=[self.well if self.well!=None else 2**(tipMask-1)-1 ]
             for i in range(nmix):
                 w.aspirateNC(tipMask,well,self.mixLC,mixvol,self.plate)
-                w.dispense(tipMask,well,self.mixLC,mixvol,self.plate)
+                if i==nmix-1:
+                    # Dispense under liquid to avoid droplet
+                    w.dispense(tipMask,well,self.chooseLC(mixvol),mixvol,self.plate)
+                else:
+                    w.dispense(tipMask,well,self.mixLC,mixvol,self.plate)
             tiphistory[tipMask]+=" %s-Mix[%d]"%(self.name,mixvol)
             self.history+="(MT)"
             self.isMixed=True
