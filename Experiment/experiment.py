@@ -36,7 +36,7 @@ class Experiment(object):
         self.w.email(dest='bst@tc.com',subject='Run started (Generate: %s)'%(datetime.now().ctime()))
         self.w.email(dest='bst@tc.com',subject='Tecan error',onerror=1)
         self.cleanTips=0
-        self.sanitize()
+        # self.sanitize()  # Not needed, TRP does it, also first use of tips will do this
         self.useDiTis=False
         self.thermotime=0
         self.RNASEAWAY.mixLC=liquidclass.LC("RNaseAway-Mix")
