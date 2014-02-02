@@ -284,6 +284,7 @@ class Sample(object):
     @staticmethod
     def printprep(fd=sys.stdout):
         notes="Reagents:"
+        total=0
         for s in __allsamples:
             if s.conc!=None:
                 c="[%s]"%str(s.conc)
@@ -296,4 +297,7 @@ class Sample(object):
             elif s.initvolume>0:
                 note="%s%s in %s.%s consume %.1f ul, provide %.1f ul"%(s.name,c,str(s.plate),s.plate.wellname(s.well),s.initvolume-s.volume,s.initvolume)
                 notes=notes+"\n"+note
+            if s.plate.name=="Reagents":
+                total+=round((s.initvolume-s.volume)*10)/10.0
         print >>fd,notes
+        print >>fd,"Total reagents volume = %.1f ul"%total
