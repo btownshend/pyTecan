@@ -120,6 +120,14 @@ class Sample(object):
                 result.append(s)  
         return result 
                  
+    @classmethod
+    def getAllLocOnPlate(cls,plate=None):  
+        result=""
+        for s in __allsamples:
+            if (plate==None or s.plate==plate) and s.volume!=s.initvolume:
+                result+=" %s"%(s.plate.wellname(s.well))
+        return result 
+
     def dilute(self,factor):
         'Dilute sample -- just increases its recorded concentration'
         if self.conc!=None:
