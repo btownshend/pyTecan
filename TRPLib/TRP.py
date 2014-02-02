@@ -274,7 +274,6 @@ class TRP(object):
         self.e.stage('PCRB',[self.r.PCRB],[ssrc[i] for i in range(len(ssrc)) if prefix[i]=='B'],[stgt[i] for i in range(len(stgt)) if prefix[i]=='B'],[vol[i] for i in range(len(vol)) if prefix[i]=='B'])
         pgm="PCR%d"%ncycles;
         #        self.e.w.pyrun('PTC\\ptcsetpgm.py %s TEMP@95,120 TEMP@95,30 TEMP@55,30 TEMP@72,25 GOTO@2,%d TEMP@72,180 TEMP@16,2'%(pgm,ncycles-1));
-        self.e.w.userprompt("Remove contents of RT: %s, should be %.1f ul"%(ssrc[0].plate.wellname(ssrc[0].well),ssrc[0].volume))
         self.e.w.pyrun('PTC\\ptcsetpgm.py %s TEMP@95,120 TEMP@95,10 TEMP@57,10 GOTO@2,%d TEMP@72,120 TEMP@25,2'%(pgm,ncycles-1));
         self.e.runpgm(pgm,5+1*ncycles,False,max(vol),hotlidmode="CONSTANT",hotlidtemp=100)
         return tgt
