@@ -139,7 +139,7 @@ class TRP(object):
     def runT7(self,theo,src,vol,srcdil,tgt=None,dur=15):
         if tgt==None:
             tgt=[]
-        [theo,src,tgt,vol,srcdil]=listify([theo,src,tgt,vol,srcdil])
+        [theo,src,tgt,srcdil]=listify([theo,src,tgt,srcdil])
         if len(tgt)==0:
             for i in range(len(src)):
                 if theo[i]:
@@ -152,20 +152,31 @@ class TRP(object):
         stgt=findsamps(tgt)
         ssrc=findsamps(src,False)
         adjustSrcDil(ssrc,srcdil)
+        self.e.w.comment("\nrunT7: source=%s"%[str(s) for s in ssrc])
 
-        self.e.stage('T7M',[self.r.MT7],[ssrc[i] for i in range(len(ssrc)) if not theo[i]],[stgt[i] for i in range(len(ssrc)) if not theo[i]],[vol[i] for i in range(len(ssrc)) if not theo[i]])
-        self.e.stage('T7P',[self.r.Theo,self.r.MT7],[ssrc[i] for i in range(len(ssrc)) if theo[i]],[stgt[i] for i in range(len(ssrc)) if theo[i]],[vol[i] for i in range(len(ssrc)) if theo[i]])
-        assert(dur==15 or dur==20 or dur==30 or dur==45 or dur==60)
-        self.e.runpgm("TRP37-%d"%dur,dur, False,max(vol))
+        MT7vol=vol*1.0/self.r.MT7.conc.dilutionneeded()
+        sourcevols=[vol*1.0/s.conc.dilutionneeded() for s in ssrc]
+        theovols=[vol*1.0/self.r.Theo.conc.dilutionneeded()*(1 if t else 0) for t in theo]
+        watervols=[vol-theovols[i]-sourcevols[i]-MT7vol for i in range(len(ssrc))]
+
+        if sum(watervols)>0.01:
+            self.e.multitransfer(watervols,self.e.WATER,stgt,(False,False))
+        self.e.multitransfer([MT7vol for s in stgt],self.r.MT7,stgt,(False,False))
+        self.e.multitransfer([tv for tv in theovols if tv>0.01],self.r.Theo,[stgt[i] for i in range(len(theovols)) if theovols[i]>0],(False,False),ignoreContents=True);
+        for i in range(len(ssrc)):
+            self.e.transfer(sourcevols[i],ssrc[i],stgt[i],(True,True))
+
+        self.e.runpgm("TRP37-%d"%dur,dur, False,vol)
 
         ## Stop
         self.e.dilute(stgt,2)
 
-        if any(theo):
-            self.e.stage('StopWT',[self.r.MStopWT],[],[stgt[i] for i in range(len(ssrc)) if not theo[i]],[2*vol[i] for i in range(len(ssrc)) if not theo[i]])
-            self.e.stage('StopNT',[self.r.MStopNT],[],[stgt[i] for i in range(len(ssrc)) if theo[i]],[2*vol[i] for i in range(len(ssrc)) if theo[i]])
-        else:
-            self.e.stage('StopNT',[self.r.MStopWT],[],stgt,[2*v for v in vol])
+        for i in range(len(stgt)):
+            if theo[i]:
+                self.e.transfer(vol,self.r.MStopNT,stgt[i],(False,True))
+            else:
+                self.e.transfer(vol,self.r.MStopWT,stgt[i],(False,True))
+
         return tgt
     
     def runT7New(self,theo,src,vol,srcdil,tgt=None,dur=15):

@@ -105,7 +105,7 @@ class Experiment(object):
         self.cleanTips&=~tipMask
         return tipMask
             
-    def multitransfer(self, volumes, src, dests,mix=(False,False),getDITI=True,dropDITI=True):
+    def multitransfer(self, volumes, src, dests,mix=(False,False),getDITI=True,dropDITI=True,ignoreContents=False):
         'Multi pipette from src to multiple dest.  mix is (src,dest) mixing'
         #print "multitransfer(",volumes,",",src,",",dests,",",mix,",",getDITI,",",dropDITI,")"
         if self.ptcrunning and (src.plate==Experiment.SAMPLEPLATE or len([1 for d in dests if d.plate==Experiment.SAMPLEPLATE])>0):
@@ -122,7 +122,7 @@ class Experiment(object):
             maxval=max([dests[i].volume for i in range(0,len(dests)) if dests[i].conc != None and volumes[i]>0.01])
             #         maxval=max([d.volume for d in dests if d.conc != None])
         print "volumes=",[d.volume for d in dests],", conc=",[str(d.conc) for d in dests],", maxval=",maxval
-        if mix[1]==False and len(volumes)>1 and maxval<.01:
+        if mix[1]==False and len(volumes)>1 and ( maxval<.01 or ignoreContents):
             if sum(volumes)>self.MAXVOLUME:
                 print "sum(volumes)=%.1f, MAXVOL=%.1f"%(sum(volumes),self.MAXVOLUME)
                 for i in range(1,len(volumes)):
