@@ -28,7 +28,8 @@ class Reagents:
     PCRA=Sample("MPCRA",Experiment.REAGENTPLATE,None,4.0/3)
     PCRB=Sample("MPCRB",Experiment.REAGENTPLATE,None,4.0/3)
     MQM=Sample("MQM",Experiment.REAGENTPLATE,None,10.0/6)
-    all=[MT7,MPosRT,MNegRT,MLigA,MLigB,MLigase,Theo,MStopNT,MStopWT,MQA,MQB,PCRA,PCRB,MQM]
+    SSD=Sample("SSD",Experiment.REAGENTPLATE,None,None)
+    all=[MT7,MPosRT,MNegRT,MLigA,MLigB,MLigase,Theo,MStopNT,MStopWT,MQA,MQB,PCRA,PCRB,MQM,SSD]
 
 def listify(x):
     'Convert a list of (lists or scalars) into a list of equal length lists'
