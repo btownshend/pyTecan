@@ -153,7 +153,7 @@ class WorkList(object):
         elif op=='AspirateNC':
             self.elapsed+=3.4
             
-        print "%s %d %s.%s %s %s"%(op,tipMask,str(loc),str(wells),str(volume),str(liquidClass))
+        #print "%s %d %s.%s %s %s"%(op,tipMask,str(loc),str(wells),str(volume),str(liquidClass))
         # Update volumes
         for i in range(len(wells)):
             well=wells[i]

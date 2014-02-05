@@ -237,7 +237,7 @@ class Sample(object):
         mixvol=self.volume-self.plate.unusableVolume-2;
         well=[self.well if self.well!=None else 2**(tipMask-1)-1 ]
         if mixvol<2:
-            print "Not enough volume in sample %s to mix"%self.name
+            #print "Not enough volume in sample %s to mix"%self.name
 	    self.history+="(UNMIXED)"
             return False
 	elif mixvol<20:

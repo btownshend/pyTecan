@@ -96,7 +96,7 @@ class TRP(object):
         self.e.w.userprompt("Process complete. Continue to turn off reagent cooler")
         self.e.setreagenttemp(None)
 
-        Sample.printallsamples("At completion")
+        #Sample.printallsamples("At completion")
         short=False
         for s in Sample.getAllOnPlate():
             if s.volume<1.0 and s.conc!=None:

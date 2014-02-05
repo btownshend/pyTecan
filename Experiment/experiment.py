@@ -91,7 +91,7 @@ class Experiment(object):
         self.w.mix(fixedTips,fixedWells,self.RNASEAWAY.mixLC,200,self.RNASEAWAY.plate,nmix);
         self.w.wash(fixedTips,1,deepvol,True)
         self.cleanTips|=fixedTips
-        print "* Sanitize"
+        # print "* Sanitize"
         
     def cleantip(self):
         'Get the mask for a clean tip, washing if needed'
@@ -121,10 +121,10 @@ class Experiment(object):
         else:
             maxval=max([dests[i].volume for i in range(0,len(dests)) if dests[i].conc != None and volumes[i]>0.01])
             #         maxval=max([d.volume for d in dests if d.conc != None])
-        print "volumes=",[d.volume for d in dests],", conc=",[str(d.conc) for d in dests],", maxval=",maxval
+        #print "volumes=",[d.volume for d in dests],", conc=",[str(d.conc) for d in dests],", maxval=",maxval
         if mix[1]==False and len(volumes)>1 and ( maxval<.01 or ignoreContents):
             if sum(volumes)>self.MAXVOLUME:
-                print "sum(volumes)=%.1f, MAXVOL=%.1f"%(sum(volumes),self.MAXVOLUME)
+                #print "sum(volumes)=%.1f, MAXVOL=%.1f"%(sum(volumes),self.MAXVOLUME)
                 for i in range(1,len(volumes)):
                     if sum(volumes[0:i+1])>self.MAXVOLUME:
                         print "Splitting multi with total volume of %.1f ul into smaller chunks < %.1f ul after %d dispenses "%(sum(volumes),self.MAXVOLUME,i),
@@ -147,7 +147,7 @@ class Experiment(object):
                 tipMask=self.cleantip()
 
             cmt="Multi-add  %s to samples %s"%(src.name,",".join("%s[%.1f]"%(dests[i].name,volumes[i]) for i in range(len(dests))))
-            print "*",cmt
+            #print "*",cmt
             self.w.comment(cmt)
 
             if mix[0] and not src.isMixed:
@@ -195,7 +195,7 @@ class Experiment(object):
                 self.w.getDITI(tipMask&self.DITIMASK,ditivolume)
         else:
             tipMask=self.cleantip()
-        print "*",cmt
+        #print "*",cmt
         self.w.comment(cmt)
 
         if mix[0] and not src.isMixed:
@@ -219,7 +219,7 @@ class Experiment(object):
         # Pipette sources into sample wells
         # Concs are in x (>=1)
         #        Sample.printallsamples("Before "+stagename)
-        print "\nStage: ", stagename, "reagents=",[str(r) for r in reagents], ",sources=",[str(s) for s in sources],",samples=",[str(s) for s in samples],str(volume)
+        #print "\nStage: ", stagename, "reagents=",[str(r) for r in reagents], ",sources=",[str(s) for s in sources],",samples=",[str(s) for s in samples],str(volume)
         if len(samples)==0:
             print "No samples\n"
             return
@@ -275,7 +275,7 @@ class Experiment(object):
         self.lihahome()
         cmt="run %s"%pgm
         self.w.comment(cmt)
-        print "*",cmt
+        #print "*",cmt
         self.w.pyrun("PTC\\ptclid.py OPEN")
         self.w.vector("Microplate Landscape",self.SAMPLEPLATE,self.w.SAFETOEND,True,self.w.DONOTMOVE,self.w.CLOSE)
         self.w.vector("PTC200",self.PTCPOS,self.w.SAFETOEND,True,self.w.DONOTMOVE,self.w.OPEN)
@@ -295,7 +295,7 @@ class Experiment(object):
     def waitpgm(self):
         if not self.ptcrunning:
             return
-        print "* Wait for PTC to finish"
+        #print "* Wait for PTC to finish"
         self.sanitize()   # Sanitize tips before waiting for this to be done
         self.thermotime-=self.w.elapsed
         self.w.pyrun('PTC\\ptcwait.py')
