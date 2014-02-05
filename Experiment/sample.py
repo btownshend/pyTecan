@@ -153,11 +153,11 @@ class Sample(object):
         # Manual conditioning handled in worklist
         for k in self.ingredients:
             self.ingredients[k] *= (self.volume-aspVolume)/self.volume
+        if self.volume-aspVolume+.001<self.plate.unusableVolume and self.volume>0:
+            # TODO - this hould be more visible in output
+            print "Warning: Aspiration of %.1ful from %s brings volume down to %.1ful which is less than its unusable volume of %.1f ul"%(aspVolume,self.name,self.volume-aspVolume,self.plate.unusableVolume)
         self.volume=self.volume-aspVolume
         self.addhistory("",-aspVolume,tipMask)
-        if self.volume+.001<self.plate.unusableVolume:
-            # TODO - this hould be more visible in output
-            print "Warning: Aspiration from %s brings volume down to %.1ful which is less than its unusable volume of %.1f ul"%(self.name,self.volume,self.plate.unusableVolume)
             
     def dispense(self,tipMask,w,volume,conc):
         well=[self.well if self.well!=None else 2**(tipMask-1)-1 ]
