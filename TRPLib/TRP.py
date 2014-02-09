@@ -129,13 +129,16 @@ class TRP(object):
             
         stgt=findsamps(tgt,True,plate)
         ssrc=findsamps(src,False)
-        self.e.dilute(ssrc,dil)
+
+        origdil=[x.conc.stock/x.conc.final for x in ssrc]
+        # print "About to dilute ",str(ssrc[0])," by ",dil[0]," using ",vol[0]," ul, origdil=",origdil[0]
+        adjustSrcDil(ssrc,dil)
         if dilutant!=None:
             self.e.stage('SAVE',[],ssrc,stgt,[vol[i]*dil[i] for i in range(len(vol))],dilutant=dilutant)
         else:
             self.e.stage('SAVE',[],ssrc,stgt,[vol[i]*dil[i] for i in range(len(vol))])
         # Back out the dilution
-        self.e.dilute(ssrc,[1.0/d for d in dil])
+        adjustSrcDil(ssrc,origdil)
         return tgt
             
     def runT7(self,theo,src,vol,srcdil,tgt=None,dur=15):
