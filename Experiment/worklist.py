@@ -51,6 +51,7 @@ class WorkList(object):
         self.flushQueue()
         tipMask=15
         speed=10   # 0.1-400 (mm/s)
+        self.comment('*MoveLiha to '+str(loc))
         self.list.append( 'MoveLiha(%d,%d,%d,1,"0104?",0,4,0,%.1f,0)'%(tipMask,loc.grid,loc.pos-1,speed))
         self.elapsed+=1.38
         
@@ -75,6 +76,7 @@ class WorkList(object):
                 else:
                     dirtyTips|=d[1]
             self.opQueue=[x for x in self.opQueue if x not in newQueue]
+            print  "opQueue: %d, newQueue: %d\n"%(len(self.opQueue),len(newQueue))
         for d in newQueue:
             print "POSTOPT %s:\tTip %d, Loc (%d,%d) Wells %s"%(d[0],d[1],d[5].grid,d[5].pos,str(d[2]))
         self.opQueue=newQueue
@@ -114,6 +116,7 @@ class WorkList(object):
         
     def flushQueue(self):
         #self.optimizeQueue()
+        self.comment('*Flush queue')
         for d in self.opQueue:
             self.aspirateDispense(d[0],d[1],d[2],d[3],d[4],d[5],d[6],False);
         self.opQueue=[]
@@ -141,7 +144,7 @@ class WorkList(object):
             
         if self.delayEnabled and allowDelay:
             self.opQueue.append([op,tipMask,wells,liquidClass,volume,loc,cycles])
-            #print "Queued: %s %d %s.%s %.2f"%(op,tipMask,str(loc),str(wells),volume)
+            self.comment("*Queued: %s tip=%d well=%s.%s vol=%s lc=%s"%(op,tipMask,str(loc),str(wells),str(volume),str(liquidClass)))
             return
 
         if op=='Mix':
@@ -153,7 +156,7 @@ class WorkList(object):
         elif op=='AspirateNC':
             self.elapsed+=3.4
             
-        #print "%s %d %s.%s %s %s"%(op,tipMask,str(loc),str(wells),str(volume),str(liquidClass))
+        self.comment("*%s tip=%d well=%s.%s vol=%s lc=%s"%(op,tipMask,str(loc),str(wells),str(volume),str(liquidClass)))
         # Update volumes
         for i in range(len(wells)):
             well=wells[i]
@@ -297,6 +300,7 @@ class WorkList(object):
         
     def wash(self, tipMask,wasteVol=1,cleanerVol=2,deepClean=False):
         self.flushQueue()
+        self.comment("*Wash with tips=%d, wasteVol=%d, cleanerVol=%d, deep=%s"%(tipMask,wasteVol,cleanerVol,"Y" if deepClean else "N"))
         wasteLoc=(1,1)
         if deepClean:
             cleanerLoc=(1,2)
@@ -331,6 +335,7 @@ class WorkList(object):
                          
     def vector(self, vector,loc, direction, andBack, initialAction, finalAction, slow=False):
         'Move ROMA.  Gripper actions=0 (open), 1 (close), 2 (do not move).'
+        #self.comment("*ROMA Vector %s"%vector)
         if slow:
             speed=1
         else:
@@ -343,6 +348,7 @@ class WorkList(object):
         self.elapsed+=4.84
         
     def romahome(self):
+        #self.comment("*ROMA Home")
         self.list.append('ROMA(2,0,0,0,0,0,60,0,0)')
         self.elapsed+=1.43
 
@@ -409,5 +415,17 @@ class WorkList(object):
         fd=open(filename,'a')
         for i in range(len(self.list)):
             print >>fd, "%s"%string.replace(str(self.list[i]),'\n','\f\a')
+        fd.close()
+        # Also save another copy with line numbers, indent in a readable form in filename.gemtxt
+        fd=open(filename+'txt','w')
+        for i in range(len(self.list)):
+            s=str(self.list[i])
+            if s.startswith('Comment'):
+                s=s[9:-2]
+                if s.startswith('*'):
+                    s='    '+s[1:]
+            else:
+                s='        '+s
+            print >>fd,"%s"%(s)
         fd.close()
         

@@ -227,7 +227,7 @@ class Experiment(object):
         if dilutant==None:
             dilutant=self.WATER
             
-        self.w.comment(stagename)
+        self.w.comment("Stage: "+stagename)
         if not isinstance(volume,list):
             volume=[volume for i in range(len(samples))]
         for i in range(len(volume)):
@@ -297,6 +297,7 @@ class Experiment(object):
             return
         #print "* Wait for PTC to finish"
         self.sanitize()   # Sanitize tips before waiting for this to be done
+        self.w.comment("Wait for PTC")
         self.thermotime-=self.w.elapsed
         self.w.pyrun('PTC\\ptcwait.py')
         self.w.pyrun("PTC\\ptclid.py OPEN")

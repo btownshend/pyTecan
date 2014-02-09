@@ -153,7 +153,7 @@ class TRP(object):
         stgt=findsamps(tgt)
         ssrc=findsamps(src,False)
         adjustSrcDil(ssrc,srcdil)
-        self.e.w.comment("\nrunT7: source=%s"%[str(s) for s in ssrc])
+        self.e.w.comment("runT7: source=%s"%[str(s) for s in ssrc])
 
         MT7vol=vol*1.0/self.r.MT7.conc.dilutionneeded()
         sourcevols=[vol*1.0/s.conc.dilutionneeded() for s in ssrc]
