@@ -28,8 +28,9 @@ class Reagents:
     PCRA=Sample("MPCRA",Experiment.REAGENTPLATE,None,4.0/3)
     PCRB=Sample("MPCRB",Experiment.REAGENTPLATE,None,4.0/3)
     MQM=Sample("MQM",Experiment.REAGENTPLATE,None,10.0/6)
+    MQT=Sample("MQT",Experiment.REAGENTPLATE,None,10.0/6)
     SSD=Sample("SSD",Experiment.REAGENTPLATE,None,None)
-    all=[MT7,MPosRT,MNegRT,MLigA,MLigB,MLigase,Theo,MStopNT,MStopWT,MQA,MQB,PCRA,PCRB,MQM,SSD]
+    all=[MT7,MPosRT,MNegRT,MLigA,MLigB,MLigase,Theo,MStopNT,MStopWT,MQA,MQB,PCRA,PCRB,MQM,MQT,SSD]
 
 def listify(x):
     'Convert a list of (lists or scalars) into a list of equal length lists'
@@ -329,27 +330,36 @@ class TRP(object):
         self.e.stage('QPCRDIL',[],ssrc,stgt,max(vol))
         return tgt
         
-    def runQPCR(self,src,vol,srcdil,useMid=False):
+    def runQPCR(self,src,vol,srcdil,primers=["A","B"]):
         ## QPCR setup
         # e.g. trp.runQPCR(src=["1.RT-B","1.RT+B","1.RTNeg-B","1.RTNeg+B","2.RT-A","2.RT-B","2.RTNeg+B","2.RTNeg+B"],vol=10,srcdil=100)
         [src,vol,srcdil]=listify([src,vol,srcdil])
-        vol=vol+[vol[1]]   # For water sample
         ssrc=findsamps(src,False)
         adjustSrcDil(ssrc,[d for d in srcdil])
 
-        tgtqpcrA=["%s.QA"%(src[i]) for i in range(len(src))]+["Water.QA"]   # Extra sample for water
-        stgtqpcrA=findsamps(tgtqpcrA,True,Experiment.QPCRPLATE)
-        tgtqpcrB=["%s.QB"%(src[i]) for i in range(len(src))] +["Water.QB"]
-        stgtqpcrB=findsamps(tgtqpcrB,True,Experiment.QPCRPLATE)
-        if useMid:
-            tgtqpcrM=["%s.QM"%(src[i]) for i in range(len(src))] +["Water.QM"]
-            stgtqpcrM=findsamps(tgtqpcrM,True,Experiment.QPCRPLATE)
-        
-        self.e.stage('QPCRA',[self.r.MQA],ssrc,stgtqpcrA,vol,1.0,False)  # No dest mix
-        self.e.stage('QPCRB',[self.r.MQB],ssrc,stgtqpcrB,vol,1.0,False)
+        result=[]
+        for p in primers:
+            tgtqpcr=["%s.Q%s"%(src[i],p) for i in range(len(src))]
+            # Check if we already have a water
+            if Sample.lookup("Water.Q%s"%p)==None:
+                tgtqpcr=tgtqpcr+["Water.Q%s"%p]   # Extra sample for water
+                sampvols=vol+[vol[0]]   # For water sample
+            else:
+                sampvols=vol
+            stgtqpcr=findsamps(tgtqpcr,True,Experiment.QPCRPLATE)
+            if p=='A':
+                MQ=self.r.MQA
+            elif p=='B':
+                MQ=self.r.MQB
+            elif p=='M':
+                MQ=self.r.MQM
+            elif p=='T':
+                MQ=self.r.MQT
+            else:
+                print "Bad qPCR primer: ",p
+                assert(false)
+                
+            self.e.stage('QPCR%s'%p,[MQ],ssrc,stgtqpcr,sampvols,1.0,False)  # No dest mix
+            result=result+stgtqpcr
 
-        if useMid:
-            self.e.stage('QPCRM',[self.r.MQM],ssrc,stgtqpcrM,vol,1.0,False)  # No dest mix
-            return stgtqpcrA+stgtqpcrB+stgtqpcrM
-        else:
-            return stgtqpcrA+stgtqpcrB
+        return result
