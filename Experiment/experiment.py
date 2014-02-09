@@ -80,6 +80,7 @@ class Experiment(object):
         
     def sanitize(self,nmix=1,deepvol=20):
         'Deep wash including RNase-Away treatment'
+        self.w.flushQueue()
         self.w.comment("Sanitize")
         self.w.wash(15,1,2)
         fixedTips=(~self.DITIMASK)&15
