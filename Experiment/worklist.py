@@ -65,15 +65,18 @@ class WorkList(object):
         
     def optimizeQueue(self):
         'Optimize operations in queue'
+        assert(False)    # Currently broken, manual mix with a chain of aspirateNC/dispense ends up doing all the aspirates first, then all the dispenses
         for d in self.opQueue:
             print "PRE-OPT %s:\tTip %d, Loc (%d,%d) Wells %s"%(d[0],d[1],d[5].grid,d[5].pos,str(d[2]))
         # As much as possible, move together operations on a single plate
         newQueue=[]
+        oldlen=len(self.opQueue)
         while len(self.opQueue)>0:
             d1=self.opQueue[0]
             newQueue.append(d1)
+            self.opQueue.remove(d1)
             dirtyTips=0;
-            for d in self.opQueue[1:]:
+            for d in self.opQueue:
                 if d[5].grid==d1[5].grid and d[5].pos==d1[5].pos and d[0]==d1[0]:
                     'Same grid,loc'
                     if d[1]&dirtyTips != 0:
@@ -81,12 +84,12 @@ class WorkList(object):
                         print 'Intervening tip use:',[str(item) for item in d]
                         break
                     newQueue.append(d)
+                    self.opQueue.remove(d)
                 else:
                     dirtyTips|=d[1]
-            self.opQueue=[x for x in self.opQueue if x not in newQueue]
-            print  "opQueue: %d, newQueue: %d\n"%(len(self.opQueue),len(newQueue))
         for d in newQueue:
             print "POSTOPT %s:\tTip %d, Loc (%d,%d) Wells %s"%(d[0],d[1],d[5].grid,d[5].pos,str(d[2]))
+        assert(len(newQueue)+len(self.opQueue)==oldlen)
         self.opQueue=newQueue
 
         # Try to combine multiple operations into one command
