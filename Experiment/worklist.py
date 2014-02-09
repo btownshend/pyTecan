@@ -20,12 +20,20 @@ class WorkList(object):
         self.volumes={}
         self.diticnt=[0,0,0,0]   # Indexed by DiTi Type
         self.elapsed=0   # Self.Elapsed time in seconds
-        self.delayEnabled=True
+        self.delayEnabled=False
         self.opQueue=[]
         
     def bin(s):
         return str(s) if s<=1 else bin(s>>1) + str(s&1)
 
+    def setOptimization(self,onoff):
+        if onoff:
+            self.comment("*Optimization on")
+        else:
+            self.flushQueue()
+            self.comment("*Optimization off")
+        self.delayEnabled=onoff
+        
     @staticmethod
     def wellSelection(nx,ny,pos):
         'Build a well selection string'
@@ -115,8 +123,10 @@ class WorkList(object):
         self.opQueue[:]=[self.opQueue[z] for z in range(len(self.opQueue)) if z not in todelete]
         
     def flushQueue(self):
-        #self.optimizeQueue()
+        if not self.delayEnabled or len(self.opQueue)==0:
+            return
         self.comment('*Flush queue')
+        self.optimizeQueue()
         for d in self.opQueue:
             self.aspirateDispense(d[0],d[1],d[2],d[3],d[4],d[5],d[6],False);
         self.opQueue=[]
