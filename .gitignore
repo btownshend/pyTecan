@@ -9,3 +9,12 @@ tmp
 Experiment/worklist.py.OPTINPROGRESS
 
 Experiment/worklist.py.good
+
+*.gem
+
+*.gemtxt
+
+SELEX/HOLD
+
+SELEX/*.txt
+

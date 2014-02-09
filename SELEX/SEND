@@ -1,0 +1,1 @@
+scp $* "Admin@172.27.80.69:'/cygdrive/c/Program Files/Tecan/Gemini/Data'"
