@@ -127,13 +127,13 @@ class Experiment(object):
                 #print "sum(volumes)=%.1f, MAXVOL=%.1f"%(sum(volumes),self.MAXVOLUME)
                 for i in range(1,len(volumes)):
                     if sum(volumes[0:i+1])>self.MAXVOLUME:
-                        print "Splitting multi with total volume of %.1f ul into smaller chunks < %.1f ul after %d dispenses "%(sum(volumes),self.MAXVOLUME,i),
                         destvol=max([d.volume for d in dests[0:i]])
                         reuseTip=destvol<=0
-                        if reuseTip:
-                            print "with tip reuse"
-                        else:
-                            print "without tip reuse"
+                        # print "Splitting multi with total volume of %.1f ul into smaller chunks < %.1f ul after %d dispenses "%(sum(volumes),self.MAXVOLUME,i),
+                        # if reuseTip:
+                        #     print "with tip reuse"
+                        # else:
+                        #     print "without tip reuse"
                         self.multitransfer(volumes[0:i],src,dests[0:i],mix,getDITI,not reuseTip)
                         self.multitransfer(volumes[i:],src,dests[i:],(False,mix[1]),not reuseTip,dropDITI)
                         return
