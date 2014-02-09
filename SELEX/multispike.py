@@ -64,8 +64,8 @@ for iteration in range(2):
         t71=trp.runT7(theo=True,src=input,vol=10,srcdil=10.0/3,dur=15)
 
         rt1=trp.runRT(pos=True,src=t71,vol=10,srcdil=2)
-        trp.diluteInPlace(tgt=t71,dil=5)  # Dilute more to conserve
-        trp.diluteInPlace(tgt=rt1,dil=3)   # Returned to old dilution of 3
+        t71=trp.diluteInPlace(tgt=t71,dil=5)  # Dilute more to conserve
+        rt1=trp.diluteInPlace(tgt=rt1,dil=3)   # Returned to old dilution of 3
 
         # Save RT product so can do ligation during 2nd round
         sv1rt=trp.saveSamps(src=rt1,vol=8,dil=5,plate=trp.e.DILPLATE)
@@ -81,8 +81,8 @@ for iteration in range(2):
         t72=trp.runT7(theo=False,src=pcr1,vol=10,srcdil=10.0/3)
 
         rt2=trp.runRT(pos=True,src=t72,vol=10,srcdil=2)
-        trp.diluteInPlace(tgt=t72,dil=5)  # Dilute more to conserve
-        trp.diluteInPlace(tgt=rt2,dil=3)
+        t72=trp.diluteInPlace(tgt=t72,dil=5)  # Dilute more to conserve
+        rt2=trp.diluteInPlace(tgt=rt2,dil=3)
 
         # Swap prefixes
         altprefix=currprefix
