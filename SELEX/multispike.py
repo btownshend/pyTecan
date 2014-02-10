@@ -5,8 +5,8 @@ from TRPLib.TRP import TRP
 import debughook
 
 reagents=None
-srcprefix="A"
-firstround=1
+srcprefix="B"
+firstround=25
 ndblrounds=4
 doqpcr=True
 
