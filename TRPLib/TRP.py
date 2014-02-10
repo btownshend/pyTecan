@@ -76,7 +76,8 @@ def adjustSrcDil(src,srcdil):
     'Adjust source concentration to give desired dilution'
     for i in range(len(src)):
         if src[i].conc==None:
-            src[i].conc=Concentration(srcdil[i],1)
+            #            src[i].conc=Concentration(srcdil[i],1)
+            pass
         else:
             src[i].conc.final=src[i].conc.stock*1.0/srcdil[i]
 
