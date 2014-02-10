@@ -34,7 +34,7 @@ class Sample(object):
     def printallsamples(txt="",fd=sys.stdout):
         print >>fd,"\n%s by plate:"%txt
         plates=set([s.plate for s in __allsamples]);
-        for p in plates:
+        for p in sorted(plates, key=lambda p:p.name.upper()):
             print >>fd,"Samples in plate: ",p
             for s in __allsamples:
                 if s.plate==p:
@@ -271,10 +271,13 @@ class Sample(object):
             return True
             
     def __str__(self):
-        s=self.name
+        s="%-32s"%self.name
         if self.conc!=None:
-            s+="["+str(self.conc)+"]"
-        s+="(%s.%s,%.2f ul) %s"%(str(self.plate),self.plate.wellname(self.well),self.volume,self.history)
+            s+=" %-18s"%("[%s]"%str(self.conc))
+        else:
+            s+=" %-18s"%""
+        s+=" %-30s"%("(%s.%s,%.2f ul)"%(str(self.plate),self.plate.wellname(self.well),self.volume))
+        s+=" %s"%self.history
 	if SHOWINGREDIENTS:
 		s+=self.ingredients()
         return s
