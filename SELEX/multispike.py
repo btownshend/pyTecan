@@ -72,7 +72,7 @@ for iteration in range(2):
 
         prodbase="R%d-%c"%(firstround+round*2,currprefix)
         pcr1=trp.runPCR(prefix=currprefix,src=rt1,tgt=[prodbase,prodbase+"-spike"],vol=pcrvol,srcdil=4,ncycles=cycles1)
-        trp.diluteInPlace(tgt=pcr1,dil=2)
+        pcr1=trp.diluteInPlace(tgt=pcr1,dil=2)
         eppie=trp.saveSamps(src=pcr1,tgt=[prodbase+".D3",prodbase+"-spike.D3"],vol=32,dil=3,plate=trp.e.EPPENDORFS)
         # And save in dilution plate for qPCR (will need 400x dilution from this point) (also eppie may be removed before end)
         pcrsave=pcrsave+trp.saveSamps(src=eppie,vol=5,dil=20,dilutant=trp.r.SSD, plate=trp.e.DILPLATE)
@@ -99,7 +99,7 @@ for iteration in range(2):
 
         prodbase="R%d-%c"%(firstround+1+round*2,currprefix)
         pcr2=trp.runPCR(prefix=currprefix,tgt=[prodbase,prodbase+"-spike"],src=lig2[2:4],vol=pcrvol,srcdil=4,ncycles=cycles2)
-        trp.diluteInPlace(tgt=pcr2,dil=2)
+        pcr2=trp.diluteInPlace(tgt=pcr2,dil=2)
 
         # Save PCR product in eppendorfs for archive
         eppie= trp.saveSamps(src=pcr2,tgt=[prodbase+".D3",prodbase+"-spike.D3"],vol=32,dil=3,plate=trp.e.EPPENDORFS)
