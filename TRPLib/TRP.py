@@ -310,33 +310,32 @@ class TRP(object):
     def runQPCR(self,src,vol,srcdil,primers=["A","B"]):
         ## QPCR setup
         # e.g. trp.runQPCR(src=["1.RT-B","1.RT+B","1.RTNeg-B","1.RTNeg+B","2.RT-A","2.RT-B","2.RTNeg+B","2.RTNeg+B"],vol=10,srcdil=100)
+        self.e.w.comment("runQPCR: primers=%s, source=%s"%([p for p in primers],[s for s in src]))
         [src,vol,srcdil]=listify([src,vol,srcdil])
         ssrc=findsamps(src,False)
         adjustSrcDil(ssrc,[d for d in srcdil])
 
-        result=[]
-        for p in primers:
-            tgtqpcr=["%s.Q%s"%(src[i],p) for i in range(len(src))]
-            # Check if we already have a water
-            if Sample.lookup("Water.Q%s"%p)==None:
-                tgtqpcr=tgtqpcr+["Water.Q%s"%p]   # Extra sample for water
-                sampvols=vol+[vol[0]]   # For water sample
-            else:
-                sampvols=vol
-            stgtqpcr=findsamps(tgtqpcr,True,Experiment.QPCRPLATE)
-            if p=='A':
-                MQ=self.r.MQA
-            elif p=='B':
-                MQ=self.r.MQB
-            elif p=='M':
-                MQ=self.r.MQM
-            elif p=='T':
-                MQ=self.r.MQT
-            else:
-                print "Bad qPCR primer: ",p
-                assert(false)
-                
-            self.e.stage('QPCR%s'%p,[MQ],ssrc,stgtqpcr,sampvols,1.0,False)  # No dest mix
-            result=result+stgtqpcr
+        # Build a list of sets to be run
+        all=[]
+        for i in range(len(ssrc)):
+            for p in primers:
+                tgt=findsamps(["%s.Q%s"%(src[i],p)],True,Experiment.QPCRPLATE)
+                all=all+[(ssrc[i],tgt[0],p,vol[i])]
 
-        return result
+        # Fill the master mixes
+        dil={}
+        for p in primers:
+            mq=findsamps(["MQ%s"%p],False)[0]
+            t=[a[1] for a in all if a[2]==p]
+            v=[a[3]/mq.conc.dilutionneeded() for a in all if a[2]==p]
+            self.e.multitransfer(v,mq,t,(False,False))
+            dil[p]=1.0/(1-1/mq.conc.dilutionneeded())
+            
+        # Add the samples
+        for s in ssrc:
+            t=[a[1] for a in all if a[0]==s]
+            v=[a[3]/dil[a[2]] for a in all if a[0]==s]
+            for i in range(len(t)):
+                self.e.transfer(v[i],s,t[i],(False,False))
+        
+        return [a[1] for a in all]
