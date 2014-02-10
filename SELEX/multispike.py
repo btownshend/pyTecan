@@ -75,7 +75,7 @@ for iteration in range(2):
         pcr1=trp.diluteInPlace(tgt=pcr1,dil=2)
         eppie=trp.saveSamps(src=pcr1,tgt=[prodbase+".D3",prodbase+"-spike.D3"],vol=32,dil=3,plate=trp.e.EPPENDORFS)
         # And save in dilution plate for qPCR (will need 400x dilution from this point) (also eppie may be removed before end)
-        pcrsave=pcrsave+trp.saveSamps(src=eppie,vol=5,dil=20,dilutant=trp.r.SSD, plate=trp.e.DILPLATE)
+        pcrsave=pcrsave+trp.saveSamps(src=eppie,vol=5,dil=20, plate=trp.e.DILPLATE)
 
         # Round 2 (-theo, Ligate, keep cleaved)
         t72=trp.runT7(theo=False,src=pcr1,vol=10,srcdil=10.0/3)
@@ -95,7 +95,7 @@ for iteration in range(2):
         lig2=trp.runLig(prefix=currprefix,src=sv1rt+rt2,vol=[15,15,25,25],srcdil=3)
         # Save ligation products for qPCR (note that round 1 had 5x more dilution of RT product, so back that out here)
         lig2[0:2]=trp.diluteInPlace(tgt=lig2[0:2],dil=5)
-        ligsave=ligsave+trp.saveSamps(src=lig2,vol=4,dil=16,dilutant=trp.r.SSD,plate=trp.e.DILPLATE)
+        ligsave=ligsave+trp.saveSamps(src=lig2,vol=4,dil=16,plate=trp.e.DILPLATE)
 
         prodbase="R%d-%c"%(firstround+1+round*2,currprefix)
         pcr2=trp.runPCR(prefix=currprefix,tgt=[prodbase,prodbase+"-spike"],src=lig2[2:4],vol=pcrvol,srcdil=4,ncycles=cycles2)
@@ -119,7 +119,7 @@ for iteration in range(2):
         trp.runQPCR(src=ligsave,vol=15,srcdil=15.0/6,primers=["A","B"])
         # Need to dilute templates to match PCR products
         tmpldil1=trp.saveSamps(src=templates,vol=4,dil=20.0/3,plate=trp.e.DILPLATE)
-        tmpldil2=trp.saveSamps(src=tmpldil1+pcrsave,vol=5,dil=20,dilutant=trp.r.SSD,plate=trp.e.DILPLATE)
+        tmpldil2=trp.saveSamps(src=tmpldil1+pcrsave,vol=4,dil=20,dilutant=trp.r.SSD,plate=trp.e.DILPLATE)
         print "Setting up qPCR of %d template/PCR products with M,T primers"%(len(tmpldil2))
         trp.runQPCR(src=tmpldil2,vol=15,srcdil=15.0/6,primers=["M","T"])
         print "Setting up qPCR of %d template/PCR products with A,B primers"%(len(tmpldil2[0::2]))
