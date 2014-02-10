@@ -206,9 +206,7 @@ class Experiment(object):
         dest.addhistory(src.name,volume,tipMask)
         dest.addingredients(src,volume)
         if mix[1]:
-            # Aspirate some air to avoid mixing with excess volume aspirated into pipetted from source
-            dest.aspirateAir(tipMask,self.w,5)
-            dest.mix(tipMask,self.w)
+            dest.mix(tipMask,self.w,True)
 
         if self.useDiTis and dropDITI:
             self.w.dropDITI(tipMask&self.DITIMASK,self.WASTE)

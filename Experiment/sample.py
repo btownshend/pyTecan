@@ -234,7 +234,7 @@ class Sample(object):
             return self.bottomLC
         
         # Mix, return true if actually did a mix, false otherwise
-    def mix(self,tipMask,w):
+    def mix(self,tipMask,w,preaspirateAir=False):
 	nmix=4
         if self.isMixed:
             print "Sample %s is already mixed"%self.name
@@ -245,28 +245,28 @@ class Sample(object):
             #print "Not enough volume in sample %s to mix"%self.name
 	    self.history+="(UNMIXED)"
             return False
-	elif mixvol<20:
-            w.mix(tipMask,well,self.chooseLC(mixvol),mixvol,self.plate,nmix)
-            self.history+="(MB)"
-            self.isMixed=True
-            return True
-        elif self.volume-mixvol>=MINLIQUIDDETECTVOLUME:
-            w.mix(tipMask,well,self.chooseLC(mixvol),mixvol,self.plate,nmix)
-            self.history+="(MLD)"
-            self.isMixed=True
-            return True
         else:
-            # Use special mix LC which aspirates from bottom, dispenses above, faster aspirate;  do last dispense at bottom to avoid droplet on tip
-            well=[self.well if self.well!=None else 2**(tipMask-1)-1 ]
-            for i in range(nmix):
-                w.aspirateNC(tipMask,well,self.mixLC,mixvol,self.plate)
-                if i==nmix-1:
-                    # Dispense under liquid to avoid droplet
-                    w.dispense(tipMask,well,self.chooseLC(mixvol),mixvol,self.plate)
-                else:
-                    w.dispense(tipMask,well,self.mixLC,mixvol,self.plate)
+            if preaspirateAir:
+                # Aspirate some air to avoid mixing with excess volume aspirated into pipette from source in previous transfer
+                self.aspirateAir(tipMask,w,5)
+            if mixvol<20:
+                w.mix(tipMask,well,self.chooseLC(mixvol),mixvol,self.plate,nmix)
+                self.history+="(MB)"
+            elif self.volume-mixvol>=MINLIQUIDDETECTVOLUME:
+                w.mix(tipMask,well,self.chooseLC(mixvol),mixvol,self.plate,nmix)
+                self.history+="(MLD)"
+            else:
+                # Use special mix LC which aspirates from bottom, dispenses above, faster aspirate;  do last dispense at bottom to avoid droplet on tip
+                for i in range(nmix):
+                    w.aspirateNC(tipMask,well,self.mixLC,mixvol,self.plate)
+                    if i==nmix-1:
+                        # Dispense under liquid to avoid droplet
+                        w.dispense(tipMask,well,self.chooseLC(mixvol),mixvol,self.plate)
+                    else:
+                        w.dispense(tipMask,well,self.mixLC,mixvol,self.plate)
+                self.history+="(MT)"
+
             tiphistory[tipMask]+=" %s-Mix[%d]"%(self.name,mixvol)
-            self.history+="(MT)"
             self.isMixed=True
             return True
             
