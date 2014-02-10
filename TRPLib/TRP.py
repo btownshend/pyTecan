@@ -191,39 +191,6 @@ class TRP(object):
 
         return tgt
     
-    def runT7New(self,theo,src,vol,srcdil,tgt=None,dur=15):
-        if tgt==None:
-            tgt=[]
-        [theo,src,tgt,vol,srcdil]=listify([theo,src,tgt,vol,srcdil])
-        if len(tgt)==0:
-            for i in range(len(src)):
-                if theo[i]:
-                    tgt.append("%s.T+"%src[i])
-                else:
-                    tgt.append("%s.T-"%src[i])
-
-        tgt=uniqueTargets(tgt)
-        # Convert sample names to actual samples
-        stgt=findsamps(tgt)
-        ssrc=findsamps(src,False)
-        adjustSrcDil(ssrc,srcdil)
-
-        theodil=self.r.Theo.conc.dilutionneeded();
-        self.e.stage('Prefill',[self.r.Theo],[],[stgt[i] for i in range(len(ssrc)) if theo[i]],[vol[i]*1.0/theodil for i in range(len(ssrc)) if theo[i]],finalx=theodil);
-        self.e.stage('T7',[self.r.MT7],ssrc,stgt,vol);
-        assert(dur==15 or dur==20 or dur==30 or dur==45 or dur==60)
-        self.e.runpgm("TRP37-%d"%dur,dur, False,max(vol))
-
-        ## Stop
-        self.e.dilute(stgt,2)
-
-        if any(theo):
-            self.e.stage('StopWT',[self.r.MStopWT],[],[stgt[i] for i in range(len(ssrc)) if not theo[i]],[2*vol[i] for i in range(len(ssrc)) if not theo[i]])
-            self.e.stage('StopNT',[self.r.MStopNT],[],[stgt[i] for i in range(len(ssrc)) if theo[i]],[2*vol[i] for i in range(len(ssrc)) if theo[i]])
-        else:
-            self.e.stage('StopNT',[self.r.MStopWT],[],stgt,[2*v for v in vol])
-        return tgt
-    
     def runRT(self,pos,src,vol,srcdil,tgt=None):
         if tgt==None:
             tgt=[]
