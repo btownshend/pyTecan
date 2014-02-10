@@ -128,7 +128,7 @@ class TRP(object):
             tgt=[]
         [src,vol,dil]=listify([src,vol,dil])
         if len(tgt)==0:
-            tgt=["%s.SAVE"%s for s in src]
+            tgt=["%s.D%.0f"%(src[i],dil[i]) for i in range(len(src))]
         tgt=uniqueTargets(tgt)
         if plate==None:
             plate=self.e.REAGENTPLATE
@@ -327,7 +327,7 @@ class TRP(object):
         # e.g. trp.runQPCR(src=["1.RT-B","1.RT+B","1.RTNeg-B","1.RTNeg+B","2.RT-A","2.RT-B","2.RTNeg+B","2.RTNeg+B"],vol=10,srcdil=100)
         [src,vol,srcdil]=listify([src,vol,srcdil])
         if len(tgt)==0:
-            tgt=["%s.D"%(src[i]) for i in range(len(src))]
+            tgt=["%s.D%.0f"%(src[i],srcdil[i]) for i in range(len(src))]
         tgt=uniqueTargets(tgt)
         if dilPlate:
             stgt=findsamps(tgt,True,Experiment.DILPLATE)
