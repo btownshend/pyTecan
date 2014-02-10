@@ -99,15 +99,21 @@ class TRP(object):
         self.e.setreagenttemp(None)
 
         #Sample.printallsamples("At completion")
-        short=False
+        hasError=False
         for s in Sample.getAllOnPlate():
             if s.volume<1.0 and s.conc!=None:
                 print "ERROR: Insufficient volume for ", s," need at least ",1.0-s.volume," ul additional"
-                short=True
+                hasError=True
             elif s.volume<2.5 and s.conc!=None:
                 print "WARNING: Low final volume for ", s
+            elif s.volume>s.plate.maxVolume:
+                print "ERROR: Excess final volume  (",s.volume,") for ",s,", maximum is ",s.plate.maxVolume
+                hasError=True
+            elif s.initvolume>s.plate.maxVolume:
+                print "ERROR: Excess initial volume (",s.initvolume,") for ",s,", maximum is ",s.plate.maxVolume
+                hasError=True
                 
-        if short:
+        if hasError:
             print "NO OUTPUT DUE TO ERRORS"
             assert(False)
             

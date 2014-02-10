@@ -9,17 +9,17 @@ ptcrunning=False
 
 class Experiment(object):
     WASHLOC=Plate("Wash",1,2,1,8,False,0)
-    REAGENTPLATE=Plate("Reagents",3,1,6,5,False,20)
+    REAGENTPLATE=Plate("Reagents",3,1,6,5,False,20,1700)
     SAMPLEPLATE=Plate("Samples",10,3,12,8,False,10)
     READERPLATE=Plate("Reader",10,2,12,8,False,10)
     QPCRPLATE=Plate("qPCR",10,2,12,8,False,10)
     DILPLATE=Plate("Dilutions",10,1,12,8,False,10)
-    WATERLOC=Plate("Water",17,2,1,4,False,100)
-    RNASEAWAYLOC=Plate("Bleach",17,1,1,4,False,0)
+    WATERLOC=Plate("Water",17,2,1,4,False,100,15000)
+    RNASEAWAYLOC=Plate("Bleach",17,1,1,4,False,0,15000)
     PTCPOS=Plate("PTC",25,1,1,1)
     HOTELPOS=Plate("Hotel",25,0,1,1)
     WASTE=Plate("Waste",20,3,1,1)
-    EPPENDORFS=Plate("Eppendorfs",19,1,1,16,False,20)
+    EPPENDORFS=Plate("Eppendorfs",19,1,1,16,False,20,1500)
     WATER=Sample("Water",WATERLOC,None,None,10000)
     RNASEAWAY=Sample("RNase-Away",RNASEAWAYLOC,0,None,10000)
     DITIMASK=0   # Which tips are DiTis
