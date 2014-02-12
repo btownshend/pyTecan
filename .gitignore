@@ -18,3 +18,9 @@ SELEX/HOLD
 
 SELEX/*.txt
 
+
+SELEX/.project
+
+SELEX/.pydevproject
+
+SELEX/multispike.m

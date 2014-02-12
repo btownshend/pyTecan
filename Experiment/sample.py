@@ -279,13 +279,13 @@ class Sample(object):
         s+=" %-30s"%("(%s.%s,%.2f ul)"%(str(self.plate),self.plate.wellname(self.well),self.volume))
         s+=" %s"%self.history
 	if SHOWINGREDIENTS:
-		s+=self.ingredients()
+		s+=self.ingredientstr()
         return s
 
-    def ingredients(self):
+    def ingredientstr(self):
 	s="{"
         for k in self.ingredients:
-            s+="%s:%.2g "%(k,self.ingredients[k])
+            s+="%s:%.4g "%(k,self.ingredients[k])
         s+="}"
 	return s
 
@@ -309,3 +309,12 @@ class Sample(object):
                 total+=round((s.initvolume-s.volume)*10)/10.0
         print >>fd,notes
         print >>fd,"Total reagents volume = %.1f ul"%total
+
+    @staticmethod
+    def savematlab(filename):
+        fd=open(filename,"w")
+        print >>fd,"samps=[];"
+        for s in __allsamples:
+            print >>fd,"samps=[samps,struct('name','%s','plate','%s','well','%s','concentration','%s','ingredients','%s','history','%s')];"%(s.name,s.plate,s.plate.wellname(s.well),str(s.conc),s.ingredientstr(),s.history)
+        fd.close()
+        

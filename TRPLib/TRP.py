@@ -123,7 +123,8 @@ class TRP(object):
         (scriptname,ext)=os.path.splitext(sys.argv[0])
         self.e.savegem(scriptname+".gem")
         self.e.savesummary(scriptname+".txt")
-            
+        Sample.savematlab(scriptname+".m")
+        
     def saveSamps(self,src,vol,dil,tgt=None,dilutant=None,plate=None):
         if tgt==None:
             tgt=[]
