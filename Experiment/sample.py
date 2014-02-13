@@ -315,6 +315,15 @@ class Sample(object):
         fd=open(filename,"w")
         print >>fd,"samps=[];"
         for s in __allsamples:
-            print >>fd,"samps=[samps,struct('name','%s','plate','%s','well','%s','concentration','%s','ingredients','%s','history','%s')];"%(s.name,s.plate,s.plate.wellname(s.well),str(s.conc),s.ingredientstr(),s.history)
+            ing=""
+            ingvol=""
+            for k in s.ingredients:
+                if len(ing)==0:
+                    ing="'%s'"%k
+                    ingvol="%g"%s.ingredients[k]
+                else:
+                    ing=ing+",'%s'"%k
+                    ingvol=ingvol+",%g"%s.ingredients[k]
+            
+            print >>fd,"samps=[samps,struct('name','%s','plate','%s','well','%s','concentration','%s','history','%s','ingredients',{{%s}},'volumes',[%s])];"%(s.name,s.plate,s.plate.wellname(s.well),str(s.conc),s.history,ing,ingvol)
         fd.close()
-        
