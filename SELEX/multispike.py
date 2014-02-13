@@ -120,12 +120,13 @@ for iteration in range(2):
         trp.runQPCR(src=ligsave,vol=15,srcdil=15.0/6,primers=["A","B"])
         # Need to dilute templates to match PCR products
         tmpldil1=trp.saveSamps(src=templates,vol=4,dil=20.0/3,plate=trp.e.DILPLATE)
-        tmpldil2=trp.saveSamps(src=["BT423"]+tmpldil1+pcrsave,vol=4,dil=20,dilutant=trp.r.SSD,plate=trp.e.DILPLATE)
-        notSpiked=[t for t in tmpldil2 if "spike" not in  t]
-        spiked=[t for t in tmpldil2 if "spike" in t]
+        tmpldil2=trp.saveSamps(src=["BT423"]+tmpldil1+pcrsave,vol=4,dil=20,plate=trp.e.DILPLATE)  # Should be SSD?
+        tmpldil3=trp.saveSamps(src=tmpldil2,vol=4,dil=16,dilutant=trp.r.SSD,plate=trp.e.DILPLATE)
+        notSpiked=[t for t in tmpldil3 if "spike" not in  t]
+        spiked=[t for t in tmpldil3 if "spike" in t]
         print "Setting up qPCR of  %d non-spiked template/PCR products with A,B,M,T primers"%(len(notSpiked))
         trp.runQPCR(src=notSpiked+["Water"],vol=15,srcdil=15.0/6,primers=["A","B","M","T"])
-        print "Setting up qPCR of  %d spiked template/PCR products with M,T primers"%(len(tmpldil2[3:]))
+        print "Setting up qPCR of  %d spiked template/PCR products with M,T primers"%(len(tmpldil3[3:]))
         trp.runQPCR(src=spiked,vol=15,srcdil=15.0/6,primers=["M","T"])
         trp.e.w.setOptimization(False)
 
