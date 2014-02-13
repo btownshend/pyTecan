@@ -69,7 +69,7 @@ for iteration in range(2):
         rt1=trp.diluteInPlace(tgt=rt1,dil=3)   # Returned to old dilution of 3
 
         # Save RT product so can do ligation during 2nd round
-        sv1rt=trp.saveSamps(src=rt1,vol=8,dil=5,plate=trp.e.DILPLATE)
+        sv1rt=trp.saveSamps(src=rt1,vol=8,dil=3,plate=trp.e.DILPLATE)
 
         prodbase="R%d-%c"%(firstround+round*2,currprefix)
         pcr1=trp.runPCR(prefix=currprefix,src=rt1,tgt=[prodbase,prodbase+"-spike"],vol=pcrvol,srcdil=4,ncycles=cycles1)
@@ -93,10 +93,11 @@ for iteration in range(2):
             currprefix="B"
             
         # Run ligation of the first-half round too
-        lig2=trp.runLig(prefix=currprefix,src=sv1rt+rt2,vol=[15,15,25,25],srcdil=3)
+        lig2=trp.runLig(prefix=currprefix,src=sv1rt+rt2,vol=[17,17,25,25],srcdil=3)
         # Save ligation products for qPCR (note that round 1 had 5x more dilution of RT product, so back that out here)
-        lig2[0:2]=trp.diluteInPlace(tgt=lig2[0:2],dil=5)
-        ligsave=ligsave+trp.saveSamps(src=lig2,vol=4,dil=16,plate=trp.e.DILPLATE)
+        ligsave1=trp.saveSamps(src=lig2[:2],vol=4,dil=16,plate=trp.e.DILPLATE,dilutant=trp.r.SSD)
+        ligsave2=trp.saveSamps(src=lig2[2:],vol=2,dil=16*3,plate=trp.e.DILPLATE,dilutant=trp.r.SSD)
+        ligsave=ligsave+ligsave1+ligsave2
 
         prodbase="R%d-%c"%(firstround+1+round*2,currprefix)
         pcr2=trp.runPCR(prefix=currprefix,tgt=[prodbase,prodbase+"-spike"],src=lig2[2:4],vol=pcrvol,srcdil=4,ncycles=cycles2)
