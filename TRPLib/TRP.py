@@ -29,7 +29,7 @@ class Reagents:
     PCRB=Sample("MPCRB",Experiment.REAGENTPLATE,None,4.0/3)
     MQM=Sample("MQM",Experiment.REAGENTPLATE,None,10.0/6)
     MQT=Sample("MQT",Experiment.REAGENTPLATE,None,10.0/6)
-    SSD=Sample("SSD",Experiment.REAGENTPLATE,None,None)
+    SSD=Sample("SSD",Experiment.REAGENTPLATE,None,10.0)
     all=[MT7,MPosRT,MNegRT,MLigA,MLigB,MLigase,Theo,MStopNT,MStopWT,MQA,MQB,PCRA,PCRB,MQM,MQT,SSD]
 
 def listify(x):
@@ -142,7 +142,10 @@ class TRP(object):
         # print "About to dilute ",str(ssrc[0])," by ",dil[0]," using ",vol[0]," ul, origdil=",origdil[0]
         adjustSrcDil(ssrc,dil)
         if dilutant!=None:
-            self.e.stage('SAVE',[],ssrc,stgt,[vol[i]*dil[i] for i in range(len(vol))],dilutant=dilutant)
+            if dilutant.conc==None:
+                self.e.stage('SAVE',[],ssrc,stgt,[vol[i]*dil[i] for i in range(len(vol))],dilutant=dilutant)
+            else:
+                self.e.stage('SAVE',[dilutant],ssrc,stgt,[vol[i]*dil[i] for i in range(len(vol))])
         else:
             self.e.stage('SAVE',[],ssrc,stgt,[vol[i]*dil[i] for i in range(len(vol))])
         # Back out the dilution
