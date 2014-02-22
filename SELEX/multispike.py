@@ -6,7 +6,7 @@ import debughook
 
 reagents=None
 srcprefix="B"
-firstround=25
+firstround=34
 ndblrounds=4
 doqpcr=True
 
@@ -43,7 +43,7 @@ for iteration in range(2):
     if iteration==0:
         #rnastore=Sample("RNA Storage",Experiment.REAGENTPLATE,None,None)
         trp.addTemplates(templates,inputConc*1e9)   # Add a template with stock concentration same as subsequent PCR products
-        trp.addTemplates(["BT423"],1)   # Add a template with stock concentration same as subsequent PCR products
+        trp.addTemplates(["BT537"],10)   # Add a template with known concentration as reference
     else:   
         reagents=Sample.getAllOnPlate(Experiment.REAGENTPLATE)
         for r in reagents:
@@ -95,8 +95,8 @@ for iteration in range(2):
         # Run ligation of the first-half round too
         lig2=trp.runLig(prefix=currprefix,src=sv1rt+rt2,vol=[17,17,25,25],srcdil=3)
         # Save ligation products for qPCR (note that round 1 had 5x more dilution of RT product, so back that out here)
-        ligsave1=trp.saveSamps(src=lig2[:2],vol=4,dil=16,plate=trp.e.DILPLATE,dilutant=trp.r.SSD)
-        ligsave2=trp.saveSamps(src=lig2[2:],vol=2,dil=16*3,plate=trp.e.DILPLATE,dilutant=trp.r.SSD)
+        ligsave1=trp.saveSamps(src=lig2[:2],vol=4,dil=8,plate=trp.e.DILPLATE,dilutant=trp.r.SSD)
+        ligsave2=trp.saveSamps(src=lig2[2:],vol=4,dil=8*3,plate=trp.e.DILPLATE,dilutant=trp.r.SSD)
         ligsave=ligsave+ligsave1+ligsave2
 
         prodbase="R%d-%c"%(firstround+1+round*2,currprefix)
@@ -114,15 +114,18 @@ for iteration in range(2):
 
     if doqpcr:
         # Setup qPCR
-        # Do A,B,M,T of input and PCR products (4*9), A,B of ligation products (2*8), M,T of BT423
+        # Do A,B,M,T of input and PCR products (4*9), A,B of ligation products (2*8), M,T of BT537
         # Saved products should already be at correct concentration for qPCR
         #trp.e.w.setOptimization(True)
         print "Setting up qPCR of %d ligation products with A,B primers"%(len(ligsave))
-        trp.runQPCR(src=ligsave,vol=15,srcdil=15.0/6,primers=["A","B"])
+        ligtmp1=trp.saveSamps(src=ligsave,vol=4,dil=25,plate=trp.e.DILPLATE,dilutant=trp.r.SSD)
         # Need to dilute templates to match PCR products
         tmpldil1=trp.saveSamps(src=templates,vol=4,dil=20.0/3,plate=trp.e.DILPLATE)
-        tmpldil2=trp.saveSamps(src=["BT423"]+tmpldil1+pcrsave,vol=4,dil=20,plate=trp.e.DILPLATE) 
-        tmpldil3=trp.saveSamps(src=tmpldil2,vol=4,dil=16,dilutant=trp.r.SSD,plate=trp.e.DILPLATE)
+        tmpldil2=trp.saveSamps(src=tmpldil1+pcrsave,vol=4,dil=20,plate=trp.e.DILPLATE) 
+        tmpldil2b=trp.saveSamps(src=["BT537"],vol=2,dil=50,plate=trp.e.DILPLATE) 
+        tmpldil3=trp.saveSamps(src=tmpldil2+tmpldil2b,vol=4,dil=16,dilutant=trp.r.SSD,plate=trp.e.DILPLATE)
+
+        trp.runQPCR(src=ligtmp1,vol=15,srcdil=15.0/6,primers=["A","B"])
         notSpiked=[t for t in tmpldil3 if "spike" not in  t]
         spiked=[t for t in tmpldil3 if "spike" in t]
         print "Setting up qPCR of  %d non-spiked template/PCR products with A,B,M,T primers"%(len(notSpiked))
