@@ -90,9 +90,9 @@ class TRP(object):
         self.e.setreagenttemp(6.0)
         self.e.sanitize(3,50)    # Heavy sanitize
             
-    def addTemplates(self,names,stockconc,finalconc=1.0,units="nM"):
+    def addTemplates(self,names,stockconc,finalconc=1.0,units="nM",plate=Experiment.REAGENTPLATE):
         for s in names:
-            Sample(s,Experiment.REAGENTPLATE,None,Concentration(stockconc,finalconc,units))
+            Sample(s,plate,None,Concentration(stockconc,finalconc,units))
 
     def finish(self):
         self.e.lihahome()
