@@ -308,7 +308,7 @@ class TRP(object):
         ssrc=findsamps(src,False)
         adjustSrcDil(ssrc,[d for d in srcdil])
         
-        self.e.stage('QPCRDIL',[],ssrc,stgt,max(vol))
+        self.e.stage('QPCRDIL',[Reagents.SSD],ssrc,stgt,max(vol))
         return tgt
         
     def runQPCR(self,src,vol,srcdil,primers=["A","B"]):
