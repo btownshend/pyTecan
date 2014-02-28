@@ -6,15 +6,18 @@ from TRPLib.TRP import TRP
 import debughook
 
 # Configuration for this run (up to 15 total samples in reagent plate)
-input=["BT537","BT576","BT577","BT578","BT579","BT580","BT581","BT582","BT583","BT584","BT585","BT586","BT587","BT588","BT589"]
-srcprefix=["A","A","A","A","A","A","A","A","A","A","A","A","A","A","A"]
-nreplicates=[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
-plustheo=[1,0,0,0,0,0,0,0,0,1,1,1,1,1,1]
+ref=["BT537"]
+#graded=["BT576","BT577","BT578","BT579","BT580","BT581","BT582","BT583"]
+#graded=["BT576","BT577","BT579","BT581","BT583"]
+switchesA=["BT587","BT588","BT589"]
+switchesB=["BT590","BT591","BT592","BT593","BT594"]
+input=ref+switchesA+switchesB
+srcprefix=["A"]*len(ref+switchesA)+["B"]*len(switchesB)
+nreplicates=[1]*len(input)
+plustheo=[1]*len(input)
 
-stockConc=10
-#primers=["A","M"]
+stockConc=20
 ligate=True
-primers=["A","B","M"]
 
 # Setup replicated inputs
 srcs=[]
@@ -74,10 +77,9 @@ for iteration in range(2):
         rt1=trp.diluteInPlace(tgt=rt1,dil=20)
         prods=trp.saveSamps(src=rt1,vol=8,dil=(5000/(2*5*2*20)),plate=trp.e.DILPLATE,dilutant=trp.r.SSD)
         
-    trp.runQPCR(src=qpcrdil1[:9],vol=15,srcdil=10.0/4,primers=["A","M"])
-    trp.runQPCR(src=qpcrdil1[9:],vol=15,srcdil=10.0/4,primers=["M"])
-    trp.runQPCR(src=prods[:9],vol=15,srcdil=10.0/4,primers=["A","B","M"])
-    trp.runQPCR(src=prods[9:],vol=15,srcdil=10.0/4,primers=["A","M"])
+    trp.runQPCR(src=qpcrdil1[:8],vol=15,srcdil=10.0/4,primers=["A","M"])
+    trp.runQPCR(src=qpcrdil1[8:],vol=15,srcdil=10.0/4,primers=["B","M"])
+    trp.runQPCR(src=prods,vol=15,srcdil=10.0/4,primers=["A","B","M"])
 
 trp.finish()
 

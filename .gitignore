@@ -24,3 +24,5 @@ SELEX/.project
 SELEX/.pydevproject
 
 SELEX/multispike.m
+
+SELEX/analyticTRP.m
