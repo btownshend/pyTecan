@@ -55,7 +55,7 @@ for iteration in range(2):
         reagents=Sample.getAllOnPlate(Experiment.REAGENTPLATE)+Sample.getAllOnPlate(Experiment.EPPENDORFS)
         for r in reagents:
             if r.volume<0:
-                r.initvolume=-r.volume+20
+                r.initvolume=-r.volume+r.plate.unusableVolume
         Sample.clearall()
 
     t71=trp.runT7(theo=theo,src=srcs,tgt=[],vol=10,srcdil=80.0/24,dur=15)
@@ -64,7 +64,7 @@ for iteration in range(2):
     qpcrdil1=trp.runQPCRDIL(src=t71,tgt=[],vol=100,srcdil=20,dilPlate=True)   
     rt1=trp.runRT(pos=True,src=t71,tgt=[],vol=5,srcdil=2)
     if ligate:
-        rt1=trp.diluteInPlace(tgt=rt1,dil=4)
+        rt1=trp.diluteInPlace(tgt=rt1,dil=5)
         lig1=trp.runLig(prefix=prodprefixes,src=rt1,tgt=[],vol=10,srcdil=3)
         # Dilute positive ligation products (this will wait for PTC to finish)
         poslig=[s for s in lig1 if s[0:3]!="Neg"]

@@ -57,7 +57,7 @@ for iteration in range(2):
     
     for round in range(ndblrounds):
         # Round 1 (Keep uncleaved +theo)
-        t71=trp.runT7(theo=[True],src=input,vol=[10],srcdil=10.0/3,dur=15)
+        t71=trp.runT7(theo=[True],src=input,vol=12,srcdil=10.0/3,dur=15)
         t7all=t7all+t71
         rt1=trp.runRT(pos=[True],src=t71,vol=[10],srcdil=2)
         trp.diluteInPlace(tgt=t71,dil=5)  # Dilute more to conserve
@@ -71,7 +71,7 @@ for iteration in range(2):
         sv1pcr=trp.saveSamps(src=pcr1,tgt=["R%d-%c"%(firstround+round*2,currprefix)],vol=125,dil=1,plate=trp.e.EPPENDORFS)
     
         # Round 2 (-theo, Ligate, keep cleaved)
-        t72=trp.runT7(theo=[False],src=sv1pcr,vol=10,srcdil=10.0/3)
+        t72=trp.runT7(theo=[False],src=sv1pcr,vol=12,srcdil=10.0/3)
         t7all=t7all+t72
         rt2=trp.runRT(pos=True,src=t72,vol=[10],srcdil=2)
         trp.diluteInPlace(tgt=t72,dil=5)  # Dilute more to conserve
@@ -96,7 +96,7 @@ for iteration in range(2):
             dilneeded=[10000.0/(d*3*5) for d in svdil]+[10000.0/(2*5*33.33) for d in qpcrdilt7]
             qpcrdil1=trp.runQPCRDIL(src=qsamps,tgt=[],vol=100,srcdil=dilneeded,dilPlate=True)   # First dilution before starting PCR (so the rest of the QPCR setup can be done while PCR is running)
         else:
-            lig2=trp.runLig(prefix=currprefix,src=rt2,vol=[19],srcdil=3)
+            lig2=trp.runLig(prefix=currprefix,src=rt2,vol=[24],srcdil=3)
         pcr2=trp.runPCR(prefix=currprefix,src=lig2,vol=25,srcdil=4,ncycles=cycles2)
         if round==ndblrounds-1 and doqpcr:
             trp.e.w.userprompt("Press return to start QPCR setup")
