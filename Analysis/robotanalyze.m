@@ -5,9 +5,9 @@ args=processargs(defaults,varargin);
 
 if isempty(args.sampfile)
   if exist('./analyticTRP.m','file')
-    args.sampfile='analyticTRP.m'
+    args.sampfile='analyticTRP.m';
   elseif exist('./multispike.m','file')
-    args.sampfile='multispike.m'
+    args.sampfile='multispike.m';
   else
     error('No sample file\n');
   end
@@ -106,7 +106,7 @@ for i=1:length(tmpls)
     if sum(ligsel)>1
       fprintf('Found %d entries for %s/%s/Lig, expected only 1\n', sum(ligsel),tmpl,cond);
     end
-    if sum(ligsel)==1
+    if sum(ligsel)==1 && isfield(r{ligsel},'A') && isfield(r{ligsel},'B')
       clvd=r{ligsel}.(r{ligsel}.ligsuffix).conc;
       total=r{ligsel}.A.conc+r{ligsel}.B.conc;
       cleavage(i,j)=clvd/total;
@@ -158,10 +158,10 @@ if any(sel)
   set(gca,'XTick',1:sum(sel));
   c=axis;c(2)=sum(sel)+1;axis(c);
   set(gca,'XTickLabel',labels(sel));
-  set(gca,'YScale','log');
+  %  set(gca,'YScale','log');
   legend(conds(csel));
   title('Yield');
-  c=axis; c(3)=1; c(4)=max(max(yield(sel,csel)))*1.1; axis(c);
+  c=axis; c(3)=0; c(4)=max(max(yield(sel,csel)))*1.1; axis(c);
   xticklabel_rotate;
 end
 
@@ -175,10 +175,10 @@ if any(sel)
   set(gca,'XTick',1:sum(sel));
   c=axis;c(2)=sum(sel)+1;axis(c);
   set(gca,'XTickLabel',labels(sel));
-  set(gca,'YScale','log');
+  %  set(gca,'YScale','log');
   legend(conds(csel));
   title('Template Conc');
-  c=axis; c(3)=0.1; axis(c);
+  c=axis; c(3)=0; axis(c);
   xticklabel_rotate;
 end
 
