@@ -5,9 +5,10 @@ from TRPLib.TRP import TRP
 import debughook
 
 reagents=None
+inname="R25"
 srcprefix="B"
-firstround=34
-ndblrounds=4
+firstround=26
+ndblrounds=1
 doqpcr=True
 
 # Computation of PCR cycles
@@ -17,7 +18,7 @@ pcreff=1.9   # Mean efficiency of PCR during exponential phase
 tmplConc=endconc/2   # nM
 inputConc=tmplConc*3   # Extra boost for first round to maximize diversity
 
-dil1=10.0/3.0*2*2*3*4    # (T7)*(Stop)*(RT)*(RTDil)*(PCR)
+dil1=10.0/3.0*2*2*3.5*4    # (T7)*(Stop)*(RT)*(RTDil)*(PCR)
 pcrinconc1=tmplConc*rnagain/dil1   # Expected concentration of RT product at input to PCR
 pcrvol=25
 cycles1=math.ceil(math.log(endconc/pcrinconc1,pcreff))   # Amplify to end of exponential phase
@@ -38,7 +39,7 @@ print "Diversity at PCR2 input in second round = %.1g molecules"%(pcrinconc2*(pc
 for iteration in range(2):
     print "Iteration ",iteration+1
     trp=TRP()
-    templates=["In"+srcprefix,"In"+srcprefix+"-spike"]
+    templates=[inname+"-"+srcprefix,inname+"-"+srcprefix+"-spike"]
     
     if iteration==0:
         #rnastore=Sample("RNA Storage",Experiment.REAGENTPLATE,None,None)
@@ -62,11 +63,10 @@ for iteration in range(2):
     
     for round in range(ndblrounds):
         # Round 1 (Keep uncleaved +theo)
-        t71=trp.runT7(theo=True,src=input,vol=10,srcdil=10.0/3,dur=15)
-
+        t71=trp.runT7(theo=True,src=input,vol=12,srcdil=10.0/3,dur=15)
         rt1=trp.runRT(pos=True,src=t71,vol=10,srcdil=2)
         t71=trp.diluteInPlace(tgt=t71,dil=5)  # Dilute more to conserve
-        rt1=trp.diluteInPlace(tgt=rt1,dil=3)   # Returned to old dilution of 3
+        rt1=trp.diluteInPlace(tgt=rt1,dil=3.5)
 
         # Save RT product so can do ligation during 2nd round
         sv1rt=trp.saveSamps(src=rt1,vol=8,dil=3,plate=trp.e.DILPLATE)
@@ -74,12 +74,12 @@ for iteration in range(2):
         prodbase="R%d-%c"%(firstround+round*2,currprefix)
         pcr1=trp.runPCR(prefix=currprefix,src=rt1,tgt=[prodbase,prodbase+"-spike"],vol=pcrvol,srcdil=4,ncycles=cycles1)
         pcr1=trp.diluteInPlace(tgt=pcr1,dil=2)
-        eppie=trp.saveSamps(src=pcr1,tgt=[prodbase+".D3",prodbase+"-spike.D3"],vol=32,dil=3,plate=trp.e.EPPENDORFS)
+        eppie=trp.saveSamps(src=pcr1,tgt=[prodbase+".D3",prodbase+"-spike.D3"],vol=26,dil=3,plate=trp.e.EPPENDORFS)
         # And save in dilution plate for qPCR (will need 400x dilution from this point) (also eppie may be removed before end)
         pcrsave=pcrsave+trp.saveSamps(src=eppie,vol=5,dil=20, plate=trp.e.DILPLATE)
 
         # Round 2 (-theo, Ligate, keep cleaved)
-        t72=trp.runT7(theo=False,src=pcr1,vol=10,srcdil=10.0/3)
+        t72=trp.runT7(theo=False,src=pcr1,vol=12,srcdil=10.0/3)
 
         rt2=trp.runRT(pos=True,src=t72,vol=10,srcdil=2)
         t72=trp.diluteInPlace(tgt=t72,dil=5)  # Dilute more to conserve
@@ -94,9 +94,10 @@ for iteration in range(2):
             
         # Run ligation of the first-half round too
         lig2=trp.runLig(prefix=currprefix,src=sv1rt+rt2,vol=[17,17,25,25],srcdil=3)
-        # Save ligation products for qPCR (note that round 1 had 5x more dilution of RT product, so back that out here)
-        ligsave1=trp.saveSamps(src=lig2[:2],vol=4,dil=8,plate=trp.e.DILPLATE,dilutant=trp.r.SSD)
-        ligsave2=trp.saveSamps(src=lig2[2:],vol=4,dil=8*3,plate=trp.e.DILPLATE,dilutant=trp.r.SSD)
+        lig2=trp.diluteInPlace(tgt=lig2,dil=1.33)
+        # Save ligation products for qPCR (note that round 1 had more dilution of RT product, so back that out here)
+        ligsave1=trp.saveSamps(src=lig2[:2],vol=5,dil=6,plate=trp.e.DILPLATE,dilutant=trp.r.SSD)
+        ligsave2=trp.saveSamps(src=lig2[2:],vol=5,dil=6*3,plate=trp.e.DILPLATE,dilutant=trp.r.SSD)
         ligsave=ligsave+ligsave1+ligsave2
 
         prodbase="R%d-%c"%(firstround+1+round*2,currprefix)
