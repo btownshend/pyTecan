@@ -75,10 +75,17 @@ for i=1:length(sel)
   end
   v.primer=samp.name(length(sampname)+3:end);
   v.well=wellnames2pos({samp.well});
+  if isfield(data,'md')
+    v.ctm=data.md.CT(v.well+1);
+  end
+  if isfield(data,'opd')
+    v.cti=data.opd.ct(v.well+1);
+  end
+
   if data.useminer
-    v.ct=data.md.CT(v.well+1);
-  elseif isfield(data,'opd')
-    v.ct=data.opd.ct(v.well+1);
+    v.ct=v.ctm;
+  elseif isfield(v,'cti')
+    v.ct=v.cti;
   else
     fprintf('No data to find Ct\n');
     v.ct=nan;
