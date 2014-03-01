@@ -1,179 +1,236 @@
-% Analyze an robot  run
-% Usage: robotanalyze(z,samples)
-%	z - OPD data from qPCR or miner data from minerread
-%	samples - struct containing sample information -- formed by loading .m file outputf from python script for Robot
-function robotanalyze(z,samples)
-% Setup primers, ct0 is concentration of Ct=0 in nM
-ct0M=5;
-primers=struct('name','A','ct0',0.97*ct0M,'eff',1.9);
-primers(end+1)=struct('name','B','ct0',0.97*ct0M,'eff',1.9);
-primers(end+1)=struct('name','M','ct0',ct0M,'eff',1.9);
-primers(end+1)=struct('name','T','ct0',1.996*ct0M,'eff',1.9);
+% Analyze TRP data
+function data=robotanalyze(varargin)
+defaults=struct('sampfile','','data',[]);
+args=processargs(defaults,varargin);
 
-qsel=strcmp({samples.plate},'qPCR');
-if sum(qsel)<1
-  error('Unable to find qPCR plate in samples');
-end
-name={samples(qsel).name};
-namedil=[];
-dilution=[]; dilrelative={};
-primer={};
-for i=1:length(name)
-  str=name{i};
-  dil=1;
-  nm='';
-  p='';
-  while ~isempty(str)
-    [token,str]=strtok(str,'.');
-    %    if token(1)=='D' && all(isstrprop(token(2:end),'digit'))
-    %      dil=dil*str2num(token(2:end));
-    if isempty(str) && token(1)=='Q'
-      p=token(2:end);
-    elseif isempty(nm)
-      nm=token;
-    else
-      nm=[nm,'.',token];
-    end
+if isempty(args.sampfile)
+  if exist('./analyticTRP.m','file')
+    args.sampfile='analyticTRP.m'
+  elseif exist('./multispike.m','file')
+    args.sampfile='multispike.m'
+  else
+    error('No sample file\n');
   end
-  name{i}=nm;
-      
-  if isempty(p)
-    error('Unable to locate primer in sample "%s"',name{i});
-  end
-  % Calculation dilution based on volumes of ingredients
-  snum=find(strcmp(name(i),{samples.name}));
-  assert(~isempty(snum));
-  [v,o]=sort(samples(snum).volumes,'descend');
-  for k=1:length(o)
-    nmk=samples(snum).ingredients{o(k)};
-    if ~any(strcmp(nmk,{'Water','SSD','MPosRT'})) && ~strncmp(nmk,'MQ',2)  && ~strncmp(nmk,'MLig',4) && ~strncmp(nmk,'MStp',4)
-      if nmk(1)=='M'
-        rdilstr=samples(find(strcmp({samples.name},nmk))).concentration;
-        if rdilstr(end)~='x'
-          error('Uninterpretable dilution string for %s: %s\n', nmk, rdilstr);
-        end
-        rdil=str2num(rdilstr(1:end-1));
-        nmk=nmk(2:end);
-      else
-        rdil=1;
-      end
-      dilution(i)=sum(v)/v(k)/rdil;
-      dilrelative{i}=nmk;
-      break;
-    end
-  end
-
-  primer{i}=p;
-  namedil(i)=dil;
-end
-well={samples(qsel).well};
-usamp=unique(name);
-sel1=cellfun(@(z) ~isempty(strfind(z,'spike')), usamp);
-sel2=cellfun(@(z) ~isempty(strfind(z,'.L')), usamp);
-usamp={usamp{sel1&~sel2},usamp{sel1&sel2},usamp{~sel1&~sel2},usamp{~sel1&sel2}};
-sel3=cellfun(@(z) ~isempty(strfind(z,'Water')), usamp);
-usamp={usamp{~sel3},usamp{sel3}};
-unknownprimers=unique(primer(~ismember(primer,{primers.name})));
-if ~isempty(unknownprimers)
-  error('Includes unknown primers: %s\n',sprintf('%s ',unique(unknownprimers)));
 end
 
-% Get Cts
-if isfield(z,'CT')
-  ct=z.CT;
-  ctwells=z.SampleNames;
+if ~isempty(args.data)
+  data=args.data;
 else
-  ct=ctcalc(z);
-  ctwells=wellnames(z);
-end
-
-% Printer header lines
-fprintf('%-35s\t%15s\t','Name','Dilution');
-for p=1:length(primers)
-  fprintf('%3s\t',primers(p).name);
-end
-for p=1:length(primers)
-  fprintf('Ct(%1s)\t',primers(p).name);
-end
-for p=1:length(primers)
-  fprintf('%7s\t',['[',primers(p).name,']']);
-end
-fprintf('Yield\tCleav%%\tTheo%%\n');
-
-fprintf('%-35s\t%15s\t','Primer Settings:','');
-for p=1:length(primers)
-  fprintf('%3s\t%5.2f\t','',primers(p).eff);
-end
-for p=1:length(primers)
-  fprintf('%7.2f\t',primers(p).ct0);
-end
-fprintf('\t\n');
-
-% Data
-data=nan(length(usamp),length(primers));
-conc=nan(length(usamp),length(primers));
-lastletter='?';
-for i=1:length(usamp)
-  dilsel=find(strcmp(name,usamp{i}),1);
-  if usamp{i}(1)~=lastletter
-    fprintf('\n');
-    lastletter=usamp{i}(1);
+  % Load sample layout
+  eval(strrep(args.sampfile,'.m',''));
+  data=struct('samps',samps,'changed',true,'sampfile',args.sampfile);
+  
+  % Load qPCR data
+  opdfile=dir('*.opd');
+  if isempty(opdfile)
+    fprintf('No OPD file found\n');
+  elseif length(opdfile)>1
+    fprintf('More than one OPD file found\n');
+  else
+    fprintf('Loading qPCR data from %s\n', opdfile.name);
+    opd=opdread(opdfile.name);
+    data.opd=ctcalc(opd);
   end
-  fprintf('%-35s\t%-15s\t',usamp{i},sprintf('%s/%.0f',dilrelative{dilsel},dilution(dilsel)));
-  for p=1:length(primers)
-    sel=find(strcmp(name,usamp{i})&strcmp(primer,primers(p).name));
-    if isempty(sel)
-      fprintf('%3s\t','');
-    else
-      fprintf('%3s\t',well{sel});
+
+  % Setup primers, ct0 is concentration of Ct=0 in nM
+  ct0M=2;
+  data.primers=struct(...
+      'A',struct('ct0',0.97*ct0M,'eff',1.9),...
+      'B',struct('ct0',0.97*ct0M,'eff',1.9),...
+      'M',struct('ct0',ct0M,'eff',1.9),...
+      'T',struct('ct0',1.996*ct0M,'eff',1.9));
+
+  minerfile=dir('./Miner_*_Analyzed_Data.txt');
+  if isempty(minerfile)
+    fprintf('No Miner analysis file found\n');
+    data.useminer=false;
+  elseif length(minerfile)>1
+    fprintf('More than one miner file found - ignoring\n');
+    data.useminer=false;
+  else
+    data.md=minerload(minerfile.name);
+    data.useminer=true;
+  end
+end
+
+if data.useminer && ~isfield(data,'md')
+  sel=find(strcmp({data.samps.plate},'qPCR'));
+  samps=wellnames2pos({data.samps(sel).well});
+  minerdump(data.opd,samps);
+  fprintf('Submit above data to miner\n');
+  while true
+    jobid=input('Enter Miner job id: ','s');
+    if isempty(jobid)
+      continue;
+    end
+    % Load Miner data
+    try
+      data.md=minerload(jobid);
+      data.jobid=jobid;
+      data.changed=true;
+      break;
+    catch me
+      fprintf('Error loading data: %s\n',me.message);
     end
   end
-  for p=1:length(primers)
-    sel=find(strcmp(name,usamp{i})&strcmp(primer,primers(p).name));
-    if isempty(sel)
-      fprintf('%5s\t','');
-    else
-      index=find(strcmp(ctwells,well{sel}));
-      if isempty(index)
-        fprintf('%5s\t','Missing');
-      else
-        fprintf('%5.2f\t',ct(index));
-        data(i,p)=ct(index);
-        conc(i,p)=primers(p).eff^-ct(index)*primers(p).ct0*dilution(sel);
+end
+  
+% if data.changed
+%   % Save data
+%   fprintf('Saving data in %s\n',savefile);
+%   save(savefile,'-struct','data');
+%   data.changed=false;
+% end
+
+% Run analysis
+data.results=getct(data);
+robotdump(data);
+
+% Make some plots...
+
+% Bar graph of cleavage
+tmpls=sort(unique(cellfun(@(z) z.tmpl, data.results,'UniformOutput',false)));
+conds=sort(unique(cellfun(@(z) z.cond, data.results,'UniformOutput',false)));
+cleavage=nan(length(tmpls),length(conds));
+yield=nan(length(tmpls),length(conds));
+tconc=nan(length(tmpls),length(conds));
+labels={};
+for i=1:length(tmpls)
+  tmpl=tmpls{i};
+  tsel=cellfun(@(z) strcmp(z.tmpl,tmpl),data.results);
+  for j=1:length(conds)
+    cond=conds{j};
+    csel=cellfun(@(z) strcmp(z.tmpl,tmpl)&strcmp(z.cond,cond),data.results);
+    r=data.results(csel);
+    ligsel=cellfun(@(z) strcmp(z.type,'Lig'), r);
+    if sum(ligsel)>1
+      fprintf('Found %d entries for %s/%s/Lig, expected only 1\n', sum(ligsel),tmpl,cond);
+    end
+    if sum(ligsel)==1
+      clvd=r{ligsel}.(r{ligsel}.ligsuffix).conc;
+      total=r{ligsel}.A.conc+r{ligsel}.B.conc;
+      cleavage(i,j)=clvd/total;
+      yield(i,j)=total;
+    end
+    t7sel=cellfun(@(z) strcmp(z.type,'T7'), r);
+    if sum(t7sel)==0
+      t7sel=cellfun(@(z) strcmp(z.type,'tmpl'), r);
+    end
+    if sum(t7sel)==1
+      if isfield(r{t7sel},'M')
+        tconc(i,j)=r{t7sel}.M.conc;
+      elseif r{ligsel}.ligsuffix=='A' && isfield(r{t7sel},'B')
+        tconc(i,j)=r{t7sel}.B.conc;
+      elseif r{ligsel}.ligsuffix=='B' && isfield(r{t7sel},'A')
+        tconc(i,j)=r{t7sel}.A.conc;
       end
     end
   end
-  for p=1:length(primers)
-    if isnan(conc(i,p))
-      fprintf('%7s\t','');
-    else
-      fprintf('%7.2f\t',conc(i,p));
-    end
-  end
-  % Yield
-  if isnan(sum(conc(i,1:2)))
-    fprintf('%6s\t','');
-  else
-    fprintf('%6.1f\t',sum(conc(i,1:2)));
-  end
-  % Cleavage
-  if ~isempty(strfind(usamp{i},'.LB'))
-    cleavage(i)=conc(i,2)/sum(conc(i,1:2));
-  elseif ~isempty(strfind(usamp{i},'.LA'))
-    cleavage(i)=conc(i,1)/sum(conc(i,1:2));
-  else
-    cleavage(i)=-min(conc(i,1:2))/sum(conc(i,1:2));
-  end
-  if isnan(cleavage(i))
-    fprintf('     \t');
-  else
-    fprintf('%4.1f%%\t',cleavage(i)*100);
-  end
-  theofrac(i)=conc(i,4)/conc(i,3);
-  if isnan(theofrac(i))
-    fprintf('     \t');
-  else
-    fprintf('%5.2f%%\t',theofrac(i)*100);
-  end
-  fprintf('\n');
+  labels{i}=tmpl;
 end
+
+setfig('analyze'); clf;
+nx=1;ny=4;pnum=1;
+ny=any(isfinite(cleavage(:)))+any(isfinite(yield(:)))+any(isfinite(tconc(:)))+any(any(isfinite(tconc+yield)));
+
+sel=any(isfinite(cleavage'));
+if any(sel)
+  subplot(ny,nx,pnum); pnum=pnum+1;
+  csel=any(isfinite(cleavage));
+  bar(cleavage(sel,csel)*100);
+  ylabel('Cleavage (%)');
+  xlabel('Sample');
+  set(gca,'XTick',1:sum(sel));
+  c=axis;c(2)=sum(sel)+1;axis(c);
+  set(gca,'XTickLabel',labels(sel));
+  legend(conds(csel));
+  title('Cleavage');
+  xticklabel_rotate;
+end
+
+sel=any(isfinite(yield'));
+if any(sel)
+  subplot(ny,nx,pnum); pnum=pnum+1;
+  csel=any(isfinite(yield));
+  bar(yield(sel,csel));
+  ylabel('RNA Yield (nM)');
+  xlabel('Sample');
+  set(gca,'XTick',1:sum(sel));
+  c=axis;c(2)=sum(sel)+1;axis(c);
+  set(gca,'XTickLabel',labels(sel));
+  set(gca,'YScale','log');
+  legend(conds(csel));
+  title('Yield');
+  c=axis; c(3)=1; c(4)=max(max(yield(sel,csel)))*1.1; axis(c);
+  xticklabel_rotate;
+end
+
+sel=any(isfinite(tconc'));
+if any(sel)
+  subplot(ny,nx,pnum); pnum=pnum+1;
+  csel=any(isfinite(tconc));
+  bar(tconc(sel,csel));
+  ylabel('Template Conc (nM)');
+  xlabel('Sample');
+  set(gca,'XTick',1:sum(sel));
+  c=axis;c(2)=sum(sel)+1;axis(c);
+  set(gca,'XTickLabel',labels(sel));
+  set(gca,'YScale','log');
+  legend(conds(csel));
+  title('Template Conc');
+  c=axis; c(3)=0.1; axis(c);
+  xticklabel_rotate;
+end
+
+sel=any(isfinite(tconc')&isfinite(yield'));
+if any(sel)
+  subplot(ny,nx,pnum); pnum=pnum+1;
+  csel=any(isfinite(tconc)&isfinite(yield));
+  bar(yield(sel,csel)./tconc(sel,csel));
+  ylabel('RNA Gain (x)');
+  xlabel('Sample');
+  set(gca,'XTick',1:sum(sel));
+  c=axis;c(2)=sum(sel)+1;axis(c);
+  set(gca,'XTickLabel',labels(sel));
+  legend(conds(csel));
+  title('RNA Gain');
+  xticklabel_rotate;
+end
+d=pwd;
+d=d(max(strfind(d,'/'))+1:end);
+if data.useminer
+  suptitle(sprintf('Miner results for %s',d));
+else
+  suptitle(sprintf('Internal results for %s',d));
+end
+  
+
+% A+B vs B
+setfig('MScale');clf;
+x=[];y=[];z=[];
+for i=1:length(data.results)
+  if isfield(data.results{i},'A') & isfield(data.results{i},'B') & isfield(data.results{i},'M')
+    x(end+1)=data.results{i}.A.conc;
+    y(end+1)=data.results{i}.B.conc;
+    z(end+1)=data.results{i}.M.conc;
+  end
+end
+loglog(x,y,'o');
+hold on
+for i=1:length(x)
+  sc=z(i)/(x(i)+y(i));
+  plot(x(i)*sc,y(i)*sc,'x');
+  if sc>1
+    col='g';
+  else
+    col='r';
+  end
+  plot(x(i)*[1,sc],y(i)*[1,sc],col);
+end
+c=axis;
+legend('(A,B)','(MA/(A+B),MB/(A+B))');
+xlabel('[A] (nM)');
+ylabel('[B] (nM)');
+title('M vs A+B');
+axis equal
+axis([0,max([x,y])*1.1,0,max([x,y])*1.1]);
