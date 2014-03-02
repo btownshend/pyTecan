@@ -8,7 +8,7 @@ reagents=None
 inname="R25"
 srcprefix="B"
 firstround=26
-ndblrounds=1
+ndblrounds=4
 doqpcr=True
 
 # Computation of PCR cycles
@@ -97,7 +97,7 @@ for iteration in range(2):
         lig2=trp.diluteInPlace(tgt=lig2,dil=1.33)
         # Save ligation products for qPCR (note that round 1 had more dilution of RT product, so back that out here)
         ligsave1=trp.saveSamps(src=lig2[:2],vol=5,dil=6,plate=trp.e.DILPLATE,dilutant=trp.r.SSD)
-        ligsave2=trp.saveSamps(src=lig2[2:],vol=5,dil=6*3,plate=trp.e.DILPLATE,dilutant=trp.r.SSD)
+        ligsave2=trp.saveSamps(src=lig2[2:],vol=5,dil=6*3.5,plate=trp.e.DILPLATE,dilutant=trp.r.SSD)
         ligsave=ligsave+ligsave1+ligsave2
 
         prodbase="R%d-%c"%(firstround+1+round*2,currprefix)
@@ -105,7 +105,7 @@ for iteration in range(2):
         pcr2=trp.diluteInPlace(tgt=pcr2,dil=2)
 
         # Save PCR product in eppendorfs for archive
-        eppie= trp.saveSamps(src=pcr2,tgt=[prodbase+".D3",prodbase+"-spike.D3"],vol=32,dil=3,plate=trp.e.EPPENDORFS)
+        eppie= trp.saveSamps(src=pcr2,tgt=[prodbase+".D3",prodbase+"-spike.D3"],vol=26,dil=3,plate=trp.e.EPPENDORFS)
 
         # And save in dilution plate for qPCR (will need 400x dilution from this point)
         pcrsave=pcrsave+trp.saveSamps(src=eppie,vol=5,dil=20, plate=trp.e.DILPLATE)
