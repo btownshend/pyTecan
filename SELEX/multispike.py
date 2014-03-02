@@ -44,7 +44,7 @@ for iteration in range(2):
     if iteration==0:
         #rnastore=Sample("RNA Storage",Experiment.REAGENTPLATE,None,None)
         trp.addTemplates(templates,inputConc*1e9)   # Add a template with stock concentration same as subsequent PCR products
-        trp.addTemplates(["BT537"],10)   # Add a template with known concentration as reference
+        trp.addTemplates(["BT371"],10)   # Add a template with known concentration as reference
     else:   
         reagents=Sample.getAllOnPlate(Experiment.REAGENTPLATE)
         for r in reagents:
@@ -115,7 +115,7 @@ for iteration in range(2):
 
     if doqpcr:
         # Setup qPCR
-        # Do A,B,M,T of input and PCR products (4*9), A,B of ligation products (2*8), M,T of BT537
+        # Do A,B,M,T of input and PCR products (4*9), A,B of ligation products (2*8), M,T of reference
         # Saved products should already be at correct concentration for qPCR
         #trp.e.w.setOptimization(True)
         print "Setting up qPCR of %d ligation products with A,B primers"%(len(ligsave))
@@ -123,7 +123,7 @@ for iteration in range(2):
         # Need to dilute templates to match PCR products
         tmpldil1=trp.saveSamps(src=templates,vol=4,dil=20.0/3,plate=trp.e.DILPLATE)
         tmpldil2=trp.saveSamps(src=tmpldil1+pcrsave,vol=4,dil=20,plate=trp.e.DILPLATE) 
-        tmpldil2b=trp.saveSamps(src=["BT537"],vol=2,dil=50,plate=trp.e.DILPLATE) 
+        tmpldil2b=trp.saveSamps(src=["BT371"],vol=2,dil=50,plate=trp.e.DILPLATE) 
         tmpldil3=trp.saveSamps(src=tmpldil2+tmpldil2b,vol=4,dil=16,dilutant=trp.r.SSD,plate=trp.e.DILPLATE)
 
         trp.runQPCR(src=ligtmp1,vol=15,srcdil=15.0/6,primers=["A","B"])
