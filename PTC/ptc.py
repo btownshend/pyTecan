@@ -85,8 +85,12 @@ class PTC:
         
         logging.info("Running: %s"," ".join(sys.argv))
         if self.debug:
-            print "About to open serial port",self.PORT
-        self.ser = serial.Serial(self.PORT,baudrate=9600,timeout=to)
+            logging.debug( "About to open serial port  %d",self.PORT)
+        try:
+            self.ser = serial.Serial(self.PORT,baudrate=9600,timeout=to)
+        except serial.SerialException as e:
+            logging.error("Failed to initialize serial port: %s",e)
+            sys.exit(1)
         if self.debug:
             logging.debug(self.ser.portstr)
 
