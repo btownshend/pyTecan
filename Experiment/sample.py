@@ -6,6 +6,7 @@ from concentration import Concentration
 ASPIRATEFACTOR=1.02
 ASPIRATEEXTRA=1.0
 MINLIQUIDDETECTVOLUME=70
+MINMIXTOPVOLUME=50   # Use manual mix if trying to mix more than this volume  (aspirates at ZMax-1.5mm, dispenses at ZMax-5mm)
 MULTIEXCESS=1  # Excess volume aspirate when using multi-dispense
 SHOWTIPS=False
 SHOWINGREDIENTS=False
@@ -239,17 +240,17 @@ class Sample(object):
         if self.isMixed:
             print "Sample %s is already mixed"%self.name
             return False
-        mixvol=self.volume-self.plate.unusableVolume-2;
+        mixvol=self.volume-self.plate.unusableVolume;
         well=[self.well if self.well!=None else 2**(tipMask-1)-1 ]
         if mixvol<2:
             #print "Not enough volume in sample %s to mix"%self.name
-	    self.history+="(UNMIXED)"
+            self.history+="(UNMIXED)"
             return False
         else:
             if preaspirateAir:
                 # Aspirate some air to avoid mixing with excess volume aspirated into pipette from source in previous transfer
                 self.aspirateAir(tipMask,w,5)
-            if mixvol<20:
+            if mixvol<MINMIXTOPVOLUME:
                 w.mix(tipMask,well,self.chooseLC(mixvol),mixvol,self.plate,nmix)
                 self.history+="(MB)"
             elif self.volume-mixvol>=MINLIQUIDDETECTVOLUME:
