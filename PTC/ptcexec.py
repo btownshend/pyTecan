@@ -1,8 +1,9 @@
 import ptc
 import sys
+import logging
 
 p=ptc.PTC()
-print "Status=",p.getstatus()
+logging.info( "Status=",p.getstatus())
 res=p.execute(" ".join(sys.argv[1:]))
-print "Result=",res
+logging.info( "Result=",res)
 

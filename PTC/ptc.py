@@ -1,6 +1,8 @@
 # Module to interface to PTC-200
 import serial
 import string
+import logging
+import sys
 
 class PTCStatus:
     # Construct status from PTC-200s reply to STATUS? stored in 'm' as a sequence
@@ -73,11 +75,20 @@ class PTC:
         pass
     
     def __init__(self,to=1):
+        logging.basicConfig(filename="PTC.log", level=logging.DEBUG,format='%(asctime)s %(levelname)s:\t %(message)s')
+        logging.captureWarnings(True)
+        console = logging.StreamHandler()
+        console.setLevel(logging.INFO)
+        formatter=logging.Formatter('%(message)s')
+        console.setFormatter(formatter)
+        logging.getLogger('').addHandler(console)
+        
+        logging.info("Running: %s"," ".join(sys.argv))
         if self.debug:
             print "About to open serial port",self.PORT
         self.ser = serial.Serial(self.PORT,baudrate=9600,timeout=to)
         if self.debug:
-            print self.ser.portstr
+            logging.debug(self.ser.portstr)
 
     def __del__(self):
         self.close()
@@ -86,17 +97,17 @@ class PTC:
         self.debug=True
         
     def close(self):
-        if self.ser.isOpen():
-            print "Closing port"
+        if self.ser!=None and self.ser.isOpen():
+            logging.debug( "Closing port")
             self.ser.close()
 
     def execute(self,cmd):
         if self.debug:
-            print "Sending command: ",cmd,
+            logging.debug( "Sending command: "+cmd)
         self.ser.write(cmd+"\n")
         line=self.ser.readline()
         if self.debug:
-            print ", response:",line
+            logging.debug( "response:"+line.rstrip())
         return string.strip(line)
 
     def gettemp(self):
@@ -159,6 +170,6 @@ class PTC:
             self.execute(cmd)
         self.execute('END')
         result=self.execute('BURN "%s","%s"'%(name,folder))
-        print "Programmed %s: %s"%(name,result)
+        logging.info( "Programmed %s: %s"%(name,result))
         
         

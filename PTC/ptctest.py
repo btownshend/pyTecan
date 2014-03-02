@@ -1,8 +1,9 @@
 import ptc
 import time
+import logging
 
 p=ptc.PTC()
-print "PTC Version=",p.version()
-print "Status=",p.getstatus()
-print "Lid status=",p.getlidstatus()
-time.sleep(5)
+logging.info( "PTC Version=%s",p.version())
+logging.info( "Status=%s",p.getstatus())
+logging.info( "Lid status=%s",p.getlidstatus())
+

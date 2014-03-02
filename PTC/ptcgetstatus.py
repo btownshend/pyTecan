@@ -1,6 +1,7 @@
 # Get status of the various parts of the thermocycler and store in Gemini using named pipes interface
 import ptc
 import gemini
+import logging
 
 try:
     p=ptc.PTC()
@@ -14,7 +15,7 @@ try:
     g.setvar('ptcBER',bstat[1])
     g.setvar('ptclidstatus',p.lidstatus())
 except:
-    print "Error in ptcgetstatus"
+    logging.error( "Error in ptcgetstatus")
     exit(1)
 finally:
     g.close()
