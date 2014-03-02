@@ -66,7 +66,7 @@ class PTCStatus:
         self.besrhold=0
     
 class PTC:
-    debug=False
+    debug=True
     ser=None
     PORT=3
     stat=PTCStatus()
