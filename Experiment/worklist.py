@@ -374,6 +374,21 @@ class WorkList(object):
     def email(self,dest,subject,body='',profile='cdsrobot',onerror=0,attachscreen=1):
         self.list.append('Notification(%d,"%s","%s","%s","%s",%d)'%(attachscreen,profile,dest,subject,body,onerror));
 
+    def condition(self,varname,cond,value,dest):
+        'Conditional - jump to given label (comment) if (variable cond value) is true'
+        if cond=='==':
+            condval=0
+        elif cond=='!=':
+            condval=1
+        elif cond=='>':
+            condval=2
+        elif cond=='<':
+            condval=3
+        else:
+            print "Bad condition '%s' to condition()"%cond
+            assert(0)
+        self.list.append('If("%s",%d,"%s","%s")'%(varname,condval,value,dest));
+                  
     def comment(self, text,prepend=False):
         if len(text) > 200:
             text=text[0:197]+"..."
@@ -389,6 +404,17 @@ class WorkList(object):
         else:
             self.list.append(cmd)
         
+    def variable(self,varname,default,userprompt=None,minval=None,maxval=None):
+        if minval!=None or maxval!=None:
+            limitrange=1
+        else:
+            limitrange=0
+    
+        if userprompt==None:
+            self.list.append('Variable(%s,"%s",0," ",0,0.0,0.0)'%(varname,default))
+        else:
+            self.list.append('Variable(%s,"%s",1,"%s",%d,%f,%f)'%(varname,default,userprompt,limitrange,minval,maxval))
+                         
     def execute(self, command, wait=True, resultvar=None):
         'Execute an external command'
         flags=0
