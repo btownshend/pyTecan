@@ -28,4 +28,7 @@ status=p.getstatus()
 if (status.bsr & status.RUNNING) == 0:
     logging.error("Failed to start program %s: status=%s"%(sys.argv[1],str(status)))
     exit(1)
+if status.pgm!=sys.argv[1]:
+    logging.error("Started program '%s', but '%s' is running"%(sys.argv[1],status.pgm))
+    exit(1)
 exit(0)
