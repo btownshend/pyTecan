@@ -49,7 +49,10 @@ class Experiment(object):
         if temp==None:
             self.w.pyrun("RIC\\ricset.py IDLE")
         else:
-            self.w.pyrun("RIC\\ricset.py %f"%temp)
+            self.w.variable("dewpoint",temp,userprompt="Enter dewpoint",minval=0,maxval=20)
+            self.w.variable("rictemp","~dewpoint~+2")
+            self.w.pyrun("RIC\\ricset.py ~rictemp~")
+#            self.w.pyrun("RIC\\ricset.py %s"%temp)
 
     def saveworklist(self,filename):
         self.w.saveworklist(filename)
