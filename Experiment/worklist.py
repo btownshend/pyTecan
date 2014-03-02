@@ -13,6 +13,7 @@ class WorkList(object):
     DONOTMOVE=2
     SAFETOEND=0
     ENDTOSAFE=1
+    lnum=0
     
     def __init__(self):
         self.debug=False
@@ -428,8 +429,15 @@ class WorkList(object):
         self.elapsed+=7.07   # Just overhead time, not actually time that command itself takes
         
     def pyrun(self, cmd):
-        self.execute("C:\Python27\python.exe C:\cygwin\Home\Admin\%s"%cmd)
-        
+        label='L%d'%self.lnum
+        self.lnum=self.lnum+1
+        self.execute("C:\Python27\python.exe C:\cygwin\Home\Admin\%s"%cmd,resultvar="ecode")
+        self.condition("ecode","==","0",label)
+        msg='Python command %s failed with ecode=~ecode~'%cmd
+        self.email(dest='bst@tc.com',subject=msg)
+        self.userprompt(msg)
+        self.comment(label)
+
     def dump(self):
         'Dump current worklist'
         for i in range(len(self.list)):
