@@ -89,8 +89,15 @@ robotdump(data);
 % Make some plots...
 
 % Bar graph of cleavage
-tmpls=sort(unique(cellfun(@(z) z.tmpl, data.results,'UniformOutput',false)));
-conds=sort(unique(cellfun(@(z) z.cond, data.results,'UniformOutput',false)));
+tmpls=sort(unique(cellfun(@(z) strrep(z.tmpl,'-spike',''), data.results,'UniformOutput',false)));
+conds=cellfun(@(z) z.cond, data.results,'UniformOutput',false);
+spike=cellfun(@(z) ~isempty(strfind(z.tmpl,'spike')), data.results);
+fspike=find(spike);
+for i=1:length(fspike)
+  conds{fspike(i)}=[conds{fspike(i)},' (spike)'];
+end
+conds=sort(unique(conds));
+
 cleavage=nan(length(tmpls),length(conds));
 yield=nan(length(tmpls),length(conds));
 tconc=nan(length(tmpls),length(conds));
@@ -99,8 +106,13 @@ for i=1:length(tmpls)
   tmpl=tmpls{i};
   tsel=cellfun(@(z) strcmp(z.tmpl,tmpl),data.results);
   for j=1:length(conds)
-    cond=conds{j};
-    csel=cellfun(@(z) strcmp(z.tmpl,tmpl)&strcmp(z.cond,cond),data.results);
+    cond=strrep(conds{j},' (spike)','');
+    spike=~isempty(strfind(conds{j},'(spike)'));
+    if spike
+      csel=cellfun(@(z) strcmp(z.tmpl,[tmpl,'-spike'])&strcmp(z.cond,cond),data.results);
+    else
+      csel=cellfun(@(z) strcmp(z.tmpl,tmpl)&strcmp(z.cond,cond),data.results);
+    end
     r=data.results(csel);
     ligsel=cellfun(@(z) strcmp(z.type,'Lig'), r);
     if sum(ligsel)>1
@@ -234,3 +246,19 @@ ylabel('[B] (nM)');
 title('M vs A+B');
 axis equal
 axis([0,max([x,y])*1.1,0,max([x,y])*1.1]);
+
+r=data.results;
+theosel=cellfun(@(z) isfield(z,'theofrac') && ~isempty(strfind(z.tmpl,'spike')), r);
+if sum(theosel)>0
+  setfig('Theofrac');clf;
+  theofrac=cellfun(@(z) z.theofrac, r(theosel));
+  bar(theofrac*100);
+  set(gca,'XTick',1:sum(theosel));
+  c=axis;c(2)=sum(theosel)+1;axis(c);
+  labels=cellfun(@(z) z.tmpl, r(theosel),'UniformOutput',false);
+  set(gca,'XTickLabel',labels);
+  ylabel('Fraction with Theo Aptamer (%)');
+  xticklabel_rotate;
+  title('Frac(theo) in spike-in');
+end
+
