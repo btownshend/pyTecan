@@ -3,6 +3,7 @@ import serial
 import string
 import logging
 import sys
+import time
 
 class PTCStatus:
     # Construct status from PTC-200s reply to STATUS? stored in 'm' as a sequence
@@ -75,7 +76,8 @@ class PTC:
         pass
     
     def __init__(self,to=1):
-        logging.basicConfig(filename="PTC.log", level=logging.DEBUG,format='%(asctime)s %(levelname)s:\t %(message)s')
+        fname=time.strftime("PTC-%Y%m%d.log");
+        logging.basicConfig(filename=fname, level=logging.INFO,format='%(asctime)s %(levelname)s:\t %(message)s')
         logging.captureWarnings(True)
         console = logging.StreamHandler()
         console.setLevel(logging.INFO)
