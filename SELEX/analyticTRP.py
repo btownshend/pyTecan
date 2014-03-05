@@ -1,20 +1,20 @@
 # Run analytic TRP of a set of samples
 from Experiment.sample import Sample
 from Experiment.experiment import Experiment
+from Experiment.experiment import Concentration
 import math
 from TRPLib.TRP import TRP
 import debughook
 
 # Configuration for this run (up to 15 total samples in reagent plate)
-ref=["BT537"]
-#graded=["BT576","BT577","BT578","BT579","BT580","BT581","BT582","BT583"]
-#graded=["BT576","BT577","BT579","BT581","BT583"]
-switchesA=["BT587","BT588","BT589"]
-switchesB=["BT590","BT591","BT592","BT593","BT594"]
-input=ref+switchesA+switchesB
-srcprefix=["A"]*len(ref+switchesA)+["B"]*len(switchesB)
+ref=[] # ["BT537"]
+graded=["BT576","BT577","BT578","BT579","BT580","BT581","BT582","BT583"]
+switchesA=[] #["BT587","BT588","BT589"]
+switchesB=[] # ["BT590","BT591","BT592","BT593","BT594"]
+input=ref+graded+switchesA+switchesB
+srcprefix=["A"]*len(ref+graded+switchesA)+["B"]*len(switchesB)
 nreplicates=[1]*len(input)
-plustheo=[1]*len(input)
+plustheo=[0]*len(ref)+[1]*len(graded)+[1]*len(switchesA+switchesB)
 
 stockConc=20
 ligate=True
@@ -42,19 +42,21 @@ for k in range(max(nreplicates)):
                     prodprefixes=prodprefixes+['B'];
                 else:
                     prodprefixes=prodprefixes+['A'];
-                    
                 
 reagents=None
 
 for iteration in range(2):
     print "Iteration ",iteration+1
     trp=TRP()
+    # Use Theo as EDTA instead
+    trp.r.Theo.name="EDTA";
+    trp.r.Theo.conc=Concentration(25/7.5,1,'mM')
     if iteration==0:
         trp.addTemplates(input,stockConc,stockConc*24/80,plate=Experiment.EPPENDORFS)   # Add a template
     else:   
         reagents=Sample.getAllOnPlate(Experiment.REAGENTPLATE)+Sample.getAllOnPlate(Experiment.EPPENDORFS)
         for r in reagents:
-            if r.volume<0:
+            if r.volume<=0:
                 r.initvolume=-r.volume+r.plate.unusableVolume
         Sample.clearall()
 
@@ -77,8 +79,8 @@ for iteration in range(2):
         rt1=trp.diluteInPlace(tgt=rt1,dil=20)
         prods=trp.saveSamps(src=rt1,vol=8,dil=(5000/(2*5*2*20)),plate=trp.e.DILPLATE,dilutant=trp.r.SSD)
         
-    trp.runQPCR(src=qpcrdil1[:8],vol=15,srcdil=10.0/4,primers=["A","M"])
-    trp.runQPCR(src=qpcrdil1[8:],vol=15,srcdil=10.0/4,primers=["B","M"])
+    trp.runQPCR(src=[qpcrdil1[i] for i in range(len(qpcrdil1)) if srcprefixes[i]=='A'],vol=15,srcdil=10.0/4,primers=["A"])
+    trp.runQPCR(src=[qpcrdil1[i] for i in range(len(qpcrdil1)) if srcprefixes[i]=='B'],vol=15,srcdil=10.0/4,primers=["B"])
     trp.runQPCR(src=prods,vol=15,srcdil=10.0/4,primers=["A","B","M"])
 
 trp.finish()
