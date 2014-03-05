@@ -74,12 +74,20 @@ for i=1:length(sel)
     error('%s is on plate %s, not qPCR plate\n', v.name, v.plate);
   end
   v.primer=samp.name(length(sampname)+3:end);
-  v.well=wellnames2pos({samp.well});
   if isfield(data,'md')
-    v.ctm=data.md.CT(v.well+1);
+    well=find(strcmp(data.md.SampleNames,samp.well));
+    if isempty(well)
+      error('Unable to find well %s in Miner results\n', samp.well);
+    end
+    v.ctm=data.md.CT(well);
   end
   if isfield(data,'opd')
-    v.cti=data.opd.ct(v.well+1);
+    v.well=wellnames2pos({samp.well});
+    opdindex=find([data.opd.WIRT.platepos]==v.well);
+    if isempty(opdindex)
+      error('Unable to find platepos %d for well %s in data.opt.WIRT',v.well, samp.well);
+    end
+    v.cti=data.opd.ct(opdindex);
   end
 
   if data.useminer
