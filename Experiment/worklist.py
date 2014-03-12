@@ -66,7 +66,7 @@ class WorkList(object):
         
     def optimizeQueue(self):
         'Optimize operations in queue'
-        assert(False)    # Currently broken, manual mix with a chain of aspirateNC/dispense ends up doing all the aspirates first, then all the dispenses
+        # assert(False)    # Currently broken, manual mix with a chain of aspirateNC/dispense ends up doing all the aspirates first, then all the dispenses
         for d in self.opQueue:
             print "PRE-OPT %s:\tTip %d, Loc (%d,%d) Wells %s"%(d[0],d[1],d[5].grid,d[5].pos,str(d[2]))
         # As much as possible, move together operations on a single plate
