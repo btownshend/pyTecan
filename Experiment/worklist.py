@@ -85,9 +85,10 @@ class WorkList(object):
                         print 'Intervening tip use:',[str(item) for item in d]
                         break
                     newQueue.append(d)
-                    self.opQueue.remove(d)
+                    #self.opQueue.remove(d)
                 else:
                     dirtyTips|=d[1]
+            self.opQueue=[d for d in self.opQueue if d not in newQueue]
         for d in newQueue:
             print "POSTOPT %s:\tTip %d, Loc (%d,%d) Wells %s"%(d[0],d[1],d[5].grid,d[5].pos,str(d[2]))
         assert(len(newQueue)+len(self.opQueue)==oldlen)
