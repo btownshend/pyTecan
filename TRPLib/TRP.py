@@ -10,8 +10,8 @@ class Reagents:
     MT7=Sample("MT7",Experiment.REAGENTPLATE,None,2.5)
     MPosRT=Sample("MPosRT",Experiment.REAGENTPLATE,None,2)
     MNegRT=Sample("MNegRT",Experiment.REAGENTPLATE,None,2)
-    MLigA=Sample("MLigAN7",Experiment.REAGENTPLATE,None,3)
-    MLigB=Sample("MLigBN7",Experiment.REAGENTPLATE,None,3)
+    MLigAN7=Sample("MLigAN7",Experiment.REAGENTPLATE,None,3)
+    MLigBN7=Sample("MLigBN7",Experiment.REAGENTPLATE,None,3)
     MLigase=Sample("MLigase",Experiment.REAGENTPLATE,None,3)
 
     Theo=Sample("Theo",Experiment.REAGENTPLATE,None,Concentration(25,7.5,'mM'))
@@ -30,7 +30,7 @@ class Reagents:
     MQM=Sample("MQM",Experiment.REAGENTPLATE,None,10.0/6)
     MQT=Sample("MQT",Experiment.REAGENTPLATE,None,10.0/6)
     SSD=Sample("SSD",Experiment.REAGENTPLATE,None,10.0)
-    all=[MT7,MPosRT,MNegRT,MLigA,MLigB,MLigase,Theo,MStopNT,MStopWT,MQA,MQB,PCRA,PCRB,MQM,MQT,SSD]
+    all=[MT7,MPosRT,MNegRT,MLigAN7,MLigBN7,MLigase,Theo,MStopNT,MStopWT,MQA,MQB,PCRA,PCRB,MQM,MQT,SSD]
 
 def listify(x):
     'Convert a list of (lists or scalars) into a list of equal length lists'
@@ -220,35 +220,40 @@ class TRP(object):
         self.e.runpgm("TRP37-20",20,False,max(vol))
         return tgt
  
-    def runLig(self,prefix,src,vol,srcdil,tgt=None):
+    def runLig(self,prefix,src,vol,srcdil,tgt=None,ligA="MLigAN7",ligB="MLigBN7"):
         if tgt==None:
             tgt=[]
         #Extension
         # e.g: trp.runLig(prefix=["B","B","B","B","B","B","B","B"],src=["1.RT-","1.RT+","1.RTNeg-","1.RTNeg+","2.RT-","2.RT-","2.RTNeg+","2.RTNeg+"],tgt=["1.RT-B","1.RT+B","1.RTNeg-B","1.RTNeg+B","2.RT-A","2.RT-B","2.RTNeg+B","2.RTNeg+B"],vol=[10,10,10,10,10,10,10,10],srcdil=[2,2,2,2,2,2,2,2])
-        [prefix,src,tgt,vol,srcdil]=listify([prefix,src,tgt,vol,srcdil])
-        if prefix[0]=='A':
-            # Need to check since an unused ligation master mix will not have a concentration
-            minsrcdil=1/(1-1/self.r.MLigA.conc.dilutionneeded()-1/self.r.MLigase.conc.dilutionneeded())
-        else:
-            minsrcdil=1/(1-1/self.r.MLigB.conc.dilutionneeded()-1/self.r.MLigase.conc.dilutionneeded())
-            
-        for i in srcdil:
-            if i<minsrcdil:
-                print "runLig: srcdil=%.2f, but must be at least %.2f"%(i,minsrcdil)
-                assert(False)
+        [prefix,src,tgt,vol,srcdil,ligA]=listify([prefix,src,tgt,vol,srcdil,ligB])
         if len(tgt)==0:
             tgt=["%s.L%c"%(src[i],prefix[i]) for i in range(len(src))]
 
         tgt=uniqueTargets(tgt)
         stgt=findsamps(tgt)
         ssrc=findsamps(src,False)
+        sligA=findsamps(ligA,False)
+        sligB=findsamps(ligB,False)
+
+        if prefix[0]=='A':
+            # Need to check since an unused ligation master mix will not have a concentration
+            minsrcdil=1/(1-1/sligA[0].conc.dilutionneeded()-1/self.r.MLigase.conc.dilutionneeded())
+        else:
+            minsrcdil=1/(1-1/sligB[0].conc.dilutionneeded()-1/self.r.MLigase.conc.dilutionneeded())
+            
+        for i in srcdil:
+            if i<minsrcdil:
+                print "runLig: srcdil=%.2f, but must be at least %.2f"%(i,minsrcdil)
+                assert(False)
+
         adjustSrcDil(ssrc,srcdil)
-        
-        if any(p=='A' for p in prefix):
-            self.e.stage('LigAnnealA',[self.r.MLigA],[ssrc[i] for i in range(len(ssrc)) if prefix[i]=='A'],[stgt[i] for i in range(len(stgt)) if prefix[i]=='A'],[vol[i]/1.5 for i in range(len(vol)) if prefix[i]=='A'],1.5)
-        if any(p=='B' for p in prefix):
-            self.e.stage('LigAnnealB',[self.r.MLigB],[ssrc[i] for i in range(len(ssrc)) if prefix[i]=='B'],[stgt[i] for i in range(len(stgt)) if prefix[i]=='B'],[vol[i]/1.5 for i in range(len(vol)) if prefix[i]=='B'],1.5)
- 
+
+        for i in range(len(stgt)):
+            if prefix[i]=='A':
+                self.e.stage('LigAnnealA',[sligA[i]],[ssrc[i]],[stgt[i]],[vol[i]/1.5],1.5)
+            else:
+                self.e.stage('LigAnnealB',[sligB[i]],[ssrc[i]],[stgt[i]],[vol[i]/1.5],1.5)
+            
         self.e.runpgm("TRPANN",5,False,max(vol),hotlidmode="CONSTANT",hotlidtemp=100)
         self.e.stage('Ligation',[self.r.MLigase],[],stgt,vol)
         self.e.runpgm("LIG15RT",26,False,max(vol),hotlidmode="TRACKING",hotlidtemp=10)
