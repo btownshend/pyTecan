@@ -67,8 +67,8 @@ class WorkList(object):
     def optimizeQueue(self):
         'Optimize operations in queue'
         # assert(False)    # Currently broken, manual mix with a chain of aspirateNC/dispense ends up doing all the aspirates first, then all the dispenses
-        for d in self.opQueue:
-            print "PRE-OPT %s:\tTip %d, Loc (%d,%d) Wells %s"%(d[0],d[1],d[5].grid,d[5].pos,str(d[2]))
+        # for d in self.opQueue:
+        #     print "PRE-OPT %s:\tTip %d, Loc (%d,%d) Wells %s"%(d[0],d[1],d[5].grid,d[5].pos,str(d[2]))
         # As much as possible, move together operations on a single plate
         newQueue=[]
         oldlen=len(self.opQueue)
@@ -89,8 +89,8 @@ class WorkList(object):
                 else:
                     dirtyTips|=d[1]
             self.opQueue=[d for d in self.opQueue if d not in newQueue]
-        for d in newQueue:
-            print "POSTOPT %s:\tTip %d, Loc (%d,%d) Wells %s"%(d[0],d[1],d[5].grid,d[5].pos,str(d[2]))
+        # for d in newQueue:
+        #     print "POSTOPT %s:\tTip %d, Loc (%d,%d) Wells %s"%(d[0],d[1],d[5].grid,d[5].pos,str(d[2]))
         assert(len(newQueue)+len(self.opQueue)==oldlen)
         self.opQueue=newQueue
 
@@ -101,26 +101,26 @@ class WorkList(object):
             d2=self.opQueue[i+1];
             if False and d1[0]=='Dispense' and d2[0]=='Mix' and d1[1]==d2[1] and i+2<len(self.opQueue) and self.opQueue[i+2][1]!=d1[1]:
                 # Special case of dispense/mix
-                print "DISPENSE/MIX"
+                #print "DISPENSE/MIX"
                 d2=self.opQueue[i+2]
                 self.opQueue[i+2]=self.opQueue[i+1]
                 self.opQueue[i+1]=d2
             if d1[0]==d2[0]  and d1[1]!=d2[1] and d1[5]==d2[5]:
-                print "COMBINE %s:\tTip %d, Loc (%d,%d) Wells %s"%(d1[0],d1[1],d1[5].grid,d1[5].pos,str(d1[2]))
-                print "   WITH %s:\tTip %d, Loc (%d,%d) Wells %s"%(d2[0],d2[1],d2[5].grid,d2[5].pos,str(d2[2]))
+                #print "COMBINE %s:\tTip %d, Loc (%d,%d) Wells %s"%(d1[0],d1[1],d1[5].grid,d1[5].pos,str(d1[2]))
+                # print "   WITH %s:\tTip %d, Loc (%d,%d) Wells %s"%(d2[0],d2[1],d2[5].grid,d2[5].pos,str(d2[2]))
                 if (d2[1]<d1[1]) or (((d2[1]>>1) &d1[1])==0):
-                    print "tipmasks out of order (%d,%d)"%(d2[1],d1[1])
+                    pass # print "tipmasks out of order (%d,%d)"%(d2[1],d1[1])
                 elif d2[2][0] != max(d1[2])+1:
-                    print "wells not adjacent"
+                    pass # print "wells not adjacent"
                 elif d1[2][0]/d1[5].ny != d2[2][0]/d2[5].ny:
-                    print "wells in different columns of %d-row plate"%d1[5].ny
+                    pass # print "wells in different columns of %d-row plate"%d1[5].ny
                 elif d1[3].name!=d2[3].name:
-                    print "liquid classes different",d1[3],d2[3]
+                    pass # print "liquid classes different",d1[3],d2[3]
                 elif d1[6]!=d2[6]:
-                    print "mix cycles different"
+                    pass # print "mix cycles different"
                 else:
                     merge=[d1[0],d1[1]|d2[1],d1[2]+d2[2],d1[3],d1[4]+d2[4],d1[5],d1[6]];
-                    print " MERGED %s:\tTip %d, Loc (%d,%d) Wells %s"%(merge[0],merge[1],merge[5].grid,merge[5].pos,str(merge[2]))
+                    #print " MERGED %s:\tTip %d, Loc (%d,%d) Wells %s"%(merge[0],merge[1],merge[5].grid,merge[5].pos,str(merge[2]))
                     # self.comment("Merged operations")
                     self.opQueue[i+1]=merge
                     todelete.append(i)
