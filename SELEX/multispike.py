@@ -5,9 +5,9 @@ from TRPLib.TRP import TRP
 import debughook
 
 reagents=None
-inname="R33"
+inname="R49"
 srcprefix="B"
-firstround=34
+firstround=50
 ndblrounds=4
 doqpcr=True
 
