@@ -221,27 +221,25 @@ class TRP(object):
         self.e.runpgm("TRP37-20",20,False,max(vol))
         return tgt
  
-    def runLig(self,prefix,src,vol,srcdil,tgt=None,ligA="MLigAN7",ligB="MLigBN7"):
+    def runLig(self,prefix=None,src=None,vol=None,srcdil=None,tgt=None,master=None):
         if tgt==None:
             tgt=[]
+        if master==None:
+            master=["MLigAN7" if p=='A' else "MLigBN7" for p in prefix]
+
         #Extension
         # e.g: trp.runLig(prefix=["B","B","B","B","B","B","B","B"],src=["1.RT-","1.RT+","1.RTNeg-","1.RTNeg+","2.RT-","2.RT-","2.RTNeg+","2.RTNeg+"],tgt=["1.RT-B","1.RT+B","1.RTNeg-B","1.RTNeg+B","2.RT-A","2.RT-B","2.RTNeg+B","2.RTNeg+B"],vol=[10,10,10,10,10,10,10,10],srcdil=[2,2,2,2,2,2,2,2])
-        [prefix,src,tgt,vol,srcdil,ligA]=listify([prefix,src,tgt,vol,srcdil,ligB])
+        [src,tgt,vol,srcdil,master]=listify([src,tgt,vol,srcdil,master])
         if len(tgt)==0:
-            tgt=["%s.L%c"%(src[i],prefix[i]) for i in range(len(src))]
+            tgt=["%s.%s"%(src[i],master[i]) for i in range(len(src))]
 
         tgt=uniqueTargets(tgt)
         stgt=findsamps(tgt)
         ssrc=findsamps(src,False)
-        sligA=findsamps(ligA,False)
-        sligB=findsamps(ligB,False)
+        smaster=findsamps(master,False)
 
-        if prefix[0]=='A':
-            # Need to check since an unused ligation master mix will not have a concentration
-            minsrcdil=1/(1-1/sligA[0].conc.dilutionneeded()-1/self.r.MLigase.conc.dilutionneeded())
-        else:
-            minsrcdil=1/(1-1/sligB[0].conc.dilutionneeded()-1/self.r.MLigase.conc.dilutionneeded())
-            
+        # Need to check since an unused ligation master mix will not have a concentration
+        minsrcdil=1/(1-1/smaster[0].conc.dilutionneeded()-1/self.r.MLigase.conc.dilutionneeded())
         for i in srcdil:
             if i<minsrcdil:
                 print "runLig: srcdil=%.2f, but must be at least %.2f"%(i,minsrcdil)
@@ -250,10 +248,7 @@ class TRP(object):
         adjustSrcDil(ssrc,srcdil)
 
         for i in range(len(stgt)):
-            if prefix[i]=='A':
-                self.e.stage('LigAnnealA',[sligA[i]],[ssrc[i]],[stgt[i]],[vol[i]/1.5],1.5)
-            else:
-                self.e.stage('LigAnnealB',[sligB[i]],[ssrc[i]],[stgt[i]],[vol[i]/1.5],1.5)
+            self.e.stage('LigAnneal',[smaster[i]],[ssrc[i]],[stgt[i]],[vol[i]/1.5],1.5)
             
         self.e.runpgm("TRPANN",5,False,max(vol),hotlidmode="CONSTANT",hotlidtemp=100)
         self.e.stage('Ligation',[self.r.MLigase],[],stgt,vol)
