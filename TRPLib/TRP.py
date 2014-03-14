@@ -152,10 +152,13 @@ class TRP(object):
         adjustSrcDil(ssrc,origdil)
         return tgt
             
-    def runT7(self,theo,src,vol,srcdil,tgt=None,dur=15):
+    def runT7(self,theo,src,vol,srcdil,tgt=None,dur=15,stopmaster=None):
         if tgt==None:
             tgt=[]
-        [theo,src,tgt,srcdil]=listify([theo,src,tgt,srcdil])
+        if stopmaster==None:
+            stopmaster=["MStpNoTheo" if t==0 else "MStpWithTheo" for t in theo]
+            
+        [theo,src,tgt,srcdil,stopmaster]=listify([theo,src,tgt,srcdil,stopmaster])
         if len(tgt)==0:
             for i in range(len(src)):
                 if theo[i]:
@@ -187,11 +190,9 @@ class TRP(object):
         ## Stop
         self.e.dilute(stgt,2)
 
+        sstopmaster=findsamps(stopmaster,False)
         for i in range(len(stgt)):
-            if theo[i]:
-                self.e.transfer(vol,self.r.MStopNT,stgt[i],(False,True))
-            else:
-                self.e.transfer(vol,self.r.MStopWT,stgt[i],(False,True))
+            self.e.transfer(vol,sstopmaster[i],stgt[i],(False,True))
 
         return tgt
     
