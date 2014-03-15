@@ -13,33 +13,34 @@ import debughook
 
 # Configuration for this run (up to 15 total samples in reagent plate)
 input=[
-    #"BT537-T7_A_L2b12_S",
-    #"BT537-T7_A_L2b12_S+theo",
-"BT646-T7_B_N7N30_S-R57",
-"BT646-T7_B_N7N30_S-R57+theo",
-"BT647-T7_B_N7N30_S-R57c",
-"BT647-T7_B_N7N30_S-R57c+theo",
-"BT272-T7_A_sTRSV_S",
-"BT272-T7_A_sTRSV_S+Ammeline",
-"BT272-T7_A_sTRSV_S+Tetracyline",
-"BT272-T7_A_sTRSV_S+Neomycin",
-"BT272-T7_A_sTRSV_S+Adenine",
-"BT272-T7_A_sTRSV_S+Guanine",
-"BT272-T7_A_sTRSV_S+Theo",
+    "BT537-T7_A_L2b12_S",
+    "BT537-T7_A_L2b12_S+theo",
+# "BT646-T7_B_N7N30_S-R57",
+# "BT646-T7_B_N7N30_S-R57+theo",
+# "BT647-T7_B_N7N30_S-R57c",
+# "BT647-T7_B_N7N30_S-R57c+theo",
+# "BT272-T7_A_sTRSV_S",
+# "BT272-T7_A_sTRSV_S+Ammeline",
+# "BT272-T7_A_sTRSV_S+Tetracyline",
+# "BT272-T7_A_sTRSV_S+Neomycin",
+# "BT272-T7_A_sTRSV_S+Adenine",
+# "BT272-T7_A_sTRSV_S+Guanine",
+# "BT272-T7_A_sTRSV_S+Theo",
+"BT642+643-T7_A_Theo_S",
+"BT642+643-T7_A_Theo_S +target",
 "BT585-T7_A_TheoAAG_AAAAA_S",
 "BT585-T7_A_TheoAAG_AAAAA_S+theo",
 "BT596-T7_M_TheoAAG_AAAAA_M",
 "BT596-T7_M_TheoAAG_AAAAA_M+theo",
-#"BT642+643-T7_A_Theo_S +target",
-#"BT644+645-T7_W_Theo_W +target",
-#"BT634+636-T7_W_Ammeline_W+target",
-#"BT635+637-T7_W_Tetracycline_W+target",
-#"BT638+639-T7_W_Neomycin_W+target",
-#"BT632+640-T7_W_Adenine_W+target",
-#"BT633+641-T7_W_Guanine_W+target",
-#"BT648-T7_W_All_W",
+"BT644+645-T7_W_Theo_W +target",
+"BT634+636-T7_W_Ammeline_W+target",
+"BT635+637-T7_W_Tetracycline_W+target",
+"BT638+639-T7_W_Neomycin_W+target",
+"BT632+640-T7_W_Adenine_W+target",
+"BT633+641-T7_W_Guanine_W+target",
+"BT648-T7_W_All_W",
     ]
-srcprefix=["B"]*4+["A"]*7+["A"]*2+["W"]*2
+srcprefix=["A"]*6+["W"]*9
 nreplicates=[1]*len(input)
 stem1=["N7"]*len(input)
 ligate=True
@@ -61,7 +62,7 @@ for k in range(max(nreplicates)):
                 stop=stop+['MStpNoTheo']
             elif  srcprefix[i]=='W':
                 ligmaster=ligmaster+["MLigA"+stem1[i]]
-                pcr=pcr+[("A","W")];
+                pcr=pcr+[("AW","W")];
                 stop=stop+['MStpW']
             elif srcprefix[i]=='B':
                 ligmaster=ligmaster+["MLigA"+stem1[i]]
