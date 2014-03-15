@@ -8,6 +8,8 @@ if isempty(args.sampfile)
     args.sampfile='analyticTRP.m';
   elseif exist('./multispike.m','file')
     args.sampfile='multispike.m';
+  elseif exist('./NGSTRP.m','file')
+    args.sampfile='NGSTRP.m';
   else
     error('No sample file\n');
   end
@@ -38,6 +40,7 @@ else
       'A',struct('ct0',0.97*ct0M,'eff',1.9),...
       'B',struct('ct0',0.97*ct0M,'eff',1.9),...
       'M',struct('ct0',ct0M,'eff',1.9),...
+      'W',struct('ct0',ct0M,'eff',1.9),...
       'T',struct('ct0',1.996*ct0M,'eff',1.9));
 
   minerfile=dir('./Miner_*_Analyzed_Data.txt');
@@ -97,7 +100,6 @@ for i=1:length(fspike)
   conds{fspike(i)}=[conds{fspike(i)},' (spike)'];
 end
 conds=sort(unique(conds));
-
 cleavage=nan(length(tmpls),length(conds));
 yield=nan(length(tmpls),length(conds));
 tconc=nan(length(tmpls),length(conds));
@@ -118,23 +120,26 @@ for i=1:length(tmpls)
     if sum(ligsel)>1
       fprintf('Found %d entries for %s/%s/Lig, expected only 1\n', sum(ligsel),tmpl,cond);
     end
-    if sum(ligsel)==1 && isfield(r{ligsel},'A') && isfield(r{ligsel},'B')
-      clvd=r{ligsel}.(r{ligsel}.ligsuffix).conc;
-      total=r{ligsel}.A.conc+r{ligsel}.B.conc;
-      cleavage(i,j)=clvd/total;
-      yield(i,j)=total;
+    if sum(ligsel)==1
+      cleavage(i,j)=r{ligsel}.cleavage;
+      yield(i,j)=r{ligsel}.yield;
     end
     t7sel=cellfun(@(z) strcmp(z.type,'T7'), r);
     if sum(t7sel)==0
       t7sel=cellfun(@(z) strcmp(z.type,'tmpl'), r);
     end
     if sum(t7sel)==1
+      % Figure out correct field for template concentration
       if isfield(r{t7sel},'M')
         tconc(i,j)=r{t7sel}.M.conc;
-      elseif r{ligsel}.ligsuffix=='A' && isfield(r{t7sel},'B')
-        tconc(i,j)=r{t7sel}.B.conc;
-      elseif r{ligsel}.ligsuffix=='B' && isfield(r{t7sel},'A')
-        tconc(i,j)=r{t7sel}.A.conc;
+      elseif sum(ligsel)==1
+        if r{ligsel}.ligsuffix~='B' && isfield(r{t7sel},'B')
+          tconc(i,j)=r{t7sel}.B.conc;
+        elseif r{ligsel}.ligsuffix~='A' && isfield(r{t7sel},'A')
+          tconc(i,j)=r{t7sel}.A.conc;
+        elseif r{ligsel}.ligsuffix~='W' && isfield(r{t7sel},'W')
+          tconc(i,j)=r{t7sel}.W.conc;
+        end
       end
     end
   end
@@ -142,71 +147,106 @@ for i=1:length(tmpls)
 end
 
 setfig('analyze'); clf;
-nx=1;ny=4;pnum=1;
-ny=any(isfinite(cleavage(:)))+any(isfinite(yield(:)))+any(isfinite(tconc(:)))+any(any(isfinite(tconc+yield)));
+nx=1;pnum=1;
+ny=any(isfinite(cleavage(:)))+any(isfinite(yield(:)))+any(isfinite(tconc(:)))+any(any(isfinite(tconc+yield)))+1;
 
-sel=any(isfinite(cleavage'));
+sel=any(isfinite(cleavage),2);
 if any(sel)
-  subplot(ny,nx,pnum); pnum=pnum+1;
+  if pnum==ny-1
+    subplot(ny,nx,pnum:pnum+1);
+  else
+    subplot(ny,nx,pnum); 
+  end
+  pnum=pnum+1;
   csel=any(isfinite(cleavage));
   bar(cleavage(sel,csel)*100);
   ylabel('Cleavage (%)');
-  xlabel('Sample');
-  set(gca,'XTick',1:sum(sel));
   c=axis;c(2)=sum(sel)+1;axis(c);
-  set(gca,'XTickLabel',labels(sel));
-  legend(conds(csel));
+  if pnum==2
+    legend(conds(csel));
+  end
   title('Cleavage');
-  xticklabel_rotate;
+  if ny==pnum
+    xlabel('Sample');
+    set(gca,'XTick',1:sum(sel));
+    set(gca,'XTickLabel',labels(sel));
+    xticklabel_rotate;
+  end
 end
 
-sel=any(isfinite(yield'));
+sel=any(isfinite(yield),2);
 if any(sel)
-  subplot(ny,nx,pnum); pnum=pnum+1;
+  if pnum==ny-1
+    subplot(ny,nx,pnum:pnum+1);
+  else
+    subplot(ny,nx,pnum); 
+  end
+  pnum=pnum+1;
   csel=any(isfinite(yield));
   bar(yield(sel,csel));
   ylabel('RNA Yield (nM)');
-  xlabel('Sample');
-  set(gca,'XTick',1:sum(sel));
-  c=axis;c(2)=sum(sel)+1;axis(c);
-  set(gca,'XTickLabel',labels(sel));
-  %  set(gca,'YScale','log');
-  legend(conds(csel));
+  c=axis;
+  c(2)=sum(sel)+1;
+  c(3)=0; c(4)=max(max(yield(sel,csel)))*1.1; 
+  axis(c);
+  if pnum==2
+    legend(conds(csel));
+  end
   title('Yield');
-  c=axis; c(3)=0; c(4)=max(max(yield(sel,csel)))*1.1; axis(c);
-  xticklabel_rotate;
+  if ny==pnum
+    xlabel('Sample');
+    set(gca,'XTick',1:sum(sel));
+    set(gca,'XTickLabel',labels(sel));
+    xticklabel_rotate;
+  end
 end
 
-sel=any(isfinite(tconc'));
+sel=any(isfinite(tconc),2);
 if any(sel)
-  subplot(ny,nx,pnum); pnum=pnum+1;
+  if pnum==ny-1
+    subplot(ny,nx,pnum:pnum+1);
+  else
+    subplot(ny,nx,pnum); 
+  end
+  pnum=pnum+1;
   csel=any(isfinite(tconc));
   bar(tconc(sel,csel));
   ylabel('Template Conc (nM)');
-  xlabel('Sample');
-  set(gca,'XTick',1:sum(sel));
-  c=axis;c(2)=sum(sel)+1;axis(c);
-  set(gca,'XTickLabel',labels(sel));
-  %  set(gca,'YScale','log');
-  legend(conds(csel));
+  c=axis;c(2)=sum(sel)+1;c(3)=0;axis(c);
+  if pnum==2
+    legend(conds(csel));
+  end
   title('Template Conc');
-  c=axis; c(3)=0; axis(c);
-  xticklabel_rotate;
+  if ny==pnum
+    xlabel('Sample');
+    set(gca,'XTick',1:sum(sel));
+    set(gca,'XTickLabel',labels(sel));
+    xticklabel_rotate;
+  end
 end
 
-sel=any(isfinite(tconc')&isfinite(yield'));
+sel=any(isfinite(tconc)&isfinite(yield),2);
 if any(sel)
-  subplot(ny,nx,pnum); pnum=pnum+1;
+  if pnum==ny-1
+    subplot(ny,nx,pnum:pnum+1);
+  else
+    subplot(ny,nx,pnum); 
+  end
+  pnum=pnum+1;
   csel=any(isfinite(tconc)&isfinite(yield));
   bar(yield(sel,csel)./tconc(sel,csel));
   ylabel('RNA Gain (x)');
-  xlabel('Sample');
-  set(gca,'XTick',1:sum(sel));
   c=axis;c(2)=sum(sel)+1;axis(c);
-  set(gca,'XTickLabel',labels(sel));
-  legend(conds(csel));
+  if pnum==2
+    legend(conds(csel));
+  end
   title('RNA Gain');
-  xticklabel_rotate;
+  if ny==pnum
+    xlabel('Sample');
+    set(gca,'XTick',1:sum(sel));
+    set(gca,'XTickLabel',labels(sel));
+    xticklabel_rotate;
+  end
 end
 d=pwd;
 d=d(max(strfind(d,'/'))+1:end);
@@ -218,7 +258,6 @@ end
   
 
 % A+B vs B
-setfig('MScale');clf;
 x=[];y=[];z=[];
 for i=1:length(data.results)
   if isfield(data.results{i},'A') & isfield(data.results{i},'B') & isfield(data.results{i},'M')
@@ -227,25 +266,28 @@ for i=1:length(data.results)
     z(end+1)=data.results{i}.M.conc;
   end
 end
-loglog(x,y,'o');
-hold on
-for i=1:length(x)
-  sc=z(i)/(x(i)+y(i));
-  plot(x(i)*sc,y(i)*sc,'x');
-  if sc>1
-    col='g';
-  else
-    col='r';
+if length(x)>1
+  setfig('MScale');clf;
+  loglog(x,y,'o');
+  hold on
+  for i=1:length(x)
+    sc=z(i)/(x(i)+y(i));
+    plot(x(i)*sc,y(i)*sc,'x');
+    if sc>1
+      col='g';
+    else
+      col='r';
+    end
+    plot(x(i)*[1,sc],y(i)*[1,sc],col);
   end
-  plot(x(i)*[1,sc],y(i)*[1,sc],col);
+  c=axis;
+  legend('(A,B)','(MA/(A+B),MB/(A+B))');
+  xlabel('[A] (nM)');
+  ylabel('[B] (nM)');
+  title('M vs A+B');
+  axis equal
+  axis([0,max([x,y])*1.1,0,max([x,y])*1.1]);
 end
-c=axis;
-legend('(A,B)','(MA/(A+B),MB/(A+B))');
-xlabel('[A] (nM)');
-ylabel('[B] (nM)');
-title('M vs A+B');
-axis equal
-axis([0,max([x,y])*1.1,0,max([x,y])*1.1]);
 
 r=data.results;
 theosel=cellfun(@(z) isfield(z,'theofrac') && ~isempty(strfind(z.tmpl,'spike')), r);

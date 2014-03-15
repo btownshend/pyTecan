@@ -55,6 +55,9 @@ else
     if parts{end}(1)=='L'
       result.type='Lig';
       result.ligsuffix=parts{end}(2:end);
+    elseif strcmp(parts{end}(1:4),'MLig')
+      result.type='Lig';
+      result.ligsuffix=parts{end}(5);
     else
       result.type=parts{end};
     end
@@ -148,15 +151,24 @@ end
 
 % Calculate cleavage, yield, theofrac
 % Cleavage
-if isfield(result,'A') && isfield(result,'B')
-  if ~isempty(strfind(result.name,'.LB'))
-    result.cleavage=result.B.conc/(result.A.conc+result.B.conc);
-  elseif ~isempty(strfind(result.name,'.LA'))
-    result.cleavage=result.A.conc/(result.A.conc+result.B.conc);
-  else
-    result.cleavage=-min(result.A.conc,result.B.conc)/(result.A.conc+result.B.conc);
+if strcmp(result.type,'Lig')
+  clvd=result.(result.ligsuffix).conc;
+  fn=fieldnames(result);
+  uprimer=[];
+  for i=1:length(fn)
+    if length(fn{i})==1 && ~strcmp(fn{i},result.ligsuffix)
+      uprimer=[uprimer,fn{i}];
+    end
   end
-  result.yield=result.A.conc+result.B.conc;
+  if length(uprimer)>1
+    error('%s: Unable to determine uncleaved prefix out of %s\n', result.name, uprimer);
+  elseif length(uprimer)==0
+    error('%s: No potential uncleaved prefix\n', result.name);
+  else
+    unclvd=result.(uprimer).conc;
+    result.cleavage=clvd/(clvd+unclvd);
+    result.yield=clvd+unclvd;
+  end
 end
 
 if isfield(result,'T') && isfield(result,'M')

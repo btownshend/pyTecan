@@ -3,7 +3,7 @@
 %	data.results - Cell array of Ct/Conc data
 function robotdump(data)
 
-% Printer header lines
+% Print header lines
 primers=fieldnames(data.primers);
 psel=false(1,length(primers));
 for i=1:length(primers)
