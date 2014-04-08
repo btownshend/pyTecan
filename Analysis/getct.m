@@ -152,7 +152,14 @@ end
 % Calculate cleavage, yield, theofrac
 % Cleavage
 if strcmp(result.type,'Lig')
-  clvd=result.(result.ligsuffix).conc;
+  if isfield(result,result.ligsuffix)
+    clvd=result.(result.ligsuffix).conc;
+  elseif isfield(result,[result.ligsuffix,'W'])
+    clvd=result.([result.ligsuffix,'W']).conc;
+  else
+    error('Unable to location ligation suffix %s or %sW\n', result.ligsuffix, result.ligsuffix);
+  end
+    
   fn=fieldnames(result);
   uprimer=[];
   for i=1:length(fn)
