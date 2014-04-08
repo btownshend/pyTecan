@@ -41,6 +41,7 @@ else
       'B',struct('ct0',0.97*ct0M,'eff',1.9),...
       'M',struct('ct0',ct0M,'eff',1.9),...
       'W',struct('ct0',ct0M,'eff',1.9),...
+      'AW',struct('ct0',ct0M,'eff',1.9),...
       'T',struct('ct0',1.996*ct0M,'eff',1.9));
 
   minerfile=dir('./Miner_*_Analyzed_Data.txt');
@@ -133,11 +134,11 @@ for i=1:length(tmpls)
       if isfield(r{t7sel},'M')
         tconc(i,j)=r{t7sel}.M.conc;
       elseif sum(ligsel)==1
-        if r{ligsel}.ligsuffix~='B' && isfield(r{t7sel},'B')
+        if r{ligsel}.ligsuffix(1)~='B' && isfield(r{t7sel},'B')
           tconc(i,j)=r{t7sel}.B.conc;
-        elseif r{ligsel}.ligsuffix~='A' && isfield(r{t7sel},'A')
+        elseif r{ligsel}.ligsuffix(1)~='A' && isfield(r{t7sel},'A')
           tconc(i,j)=r{t7sel}.A.conc;
-        elseif r{ligsel}.ligsuffix~='W' && isfield(r{t7sel},'W')
+        elseif r{ligsel}.ligsuffix(1)~='W' && isfield(r{t7sel},'W')
           tconc(i,j)=r{t7sel}.W.conc;
         end
       end
