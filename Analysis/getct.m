@@ -156,22 +156,25 @@ if strcmp(result.type,'Lig')
     clvd=result.(result.ligsuffix).conc;
   elseif isfield(result,[result.ligsuffix,'W'])
     clvd=result.([result.ligsuffix,'W']).conc;
+  elseif isfield(result,[result.ligsuffix,'X'])
+    clvd=result.([result.ligsuffix,'X']).conc;
   else
     error('Unable to location ligation suffix %s or %sW\n', result.ligsuffix, result.ligsuffix);
   end
     
   fn=fieldnames(result);
-  uprimer=[];
+  uprimer={};
   for i=1:length(fn)
-    if length(fn{i})==1 && ~strcmp(fn{i},result.ligsuffix)
-      uprimer=[uprimer,fn{i}];
+    if length(fn{i})<=2 && fn{i}(1)~=result.ligsuffix(1)
+      uprimer{end+1}=fn{i};
     end
   end
   if length(uprimer)>1
-    error('%s: Unable to determine uncleaved prefix out of %s\n', result.name, uprimer);
+    error('%s: Unable to determine uncleaved prefix out of %d possibilities.\n', result.name, length(uprimer));
   elseif length(uprimer)==0
     error('%s: No potential uncleaved prefix\n', result.name);
   else
+    uprimer=uprimer{1};
     unclvd=result.(uprimer).conc;
     result.cleavage=clvd/(clvd+unclvd);
     result.yield=clvd+unclvd;
