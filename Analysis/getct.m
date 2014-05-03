@@ -54,10 +54,10 @@ else
   else
     if parts{end}(1)=='L'
       result.type='Lig';
-      result.ligsuffix=parts{end}(2:end);
+      result.ligprefix=parts{end}(2:end);
     elseif strcmp(parts{end}(1:4),'MLig')
       result.type='Lig';
-      result.ligsuffix=parts{end}(5);
+      result.ligprefix=parts{end}(5);
     else
       result.type=parts{end};
     end
@@ -76,7 +76,20 @@ for i=1:length(sel)
   if ~strcmp(v.samp.plate,'qPCR')
     error('%s is on plate %s, not qPCR plate\n', v.name, v.plate);
   end
+  if ~strcmp(samp.name(length(sampname)+(1:2)),'.Q')
+    error('Expected QPCR sample to start with "%s", but found "%s"\n',[sampname,'.Q'],samp.name);
+  end
   v.primer=samp.name(length(sampname)+3:end);
+  if length(v.primer)==1
+    fprintf('Converting old style primer name "%s" to 2-letter code: ', v.primer);
+    if v.primer(1)=='W'
+      v.primer='WX';
+    else
+      v.primer=[v.primer,'S'];
+    end
+    fprintf('%s\n',v.primer);
+  end
+  
   if isfield(data,'md')
     well=find(strcmp(data.md.SampleNames,samp.well));
     if isempty(well)
@@ -152,20 +165,22 @@ end
 % Calculate cleavage, yield, theofrac
 % Cleavage
 if strcmp(result.type,'Lig')
-  if isfield(result,result.ligsuffix)
-    clvd=result.(result.ligsuffix).conc;
-  elseif isfield(result,[result.ligsuffix,'W'])
-    clvd=result.([result.ligsuffix,'W']).conc;
-  elseif isfield(result,[result.ligsuffix,'X'])
-    clvd=result.([result.ligsuffix,'X']).conc;
+  if isfield(result,result.ligprefix)
+    clvd=result.(result.ligprefix).conc;
+  elseif isfield(result,[result.ligprefix,'S'])
+    clvd=result.([result.ligprefix,'S']).conc;
+  elseif isfield(result,[result.ligprefix,'X'])
+    clvd=result.([result.ligprefix,'X']).conc;
+  elseif isfield(result,[result.ligprefix,'W'])
+    clvd=result.([result.ligprefix,'W']).conc;
   else
-    error('Unable to location ligation suffix %s or %sW\n', result.ligsuffix, result.ligsuffix);
+    error('Unable to locate ligation suffix %s or %sW\n', result.ligprefix, result.ligprefix);
   end
     
   fn=fieldnames(result);
   uprimer={};
   for i=1:length(fn)
-    if length(fn{i})<=2 && fn{i}(1)~=result.ligsuffix(1)
+    if length(fn{i})<=2 && fn{i}(1)~=result.ligprefix(1)
       uprimer{end+1}=fn{i};
     end
   end

@@ -37,17 +37,14 @@ else
   % Setup primers, ct0 is concentration of Ct=0 in nM
   ct0M=2;
   data.primers=struct(...
-      'A',struct('ct0',0.97*ct0M,'eff',1.9),... # Old labelling
       'AS',struct('ct0',0.97*ct0M,'eff',1.9),...
       'AW',struct('ct0',ct0M,'eff',1.9),...    # Old labelling
       'AX',struct('ct0',0.97*ct0M,'eff',1.9),...
-      'B',struct('ct0',0.97*ct0M,'eff',1.9),... # Old labelling
       'BS',struct('ct0',0.97*ct0M,'eff',1.9),...
       'BX',struct('ct0',0.97*ct0M,'eff',1.9),...
-      'M',struct('ct0',ct0M,'eff',1.9),...
-      'W',struct('ct0',ct0M,'eff',1.9),...	# Old labelling
+      'MS',struct('ct0',ct0M,'eff',1.9),...
       'WX',struct('ct0',ct0M,'eff',1.9),...
-      'T',struct('ct0',1.996*ct0M,'eff',1.9));
+      'TS',struct('ct0',1.996*ct0M,'eff',1.9));
 
   minerfile=dir('./Miner_*_Analyzed_Data.txt');
   if isempty(minerfile)
@@ -139,12 +136,20 @@ for i=1:length(tmpls)
       if isfield(r{t7sel},'M')
         tconc(i,j)=r{t7sel}.M.conc;
       elseif sum(ligsel)==1
-        if r{ligsel}.ligsuffix(1)~='B' && isfield(r{t7sel},'B')
-          tconc(i,j)=r{t7sel}.B.conc;
-        elseif r{ligsel}.ligsuffix(1)~='A' && isfield(r{t7sel},'A')
-          tconc(i,j)=r{t7sel}.A.conc;
-        elseif r{ligsel}.ligsuffix(1)~='W' && isfield(r{t7sel},'W')
-          tconc(i,j)=r{t7sel}.W.conc;
+        if r{ligsel}.ligprefix(1)~='B' && isfield(r{t7sel},'BS')
+          tconc(i,j)=r{t7sel}.BS.conc;
+        elseif r{ligsel}.ligprefix(1)~='B' && isfield(r{t7sel},'BX')
+          tconc(i,j)=r{t7sel}.BX.conc;
+        elseif r{ligsel}.ligprefix(1)~='A' && isfield(r{t7sel},'AS')
+          tconc(i,j)=r{t7sel}.AS.conc;
+        elseif r{ligsel}.ligprefix(1)~='A' && isfield(r{t7sel},'AX')
+          tconc(i,j)=r{t7sel}.AX.conc;
+        elseif r{ligsel}.ligprefix(1)~='W' && isfield(r{t7sel},'WS')
+          tconc(i,j)=r{t7sel}.WS.conc;
+        elseif r{ligsel}.ligprefix(1)~='W' && isfield(r{t7sel},'WX')
+          tconc(i,j)=r{t7sel}.WX.conc;
+        else
+          fprintf('Unable to identify primers for template %s with ligation %s\n', r{t7sel}.name, r{ligsel}.name);
         end
       end
     end
