@@ -32,3 +32,5 @@ SELEX/multiround.m
 SELEX/NGSTRP.m
 
 SELEX/analyticTRP2.m
+
+SELEX/timecourse.m

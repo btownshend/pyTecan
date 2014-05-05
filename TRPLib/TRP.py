@@ -152,21 +152,8 @@ class TRP(object):
         adjustSrcDil(ssrc,origdil)
         return tgt
             
-    def runT7(self,theo,src,vol,srcdil,tgt=None,dur=15,stopmaster=None):
-        if tgt==None:
-            tgt=[]
-        if stopmaster==None:
-            stopmaster=["MStpNoTheo" if t==0 else "MStpWithTheo" for t in theo]
-            
-        [theo,src,tgt,srcdil,stopmaster]=listify([theo,src,tgt,srcdil,stopmaster])
-        if len(tgt)==0:
-            for i in range(len(src)):
-                if theo[i]:
-                    tgt.append("%s.T+"%src[i])
-                else:
-                    tgt.append("%s.T-"%src[i])
-
-        tgt=uniqueTargets(tgt)
+    def runT7Setup(self,theo,src,vol,srcdil,tgt):
+        [theo,src,tgt,srcdil]=listify([theo,src,tgt,srcdil])
         # Convert sample names to actual samples
         stgt=findsamps(tgt)
         ssrc=findsamps(src,False)
@@ -184,9 +171,17 @@ class TRP(object):
         self.e.multitransfer([tv for tv in theovols if tv>0.01],self.r.Theo,[stgt[i] for i in range(len(theovols)) if theovols[i]>0],(False,False),ignoreContents=True);
         for i in range(len(ssrc)):
             self.e.transfer(sourcevols[i],ssrc[i],stgt[i],(True,True))
-
+        return tgt
+    
+    def runT7Pgm(self,vol,dur):
         self.e.runpgm("TRP37-%d"%dur,dur, False,vol)
 
+    def runT7Stop(self,theo,vol,tgt,stopmaster=None):
+        [theo,tgt]=listify([theo,tgt])
+        if stopmaster==None:
+            stopmaster=["MStpS_NT" if t==0 else "MStpS_WT" for t in theo]
+            
+        stgt=findsamps(tgt)
         ## Stop
         self.e.dilute(stgt,2)
 
@@ -196,6 +191,24 @@ class TRP(object):
 
         return tgt
     
+    def runT7(self,theo,src,vol,srcdil,tgt=None,dur=15,stopmaster=None):
+        if tgt==None:
+            tgt=[]
+        [theo,src,tgt,srcdil]=listify([theo,src,tgt,srcdil])
+        if len(tgt)==0:
+            for i in range(len(src)):
+                if theo[i]:
+                    tgt.append("%s.T+"%src[i])
+                else:
+                    tgt.append("%s.T-"%src[i])
+
+        tgt=uniqueTargets(tgt)
+
+        tgt=self.runT7Setup(theo,src,vol,srcdil,tgt)
+        self.runT7Pgm(vol,dur)
+        tgt=self.runT7Stop(theo,vol,tgt,stopmaster)
+        return tgt
+        
     def runRT(self,pos,src,vol,srcdil,tgt=None):
         if tgt==None:
             tgt=[]
