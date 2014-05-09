@@ -34,3 +34,5 @@ SELEX/NGSTRP.m
 SELEX/analyticTRP2.m
 
 SELEX/timecourse.m
+
+SELEX/timecourse_auto.m
