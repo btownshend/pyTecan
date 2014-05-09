@@ -113,7 +113,7 @@ for iteration in range(2):
     qpcrdil1=trp.runQPCRDIL(src=t71,tgt=[],vol=100,srcdil=20,dilPlate=True)   
     rt1=trp.runRT(pos=True,src=t71,tgt=[],vol=5,srcdil=2)
     rt1=trp.diluteInPlace(tgt=rt1,dil=5)
-    rt1dil=trp.saveSamps(src=rt1,vol=5,dil=3,plate=trp.e.SAMPLEPLATE)
+    rt1dil=trp.saveSamps(src=rt1,vol=5,dil=10,plate=trp.e.SAMPLEPLATE)
     prods=trp.diluteInPlace(tgt=rt1dil,dil=10)
         
     for i in range(len(qpcrdil1)):
