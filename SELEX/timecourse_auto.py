@@ -12,16 +12,16 @@ from TRPLib.TRP import findsamps
 import debughook
 
 # Configuration for this run (up to 15 total samples in reagent plate)
-timepoints=[0,5,10,15,30,60]
+timepoints=[0,2,5,10,15,30,45,60,90]
 
 input=[
-    "A_sTRSVCntl_S@1nM",
     "A_sTRSVCntl_S@10nM",
-    "A_sTRSVCntl_S@100nM"
+    "A_sTRSVCntl_S@10nM+SuperaseIn",
+    "A_sTRSVCntl_S@10nM+DTT@10mM"
 ]
-srcprefix=["W"]*len(input)
-ligprefix=["A"]*len(input)
-srcsuffix=["X"]*len(input)
+srcprefix=["A"]*len(input)
+ligprefix=["B"]*len(input)
+srcsuffix=["S"]*len(input)
 nreplicates=[1]*len(input)
 stem1=["N7"]*len(input)
 ligate=True
@@ -37,9 +37,10 @@ for k in range(max(nreplicates)):
         if nreplicates[i]>k:
             srcs=srcs+[input[i]]
             tmplqpcr=tmplqpcr+[srcprefix[i]+srcsuffix[i]]
-            ligmaster=ligmaster+["MLig"+ligprefix[i]+stem1[i]]
-            pcr=pcr+[(srcprefix[i]+srcsuffix[i],ligprefix[i]+srcsuffix[i])];
-            stop=stop+["MStp"+srcsuffix[i]];
+#            ligmaster=ligmaster+["MLig"+ligprefix[i]+stem1[i]]
+            pcr.append([srcprefix[i]+srcsuffix[i]])
+            stop=stop+["MStp"+srcsuffix[i]]
+
 
 alllig=[]
 allpcr=[]
@@ -103,14 +104,19 @@ for iteration in range(2):
         
     # Stop one sample immediately for a zero timepoint
     trp.runT7Stop(theo=False,vol=10, tgt=t7tps[0],stopmaster=stop)
-    for i in range(1,len(timepoints)):
+    # Stop the next one after waiting on bench
+    trp.e.w.userprompt("Pausing to incubate first T7 at room temperature...",0,timepoints[1]*60)
+    trp.runT7Stop(theo=False,vol=10, tgt=t7tps[1],stopmaster=stop)
+
+    for i in range(2,len(timepoints)):
         trp.runT7Pgm(vol=10,dur=timepoints[i]-timepoints[i-1])
         trp.runT7Stop(theo=False,vol=10, tgt=t7tps[i],stopmaster=stop)
     
     trp.diluteInPlace(tgt=t71,dil=5)
     # Dilute input samples enough to use in qPCR directly (should be 5000/(rnagain*2*5)  = 20)
     
-    qpcrdil1=trp.runQPCRDIL(src=t71,tgt=[],vol=100,srcdil=20,dilPlate=True)   
+    templatesToQPCR=t7tps[0]+t7tps[-1];
+    qpcrdil1=trp.runQPCRDIL(src=templatesToQPCR,tgt=[],vol=100,srcdil=20,dilPlate=False)   
     rt1=trp.runRT(pos=True,src=t71,tgt=[],vol=5,srcdil=2)
     rt1=trp.diluteInPlace(tgt=rt1,dil=20)
     rt1dil=trp.saveSamps(src=rt1,vol=5,dil=3,plate=trp.e.SAMPLEPLATE)
