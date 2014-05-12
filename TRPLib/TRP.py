@@ -174,7 +174,9 @@ class TRP(object):
         return tgt
     
     def runT7Pgm(self,vol,dur):
-        self.e.runpgm("TRP37-%d"%dur,dur, False,vol)
+        pgm="TRP37-%d"%dur
+        self.e.w.pyrun('PTC\\ptcsetpgm.py %s TEMP@37,%d TEMP@25,2'%(pgm,dur*60))
+        self.e.runpgm(pgm,dur, False,vol)
 
     def runT7Stop(self,theo,vol,tgt,stopmaster=None):
         [theo,tgt]=listify([theo,tgt])
