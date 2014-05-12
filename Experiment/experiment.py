@@ -15,13 +15,13 @@ class Experiment(object):
     QPCRPLATE=Plate("qPCR",4,1,12,8,False,15)
     DILPLATE=Plate("Dilutions",4,2,12,8,False,15)
     WATERLOC=Plate("Water",3,2,1,4,False,100,100000)
-    RNASEAWAYLOC=Plate("Bleach",3,3,1,4,False,0,100000)
+    BLEACHLOC=Plate("Bleach",3,3,1,4,False,0,100000)
     PTCPOS=Plate("PTC",25,1,1,1)
     HOTELPOS=Plate("Hotel",25,0,1,1)
     WASTE=Plate("Waste",20,3,1,1)
     EPPENDORFS=Plate("Eppendorfs",13,1,1,16,False,30,1500)
     WATER=Sample("Water",WATERLOC,None,None,50000)
-    RNASEAWAY=Sample("RNase-Away",RNASEAWAYLOC,0,None,50000)
+    BLEACH=Sample("RNase-Away",BLEACHLOC,0,None,50000)
     DITIMASK=0   # Which tips are DiTis
     headerfile=os.path.expanduser("~/Dropbox/Synbio/Robot/pyTecan/header.gem")
 
@@ -39,7 +39,7 @@ class Experiment(object):
         # self.sanitize()  # Not needed, TRP does it, also first use of tips will do this
         self.useDiTis=False
         self.thermotime=0
-        self.RNASEAWAY.mixLC=liquidclass.LC("RNaseAway-Mix")
+        self.BLEACH.mixLC=liquidclass.LC("RNaseAway-Mix")
         self.ptcrunning=False
         # Access PTC and RIC early to be sure they are working
         self.w.pyrun("PTC\\ptctest.py")
@@ -70,7 +70,7 @@ class Experiment(object):
         print >>fd,self.QPCRPLATE
         print >>fd,self.WATERLOC
         print >>fd,self.WASTE
-        print >>fd,self.RNASEAWAYLOC
+        print >>fd,self.BLEACHLOC
         print >>fd,self.WASHLOC
         
         print >>fd
@@ -92,8 +92,8 @@ class Experiment(object):
         for i in range(4):
             if (fixedTips & (1<<i)) != 0:
                 fixedWells.append(i)
-                self.RNASEAWAY.addhistory("SANITIZE",0,1<<i)
-        self.w.mix(fixedTips,fixedWells,self.RNASEAWAY.mixLC,200,self.RNASEAWAY.plate,nmix);
+                self.BLEACH.addhistory("SANITIZE",0,1<<i)
+        self.w.mix(fixedTips,fixedWells,self.BLEACH.mixLC,200,self.BLEACH.plate,nmix);
         self.w.wash(fixedTips,1,deepvol,True)
         self.cleanTips|=fixedTips
         # print "* Sanitize"
