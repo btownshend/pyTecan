@@ -5,6 +5,8 @@ p=ptc.PTC()   # 10s timeout
 p.setdebug()
 p.execute('FOLDER "TRP"')
 p.program('TRP','TRPOMNI',['TEMP 37,3000'])
+p.program('TRP','TRP37-5',['TEMP 37,300'])
+p.program('TRP','TRP37-10',['TEMP 37,600'])
 p.program('TRP','TRP37-15',['TEMP 37,900'])
 p.program('TRP','TRP37-20',['TEMP 37,1200'])
 p.program('TRP','TRP37-30',['TEMP 37,1800'])
