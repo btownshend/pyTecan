@@ -25,6 +25,7 @@ srcsuffix=["S"]*len(input)
 nreplicates=[1]*len(input)
 stem1=["N7"]*len(input)
 ligate=True
+t7vol=20;
 
 # Setup replicated inputs
 srcs=[]
@@ -94,23 +95,23 @@ for iteration in range(2):
         Sample.clearall()
 
     t71master=["%s.MT"%s for s in srcs]
-    trp.runT7Setup(theo=False,src=srcs,tgt=t71master,vol=len(timepoints)*12.2+15,srcdil=10.0/6)
+    trp.runT7Setup(theo=False,src=srcs,tgt=t71master,vol=len(timepoints)*(t7vol*1.02+2)+15,srcdil=10.0/6)
     t71=[]
     t7tps=[]
     for i in range(len(timepoints)):
-        tp=trp.saveSamps(src=t71master,tgt=["%s.T%d"%(s,timepoints[i]) for s in srcs],vol=10,dil=1,plate=trp.e.SAMPLEPLATE)
+        tp=trp.saveSamps(src=t71master,tgt=["%s.T%d"%(s,timepoints[i]) for s in srcs],vol=t7vol,dil=1,plate=trp.e.SAMPLEPLATE)
         t7tps.append(tp)
         t71=t71+tp
         
     # Stop one sample immediately for a zero timepoint
-    trp.runT7Stop(theo=False,vol=10, tgt=t7tps[0],stopmaster=stop)
+    trp.runT7Stop(theo=False,vol=t7vol, tgt=t7tps[0],stopmaster=stop)
     # Stop the next one after waiting on bench
     trp.e.w.userprompt("Pausing to incubate first T7 at room temperature...",0,timepoints[1]*60)
-    trp.runT7Stop(theo=False,vol=10, tgt=t7tps[1],stopmaster=stop)
+    trp.runT7Stop(theo=False,vol=t7vol, tgt=t7tps[1],stopmaster=stop)
 
     for i in range(2,len(timepoints)):
-        trp.runT7Pgm(vol=10,dur=timepoints[i]-timepoints[i-1])
-        trp.runT7Stop(theo=False,vol=10, tgt=t7tps[i],stopmaster=stop)
+        trp.runT7Pgm(vol=t7vol,dur=timepoints[i]-timepoints[i-1])
+        trp.runT7Stop(theo=False,vol=t7vol, tgt=t7tps[i],stopmaster=stop)
     
     trp.diluteInPlace(tgt=t71,dil=5)
     # Dilute input samples enough to use in qPCR directly (should be 5000/(rnagain*2*5)  = 20)
