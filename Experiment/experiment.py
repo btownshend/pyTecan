@@ -14,14 +14,14 @@ class Experiment(object):
     #    READERPLATE=Plate("Reader",4,1,12,8,False,15)
     QPCRPLATE=Plate("qPCR",4,1,12,8,False,15)
     DILPLATE=Plate("Dilutions",4,2,12,8,False,15)
-    WATERLOC=Plate("Water",3,2,1,4,False,100,15000)
-    RNASEAWAYLOC=Plate("Bleach",3,3,1,4,False,0,15000)
+    WATERLOC=Plate("Water",3,2,1,4,False,100,100000)
+    RNASEAWAYLOC=Plate("Bleach",3,3,1,4,False,0,100000)
     PTCPOS=Plate("PTC",25,1,1,1)
     HOTELPOS=Plate("Hotel",25,0,1,1)
     WASTE=Plate("Waste",20,3,1,1)
     EPPENDORFS=Plate("Eppendorfs",13,1,1,16,False,30,1500)
-    WATER=Sample("Water",WATERLOC,None,None,10000)
-    RNASEAWAY=Sample("RNase-Away",RNASEAWAYLOC,0,None,10000)
+    WATER=Sample("Water",WATERLOC,None,None,50000)
+    RNASEAWAY=Sample("RNase-Away",RNASEAWAYLOC,0,None,50000)
     DITIMASK=0   # Which tips are DiTis
     headerfile=os.path.expanduser("~/Dropbox/Synbio/Robot/pyTecan/header.gem")
 
