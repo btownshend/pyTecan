@@ -238,7 +238,7 @@ class Sample(object):
     def mix(self,tipMask,w,preaspirateAir=False):
 	nmix=4
         if self.isMixed:
-            print "Sample %s is already mixed"%self.name
+            #print "Sample %s is already mixed"%self.name
             return False
         mixvol=self.volume-self.plate.unusableVolume;
         well=[self.well if self.well!=None else 2**(tipMask-1)-1 ]
