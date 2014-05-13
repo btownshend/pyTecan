@@ -367,12 +367,6 @@ class WorkList(object):
         self.list.append('ROMA(2,0,0,0,0,0,60,0,0)')
         self.elapsed+=1.42
 
-        
-    def userprompt(self, text, beeps=0, closetime=-1):
-        'Prompt the user with text.  Beeps = 0 (no sound), 1 (once), 2 (three times), 3 (every 3 seconds).  Close after closetime seconds if > -1'
-        self.flushQueue();
-        self.list.append('UserPrompt("%s",%d,%d)'%(text,beeps,closetime))
-
     def email(self,dest,subject,body='',profile='cdsrobot',onerror=0,attachscreen=1):
         self.list.append('Notification(%d,"%s","%s","%s","%s",%d)'%(attachscreen,profile,dest,subject,body,onerror));
 

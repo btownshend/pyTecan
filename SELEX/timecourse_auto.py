@@ -106,7 +106,7 @@ for iteration in range(2):
     # Stop one sample immediately for a zero timepoint
     trp.runT7Stop(theo=False,vol=t7vol, tgt=t7tps[0],stopmaster=stop)
     # Stop the next one after waiting on bench
-    trp.e.w.userprompt("Pausing to incubate first T7 at room temperature...",0,timepoints[1]*60)
+    trp.e.w.userprompt("Pausing to incubate first T7 at room temperature...",timepoints[1]*60)
     trp.runT7Stop(theo=False,vol=t7vol, tgt=t7tps[1],stopmaster=stop)
 
     for i in range(2,len(timepoints)):
