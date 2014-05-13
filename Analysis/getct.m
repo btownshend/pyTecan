@@ -1,13 +1,15 @@
 % Collect together the Ct's for each sample 
 function result=getct(data,sampname)
 if nargin<2
-  sampnames={data.samps(strcmp({data.samps.plate},'qPCR')).name};
-  for i=1:length(sampnames)
-    qpos=strfind(sampnames{i},'.Q');
+  sampnames={};
+  allnames={data.samps(strcmp({data.samps.plate},'qPCR')).name};
+  for i=1:length(allnames)
+    qpos=strfind(allnames{i},'.Q');
     if length(qpos)~=1
-      error('Unable to find ".Q" in %s\n',sampnames{i});
+      fprintf('Unable to find ".Q" in %s -- ignoring\n',allnames{i});
+    else
+      sampnames{end+1}=allnames{i}(1:qpos-1);
     end
-    sampnames{i}=sampnames{i}(1:qpos-1);
   end
   sampnames=unique(sampnames);
   result={};
