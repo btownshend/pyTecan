@@ -58,20 +58,20 @@ class Sample(object):
             if s.plate==plate and s.well==well:
                 print "Aliasing %s as %s"%(s.name,name)
                 assert(False)
-	    if s.name==name:
-		print "Already have a sample called %s"%name
+            if s.name==name:
+                print "Already have a sample called %s"%name
                 assert(False)
         self.name=name
         self.plate=plate
-	if well>=plate.nx*plate.ny:
-		print "Overflow of plate %s"%str(plate)
-		assert(False)
-		
+        if well>=plate.nx*plate.ny:
+                print "Overflow of plate %s"%str(plate)
+                assert(False)
+                
         self.well=well
-	if isinstance(conc,Concentration) or conc==None:
-		self.conc=conc
-	else:
-		self.conc=Concentration(conc)
+        if isinstance(conc,Concentration) or conc==None:
+                self.conc=conc
+        else:
+                self.conc=Concentration(conc)
         self.volume=volume
         self.initvolume=volume
         if volume>0:
@@ -133,7 +133,7 @@ class Sample(object):
     def dilute(self,factor):
         'Dilute sample -- just increases its recorded concentration'
         if self.conc!=None:
-		self.conc=self.conc.dilute(1.0/factor)
+                self.conc=self.conc.dilute(1.0/factor)
 
     def aspirate(self,tipMask,w,volume,multi=False):
         if volume<2 and not multi and self.name!="Water":
@@ -142,15 +142,15 @@ class Sample(object):
         # Aspirates more than dispensed
         aspVolume=volume*ASPIRATEFACTOR+ASPIRATEEXTRA+MULTIEXCESS
             
-	if self.well==None:
-		well=[]
-		for i in range(4):
-			if (tipMask & (1<<i)) != 0:
-			    well.append(i)
-	else:
-		well=[self.well]
-	
-	lc=self.chooseLC(aspVolume)
+        if self.well==None:
+                well=[]
+                for i in range(4):
+                        if (tipMask & (1<<i)) != 0:
+                            well.append(i)
+        else:
+                well=[self.well]
+        
+        lc=self.chooseLC(aspVolume)
         w.aspirate(tipMask,well,lc,volume,self.plate)
         # Manual conditioning handled in worklist
         for k in self.ingredients:
@@ -188,10 +188,10 @@ class Sample(object):
 
     def addhistory(self,name,vol,tip):
         if vol>0:
-	    if SHOWTIPS:
-		    str="%s[%.1f#%d]"%(name,vol,tip)
-	    else:
-		    str="%s[%.1f]"%(name,vol)
+            if SHOWTIPS:
+                    str="%s[%.1f#%d]"%(name,vol,tip)
+            else:
+                    str="%s[%.1f]"%(name,vol)
             if len(self.history)>0:
                 self.history=self.history+" +"+str
             else:
@@ -236,7 +236,7 @@ class Sample(object):
         
         # Mix, return true if actually did a mix, false otherwise
     def mix(self,tipMask,w,preaspirateAir=False):
-	nmix=4
+        nmix=4
         if self.isMixed:
             #print "Sample %s is already mixed"%self.name
             return False
@@ -279,16 +279,16 @@ class Sample(object):
             s+=" %-18s"%""
         s+=" %-30s"%("(%s.%s,%.2f ul)"%(str(self.plate),self.plate.wellname(self.well),self.volume))
         s+=" %s"%self.history
-	if SHOWINGREDIENTS:
-		s+=self.ingredientstr()
+        if SHOWINGREDIENTS:
+                s+=self.ingredientstr()
         return s
 
     def ingredientstr(self):
-	s="{"
+        s="{"
         for k in self.ingredients:
             s+="%s:%.4g "%(k,self.ingredients[k])
         s+="}"
-	return s
+        return s
 
     @staticmethod
     def printprep(fd=sys.stdout):
@@ -299,8 +299,8 @@ class Sample(object):
                 c="[%s]"%str(s.conc)
             else:
                 c=""   
-	    if s.volume==s.initvolume:
-		'Not used'
+            if s.volume==s.initvolume:
+                'Not used'
                 note="%s%s in %s.%s not consumed"%(s.name,c,str(s.plate),s.plate.wellname(s.well))
                 notes=notes+"\n"+note
             elif s.initvolume>0:
