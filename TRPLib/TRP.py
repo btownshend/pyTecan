@@ -327,7 +327,7 @@ class TRP(object):
         self.e.stage('QPCRDIL',[Reagents.SSD],ssrc,stgt,max(vol))
         return tgt
         
-    def runQPCR(self,src,vol,srcdil,primers=["A","B"]):
+    def runQPCR(self,src,vol,srcdil,primers=["A","B"],nreplicates=1):
         ## QPCR setup
         # e.g. trp.runQPCR(src=["1.RT-B","1.RT+B","1.RTNeg-B","1.RTNeg+B","2.RT-A","2.RT-B","2.RTNeg+B","2.RTNeg+B"],vol=10,srcdil=100)
         self.e.w.comment("runQPCR: primers=%s, source=%s"%([p for p in primers],[s for s in src]))
@@ -337,10 +337,15 @@ class TRP(object):
 
         # Build a list of sets to be run
         all=[]
-        for i in range(len(ssrc)):
-            for p in primers:
-                tgt=findsamps(["%s.Q%s"%(src[i],p)],True,Experiment.QPCRPLATE)
-                all=all+[(ssrc[i],tgt[0],p,vol[i])]
+        for repl in range(nreplicates):
+            for i in range(len(ssrc)):
+                for p in primers:
+                    if repl==0:
+                        sampname="%s.Q%s"%(src[i],p)
+                    else:
+                        sampname="%s.Q%s.%d"%(src[i],p,repl+1)
+                    tgt=findsamps([sampname],True,Experiment.QPCRPLATE)
+                    all=all+[(ssrc[i],tgt[0],p,vol[i])]
 
         # Fill the master mixes
         dil={}
