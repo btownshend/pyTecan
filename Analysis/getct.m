@@ -33,7 +33,7 @@ parts={};
 pdot=1;
 for i=1:length(dots)
   pt=sampname(pdot:dots(i)-1);
-  if pt(1)~='D'
+  if pt(1)~='D' && pt(1)~='R' && (pt(1)<'1' || pt(1)>'9')
     parts{end+1}=pt;
   end
   pdot=dots(i)+1;
