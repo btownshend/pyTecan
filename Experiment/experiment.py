@@ -97,7 +97,7 @@ class Experiment(object):
             if (fixedTips & (1<<i)) != 0:
                 fixedWells.append(i)
                 self.BLEACH.addhistory("SANITIZE",0,1<<i)
-        self.w.mix(fixedTips,fixedWells,self.BLEACH.mixLC,200,self.BLEACH.plate,nmix);
+        self.w.mix(fixedTips,fixedWells,self.BLEACH.mixLC,200,self.BLEACH.plate,nmix,False);
         self.w.wash(fixedTips,1,deepvol,True)
         self.cleanTips|=fixedTips
         # print "* Sanitize"

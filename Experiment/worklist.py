@@ -147,8 +147,8 @@ class WorkList(object):
     def dispense(self,tipMask,wells, liquidClass, volume, loc):
         self.aspirateDispense('Dispense',tipMask,wells, liquidClass, volume, loc)
 
-    def mix(self,tipMask,wells, liquidClass, volume, loc, cycles=3):
-        self.aspirateDispense('Mix',tipMask,wells, liquidClass, volume, loc, cycles)
+    def mix(self,tipMask,wells, liquidClass, volume, loc, cycles=3, allowDelay=True):
+        self.aspirateDispense('Mix',tipMask,wells, liquidClass, volume, loc, cycles, allowDelay)
         
     def aspirateDispense(self,op,tipMask,wells, liquidClass, volume, loc, cycles=None,allowDelay=True):
         'Execute or queue liquid handling operation'
