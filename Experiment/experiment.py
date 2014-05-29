@@ -82,12 +82,16 @@ class Experiment(object):
         Sample.printallsamples("All Samples:",fd)
         fd.close()
         
-    def sanitize(self,nmix=1,deepvol=20):
+    def sanitize(self,nmix=1,deepvol=20,force=False):
         'Deep wash including RNase-Away treatment'
+        fixedTips=(~self.DITIMASK)&15
         self.w.flushQueue()
+        if not force and fixedTips==self.cleanTips:
+            # print no sanitize needed
+            self.w.comment("Sanitize not needed cleanTips=%d"%self.cleanTips)
+            return
         self.w.comment("Sanitize")
         self.w.wash(15,1,2)
-        fixedTips=(~self.DITIMASK)&15
         fixedWells=[]
         for i in range(4):
             if (fixedTips & (1<<i)) != 0:
@@ -101,7 +105,6 @@ class Experiment(object):
     def cleantip(self):
         'Get the mask for a clean tip, washing if needed'
         if self.cleanTips==0:
-            self.cleanTips=(~self.DITIMASK)&15
             #self.w.wash(self.cleanTips)
             self.sanitize()
         tipMask=1
