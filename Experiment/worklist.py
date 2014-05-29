@@ -461,7 +461,9 @@ class WorkList(object):
             self.list.insert(0,cmd)
         else:
             self.list.append(cmd)
-        
+        if timeout>0:
+            self.elapsed+=timeout
+            
     def variable(self,varname,default,userprompt=None,minval=None,maxval=None):
         if minval!=None or maxval!=None:
             limitrange=1
