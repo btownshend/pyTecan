@@ -1,4 +1,5 @@
 "Module for generating a worklist from a set of commands"
+import math
 import string
 from plate import Plate
 import shutil
@@ -67,65 +68,124 @@ class WorkList(object):
     def optimizeQueue(self):
         'Optimize operations in queue'
         # assert(False)    # Currently broken, manual mix with a chain of aspirateNC/dispense ends up doing all the aspirates first, then all the dispenses
-        # for d in self.opQueue:
-        #     print "PRE-OPT %s:\tTip %d, Loc (%d,%d) Wells %s"%(d[0],d[1],d[5].grid,d[5].pos,str(d[2]))
-        # As much as possible, move together operations on a single plate
-        newQueue=[]
-        oldlen=len(self.opQueue)
-        while len(self.opQueue)>0:
-            d1=self.opQueue[0]
-            newQueue.append(d1)
-            self.opQueue.remove(d1)
-            dirtyTips=0;
-            for d in self.opQueue:
-                if d[5].grid==d1[5].grid and d[5].pos==d1[5].pos and d[0]==d1[0]:
-                    'Same grid,loc'
-                    if d[1]&dirtyTips != 0:
-                        'Tip used in intervening operations'
-                        print 'Intervening tip use:',[str(item) for item in d]
-                        break
-                    newQueue.append(d)
-                    #self.opQueue.remove(d)
-                else:
-                    dirtyTips|=d[1]
-            self.opQueue=[d for d in self.opQueue if d not in newQueue]
-        # for d in newQueue:
-        #     print "POSTOPT %s:\tTip %d, Loc (%d,%d) Wells %s"%(d[0],d[1],d[5].grid,d[5].pos,str(d[2]))
-        assert(len(newQueue)+len(self.opQueue)==oldlen)
-        self.opQueue=newQueue
+        optimizeDebug=False
+
+        if optimizeDebug:
+            print "Optimizing queue with %d entries"%len(self.opQueue)
+        # Assign IDs
+        for i in range(len(self.opQueue)):
+            self.opQueue[i].append([i])
+
+        # Build dependency list
+        dependencies=[]
+        for i in range(len(self.opQueue)):
+            d=self.opQueue[i]
+            dependencies.append(set())
+            for j in range(i):
+                dp=self.opQueue[j]
+                if d[5].grid==dp[5].grid and d[5].pos==dp[5].pos and d[2]==dp[2] and d[0]!=dp[0]:
+                    # Different operation from same location (ok to have multiple aspirates or dispenses from same location)
+                    dependencies[i] |= dependencies[j]
+                    dependencies[i].add(j)
+#                    if optimizeDebug:
+ #                       print "%d,%d: same location"%(i,j)
+                elif d[1]==dp[1]:
+                    # Same tip
+                    dependencies[i] |= dependencies[j]
+                    dependencies[i].add(j)
+#                    if optimizeDebug:
+#                        print "%d,%d: same tip"%(i,j)
+
+        # Compute all possible merges
+        mergeable=[]
+        for i in range(len(self.opQueue)):
+            d1=self.opQueue[i]
+            mergeable.append(set())
+            for j in range(len(self.opQueue)):
+                d2=self.opQueue[j]
+                if d1[0]==d2[0]  and d1[1]!=d2[1] and d1[5]==d2[5]:
+                    if optimizeDebug:
+                        print "  CHECK %s %s:\tTip %d, Loc (%d,%d) Wells %s"%(d1[7],d1[0],d1[1],d1[5].grid,d1[5].pos,str(d1[2]))
+                        print "   WITH %s %s:\tTip %d, Loc (%d,%d) Wells %s"%(d2[7],d2[0],d2[1],d2[5].grid,d2[5].pos,str(d2[2])),
+                    tipdiff=math.log(d2[1],2)-math.floor(math.log(d1[1],2))
+                    welldiff=d2[2][0]-max(d1[2])
+                    if tipdiff!=welldiff:
+                        if optimizeDebug:
+                            print "  tipdiff (%d) != welldiff(%d)"%(tipdiff,welldiff)
+                    elif d1[2][0]/d1[5].ny != d2[2][0]/d2[5].ny:
+                        if optimizeDebug:
+                            print "  wells in different columns of %d-row plate"%d1[5].ny
+                    elif d1[3].name!=d2[3].name:
+                        if optimizeDebug:
+                            print "  liquid classes different",d1[3],d2[3]
+                    elif d1[6]!=d2[6]:
+                        if optimizeDebug:
+                            print "  mix cycles different"
+                    else:
+                        if optimizeDebug:
+                            print "  can merge"
+                        mergeable[i].add(j)
+
+        if optimizeDebug:
+            for i in range(len(self.opQueue)):
+                d=self.opQueue[i]
+                print "PRE-OPT %s:  %s:\tTip %d, Loc (%d,%d) Wells %s, depends on %s, merges with %s"%(d[7],d[0],d[1],d[5].grid,d[5].pos,str(d[2]),dependencies[i],mergeable[i])
 
         # Try to combine multiple operations into one command
         todelete=[]
-        for i in range(len(self.opQueue)-1):
-            d1=self.opQueue[i];
-            d2=self.opQueue[i+1];
-            if False and d1[0]=='Dispense' and d2[0]=='Mix' and d1[1]==d2[1] and i+2<len(self.opQueue) and self.opQueue[i+2][1]!=d1[1]:
-                # Special case of dispense/mix
-                #print "DISPENSE/MIX"
-                d2=self.opQueue[i+2]
-                self.opQueue[i+2]=self.opQueue[i+1]
-                self.opQueue[i+1]=d2
-            if d1[0]==d2[0]  and d1[1]!=d2[1] and d1[5]==d2[5]:
-                #print "COMBINE %s:\tTip %d, Loc (%d,%d) Wells %s"%(d1[0],d1[1],d1[5].grid,d1[5].pos,str(d1[2]))
-                # print "   WITH %s:\tTip %d, Loc (%d,%d) Wells %s"%(d2[0],d2[1],d2[5].grid,d2[5].pos,str(d2[2]))
-                if (d2[1]<d1[1]) or (((d2[1]>>1) &d1[1])==0):
-                    pass # print "tipmasks out of order (%d,%d)"%(d2[1],d1[1])
-                elif d2[2][0] != max(d1[2])+1:
-                    pass # print "wells not adjacent"
-                elif d1[2][0]/d1[5].ny != d2[2][0]/d2[5].ny:
-                    pass # print "wells in different columns of %d-row plate"%d1[5].ny
-                elif d1[3].name!=d2[3].name:
-                    pass # print "liquid classes different",d1[3],d2[3]
-                elif d1[6]!=d2[6]:
-                    pass # print "mix cycles different"
-                else:
-                    merge=[d1[0],d1[1]|d2[1],d1[2]+d2[2],d1[3],d1[4]+d2[4],d1[5],d1[6]];
-                    #print " MERGED %s:\tTip %d, Loc (%d,%d) Wells %s"%(merge[0],merge[1],merge[5].grid,merge[5].pos,str(merge[2]))
-                    # self.comment("Merged operations")
-                    self.opQueue[i+1]=merge
+        newQueue=[]
+        while len(self.opQueue)>len(todelete):
+            #print "%d entries left to process"%(len(self.opQueue)-len(todelete))
+            # Find 2 nodes that are mergeable and have no dependencies
+            for i in range(len(self.opQueue)):
+                if i in todelete or len(dependencies[i])>0:
+                    continue
+                #print "Attempt to merge %s with one of %s"%(self.opQueue[i][7],mergeable[i])
+                m=set()
+                m.update(mergeable[i])
+                for j in m:
+                    if j in todelete or len(dependencies[j])>0:
+                        continue
+                    d1=self.opQueue[i]
+                    d2=self.opQueue[j]
+                    merge=[d1[0],d1[1]|d2[1],sorted(d1[2]+d2[2]),d1[3],d1[4]+d2[4],d1[5],d1[6],d1[7]+d2[7]]
+                    self.opQueue[i]=merge
+                    todelete.append(j)
+                    # Redirect dependencies
+                    for k in range(len(dependencies)):
+                        if j in dependencies[k]:
+                            dependencies[k].add(i)
+                            dependencies[k].remove(j)
+                    # Other mergeables
+                    mergeable[i] &= mergeable[j]
+                    #self.comment("Merged operations")
+                    if optimizeDebug:
+                        print "MERGED %s %s:\tTip %d, Loc (%d,%d) Wells %s depends on %s, merges with %s "%(merge[7],merge[0],merge[1],merge[5].grid,merge[5].pos,str(merge[2]),dependencies[i],mergeable[i])
+
+            # Finished doing all the merges we can do with the current set of operations that don't depend on any prior operations
+            # Find something to emit/delete
+            emitted=False
+            for maxMergeable in range(len(self.opQueue)):
+                for i in range(len(self.opQueue)):
+                    if i in todelete or len(dependencies[i])>0 or len(mergeable[i])>maxMergeable:
+                        continue
+                    # Emit i
+                    #print "Emit %s"%self.opQueue[i][7]
+                    emitted=True
+                    newQueue.append(self.opQueue[i])
                     todelete.append(i)
+                    # Remove all dependencies on deleted entries
+                    for k in range(len(dependencies)):
+                        dependencies[k].discard(i)
+                    break
+                if emitted:
+                    break
                 
-        self.opQueue[:]=[self.opQueue[z] for z in range(len(self.opQueue)) if z not in todelete]
+        self.opQueue=newQueue
+        for i in range(len(self.opQueue)):
+            d=self.opQueue[i]
+            if optimizeDebug:
+                print "POST-OPT %s:  %s:\tTip %d, Loc (%d,%d) Wells %s"%(d[7],d[0],d[1],d[5].grid,d[5].pos,str(d[2]))
         
     def flushQueue(self):
         if not self.delayEnabled or len(self.opQueue)==0:

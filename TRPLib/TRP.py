@@ -357,12 +357,10 @@ class TRP(object):
             dil[p]=1.0/(1-1/mq.conc.dilutionneeded())
             
         # Add the samples
-        self.e.w.setOptimization(True)
         for s in ssrc:
             t=[a[1] for a in all if a[0]==s]
             v=[a[3]/dil[a[2]] for a in all if a[0]==s]
             for i in range(len(t)):
                 self.e.transfer(v[i],s,t[i],(False,False))
-        self.e.w.setOptimization(False)
         
         return [a[1] for a in all]
