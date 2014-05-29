@@ -133,7 +133,7 @@ class WorkList(object):
         self.comment('*Flush queue')
         self.optimizeQueue()
         for d in self.opQueue:
-            self.aspirateDispense(d[0],d[1],d[2],d[3],d[4],d[5],d[6],False);
+            self.aspirateDispense(d[0],d[1],d[2],d[3],d[4],d[5],d[6],False)
         self.opQueue=[]
         
     #def aspirate(tipMask, liquidClass, volume, loc, spacing, ws):
@@ -216,7 +216,7 @@ class WorkList(object):
             spacing=2
         allvols=[0 for x in range(12)]
         tip=0
-        tipTmp=tipMask;
+        tipTmp=tipMask
         for i in range(len(wells)):
             while tipTmp&1 == 0:
                 tipTmp=tipTmp>>1
@@ -368,7 +368,7 @@ class WorkList(object):
         self.elapsed+=1.42
 
     def email(self,dest,subject,body='',profile='cdsrobot',onerror=0,attachscreen=1):
-        self.list.append('Notification(%d,"%s","%s","%s","%s",%d)'%(attachscreen,profile,dest,subject,body,onerror));
+        self.list.append('Notification(%d,"%s","%s","%s","%s",%d)'%(attachscreen,profile,dest,subject,body,onerror))
 
     def condition(self,varname,cond,value,dest):
         'Conditional - jump to given label (comment) if (variable cond value) is true'
@@ -383,7 +383,7 @@ class WorkList(object):
         else:
             print "Bad condition '%s' to condition()"%cond
             assert(0)
-        self.list.append('If("%s",%d,"%s","%s")'%(varname,condval,value,dest));
+        self.list.append('If("%s",%d,"%s","%s")'%(varname,condval,value,dest))
                   
     def comment(self, text,prepend=False):
         if len(text) > 200:
