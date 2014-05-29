@@ -372,6 +372,7 @@ class WorkList(object):
 
     def condition(self,varname,cond,value,dest):
         'Conditional - jump to given label (comment) if (variable cond value) is true'
+        self.flushQueue()
         if cond=='==':
             condval=0
         elif cond=='!=':
@@ -394,6 +395,7 @@ class WorkList(object):
             self.list.append('Comment("%s")'%text)
 
     def userprompt(self, text,timeout=-1,prepend=False):
+        self.flushQueue()
         cmd='UserPrompt("%s",0,%d)'%(text,timeout)
         if prepend:
             self.list.insert(0,cmd)
@@ -413,6 +415,7 @@ class WorkList(object):
                          
     def execute(self, command, wait=True, resultvar=None):
         'Execute an external command'
+        self.flushQueue()
         flags=0
         if wait:
             flags=flags | 2
@@ -435,6 +438,7 @@ class WorkList(object):
 
     def dump(self):
         'Dump current worklist'
+        self.flushQueue()
         for i in range(len(self.list)):
             print self.list[i]
 
@@ -446,6 +450,7 @@ class WorkList(object):
         
     def saveworklist(self,filename):
         'Save worklist in a file in format that Gemini can load as a worklist'
+        self.flushQueue()
         fd=open(filename,'w')
         for i in range(len(self.list)):
             print >>fd, "B;%s"%string.replace(str(self.list[i]),'\n','\f\a')
@@ -453,6 +458,7 @@ class WorkList(object):
         
     def savegem(self,headerfile,filename):
         'Save worklist in a file in format that Gemini can load as an experiment'
+        self.flushQueue()
         shutil.copy(headerfile,filename)
         fd=open(filename,'a')
         for i in range(len(self.list)):
