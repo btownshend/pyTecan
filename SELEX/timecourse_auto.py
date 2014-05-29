@@ -12,12 +12,11 @@ from TRPLib.TRP import findsamps
 import debughook
 
 # Configuration for this run (up to 15 total samples in reagent plate)
-timepoints=[0,2,5,10,15,30,45,60,90]
+timepoints=[2,4,7,10,15,30,45,60,90]
 
 input=[
-    "A_sTRSVCntl_S@10nM",
-    "A_sTRSVCntl_S@10nM+SuperaseIn",
-    "A_sTRSVCntl_S@10nM+DTT@10mM"
+    "A_L2b12_S@10nM",
+    "A_L2b12_S@10nM+Theo"
 ]
 srcprefix=["A"]*len(input)
 ligprefix=["B"]*len(input)
@@ -25,7 +24,7 @@ srcsuffix=["S"]*len(input)
 nreplicates=[1]*len(input)
 stem1=["N7"]*len(input)
 ligate=True
-t7vol=20;
+t7vol=10;
 
 # Setup replicated inputs
 srcs=[]
@@ -84,6 +83,7 @@ reagents=None
 for iteration in range(2):
     print "Iteration ",iteration+1
     trp=TRP()
+    trp.e.w.setOptimization(True)
 
     if iteration==0:
         trp.addTemplates(input,stockconc=10.0/6.0,units="x",plate=Experiment.EPPENDORFS)   # Add a template
@@ -96,28 +96,26 @@ for iteration in range(2):
 
     t71master=["%s.MT"%s for s in srcs]
     trp.runT7Setup(theo=False,src=srcs,tgt=t71master,vol=len(timepoints)*(t7vol*1.02+2)+15,srcdil=10.0/6)
+    startTime=trp.e.w.elapsed
+    print "T7 Setup done after %.1f minutes"%(startTime/60)
     t71=[]
-    t7tps=[]
+    stopDelay=0.7*60
     for i in range(len(timepoints)):
+        trp.e.sanitize()
+        pauseTime=(timepoints[i]*60-(trp.e.w.elapsed-startTime)-stopDelay)
+        if pauseTime>0:
+            print "Pausing for %.1f minutes"%(pauseTime/60.0)
+            trp.e.w.userprompt("Pausing to incubate first T7 at room temperature...",pauseTime)
         tp=trp.saveSamps(src=t71master,tgt=["%s.T%d"%(s,timepoints[i]) for s in srcs],vol=t7vol,dil=1,plate=trp.e.SAMPLEPLATE)
-        t7tps.append(tp)
+        trp.runT7Stop(theo=False,vol=t7vol,tgt=tp,stopmaster=stop)
+        trp.e.w.flushQueue()
+        print "T7 stop %d done at %.1f minutes"%(i,(trp.e.w.elapsed-startTime)/60.0)
         t71=t71+tp
         
-    # Stop one sample immediately for a zero timepoint
-    trp.runT7Stop(theo=False,vol=t7vol, tgt=t7tps[0],stopmaster=stop)
-    # Stop the next one after waiting on bench
-    trp.e.w.userprompt("Pausing to incubate first T7 at room temperature...",timepoints[1]*60)
-    trp.runT7Stop(theo=False,vol=t7vol, tgt=t7tps[1],stopmaster=stop)
-
-    for i in range(2,len(timepoints)):
-        trp.runT7Pgm(vol=t7vol,dur=timepoints[i]-timepoints[i-1])
-        trp.runT7Stop(theo=False,vol=t7vol, tgt=t7tps[i],stopmaster=stop)
-    
     trp.diluteInPlace(tgt=t71,dil=5)
+
     # Dilute input samples enough to use in qPCR directly (should be 5000/(rnagain*2*5)  = 20)
-    
-    templatesToQPCR=t7tps[0]+t7tps[-1];
-    qpcrdil1=trp.runQPCRDIL(src=templatesToQPCR,tgt=[],vol=100,srcdil=20,dilPlate=False)   
+    qpcrdil1=trp.runQPCRDIL(src=t71,tgt=[],vol=100,srcdil=20,dilPlate=False)   
     rt1=trp.runRT(pos=True,src=t71,tgt=[],vol=5,srcdil=2)
     rt1=trp.diluteInPlace(tgt=rt1,dil=20)
     rt1dil=trp.saveSamps(src=rt1,vol=5,dil=3,plate=trp.e.SAMPLEPLATE)
