@@ -37,8 +37,8 @@ for k in range(max(nreplicates)):
         if nreplicates[i]>k:
             srcs=srcs+[input[i]]
             tmplqpcr=tmplqpcr+[srcprefix[i]+srcsuffix[i]]
-#            ligmaster=ligmaster+["MLig"+ligprefix[i]+stem1[i]]
-            pcr.append([srcprefix[i]+srcsuffix[i]])
+            ligmaster=ligmaster+["MLig"+ligprefix[i]+stem1[i]]
+            pcr=pcr+[(srcprefix[i]+srcsuffix[i],ligprefix[i]+srcsuffix[i])]
             stop=stop+["MStp"+srcsuffix[i]]
 
 
@@ -95,9 +95,8 @@ for iteration in range(2):
         Sample.clearall()
 
     t71master=["%s.MT"%s for s in srcs]
-    trp.runT7Setup(theo=False,src=srcs,tgt=t71master,vol=len(timepoints)*(t7vol*1.02+2)+15,srcdil=10.0/6)
+    trp.runT7Setup(theo=False,src=srcs,tgt=t71master,vol=len(timepoints)*(t7vol*1.02+2)+15+30,srcdil=10.0/6)
     startTime=trp.e.w.elapsed
-    print "T7 Setup done after %.1f minutes"%(startTime/60)
     t71=[]
     stopDelay=0.7*60
     for i in range(len(timepoints)):
@@ -117,9 +116,9 @@ for iteration in range(2):
     # Dilute input samples enough to use in qPCR directly (should be 5000/(rnagain*2*5)  = 20)
     qpcrdil1=trp.runQPCRDIL(src=t71,tgt=[],vol=100,srcdil=20,dilPlate=False)   
     rt1=trp.runRT(pos=True,src=t71,tgt=[],vol=5,srcdil=2)
-    rt1=trp.diluteInPlace(tgt=rt1,dil=20)
-    rt1dil=trp.saveSamps(src=rt1,vol=5,dil=3,plate=trp.e.SAMPLEPLATE)
-    prods=trp.diluteInPlace(tgt=rt1dil,dil=10)
+    rt1=trp.diluteInPlace(tgt=rt1,dil=5)
+    lig1=trp.runLig(src=rt1,tgt=[],vol=10,srcdil=3,master=ligmaster)
+    prods=trp.diluteInPlace(tgt=lig1,dil=10)
         
     for i in range(len(qpcrdil1)):
         trp.runQPCR(src=qpcrdil1[i],vol=15,srcdil=10.0/4,primers=[tmplqpcr[i]])
