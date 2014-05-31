@@ -266,13 +266,19 @@ class Sample(object):
             else:
                 # Use special mix LC which aspirates from bottom, dispenses above, faster aspirate;  do last dispense at bottom to avoid droplet on tip
                 for i in range(nmix):
-                    w.aspirateNC(tipMask,well,self.mixLC,mixvol,self.plate)
+                    if i==0:
+                        # Aspirate a little extra (which ends up discarded) to avoid dispensing any air
+                        w.aspirateNC(tipMask,well,self.mixLC,mixvol+ASPIRATEEXTRA,self.plate)
+                    else:
+                        w.aspirateNC(tipMask,well,self.mixLC,mixvol,self.plate)
                     if i==nmix-1:
                         # Dispense under liquid to avoid droplet
                         w.dispense(tipMask,well,self.chooseLC(mixvol),mixvol,self.plate)
                     else:
                         w.dispense(tipMask,well,self.mixLC,mixvol,self.plate)
                 self.history+="(MT)"
+                self.addhistory("MT",-1,tipMask)
+                self.volume-=ASPIRATEEXTRA
 
             tiphistory[tipMask]+=" %s-Mix[%d]"%(self.name,mixvol)
             self.isMixed=True
