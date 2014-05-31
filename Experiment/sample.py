@@ -141,7 +141,6 @@ class Sample(object):
         
         # Aspirates more than dispensed
         aspVolume=volume*ASPIRATEFACTOR+ASPIRATEEXTRA+MULTIEXCESS
-            
         if self.well==None:
                 well=[]
                 for i in range(4):
@@ -151,7 +150,7 @@ class Sample(object):
                 well=[self.well]
         
         lc=self.chooseLC(aspVolume)
-        w.aspirate(tipMask,well,lc,volume,self.plate)
+        w.aspirate(tipMask,well,lc,aspVolume,self.plate)
         # Manual conditioning handled in worklist
         for k in self.ingredients:
             self.ingredients[k] *= (self.volume-aspVolume)/self.volume
