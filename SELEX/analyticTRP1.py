@@ -87,7 +87,7 @@ for iteration in range(2):
     #print t71
     t71=trp.diluteInPlace(tgt=t71,dil=5)
     # Dilute input samples enough to use in qPCR directly (should be 5000/(rnagain*2*5)  = 20)
-    qpcrdil1=trp.runQPCRDIL(src=t71,tgt=[],vol=100,srcdil=20,dilPlate=True)
+    qpcrdil1=trp.runQPCRDIL(src=t71,tgt=[],vol=100,srcdil=20,dilPlate=False)
     
     rt1=trp.runRT(pos=True,src=t71,tgt=[],vol=30,srcdil=2)
     rt1=trp.diluteInPlace(tgt=rt1,dil=5)
@@ -96,7 +96,7 @@ for iteration in range(2):
     prods=trp.diluteInPlace(tgt=lig,dil=10)
     print "prod=",prods
     for i in range(len(qpcrdil1)):
-        trp.runQPCR(src=qpcrdil1[i],vol=15,srcdil=10.0/4,primers=[tmplqpcr[i]])
+        trp.runQPCR(src=qpcrdil1[i],vol=15,srcdil=10.0/4,primers=[tmplqpcr[i]],nreplicates=3)
 
     for p in pcr1:
         trp.runQPCR(src=prods[0:3],vol=15,srcdil=10.0/4,primers=p,nreplicates=3)
