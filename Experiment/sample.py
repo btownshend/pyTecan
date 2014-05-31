@@ -215,8 +215,16 @@ class Sample(object):
             tiphistory[tip]+=" %s"%fstr
         else:
             tiphistory[tip]=fstr
-            
-        
+
+    @staticmethod
+    def addallhistory(msg,addToEmpty=False):
+        'Add history entry to all samples (such as # during thermocycling)'
+        for s in __allsamples:
+            if len(s.history)>0:
+                s.history+=" "+msg
+            elif addToEmpty:
+                s.history=msg
+                
     def addingredients(self,src,vol):
         'Update ingredients by adding ingredients from src'
         for k in src.ingredients:

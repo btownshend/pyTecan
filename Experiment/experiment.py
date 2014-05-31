@@ -294,6 +294,7 @@ class Experiment(object):
         self.w.pyrun('PTC\\ptcrun.py %s CALC %s,%d %d'%(pgm,hotlidmode,hotlidtemp,volume))
         self.thermotime+=duration*60+self.w.elapsed   # Add on elapsed time so we can cancel out intervening time in waitpgm()
         self.ptcrunning=True
+        Sample.addallhistory("{%s}"%pgm,False)
         if waitForCompletion:
             self.waitpgm()
             
