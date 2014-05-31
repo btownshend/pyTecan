@@ -95,7 +95,7 @@ for iteration in range(2):
         Sample.clearall()
 
     t71master=["%s.MT"%s for s in srcs]
-    trp.runT7Setup(theo=False,src=srcs,tgt=t71master,vol=len(timepoints)*(t7vol*1.02+2)+15+30,srcdil=10.0/6)
+    trp.runT7Setup(theo=False,src=srcs,tgt=t71master,vol=len(timepoints)*(t7vol*1.02+2)+1+15,srcdil=10.0/6)
     startTime=trp.e.w.elapsed
     t71=[]
     stopDelay=0.7*60
