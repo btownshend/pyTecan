@@ -5,9 +5,10 @@ from concentration import Concentration
 
 ASPIRATEFACTOR=1.02
 ASPIRATEEXTRA=1.0
-MINMIXTOPVOLUME=50   # Use manual mix if trying to mix more than this volume  (aspirates at ZMax-1.5mm, dispenses at ZMax-5mm)
 #MINLIQUIDDETECTVOLUME=70
 MINLIQUIDDETECTVOLUME=1000  # Liquid detect may be broken
+#MINMIXTOPVOLUME=50   # Use manual mix if trying to mix more than this volume  (aspirates at ZMax-1.5mm, dispenses at ZMax-5mm)
+MINMIXTOPVOLUME=1e10   # Disabled manual mix -- may be causing bubbles
 MULTIEXCESS=1  # Excess volume aspirate when using multi-dispense
 SHOWTIPS=False
 SHOWINGREDIENTS=False
