@@ -98,7 +98,7 @@ for iteration in range(2):
     trp.runT7Setup(theo=False,src=srcs,tgt=t71master,vol=len(timepoints)*(t7vol*1.02+2)+1+15+20,srcdil=10.0/6)
     startTime=trp.e.w.elapsed
     t71=[]
-    stopDelay=0.7*60
+    stopDelay=0*60
     for i in range(len(timepoints)):
         trp.e.sanitize()
         pauseTime=(timepoints[i]*60-(trp.e.w.elapsed-startTime)-stopDelay)
