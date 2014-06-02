@@ -12,7 +12,7 @@ from TRPLib.TRP import findsamps
 import debughook
 
 # Configuration for this run (up to 15 total samples in reagent plate)
-timepoints=[2,4,7,10,15,30,45,60,90]
+timepoints=[2,5,10,15,30,45,60,90,120]
 
 input=[
     "A_L2b12_S@10nM",
@@ -95,7 +95,7 @@ for iteration in range(2):
         Sample.clearall()
 
     t71master=["%s.MT"%s for s in srcs]
-    trp.runT7Setup(theo=False,src=srcs,tgt=t71master,vol=len(timepoints)*(t7vol*1.02+2)+1+15,srcdil=10.0/6)
+    trp.runT7Setup(theo=False,src=srcs,tgt=t71master,vol=len(timepoints)*(t7vol*1.02+2)+1+15+20,srcdil=10.0/6)
     startTime=trp.e.w.elapsed
     t71=[]
     stopDelay=0.7*60
@@ -107,11 +107,11 @@ for iteration in range(2):
             trp.e.w.userprompt("Pausing to incubate first T7 at room temperature...",pauseTime)
         tp=trp.saveSamps(src=t71master,tgt=["%s.T%d"%(s,timepoints[i]) for s in srcs],vol=t7vol,dil=1,plate=trp.e.SAMPLEPLATE)
         trp.runT7Stop(theo=False,vol=t7vol,tgt=tp,stopmaster=stop)
-        trp.e.w.flushQueue()
         print "T7 stop %d done at %.1f minutes"%(i,(trp.e.w.elapsed-startTime)/60.0)
+        trp.diluteInPlace(tgt=tp,dil=5)
+        trp.e.w.flushQueue()
         t71=t71+tp
         
-    trp.diluteInPlace(tgt=t71,dil=5)
 
     # Dilute input samples enough to use in qPCR directly (should be 5000/(rnagain*2*5)  = 20)
     qpcrdil1=trp.runQPCRDIL(src=t71,tgt=[],vol=100,srcdil=20,dilPlate=False)   
