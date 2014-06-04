@@ -17,20 +17,22 @@ tiphistory={}
 
 #Updated LC's:
 # Water-Bottom
-# Fixed Aspirate (single): 20ul/s, 200ms, STAG=20,LAG=1 (WAS 0),TAG=0,EXC=0,COND=0, zmax-1mm (WAS -0.2mm), retract to z-dispense  20mm/s
-# Fixed Aspirate (multi): 20ul/s, 200ms, STAG=20,LAG=0,TAG=0,EXC=2 (to waste),COND=0 (WAS 2ul)
-# Fixed Dispense (single): 100ul/s, 100ul/s, 500ms, no TAG after each dispense, no LD, z-max -1mm (WAS -2mm), touch left @10mm/s;100ms (WAS no touch), retract to z-dispense 20 mm/s
-# Fixed Dispense (multi): 100ul/s (WAS 600), 100ul/s(WAS 400), 500ms(WAS 0), no TAG after each dispense
+# Fixed Aspirate (single): 20ul/s, 200ms, STAG=20,LAG=1 (WAS 0),TAG=0,EXC=0,COND=0, zmax-1.5mm , retract to z-start  20mm/s
+# Fixed Aspirate (multi): 20ul/s, 200ms, STAG=20,LAG=0,TAG=0,EXC=1 (to waste),COND=0
+# Fixed Dispense (single): 100ul/s, 100ul/s, 500ms, no TAG after each dispense, no LD, z-max -1.5mm, touch left @10mm/s;100ms (WAS no touch), retract to z-dispense 20 mm/s
+# Fixed Dispense (multi): 100ul/s, 100ul/s, 500ms), no TAG after each dispense
+#
 # Water-InLiquid
-# Fixed Aspirate (single): 20ul/s, 200ms, STAG=20,LAG=1 (WAS 0),TAG=0,EXC=0,COND=0, liquid detect +1mm center with tracking, retract to liquid level-5mm  20mm/s
-# Fixed Aspirate (multi): 20ul/s, 200ms, STAG=20,LAG=0,TAG=0,EXC=2 (to waste),COND=0 (WAS 2ul)
-# Fixed Dispense (single): 100ul/s, 100ul/s, 500ms, no TAG after each dispense, no LD, liquid detect +1mm center with tracking, retract to liquid level-5mm (WAS -2) 20 mm/s
-# Fixed Dispense (multi): 100ul/s (WAS 600), 100ul/s(WAS 400), 500ms(WAS 0), no TAG after each dispense
+# Detect simultaneously and twice with all tips, cond good, det 60mm/s, double 4mm/s
+# Fixed Aspirate (single): 20ul/s, 200ms, STAG=20,LAG=1,TAG=0,EXC=0,COND=0, liquid detect +3.5mm center with tracking, retract to liquid level-5mm  20mm/s
+# Fixed Aspirate (multi): 20ul/s, 200ms, STAG=20,LAG=0,TAG=0,EXC=2 (to waste),COND=0 
+# Fixed Dispense (single): 100ul/s, 100ul/s, 500ms, no TAG after each dispense, no LD, liquid detect +1mm center with tracking, retract to liquid level-5mm  20 mm/s
+# Fixed Dispense (multi): 100ul/s, 100ul/s, 500ms(WAS 0), no TAG after each dispense
 # Water-Mix
-# Fixed Aspirate (single): 100ul/s, 200ms, STAG=20,LAG=0,TAG=0,EXC=0,COND=0,zmax-1mm, retract to z-dispense  20mm/s
-# Fixed Aspirate (multi): 20ul/s, 200ms, STAG=20,LAG=0,TAG=0,EXC=2 (to waste),COND=0
-# Fixed Dispense (single): 100ul/s, 100ul/s, 500ms, no TAG after each dispense, no LD, z-max -5mm, no touch, retract to current-pos 20 mm/s
-# Fixed Dispense (multi): 100ul/s (WAS 600), 100ul/s(WAS 400), 500ms(WAS 0), no TAG after each dispense
+# Fixed Aspirate (single): 100ul/s, 200ms, STAG=20,LAG=0,TAG=0,EXC=0,COND=0,zmax-1.5mm, retract to z-dispense  20mm/s
+# Fixed Aspirate (multi): 20ul/s, 200ms, STAG=20,LAG=0,TAG=0,EXC=1 (to waste),COND=0
+# Fixed Dispense (single): 225ul/s, 225ul/s, 500ms, no TAG after each dispense, no LD, z-max -5mm, no touch, retract to z=dispense 20 mm/s
+# Fixed Dispense (multi): 225ul/s, 225ul/s, 500ms, no TAG after each dispense
 
 class Sample(object):
     @staticmethod
