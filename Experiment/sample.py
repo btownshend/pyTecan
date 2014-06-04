@@ -55,6 +55,8 @@ class Sample(object):
             for s in __allsamples:
                 if s.plate==plate and s.well>=well:
                     well=s.well+1
+        elif well==-1:
+            well=None
                     
         for s in __allsamples:
             if s.plate==plate and s.well==well:

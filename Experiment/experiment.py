@@ -20,8 +20,8 @@ class Experiment(object):
     HOTELPOS=Plate("Hotel",25,0,1,1)
     WASTE=Plate("Waste",20,3,1,1)
     EPPENDORFS=Plate("Eppendorfs",13,1,1,16,False,30,1500)
-    WATER=Sample("Water",WATERLOC,None,None,50000)
-    BLEACH=Sample("RNase-Away",BLEACHLOC,0,None,50000)
+    WATER=Sample("Water",WATERLOC,-1,None,50000)
+    BLEACH=Sample("RNase-Away",BLEACHLOC,-1,None,50000)
     DITIMASK=0   # Which tips are DiTis
     headerfile=os.path.expanduser("~/Dropbox/Synbio/Robot/pyTecan/header.gem")
 
