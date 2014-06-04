@@ -34,6 +34,23 @@ tiphistory={}
 # Fixed Dispense (single): 225ul/s, 225ul/s, 500ms, no TAG after each dispense, no LD, z-max -5mm, no touch, retract to z=dispense 20 mm/s
 # Fixed Dispense (multi): 225ul/s, 225ul/s, 500ms, no TAG after each dispense
 
+#Water-BottomSide 
+# Same as water-Bottom, but dispense with tip at right side
+# Fixed Aspirate (single): 20ul/s, 200ms, STAG=20,LAG=1 (WAS 0),TAG=0,EXC=0,COND=0, zmax-1.5mm , retract to z-start  20mm/s
+# Fixed Aspirate (multi): 20ul/s, 200ms, STAG=20,LAG=0,TAG=0,EXC=1 (to waste),COND=0
+# Fixed Dispense (single): 100ul/s, 100ul/s, 500ms, no TAG after each dispense, no LD, z-max -1.5mm (right side), touch left @10mm/s;100ms (WAS no touch), retract to z-dispense 20 mm/s
+# Fixed Dispense (multi): 100ul/s, 100ul/s, 500ms), no TAG after each dispense
+# Sometimes gives small bubbles on right side usually near surface, usually tip 2
+
+#Water-MixSlow
+# Same as water-Bottom, but single 20ul/s,20ul dispense (for mixing without bubbles)
+#   Seems that faster dispense creates bubbles, unsure why
+# Fixed Aspirate (single): 20ul/s, 200ms, STAG=20,LAG=1 (WAS 0),TAG=0,EXC=0,COND=0, zmax-1.5mm , retract to z-start  20mm/s
+# Fixed Aspirate (multi): 20ul/s, 200ms, STAG=20,LAG=0,TAG=0,EXC=1 (to waste),COND=0
+# Fixed Dispense (single): 20ul/s, 20ul/s, 500ms, no TAG after each dispense, no LD, z-max -1.5mm, touch left @10mm/s;100ms (WAS no touch), retract to z-dispense 20 mm/s
+# Fixed Dispense (multi): 100ul/s, 100ul/s, 500ms), no TAG after each dispense
+#
+
 class Sample(object):
     @staticmethod
     def printallsamples(txt="",fd=sys.stdout):
@@ -87,12 +104,14 @@ class Sample(object):
             
         if plate.pierce:
             self.bottomLC=liquidclass.LC("%s-Pierce"%liquidClass.name,liquidClass.singletag,liquidClass.multicond,liquidClass.multiexcess)
+            self.bottomSideLC=bottomLC
             self.inliquidLC=self.bottomLC  # Can't use liquid detection when piercing
         else:
             self.bottomLC=liquidclass.LC("%s-Bottom"%liquidClass.name,liquidClass.singletag,liquidClass.multicond,liquidClass.multiexcess)
+            self.bottomSideLC=liquidclass.LC("%s-BottomSide"%liquidClass.name,liquidClass.singletag,liquidClass.multicond,liquidClass.multiexcess)
             self.inliquidLC=liquidclass.LC("%s-InLiquid"%liquidClass.name,liquidClass.singletag,liquidClass.multicond,liquidClass.multiexcess)
 
-        self.mixLC=liquidclass.LC("%s-Mix"%liquidClass.name,liquidClass.singletag,liquidClass.multicond,liquidClass.multiexcess)
+        self.mixLC=liquidclass.LC("%s-MixSlow"%liquidClass.name,liquidClass.singletag,liquidClass.multicond,liquidClass.multiexcess)
         self.airLC=liquidclass.LC("Air")
         # Same as bottom for now 
         self.emptyLC=self.bottomLC
@@ -172,7 +191,7 @@ class Sample(object):
         
     def dispense(self,tipMask,w,volume,conc):
         well=[self.well if self.well!=None else 2**(tipMask-1)-1 ]
-        w.dispense(tipMask,well,self.chooseLC(),volume,self.plate)
+        w.dispense(tipMask,well,self.bottomSideLC,volume,self.plate)
 
         # Assume we're diluting the contents
         if self.conc==None and conc==None:
@@ -263,28 +282,12 @@ class Sample(object):
             if preaspirateAir:
                 # Aspirate some air to avoid mixing with excess volume aspirated into pipette from source in previous transfer
                 self.aspirateAir(tipMask,w,5)
-            if mixvol<MINMIXTOPVOLUME:
-                w.mix(tipMask,well,self.chooseLC(mixvol),mixvol,self.plate,nmix)
-                self.history+="(MB)"
-            elif self.volume-mixvol>=MINLIQUIDDETECTVOLUME:
-                w.mix(tipMask,well,self.chooseLC(mixvol),mixvol,self.plate,nmix)
+            if self.volume-mixvol>=MINLIQUIDDETECTVOLUME:
+                w.mix(tipMask,well,self.inliquidLC,mixvol,self.plate,nmix)
                 self.history+="(MLD)"
             else:
-                # Use special mix LC which aspirates from bottom, dispenses above, faster aspirate;  do last dispense at bottom to avoid droplet on tip
-                for i in range(nmix):
-                    if i==0:
-                        # Aspirate a little extra (which ends up discarded) to avoid dispensing any air
-                        w.aspirateNC(tipMask,well,self.mixLC,mixvol+ASPIRATEEXTRA,self.plate)
-                    else:
-                        w.aspirateNC(tipMask,well,self.mixLC,mixvol,self.plate)
-                    if i==nmix-1:
-                        # Dispense under liquid to avoid droplet
-                        w.dispense(tipMask,well,self.chooseLC(mixvol),mixvol,self.plate)
-                    else:
-                        w.dispense(tipMask,well,self.mixLC,mixvol,self.plate)
-                self.history+="(MT)"
-                self.addhistory("MT",-1,tipMask)
-                self.volume-=ASPIRATEEXTRA
+                w.mix(tipMask,well,self.mixLC,mixvol,self.plate,nmix)
+                self.history+="(MB)"
 
             tiphistory[tipMask]+=" %s-Mix[%d]"%(self.name,mixvol)
             self.isMixed=True
