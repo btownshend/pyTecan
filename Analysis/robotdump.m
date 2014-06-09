@@ -1,7 +1,10 @@
 % Analyze a robot  run
 % Usage: robotanalyze(data)
 %	data.results - Cell array of Ct/Conc data
-function robotdump(data)
+function robotdump(data,csv)
+if nargin<2
+  csv=0;
+end
 
 % Print header lines
 primers=fieldnames(data.primers);
@@ -112,14 +115,16 @@ for r=1:size(tbl,1)
     else
       fprintf(sprintf('%%%d.%ds',width(c),width(c)),tbl{r,c});
     end
-    if colbreak(c)
+    if csv
+      fprintf(',');
+    elseif colbreak(c)
       fprintf('|');
     else
       fprintf(' ');
     end
   end
   fprintf('\n');
-  if rowbreak(r)
+  if rowbreak(r) && ~csv
     for c=1:size(tbl,2)
       fprintf(sprintf('%%%d.%ds',width(c),width(c)),repmat('-',1,max(width)));
       if colbreak(c)
