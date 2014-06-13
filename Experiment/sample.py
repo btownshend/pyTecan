@@ -165,7 +165,7 @@ class Sample(object):
             print "WARNING: Inaccurate for < 2ul:  attempting to aspirate %.1f ul"%volume
         
         # Aspirates more than dispensed
-        aspVolume=volume*ASPIRATEFACTOR+ASPIRATEEXTRA+MULTIEXCESS
+        aspVolume=volume+ASPIRATEEXTRA
         if self.well==None:
                 well=[]
                 for i in range(4):
@@ -177,13 +177,14 @@ class Sample(object):
         lc=self.chooseLC(aspVolume)
         w.aspirate(tipMask,well,lc,aspVolume,self.plate)
         # Manual conditioning handled in worklist
+        remove=aspVolume*ASPIRATEFACTOR+MULTIEXCESS
         for k in self.ingredients:
-            self.ingredients[k] *= (self.volume-aspVolume)/self.volume
-        if self.volume-aspVolume+.001<self.plate.unusableVolume and self.volume>0:
+            self.ingredients[k] *= (self.volume-remove)/self.volume
+        self.volume=self.volume-remove
+        if self.volume+.001<self.plate.unusableVolume and self.volume>0:
             # TODO - this hould be more visible in output
-            print "Warning: Aspiration of %.1ful from %s brings volume down to %.1ful which is less than its unusable volume of %.1f ul"%(aspVolume,self.name,self.volume-aspVolume,self.plate.unusableVolume)
-        self.volume=self.volume-aspVolume
-        self.addhistory("",-aspVolume,tipMask)
+            print "Warning: Aspiration of %.1ful from %s brings volume down to %.1ful which is less than its unusable volume of %.1f ul"%(aspVolume,self.name,self.volume,self.plate.unusableVolume)
+        self.addhistory("",-remove,tipMask)
 
     def aspirateAir(self,tipMask,w,volume):
         'Aspirate air over a well'
