@@ -154,6 +154,15 @@ class TRP(object):
             
     def runT7Setup(self,theo,src,vol,srcdil,tgt):
         [theo,src,tgt,srcdil]=listify([theo,src,tgt,srcdil])
+        if len(tgt)==0:
+            for i in range(len(src)):
+                if theo[i]:
+                    tgt.append("%s.T+"%src[i])
+                else:
+                    tgt.append("%s.T-"%src[i])
+
+        tgt=uniqueTargets(tgt)
+
         # Convert sample names to actual samples
         stgt=findsamps(tgt)
         ssrc=findsamps(src,False)
@@ -179,7 +188,7 @@ class TRP(object):
         self.e.runpgm(pgm,dur, False,vol)
 
     def runT7Stop(self,theo,vol,tgt,stopmaster=None):
-        [theo,tgt]=listify([theo,tgt])
+        [theo,tgt,stopmaster]=listify([theo,tgt,stopmaster])
         if stopmaster==None:
             stopmaster=["MStpS_NT" if t==0 else "MStpS_WT" for t in theo]
             
@@ -196,16 +205,7 @@ class TRP(object):
     def runT7(self,theo,src,vol,srcdil,tgt=None,dur=15,stopmaster=None):
         if tgt==None:
             tgt=[]
-        [theo,src,tgt,srcdil]=listify([theo,src,tgt,srcdil])
-        if len(tgt)==0:
-            for i in range(len(src)):
-                if theo[i]:
-                    tgt.append("%s.T+"%src[i])
-                else:
-                    tgt.append("%s.T-"%src[i])
-
-        tgt=uniqueTargets(tgt)
-
+        [theo,src,tgt,srcdil,stopmaster]=listify([theo,src,tgt,srcdil,stopmaster])
         tgt=self.runT7Setup(theo,src,vol,srcdil,tgt)
         self.runT7Pgm(vol,dur)
         tgt=self.runT7Stop(theo,vol,tgt,stopmaster)
@@ -262,8 +262,13 @@ class TRP(object):
 
         adjustSrcDil(ssrc,srcdil)
 
-        for i in range(len(stgt)):
-            self.e.stage('LigAnneal',[smaster[i]],[ssrc[i]],[stgt[i]],[vol[i]/1.5],1.5)
+        i=0
+        while i<len(stgt):
+            lasti=i+1
+            while lasti<len(stgt) and smaster[i]==smaster[lasti]:
+                lasti=lasti+1
+            self.e.stage('LigAnneal',[smaster[i]],ssrc[i:lasti],stgt[i:lasti],[vol[j]/1.5 for j in range(i,lasti)],1.5)
+            i=lasti
             
         self.e.runpgm("TRPANN",5,False,max(vol),hotlidmode="CONSTANT",hotlidtemp=100)
         self.e.stage('Ligation',[self.r.MLigase],[],stgt,vol)
