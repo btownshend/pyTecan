@@ -46,6 +46,12 @@ else
       'WX',struct('ct0',ct0M,'eff',1.9),...
       'WS',struct('ct0',ct0M,'eff',1.9),...
       'TS',struct('ct0',1.996*ct0M,'eff',1.9));
+  data.primers.WS2=data.primers.WS;
+  data.primers.WS3=data.primers.WS;
+  data.primers.AS2=data.primers.AS;
+  data.primers.AS3=data.primers.AS;
+  data.primers.BS2=data.primers.BS;
+  data.primers.BS3=data.primers.BS;
 
   minerfile=dir('./Miner_*_Analyzed_Data.txt');
   if isempty(minerfile)
