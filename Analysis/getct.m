@@ -140,7 +140,7 @@ for i=1:length(sel)
 
       if isfield(result,'dilution')
         if result.dilution~=dilution || ~strcmp(result.dilrelative,nmk)
-          error('Inconsistent dilution information for %s\n',v.name);
+          error('Inconsistent dilution information for %s\n',v.samp.name);
         end
       else
         result.dilution=dilution;
