@@ -1,6 +1,6 @@
 % Analyze TRP data
 function data=robotanalyze(varargin)
-defaults=struct('sampfile','','data',[]);
+defaults=struct('sampfile','','opdfile','','data',[]);
 args=processargs(defaults,varargin);
 
 if isempty(args.sampfile)
@@ -23,16 +23,20 @@ else
   data=struct('samps',samps,'changed',true,'sampfile',args.sampfile);
   
   % Load qPCR data
-  opdfile=dir('*.opd');
-  if isempty(opdfile)
-    fprintf('No OPD file found\n');
-  elseif length(opdfile)>1
-    fprintf('More than one OPD file found\n');
+  if isempty(args.opdfile)
+    opdfile=dir('*.opd');
+    if isempty(opdfile)
+      error('No OPD file found\n');
+    elseif length(opdfile)>1
+      error('More than one OPD file found\n');
+    end
+    opdfile=opdfile.name;
   else
-    fprintf('Loading qPCR data from %s\n', opdfile.name);
-    opd=opdread(opdfile.name);
-    data.opd=ctcalc(opd);
+    opdfile=args.opdfile;
   end
+  fprintf('Loading qPCR data from %s\n', opdfile);
+  opd=opdread(opdfile);
+  data.opd=ctcalc(opd);
 
   % Setup primers, ct0 is concentration of Ct=0 in nM
   ct0M=2;
