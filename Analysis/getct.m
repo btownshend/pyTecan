@@ -182,7 +182,7 @@ if strcmp(result.type,'Lig')
   fn=fieldnames(result);
   uprimer={};
   for i=1:length(fn)
-    if length(fn{i})<=2 && fn{i}(1)~=result.ligprefix(1)
+    if length(fn{i})<=2 && fn{i}(1)~=result.ligprefix(1) && fn{i}(1)~='M'
       uprimer{end+1}=fn{i};
     end
   end
