@@ -38,7 +38,15 @@ for i=1:length(dots)
   end
   pdot=dots(i)+1;
 end
+if parts{2}(1)=='T'
+  if length(parts)>=3
+    parts={[parts{1},'-',parts{2}],parts{3:end}}
+  else
+    parts={[parts{1},'-',parts{2}]};
+  end
+end
 result.tmpl=parts{1};
+  
 if length(parts)==1
   result.type='tmpl';
   result.cond='tmpl';
@@ -51,7 +59,7 @@ else
     result.cond='?';
   end
 
-  if length(parts)==2
+  if length(parts)==1
     result.type='T7';
   else
     if parts{end}(1)=='L'
