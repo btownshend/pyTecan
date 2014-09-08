@@ -103,7 +103,7 @@ end
 
 % Run analysis
 data.results=getct(data);
-data=adjustdilutions(data,10);
+data=adjustdilutions(data);
 data=getcleavages(data);
 robotdump(data);
 
