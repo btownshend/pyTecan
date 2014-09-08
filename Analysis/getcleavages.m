@@ -22,7 +22,7 @@ for i=1:length(utmpls)
   t=data.results{indtmpl};
   
   % Figure out prefix of template, ligation product
-  pairs={{'WX','AX'}};
+  pairs={{'WX','AX'},{'AS','BS'},{'BS','AS'}};
   thepair=[];
   for j=1:length(pairs)
     p=pairs{j};
