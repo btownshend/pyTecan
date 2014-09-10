@@ -29,8 +29,16 @@ for i=1:length(tmpls)
       fprintf('Found %d entries for %s/%s/Lig, expected only 1\n', sum(ligsel),tmpl,cond);
     end
     if sum(ligsel)==1
-      cleavage(i,j)=r{ligsel}.cleavage;
-      yield(i,j)=r{ligsel}.yield;
+      if isfield(r{ligsel},'cleavage')
+        cleavage(i,j)=r{ligsel}.cleavage;
+      else
+        cleavage(i,j)=nan;
+      end
+      if isfield(r{ligsel},'yield')
+        yield(i,j)=r{ligsel}.yield;
+      else
+        yield(i,j)=nan;
+      end
     end
     t7sel=cellfun(@(z) strcmp(z.type,'T7'), r);
     if sum(t7sel)==0
