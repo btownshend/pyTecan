@@ -9,6 +9,10 @@ for i=1:length(data.results)
     rcnt=rcnt+1;
   end
 end
+if rcnt==0
+  fprintf('No dilution references - using nominal dilutions\n');
+  return;
+end
 meanref=rtotal/rcnt;
 fprintf('Mean reference before adjusting dilutions is %.1f nM\n', meanref);
 if nargin<2

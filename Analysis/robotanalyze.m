@@ -103,9 +103,10 @@ end
 
 % Run analysis
 data.results=getct(data);
-data=adjustdilutions(data);
-data=getcleavages(data);
-robotdump(data);
+d2=adjustdilutions(data);
+d3=getcleavages(d2);
+robotdump(d3);
 
 % Make some plots...
-robotplot(data);
+robotplot(d3);
+data=d3;

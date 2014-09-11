@@ -36,7 +36,8 @@ for p=1:length(primers)
   c=c+1;
 end
 colbreak(c-1)=1;
-tbl{1,c}='Yield'; c=c+1;
+tbl{1,c}='Yield';
+tbl{2,c}='nM';
 c=c+1;
 colbreak(c-1)=1;
 tbl{1,c}='RNA';
