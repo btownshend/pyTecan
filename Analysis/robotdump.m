@@ -37,6 +37,10 @@ for p=1:length(primers)
 end
 colbreak(c-1)=1;
 tbl{1,c}='Yield'; c=c+1;
+c=c+1;
+colbreak(c-1)=1;
+tbl{1,c}='RNA';
+tbl{2,c}='Gain'; c=c+1;
 colbreak(c-1)=1;
 tbl{1,c}='Clv%'; c=c+1;
 colbreak(c-1)=1;
@@ -85,6 +89,12 @@ for i=1:length(data.results)
   % Yield
   if isfield(usamp,'yield')
     tbl{r,c}=sprintf('%.1f',usamp.yield);
+  end
+  c=c+1;
+
+  % RNAgain
+  if isfield(usamp,'rnagain')
+    tbl{r,c}=sprintf('%.1f',usamp.rnagain);
   end
   c=c+1;
 
