@@ -91,11 +91,14 @@ for i=1:length(sel)
   end
   v.primer=samp.name(length(sampname)+3:end);
   if length(v.primer)==1
-    fprintf('Converting old style primer name "%s" to 2-letter code: ', v.primer);
-    if v.primer(1)=='W'
-      v.primer='WX';
-    else
+    fprintf('In %s, converting old style primer name "%s" to 2-letter code: ', samp.name, v.primer);
+    if ~isempty(strfind(samp.name,'_X'))
+      v.primer=[v.primer,'X'];
+    elseif ~isempty(strfind(samp.name,'_S'))
       v.primer=[v.primer,'S'];
+    else
+      fprintf('Unable to determine whether this sample should have an X or an S suffix\n');
+      keyboard;
     end
     fprintf('%s\n',v.primer);
   end
