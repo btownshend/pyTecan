@@ -39,7 +39,16 @@ for i=1:length(tmpls)
       else
         yield(i,j)=nan;
       end
+      if isfield(r{ligsel},'rnagain')
+        tconc(i,j)=r{ligsel}.yield/r{ligsel}.rnagain;
+      else
+        tconc(i,j)=nan;
+      end
     end
+    if isfinite(tconc(i,j))
+      continue;
+    end
+    
     t7sel=cellfun(@(z) strcmp(z.type,'T7'), r);
     if sum(t7sel)==0
       t7sel=cellfun(@(z) strcmp(z.type,'tmpl'), r);
