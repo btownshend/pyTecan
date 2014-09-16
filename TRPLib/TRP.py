@@ -276,24 +276,30 @@ class TRP(object):
         self.e.runpgm("LIG15RT",26,False,max(vol),hotlidmode="TRACKING",hotlidtemp=10)
         return tgt
  
-    def runPCR(self,prefix,src,vol,srcdil,tgt=None,ncycles=20):
+    def runPCR(self,prefix,src,vol,srcdil,tgt=None,ncycles=20,suffix='S'):
         if tgt==None:
             tgt=[]
         ## PCR
         # e.g. trp.runPCR(prefix=["A"],src=["1.RT+"],tgt=["1.PCR"],vol=[50],srcdil=[5])
-        [prefix,src,tgt,vol,srcdil]=listify([prefix,src,tgt,vol,srcdil])
+        [prefix,src,tgt,vol,srcdil,suffix]=listify([prefix,src,tgt,vol,srcdil,suffix])
         if len(tgt)==0:
-            tgt=["%s.P%c"%(src[i],prefix[i]) for i in range(len(src))]
+            tgt=["%s.P%c%c"%(src[i],prefix[i],suffix[i]) for i in range(len(src))]
 
         tgt=uniqueTargets(tgt)
         stgt=findsamps(tgt)
         ssrc=findsamps(src,False)
         adjustSrcDil(ssrc,srcdil)
         
-        if any(p=='A' for p in prefix):
-               self.e.stage('PCRA',[self.r.PCRA],[ssrc[i] for i in range(len(ssrc)) if prefix[i]=='A'],[stgt[i] for i in range(len(stgt)) if prefix[i]=='A'],[vol[i] for i in range(len(vol)) if prefix[i]=='A'])
-        if any(p=='B' for p in prefix):
-               self.e.stage('PCRB',[self.r.PCRB],[ssrc[i] for i in range(len(ssrc)) if prefix[i]=='B'],[stgt[i] for i in range(len(stgt)) if prefix[i]=='B'],[vol[i] for i in range(len(vol)) if prefix[i]=='B'])
+        primer=[prefix[i]+suffix[i] for i in range(len(prefix))]
+        print "primer=",primer
+        if any(p=='AS' for p in primer):
+               self.e.stage('PCRAS',[self.r.PCRAS],[ssrc[i] for i in range(len(ssrc)) if primer[i]=='AS'],[stgt[i] for i in range(len(stgt)) if primer[i]=='AS'],[vol[i] for i in range(len(vol)) if primer[i]=='AS'])
+        if any(p=='BS' for p in primer):
+               self.e.stage('PCRBS',[self.r.PCRBS],[ssrc[i] for i in range(len(ssrc)) if primer[i]=='BS'],[stgt[i] for i in range(len(stgt)) if primer[i]=='BS'],[vol[i] for i in range(len(vol)) if primer[i]=='BS'])
+        if any(p=='AX' for p in primer):
+               self.e.stage('PCRAX',[self.r.PCRAX],[ssrc[i] for i in range(len(ssrc)) if primer[i]=='AX'],[stgt[i] for i in range(len(stgt)) if primer[i]=='AX'],[vol[i] for i in range(len(vol)) if primer[i]=='AX'])
+        if any(p=='BX' for p in primer):
+               self.e.stage('PCRBX',[self.r.PCRBX],[ssrc[i] for i in range(len(ssrc)) if primer[i]=='BX'],[stgt[i] for i in range(len(stgt)) if primer[i]=='BX'],[vol[i] for i in range(len(vol)) if primer[i]=='BX'])
         pgm="PCR%d"%ncycles;
         #        self.e.w.pyrun('PTC\\ptcsetpgm.py %s TEMP@95,120 TEMP@95,30 TEMP@55,30 TEMP@72,25 GOTO@2,%d TEMP@72,180 TEMP@16,2'%(pgm,ncycles-1));
         self.e.w.pyrun('PTC\\ptcsetpgm.py %s TEMP@95,120 TEMP@95,10 TEMP@57,10 GOTO@2,%d TEMP@72,120 TEMP@25,2'%(pgm,ncycles-1));
