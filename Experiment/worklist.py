@@ -129,7 +129,7 @@ class WorkList(object):
         if optimizeDebug:
             for i in range(len(self.opQueue)):
                 d=self.opQueue[i]
-                print "PRE-OPT %s:  %s:\tTip %d, Loc (%d,%d) Wells %s, depends on %s, merges with %s"%(d[7],d[0],d[1],d[5].grid,d[5].pos,str(d[2]),dependencies[i],mergeable[i])
+                print "PRE-OPT %s:  %s:\tTip %d, Loc (%d,%d) Wells %s, Vol %s, depends on %s, merges with %s"%(d[7],d[0],d[1],d[5].grid,d[5].pos,str(d[2]),d[4],dependencies[i],mergeable[i])
 
         # Try to combine multiple operations into one command
         todelete=[]
@@ -160,7 +160,7 @@ class WorkList(object):
                     mergeable[i] &= mergeable[j]
                     #self.comment("Merged operations")
                     if optimizeDebug:
-                        print "MERGED %s %s:\tTip %d, Loc (%d,%d) Wells %s depends on %s, merges with %s "%(merge[7],merge[0],merge[1],merge[5].grid,merge[5].pos,str(merge[2]),dependencies[i],mergeable[i])
+                        print "MERGED %s %s:\tTip %d, Loc (%d,%d) Wells %s depends on %s, merges with %s, vol=%s "%(merge[7],merge[0],merge[1],merge[5].grid,merge[5].pos,str(merge[2]),dependencies[i],mergeable[i],merge[4])
 
             # Finished doing all the merges we can do with the current set of operations that don't depend on any prior operations
             # Find something to emit/delete
