@@ -10,8 +10,8 @@ class Reagents:
     MT7=Sample("MT7",Experiment.REAGENTPLATE,None,2.5)
     MPosRT=Sample("MPosRT",Experiment.REAGENTPLATE,None,2)
     MNegRT=Sample("MNegRT",Experiment.REAGENTPLATE,None,2)
-    MLigAN7=Sample("MLigAN7",Experiment.REAGENTPLATE,None,3)
-    MLigBN7=Sample("MLigBN7",Experiment.REAGENTPLATE,None,3)
+    MLigAT7=Sample("MLigAT7",Experiment.REAGENTPLATE,None,3)
+    MLigBT7W=Sample("MLigBT7W",Experiment.REAGENTPLATE,None,3)
     MLigase=Sample("MLigase",Experiment.REAGENTPLATE,None,3)
 
     Theo=Sample("Theo",Experiment.REAGENTPLATE,None,Concentration(25,7.5,'mM'))
@@ -21,16 +21,17 @@ class Reagents:
     #BT47=Sample("BT047",Experiment.REAGENTPLATE,None,Concentration(10,0.4,'uM'))
     #BT29=Sample("BT029",Experiment.REAGENTPLATE,None,Concentration(10,0.4,'uM'))
     #BT30=Sample("BT030",Experiment.REAGENTPLATE,None,Concentration(10,0.4,'uM'))
-    MStopNT=Sample("MStpS",Experiment.REAGENTPLATE,None,2)
-    MStopWT=Sample("MStpS_Theo",Experiment.REAGENTPLATE,None,2)
-    MQA=Sample("MQAS",Experiment.REAGENTPLATE,None,10.0/6)
-    MQB=Sample("MQBS",Experiment.REAGENTPLATE,None,10.0/6)
-    PCRA=Sample("MPCRAS",Experiment.REAGENTPLATE,None,4.0/3)
-    PCRB=Sample("MPCRBS",Experiment.REAGENTPLATE,None,4.0/3)
-    MQM=Sample("MQM",Experiment.REAGENTPLATE,None,10.0/6)
-    MQT=Sample("MQT",Experiment.REAGENTPLATE,None,10.0/6)
+    MStopX=Sample("MStpX",Experiment.REAGENTPLATE,None,2)
+    MQRef=Sample("MQREF",Experiment.REAGENTPLATE,None,10.0/6)
+    MQAX=Sample("MQAX",Experiment.REAGENTPLATE,None,10.0/6)
+    MQBX=Sample("MQBX",Experiment.REAGENTPLATE,None,10.0/6)
+    PCRAX=Sample("MPCRAX",Experiment.REAGENTPLATE,None,4.0/3)
+    PCRBX=Sample("MPCRBX",Experiment.REAGENTPLATE,None,4.0/3)
+    MQMX=Sample("MQMX",Experiment.REAGENTPLATE,None,10.0/6)
+    MQWX=Sample("MQWX",Experiment.REAGENTPLATE,None,10.0/6)
     SSD=Sample("SSD",Experiment.REAGENTPLATE,None,10.0)
-    all=[MT7,MPosRT,MNegRT,MLigAN7,MLigBN7,MLigase,Theo,MStopNT,MStopWT,MQA,MQB,PCRA,PCRB,MQM,MQT,SSD]
+    MLIGBOTH=Sample("MLigBoth",Experiment.REAGENTPLATE,None,10.0)
+    all=[MT7,MPosRT,MNegRT,MLigAT7,MLigBT7W,MLigase,Theo,MStopX,MQRef,MQAX,MQBX,PCRAX,PCRBX,MQMX,SSD,MLIGBOTH,MQWX]
 
 def listify(x):
     'Convert a list of (lists or scalars) into a list of equal length lists'
