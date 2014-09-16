@@ -237,7 +237,7 @@ class TRP(object):
         self.e.runpgm("TRP37-20",20,False,max(vol))
         return tgt
  
-    def runLig(self,prefix=None,src=None,vol=None,srcdil=None,tgt=None,master=None):
+    def runLig(self,prefix=None,src=None,vol=None,srcdil=None,tgt=None,master=None,anneal=True):
         if tgt==None:
             tgt=[]
         if master==None:
@@ -271,7 +271,8 @@ class TRP(object):
             self.e.stage('LigAnneal',[smaster[i]],ssrc[i:lasti],stgt[i:lasti],[vol[j]/1.5 for j in range(i,lasti)],1.5)
             i=lasti
             
-        self.e.runpgm("TRPANN",5,False,max(vol),hotlidmode="CONSTANT",hotlidtemp=100)
+        if anneal:
+            self.e.runpgm("TRPANN",5,False,max(vol),hotlidmode="CONSTANT",hotlidtemp=100)
         self.e.stage('Ligation',[self.r.MLigase],[],stgt,vol)
         self.e.runpgm("LIG15RT",26,False,max(vol),hotlidmode="TRACKING",hotlidtemp=10)
         return tgt
