@@ -90,6 +90,7 @@ for i=1:length(sel)
     error('Expected QPCR sample to start with "%s", but found "%s"\n',[sampname,'.Q'],samp.name);
   end
   v.primer=samp.name(length(sampname)+3:end);
+  v.primer=strrep(v.primer,'.','');
   if length(v.primer)==1
     fprintf('In %s, converting old style primer name "%s" to 2-letter code: ', samp.name, v.primer);
     if ~isempty(strfind(samp.name,'_X'))

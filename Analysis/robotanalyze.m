@@ -56,8 +56,12 @@ else
   data.primers.WS3=data.primers.WS;
   data.primers.AS2=data.primers.AS;
   data.primers.AS3=data.primers.AS;
+  data.primers.AX2=data.primers.AX;
+  data.primers.AX3=data.primers.AX;
   data.primers.BS2=data.primers.BS;
   data.primers.BS3=data.primers.BS;
+  data.primers.BX2=data.primers.BX;
+  data.primers.BX3=data.primers.BX;
 
   minerfile=dir('./Miner_*_Analyzed_Data.txt');
   if isempty(minerfile)

@@ -14,7 +14,7 @@ for i=1:length(utmpls)
   indtmpl=find(strcmp(tmpls,tmpl)&strcmp(types,'tmpl'));
   indlig=find(strcmp(tmpls,tmpl) &strcmp(types,'Lig'));
   if length(indtmpl)~=1 || length(indlig)~=1
-    fprintf('Unable to locate tmpl/lig product for %s\n', tmpl);
+    fprintf('getcleavages: Unable to locate tmpl/lig product for %s\n', tmpl);
     continue;
   end
   
