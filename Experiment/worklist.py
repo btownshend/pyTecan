@@ -3,6 +3,7 @@ import math
 import string
 from plate import Plate
 import shutil
+from zlib import crc32
 
 _WorkList__DITI200=0
 _WorkList__DITI10=2
@@ -24,7 +25,8 @@ class WorkList(object):
         self.elapsed=0   # Self.Elapsed time in seconds
         self.delayEnabled=False
         self.opQueue=[]
-        
+        self.hashCodes={}
+        self.tipHash=[crc32("tip1"),crc32("tip2"),crc32("tip3"),crc32("tip4")]
     def bin(s):
         return str(s) if s<=1 else bin(s>>1) + str(s&1)
 
@@ -67,8 +69,7 @@ class WorkList(object):
         
     def optimizeQueue(self):
         'Optimize operations in queue'
-        # assert(False)    # Currently broken, manual mix with a chain of aspirateNC/dispense ends up doing all the aspirates first, then all the dispenses
-        optimizeDebug=False
+        optimizeDebug=True
 
         if optimizeDebug:
             print "Optimizing queue with %d entries"%len(self.opQueue)
@@ -282,6 +283,7 @@ class WorkList(object):
                 tipTmp=tipTmp>>1
                 tip=tip+1
             allvols[tip]=volume[i]
+            self.hashUpdate(op,tip,loc.grid,loc.pos-1,pos[i],allvols[tip])
             tipTmp = tipTmp>>1
             tip+=1
 
@@ -329,6 +331,33 @@ class WorkList(object):
                 self.SIM(i,op,allvols[i],loc,pos[ptr])
                 ptr+=1
 
+    def getHashCode(self,grid,pos,well):
+        if well==None:
+            key="%d,%d"%(grid,pos)
+        else:
+            key="%d,%d,%d"%(grid,pos,well)
+        if key not in self.hashCodes:
+            self.hashCodes[key]=crc32(key)
+        return self.hashCodes[key]
+    
+    def hashUpdate(self,op,tip,grid,pos,well,vol):
+        if well==None:
+            key="%d,%d"%(grid,pos)
+        else:
+            key="%d,%d,%d"%(grid,pos,well)
+        if key not in self.hashCodes:
+            self.hashCodes[key]=crc32(key)
+        if op=="Dispense":
+            self.hashCodes[key]=crc32("%x"%self.tipHash[tip],self.hashCodes[key])
+            self.hashCodes[key]=crc32("+%.1f"%vol,self.hashCodes[key])
+        elif op=="Mix":
+            self.hashCodes[key]=crc32("M%.1f"%vol,self.hashCodes[key])
+            self.tipHash[tip]=crc32("Mix",self.tipHash[tip])
+        else:
+            self.tipHash[tip]=self.hashCodes[key]
+            self.hashCodes[key]=crc32("-%.1f"%vol,self.hashCodes[key])
+        print "hashUpdate(%s,%d,%d,%d,%d,%.1f) -> %06x,%06x"%(op,tip,grid,pos,well,vol,self.hashCodes[key]&0xffffff,self.tipHash[tip]&0xffffff)
+            
     def SIM(self,tip,op,vol,loc,pos):
         #print "SIM",tip,op,vol,loc,pos
         pass

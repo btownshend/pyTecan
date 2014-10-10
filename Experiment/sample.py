@@ -53,7 +53,7 @@ tiphistory={}
 
 class Sample(object):
     @staticmethod
-    def printallsamples(txt="",fd=sys.stdout):
+    def printallsamples(txt="",fd=sys.stdout,w=None):
         print >>fd,"\n%s by plate:"%txt
         plates=set([s.plate for s in __allsamples]);
         for p in sorted(plates, key=lambda p:p.name.upper()):
@@ -61,6 +61,8 @@ class Sample(object):
             for s in __allsamples:
                 if s.plate==p:
                     print >>fd,s
+                    if w!=None:
+                        print >>fd,"%-32s HASH=%06x"%(s.name,w.getHashCode(grid=s.plate.grid,pos=s.plate.pos,well=s.well)&0xffffff)
             print >>fd
         if SHOWTIPS:
             print >>fd,"\nTip history:\n"
@@ -295,7 +297,7 @@ class Sample(object):
             return True
             
     def __str__(self):
-        s="%-32s"%self.name
+        s="%-32s "%(self.name)
         if self.conc!=None:
             s+=" %-18s"%("[%s]"%str(self.conc))
         else:

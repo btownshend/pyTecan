@@ -79,7 +79,7 @@ class Experiment(object):
 
         print >>fd,"Run time: %d (pipetting) + %d (thermocycling) = %d minutes\n"%(self.w.elapsed/60.0,self.thermotime/60, (self.w.elapsed+self.thermotime)/60)
         Sample.printprep(fd)
-        Sample.printallsamples("All Samples:",fd)
+        Sample.printallsamples("All Samples:",fd,w=self.w)
         fd.close()
         
     def sanitize(self,nmix=1,deepvol=20,force=False):
