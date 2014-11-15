@@ -84,8 +84,8 @@ class WorkList(object):
             dependencies.append(set())
             for j in range(i):
                 dp=self.opQueue[j]
-                if d[5].grid==dp[5].grid and d[5].pos==dp[5].pos and d[2]==dp[2] and d[0]!=dp[0]:
-                    # Different operation from same location (ok to have multiple aspirates or dispenses from same location)
+                if d[5].grid==dp[5].grid and d[5].pos==dp[5].pos and d[2]==dp[2]: # and d[0]!=dp[0]:
+                    # Multiple operations from same location (NOT ok to reorder multiple aspirates or dispenses from same location)
                     dependencies[i] |= dependencies[j]
                     dependencies[i].add(j)
 #                    if optimizeDebug:
