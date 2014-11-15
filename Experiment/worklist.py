@@ -69,7 +69,7 @@ class WorkList(object):
         
     def optimizeQueue(self):
         'Optimize operations in queue'
-        optimizeDebug=True
+        optimizeDebug=False
 
         if optimizeDebug:
             print "Optimizing queue with %d entries"%len(self.opQueue)
@@ -347,6 +347,8 @@ class WorkList(object):
             key="%d,%d,%d"%(grid,pos,well)
         if key not in self.hashCodes:
             self.hashCodes[key]=crc32(key)
+        old=self.hashCodes[key]
+        oldTip=self.tipHash[tip]
         if op=="Dispense":
             self.hashCodes[key]=crc32("%x"%self.tipHash[tip],self.hashCodes[key])
             self.hashCodes[key]=crc32("+%.1f"%vol,self.hashCodes[key])
@@ -356,7 +358,7 @@ class WorkList(object):
         else:
             self.tipHash[tip]=self.hashCodes[key]
             self.hashCodes[key]=crc32("-%.1f"%vol,self.hashCodes[key])
-        print "hashUpdate(%s,%d,%d,%d,%d,%.1f) -> %06x,%06x"%(op,tip,grid,pos,well,vol,self.hashCodes[key]&0xffffff,self.tipHash[tip]&0xffffff)
+#        print "hashUpdate(%s,%d,%d,%d,%d,%.1f) %06x,%06x -> %06x,%06x"%(op,tip,grid,pos,well,vol,old&0xffffff,oldTip&0xffffff,self.hashCodes[key]&0xffffff,self.tipHash[tip]&0xffffff)
             
     def SIM(self,tip,op,vol,loc,pos):
         #print "SIM",tip,op,vol,loc,pos
