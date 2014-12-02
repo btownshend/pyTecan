@@ -38,7 +38,7 @@ for i=1:length(dots)
   end
   pdot=dots(i)+1;
 end
-if parts{2}(1)=='T'
+if length(parts)>=2 && parts{2}(1)=='T'
   if length(parts)>=3
     parts={[parts{1},'-',parts{2}],parts{3:end}};
   else
