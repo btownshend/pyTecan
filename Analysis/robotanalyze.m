@@ -1,6 +1,6 @@
 % Analyze TRP data
 function data=robotanalyze(varargin)
-defaults=struct('sampfile','','opdfile','','data',[]);
+defaults=struct('sampfile','','opdfile','','data',[],'refadj',true);
 args=processargs(defaults,varargin);
 
 if isempty(args.sampfile)
@@ -107,7 +107,11 @@ end
 
 % Run analysis
 data.results=getct(data);
-d2=adjustdilutions(data);
+if args.refadj
+  d2=adjustdilutions(data);
+else
+  d2=data;
+end
 d3=getcleavages(d2);
 robotdump(d3);
 
