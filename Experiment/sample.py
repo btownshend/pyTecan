@@ -60,9 +60,10 @@ class Sample(object):
             print >>fd,"Samples in plate: ",p
             for s in __allsamples:
                 if s.plate==p:
-                    print >>fd,s
                     if w!=None:
-                        print >>fd,"%-32s HASH=%06x"%(s.name,w.getHashCode(grid=s.plate.grid,pos=s.plate.pos,well=s.well)&0xffffff)
+                        print >>fd,s,("%06x"%(w.getHashCode(grid=s.plate.grid,pos=s.plate.pos,well=s.well)&0xffffff))
+                    else:
+                        print >>fd,s
             print >>fd
         if SHOWTIPS:
             print >>fd,"\nTip history:\n"
