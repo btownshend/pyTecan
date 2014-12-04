@@ -86,6 +86,12 @@ for i=1:length(sel)
   if ~strcmp(v.samp.plate,'qPCR')
     error('%s is on plate %s, not qPCR plate\n', v.name, v.plate);
   end
+  firstdot=find(samp.name=='.',1);
+  if ~isempty(firstdot)
+    basename=samp.name(1:firstdot-1);
+  else
+    basename=samp.name;
+  end
   if ~strcmp(samp.name(length(sampname)+(1:2)),'.Q')
     error('Expected QPCR sample to start with "%s", but found "%s"\n',[sampname,'.Q'],samp.name);
   end
@@ -104,6 +110,24 @@ for i=1:length(sel)
     fprintf('%s\n',v.primer);
   end
   
+  % Lookup length of qPCR product
+  v.length=nan;
+  if isfield(data,'lengths')
+    nsel=strcmp({data.lengths.samp},basename);
+    psel=strcmp({data.lengths.primers},v.primer) ;
+    lsel=nsel&psel;
+    if sum(lsel)==0
+      fprintf('%s/%s not found in data.lengths\n',basename, v.primer);
+    elseif sum(lsel)>1
+      fprintf('%s/%s has duplicates in data.lengths\n',basename, v.primer);
+    else
+      v.length=data.lengths(lsel).length;
+      fprintf('%s/%s has length=%d\n',basename, v.primer,v.length);
+    end
+  else
+    fprintf('Data is missing primer lengths field\n');
+  end
+
   if isfield(data,'md')
     well=find(strcmp(data.md.SampleNames,samp.well));
     if isempty(well)
@@ -168,7 +192,7 @@ for i=1:length(sel)
   % Calculate concentrations
   p=data.primers.(v.primer);
   if isfinite(v.ct)
-    v.conc=p.eff^-v.ct*p.ct0*result.dilution;
+    v.conc=(p.eff^-v.ct*p.ct0*result.dilution)/(double(v.length)/100);
   else
     v.conc=nan;
   end

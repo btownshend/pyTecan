@@ -25,6 +25,11 @@ for p=1:length(primers)
 end
 colbreak(c-1)=1;
 for p=1:length(primers)
+  tbl{1,c}=sprintf('L(%s)',primers{p});
+  c=c+1;
+end
+colbreak(c-1)=1;
+for p=1:length(primers)
   tbl{1,c}=sprintf('Ct(%s)',primers{p});
   tbl{2,c}=sprintf('%.2f',data.primers.(primers{p}).eff);
   c=c+1;
@@ -72,6 +77,12 @@ for i=1:length(data.results)
   for p=1:length(primers)
     if isfield(usamp,primers{p})
       tbl{r,c}=usamp.(primers{p}).samp.well;
+    end
+    c=c+1;
+  end
+  for p=1:length(primers)
+    if isfield(usamp,primers{p})
+      tbl{r,c}=sprintf('%d',usamp.(primers{p}).length);
     end
     c=c+1;
   end
