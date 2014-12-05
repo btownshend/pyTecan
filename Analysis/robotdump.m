@@ -6,6 +6,7 @@ if nargin<2
   csv=0;
 end
 
+fprintf('Note: concentrations are relative to sample tubes, not final concentrations in T7\n');
 % Print header lines
 primers=fieldnames(data.primers);
 psel=false(1,length(primers));

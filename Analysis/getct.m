@@ -122,7 +122,7 @@ for i=1:length(sel)
       fprintf('%s/%s has duplicates in data.lengths\n',basename, v.primer);
     else
       v.length=data.lengths(lsel).length;
-      fprintf('%s/%s has length=%d\n',basename, v.primer,v.length);
+      %      fprintf('%s/%s has length=%d\n',basename, v.primer,v.length);
     end
   else
     fprintf('Data is missing primer lengths field\n');
