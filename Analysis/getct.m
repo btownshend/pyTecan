@@ -192,7 +192,7 @@ for i=1:length(sel)
   % Calculate concentrations
   p=data.primers.(v.primer);
   if isfinite(v.ct)
-    v.conc=(p.eff^-v.ct*p.ct0*result.dilution)/(double(v.length)/100);
+    v.conc=(p.eff^-v.ct*p.ct0*result.dilution)/(double(v.length))*1000;
   else
     v.conc=nan;
   end
