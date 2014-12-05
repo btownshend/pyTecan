@@ -24,11 +24,12 @@ for i=1:length(tmpls)
       csel=cellfun(@(z) strcmp(z.tmpl,tmpl)&strcmp(z.cond,cond),data.results);
     end
     r=data.results(csel);
-    ligsel=cellfun(@(z) strcmp(z.type,'Lig'), r);
-    if sum(ligsel)>1
-      fprintf('Found %d entries for %s/%s/Lig, expected only 1\n', sum(ligsel),tmpl,cond);
+    ligselall=find(cellfun(@(z) strcmp(z.type,'Lig'), r));
+    if length(ligselall)>1
+      fprintf('Only using 1/%d ligation data for plotting\n',length(ligselall));
     end
-    if sum(ligsel)==1
+    if length(ligselall)>=1
+      ligsel=ligselall(end);
       if isfield(r{ligsel},'cleavage')
         cleavage(i,j)=r{ligsel}.cleavage;
       else
@@ -57,7 +58,8 @@ for i=1:length(tmpls)
       % Figure out correct field for template concentration
       if isfield(r{t7sel},'M')
         tconc(i,j)=r{t7sel}.M.conc;
-      elseif sum(ligsel)==1
+      elseif length(ligselall)>=1
+        ligsel=ligselall(end);
         if r{ligsel}.ligprefix(1)~='B' && isfield(r{t7sel},'BS')
           tconc(i,j)=r{t7sel}.BS.conc;
         elseif r{ligsel}.ligprefix(1)~='B' && isfield(r{t7sel},'BX')
