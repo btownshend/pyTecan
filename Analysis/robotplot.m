@@ -103,7 +103,7 @@ if any(sel)
     xlabel('Sample');
     set(gca,'XTick',1:sum(sel));
     set(gca,'XTickLabel',labels(sel));
-    xticklabel_rotate;
+    set(gca,'XTickLabelRotation',90);
   end
 end
 
@@ -130,7 +130,7 @@ if any(sel)
     xlabel('Sample');
     set(gca,'XTick',1:sum(sel));
     set(gca,'XTickLabel',labels(sel));
-    xticklabel_rotate;
+    set(gca,'XTickLabelRotation',90);
   end
 end
 
@@ -154,7 +154,7 @@ if any(sel)
     xlabel('Sample');
     set(gca,'XTick',1:sum(sel));
     set(gca,'XTickLabel',labels(sel));
-    xticklabel_rotate;
+    set(gca,'XTickLabelRotation',90);
   end
 end
 
@@ -178,7 +178,7 @@ if any(sel)
     xlabel('Sample');
     set(gca,'XTick',1:sum(sel));
     set(gca,'XTickLabel',labels(sel));
-    xticklabel_rotate;
+    set(gca,'XTickLabelRotation',90);
   end
 end
 d=pwd;
@@ -233,7 +233,7 @@ if sum(theosel)>0
   labels=cellfun(@(z) z.tmpl, r(theosel),'UniformOutput',false);
   set(gca,'XTickLabel',labels);
   ylabel('Fraction with Theo Aptamer (%)');
-  xticklabel_rotate;
+  set(gca,'XTickLabelRotation',90);
   title('Frac(theo) in spike-in');
 end
 
