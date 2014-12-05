@@ -1,6 +1,6 @@
 % Analyze TRP data
 function data=robotanalyze(varargin)
-defaults=struct('sampfile','','opdfile','','data',[],'refadj',true);
+defaults=struct('sampfile','','opdfile','','data',[],'refadj',false);
 args=processargs(defaults,varargin);
 
 if isempty(args.sampfile)
