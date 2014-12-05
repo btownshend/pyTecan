@@ -39,7 +39,7 @@ else
   data.opd=ctcalc(opd);
 
   % Setup primers, ct0 is concentration of nucleotides at Ct=0 in uM
-  ct0M=5.86*6/15;
+  ct0M=2.35;
   eff=1.92;
   data.primers=struct(...
       'AS',struct('ct0',ct0M,'eff',eff),...
