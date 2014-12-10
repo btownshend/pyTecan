@@ -77,6 +77,16 @@ class WorkList(object):
         for i in range(len(self.opQueue)):
             self.opQueue[i].append([i])
 
+        # Queue entries are
+        # 0:op
+        # 1:tipMask
+        # 2:wells
+        # 3:liquidClass
+        # 4:volume
+        # 5:loc
+        # 6:cycles
+        # 7:id number
+        
         # Build dependency list
         dependencies=[]
         for i in range(len(self.opQueue)):
@@ -149,7 +159,12 @@ class WorkList(object):
                         continue
                     d1=self.opQueue[i]
                     d2=self.opQueue[j]
-                    merge=[d1[0],d1[1]|d2[1],sorted(d1[2]+d2[2]),d1[3],d1[4]+d2[4],d1[5],d1[6],d1[7]+d2[7]]
+                    merge=[d1[0],d1[1]|d2[1],d1[2]+d2[2],d1[3],d1[4]+d2[4],d1[5],d1[6],d1[7]+d2[7]]
+                    # Reorder based on well order
+                    ordering=sorted(range(len(merge[2])), key=lambda k: merge[2][k])
+                    merge[2]=[merge[2][k] for k in ordering]
+                    merge[4]=[merge[4][k] for k in ordering]
+                    merge[7]=[merge[7][k] for k in ordering]
                     self.opQueue[i]=merge
                     todelete.append(j)
                     # Redirect dependencies
@@ -284,6 +299,7 @@ class WorkList(object):
                 tip=tip+1
             allvols[tip]=volume[i]
             self.hashUpdate(op,tip,loc.grid,loc.pos-1,pos[i],allvols[tip])
+            #self.comment("Hash(%d,%d,%d)=%06x"%(loc.grid,loc.pos,pos[i],self.getHashCode(loc.grid,loc.pos-1,pos[i])&0xffffff))
             tipTmp = tipTmp>>1
             tip+=1
 
@@ -358,7 +374,7 @@ class WorkList(object):
         else:
             self.tipHash[tip]=self.hashCodes[key]
             self.hashCodes[key]=crc32("-%.1f"%vol,self.hashCodes[key])
-#        print "hashUpdate(%s,%d,%d,%d,%d,%.1f) %06x,%06x -> %06x,%06x"%(op,tip,grid,pos,well,vol,old&0xffffff,oldTip&0xffffff,self.hashCodes[key]&0xffffff,self.tipHash[tip]&0xffffff)
+        # print "hashUpdate(%s,%d,%d,%d,%d,%.1f) %06x,%06x -> %06x,%06x"%(op,tip,grid,pos,well,vol,old&0xffffff,oldTip&0xffffff,self.hashCodes[key]&0xffffff,self.tipHash[tip]&0xffffff)
             
     def SIM(self,tip,op,vol,loc,pos):
         #print "SIM",tip,op,vol,loc,pos
