@@ -11,8 +11,12 @@ if isempty(args.sampfile)
   elseif exist('./NGSTRP.m','file')
     args.sampfile='NGSTRP.m';
   else
-    error('No sample file\n');
+    error('No sample file (use ''sampfile'' optional arg to specify)\n');
   end
+end
+
+if ~isempty(args.refconc)
+  args.refadj=true;
 end
 
 if ~isempty(args.data)
