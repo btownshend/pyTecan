@@ -18,7 +18,7 @@ if rcnt==0
 end
 meanref=rtotal/rcnt;
 fprintf('Mean reference before adjusting dilutions is %.1f nM\n', meanref);
-if nargin<2
+if nargin<2 || isempty(refconc)
   refconc=meanref;
 end
 fprintf('Adjusting dilutions such that reference is always %.1f nM\n', refconc);

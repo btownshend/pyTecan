@@ -1,6 +1,6 @@
 % Analyze TRP data
 function data=robotanalyze(varargin)
-defaults=struct('sampfile','','opdfile','','data',[],'refadj',false);
+defaults=struct('sampfile','','opdfile','','data',[],'refadj',false,'refconc',[]);
 args=processargs(defaults,varargin);
 
 if isempty(args.sampfile)
@@ -28,7 +28,7 @@ else
     if isempty(opdfile)
       error('No OPD file found\n');
     elseif length(opdfile)>1
-      error('More than one OPD file found\n');
+      error('More than one OPD file found (use ''opdfile'' optional arg to specify)\n');
     end
     opdfile=opdfile.name;
   else
@@ -115,7 +115,7 @@ data.lengths=struct('samp',ts{1},'primers',ts{2},'length',num2cell(ts{3}));
 % Run analysis
 data.results=getct(data);
 if args.refadj
-  d2=adjustdilutions(data);
+  d2=adjustdilutions(data,args.refconc);
 else
   d2=data;
 end
