@@ -112,6 +112,10 @@ end
 
 % Load length information
 fd=fopen('lengths.csv','r');
+if fd<0
+  error('Unable to open lengths.csv');
+end
+
 ts=textscan(fd,'%[^,],%[^,],%d');
 fclose(fd);
 data.lengths=struct('samp',ts{1},'primers',ts{2},'length',num2cell(ts{3}));
