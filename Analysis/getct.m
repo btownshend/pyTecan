@@ -189,7 +189,7 @@ for i=1:length(sel)
   [vols,o]=sort(samp.volumes,'descend');
   for k=1:length(o)
     nmk=samp.ingredients{o(k)};
-    if ~any(strcmp(nmk,{'Water','SSD','MPosRT'})) && ~strncmp(nmk,'MQ',2)  && ~strncmp(nmk,'MLig',4) && ~strncmp(nmk,'MStp',4)
+    if ~any(strcmp(nmk,{'SSD','MPosRT'})) && ~strncmp(upper(nmk),'WATER',5) && ~strncmp(nmk,'MQ',2)  && ~strncmp(nmk,'MLig',4) && ~strncmp(nmk,'MStp',4)
       if nmk(1)=='M'
         rdilstr=data.samps(find(strcmp({data.samps.name},nmk))).concentration;
         if rdilstr(end)~='x'
