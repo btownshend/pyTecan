@@ -17,7 +17,7 @@ for i=1:length(utmpls)
     fprintf('getcleavages: Unable to locate template for %s\n', tmpl);
     continue;
   end
-  if length(indlig)~=1 && length(indlig)~=2
+  if length(indlig)<1
     fprintf('getcleavages: Unable to locate ligation product for %s\n', tmpl);
     continue;
   end
@@ -27,35 +27,36 @@ for i=1:length(utmpls)
     t=data.results{indtmpl};
   
     % Figure out prefix of template, ligation product
-    pairs={{'WX','AX'},{'AS','BS'},{'BS','AS'},{'BS','WS'},{'AX','BX'},{'BX','AX'},{'MX','AX'},{'MX','BX'}};
+    % each entry in this table is {template qPCR product, ligation qPCR product, ligation prefix} 
+    pairs={{'WX','AX','AT7'},{'WX','BX','BT7W'},{'AS','BS','BN7'},{'BS','AS','AN7'},{'BS','WS','WN7'},{'AX','BX','BN7'},{'BX','AX','AN7'},{'MX','AX','AT7'},{'MX','BX','BT7W'},{'MX','AX','AN7'},{'MX','BX','BN7'}};
     thepair=[];
     for j=1:length(pairs)
       p=pairs{j};
-      if isfield(t,p{1}) && isfield(lig,p{1}) && isfield(lig,p{2}) && p{2}(1)==lig.ligprefix
+      if isfield(t,p{1}) && isfield(lig,p{1}) && isfield(lig,p{2}) && strcmp(p{3},lig.ligprefix)
         thepair=p;
         break;
       end
     end
     if isempty(thepair)
-      fprintf('Unable to determine template/ligation prefixes\n');
-      keyboard
+      fprintf('Unable to determine template/ligation prefixes for %s\n',lig.name);
       continue;
     end
-    lig.ucpair=thepair;
+    lig.ucpair=thepair(1:2);
     
-    if strcmp(thepair{1},'MX')
-      % New method: MX is total including template, AX is uncleaved only, BX is cleaved only
+    if strcmp(thepair{1},'MX') && strcmp(thepair{3},'AT7')
+      % New method: MX is total including template, AX is uncleaved only
       total=lig.(thepair{1}).conc;
       tmplc=t.(thepair{1}).conc;
-      if strcmp(thepair{2},'AX')
-        unclvd=lig.(thepair{2}).conc;
-        yield=total-tmplc;
-        clvd=yield-unclvd;
-      else
-        clvd=lig.(thepair{2}).conc;
-        yield=total-tmplc;
-        unclvd=yield-clvd;
-      end
+      unclvd=lig.(thepair{2}).conc;
+      yield=total-tmplc;
+      clvd=yield-unclvd;
+    elseif strcmp(thepair{1},'MX') && strcmp(thepair{3},'BT7W')
+      % New method: MX is total including template, BX is cleaved only
+      total=lig.(thepair{1}).conc;
+      tmplc=t.(thepair{1}).conc;
+      clvd=lig.(thepair{2}).conc;
+      yield=total-tmplc;
+      unclvd=yield-clvd;
     else
       clvd=lig.(thepair{2}).conc;
       unclvd=lig.(thepair{1}).conc-t.(thepair{1}).conc;
