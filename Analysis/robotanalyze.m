@@ -116,9 +116,9 @@ if fd<0
   error('Unable to open lengths.csv');
 end
 
-ts=textscan(fd,'%[^,],%[^,],%d');
+ts=textscan(fd,'%[^,],%[^,],%[^,],%d');
 fclose(fd);
-data.lengths=struct('samp',ts{1},'primers',ts{2},'length',num2cell(ts{3}));
+data.lengths=struct('samp',ts{1},'ligation',ts{2},'primers',ts{3},'length',num2cell(ts{4}));
 
 % Run analysis
 data.results=getct(data);

@@ -129,7 +129,25 @@ for i=1:length(sel)
     if sum(lsel)==0
       fprintf('%s/%s not found in data.lengths\n',basename, v.primer);
     elseif sum(lsel)>1
-      fprintf('%s/%s has duplicates in data.lengths\n',basename, v.primer);
+      fsel=find(lsel);
+      lsel2=[];
+      for i=1:length(fsel)
+        if data.lengths(fsel(i)).ligation~='*'
+          ss=strfind(v.samp.name,data.lengths(fsel(i)).ligation);
+          if isempty(ss)
+            continue;
+          end
+        end
+        lsel2=[lsel2,fsel(i)];
+      end
+      if length(lsel2)>1
+        fprintf('%s/%s has duplicates in data.lengths\n',basename, v.primer);
+        keyboard
+      elseif length(lsel2)<1
+        fprintf('%s/%s not found in data.lengths that match ligation\n',basename, v.primer);
+      else
+        v.length=data.lengths(lsel2).length;
+      end
     else
       v.length=data.lengths(lsel).length;
       %      fprintf('%s/%s has length=%d\n',basename, v.primer,v.length);
