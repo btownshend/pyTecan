@@ -31,13 +31,18 @@ result=struct('name',sampname);
 dots=find([sampname,'.']=='.');
 parts={};
 pdot=1;
+hasRT=false;
 for i=1:length(dots)
   pt=sampname(pdot:dots(i)-1);
+  if pt(1)=='R'
+    hasRT=true;
+  end
   if pt(1)~='D' && pt(1)~='R' && (pt(1)<'1' || pt(1)>'9')
     parts{end+1}=pt;
   end
   pdot=dots(i)+1;
 end
+
 if length(parts)>=2 && parts{2}(1)=='T'
   if length(parts)>=3
     parts={[parts{1},'-',parts{2}],parts{3:end}};
@@ -46,10 +51,15 @@ if length(parts)>=2 && parts{2}(1)=='T'
   end
 end
 result.tmpl=parts{1};
-  
+
 if length(parts)==1
-  result.type='tmpl';
-  result.cond='tmpl';
+  if hasRT
+    result.type='rt';
+    result.cond='rt';
+  else
+    result.type='tmpl';
+    result.cond='tmpl';
+  end
 else
   if parts{2}(end)=='-'
     result.cond='-';
