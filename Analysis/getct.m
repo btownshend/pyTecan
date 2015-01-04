@@ -77,7 +77,7 @@ else
       result.ligprefix=parts{end}(2:end);
     elseif length(parts{end})>=4 && strcmp(parts{end}(1:4),'MLig')
       result.type='Lig';
-      result.ligprefix=parts{end}(5);
+      result.ligprefix=parts{end}(5:end);
     else
       result.type=parts{end};
     end
