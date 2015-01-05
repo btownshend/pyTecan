@@ -28,9 +28,12 @@ for i=1:length(primers)
 end
 
 diff=miner-internal;
+checkrange=[6,20];
+fprintf('Fitting over miner range of Ct of [%f, %f]\n', checkrange);
+checksel=miner>=checkrange(1) & miner<=checkrange(2);
 
 uprimers=unique(plist);
-cmap=jet(length(uprimers));
+cmap=hsv(max(4,length(uprimers)));
 ctrange=[min(internal),max(internal)];
 
 setfig('minercompare'); clf;
@@ -40,7 +43,7 @@ for i=1:length(uprimers)
   sel=strcmp(plist,uprimers{i});
   h(i)=plot(internal(sel),miner(sel),'o','Color',cmap(i,:));
   hold on;
-  plot(ctrange,ctrange+nanmean(diff(sel)),'-','Color',cmap(i,:));
+  plot(ctrange,ctrange+nanmean(diff(sel&checksel)),'-','Color',cmap(i,:));
 end
 legend(h,uprimers);
 xlabel('Internal');
@@ -51,10 +54,10 @@ for i=1:length(uprimers)
   sel=strcmp(plist,uprimers{i});
   plot(sampnum(sel),diff(sel),'o','Color',cmap(i,:));
   hold on;
-  fprintf('%s: Miner-Internal=%.1f, Std=%.1f\n',uprimers{i},nanmean(diff(sel)), nanstd(diff(sel))); 
+  fprintf('%s: Miner-Internal=%.1f, Std=%.1f (N=%d)\n',uprimers{i},nanmean(diff(sel&checksel)), nanstd(diff(sel&checksel)),sum(sel&checksel)); 
 end
 xlabel('Sample number');
 ylabel('Miner-Internal');
-fprintf('Miner-Internal=%.1f, Std=%.1f\n',nanmean(diff), nanstd(diff)); 
+fprintf('Miner-Internal=%.1f, Std=%.1f (N=%d) \n',nanmean(diff(checksel)), nanstd(diff(checksel)),sum(checksel)); 
 
 results=struct('miner',num2cell(miner),'internal',num2cell(internal),'primer',plist,'sampnum',num2cell(sampnum));
