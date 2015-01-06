@@ -234,7 +234,10 @@ class TRP(object):
             self.e.stage('RTPos',[self.r.MPosRT],[ssrc[i] for i in range(len(ssrc)) if pos[i]],[stgt[i] for i in range(len(stgt)) if pos[i]],[vol[i] for i in range(len(vol)) if pos[i]])
         if any(not p for p in pos):
             self.e.stage('RTNeg',[self.r.MNegRT],[ssrc[i] for i in range(len(ssrc)) if not pos[i]],[stgt[i] for i in range(len(stgt)) if not pos[i]],[vol[i] for i in range(len(vol)) if not pos[i]])
-        self.e.runpgm("TRP37-20",20,False,max(vol))
+        dur=20
+        pgm="TRP37-%d"%dur
+        self.e.w.pyrun('PTC\\ptcsetpgm.py %s TEMP@37,%d TEMP@25,2'%(pgm,dur*60))
+        self.e.runpgm("TRP37-%d"%dur,dur,False,max(vol))
         return tgt
  
     def runLig(self,prefix=None,src=None,vol=None,srcdil=None,tgt=None,master=None,anneal=True):
