@@ -1,6 +1,6 @@
 % Analyze TRP data
 function data=robotanalyze(varargin)
-defaults=struct('sampfile','','opdfile','','data',[],'refadj',false,'refconc',[]);
+defaults=struct('sampfile','','opdfile','','data',[],'refadj',false,'refconc',[],'useinternal',false);
 args=processargs(defaults,varargin);
 
 if isempty(args.sampfile)
@@ -68,16 +68,20 @@ else
   data.primers.BX2=data.primers.BX;
   data.primers.BX3=data.primers.BX;
 
-  minerfile=dir('./Miner_*_Analyzed_Data.txt');
-  if isempty(minerfile)
-    fprintf('No Miner analysis file found\n');
-    data.useminer=false;
-  elseif length(minerfile)>1
-    fprintf('More than one miner file found - ignoring\n');
+  if args.useinternal
     data.useminer=false;
   else
-    data.md=minerload(minerfile.name);
-    data.useminer=true;
+    minerfile=dir('./Miner_*_Analyzed_Data.txt');
+    if isempty(minerfile)
+      fprintf('No Miner analysis file found\n');
+      data.useminer=false;
+    elseif length(minerfile)>1
+      fprintf('More than one miner file found - ignoring\n');
+      data.useminer=false;
+    else
+      data.md=minerload(minerfile.name);
+      data.useminer=true;
+    end
   end
 end
 
