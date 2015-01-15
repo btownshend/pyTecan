@@ -240,7 +240,7 @@ class TRP(object):
         self.e.runpgm("TRP37-%d"%dur,dur,False,max(vol))
         return tgt
  
-    def runLig(self,prefix=None,src=None,vol=None,srcdil=None,tgt=None,master=None,anneal=True):
+    def runLig(self,prefix=None,src=None,vol=None,srcdil=None,tgt=None,master=None,anneal=True,ligtemp=25):
         if tgt==None:
             tgt=[]
         if master==None:
@@ -277,7 +277,13 @@ class TRP(object):
         if anneal:
             self.e.runpgm("TRPANN",5,False,max(vol),hotlidmode="CONSTANT",hotlidtemp=100)
         self.e.stage('Ligation',[self.r.MLigase],[],stgt,vol)
-        self.e.runpgm("LIG15RT",26,False,max(vol),hotlidmode="TRACKING",hotlidtemp=10)
+        if ligtemp==25:
+            pgm="LIG15RT"
+        else:
+            pgm="LIG15-%.0f"%ligtemp
+            self.e.w.pyrun('PTC\\ptcsetpgm.py %s TEMP@%.0f,900 TEMP@65,600 TEMP@25,30'%(pgm,ligtemp))
+        
+        self.e.runpgm(pgm,27,False,max(vol),hotlidmode="TRACKING",hotlidtemp=10)
         return tgt
  
     def runPCR(self,prefix,src,vol,srcdil,tgt=None,ncycles=20,suffix='S'):
