@@ -12,6 +12,8 @@ MINMIXTOPVOLUME=1e10   # Disabled manual mix -- may be causing bubbles
 MULTIEXCESS=1  # Excess volume aspirate when using multi-dispense
 SHOWTIPS=False
 SHOWINGREDIENTS=False
+MINDEPOSITVOLUME=5.0	# Minimum volume to end up with in a well after dispensing
+
 _Sample__allsamples = []
 tiphistory={}
 
@@ -194,6 +196,8 @@ class Sample(object):
         w.aspirateNC(tipMask,[self.well],self.airLC,volume,self.plate)
         
     def dispense(self,tipMask,w,volume,conc):
+        if self.volume+volume < MINDEPOSITVOLUME:
+            print "Warning: Dispense of %.1ful into %s results in total of %.1ful which is less than minimum deposit volume of %.1f ul"%(volume,self.name,self.volume+volume,MINDEPOSITVOLUME)
         well=[self.well if self.well!=None else 2**(tipMask-1)-1 ]
         w.dispense(tipMask,well,self.bottomSideLC,volume,self.plate)
 
