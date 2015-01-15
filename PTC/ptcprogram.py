@@ -9,5 +9,6 @@ p.program('TRP','TRPANN',['TEMP 95,60','TEMP 25,1','RATE 0.5'])
 p.program('TRP','TRPLIG',['TEMP 16,1800','TEMP 65,600','TEMP 25,30'])
 p.program('TRP','LIG15RT',['TEMP 25,900','TEMP 65,600','TEMP 25,30'])
 p.program('TRP','COOLDOWN',['TEMP 16,60'])
+p.program('TRP','DRY',['TEMP 95,300','TEMP 25,1'])
 pgms=p.programs("TRP")
 print "pgms=",pgms
