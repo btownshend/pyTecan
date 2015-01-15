@@ -13,6 +13,7 @@ MULTIEXCESS=1  # Excess volume aspirate when using multi-dispense
 SHOWTIPS=False
 SHOWINGREDIENTS=False
 MINDEPOSITVOLUME=5.0	# Minimum volume to end up with in a well after dispensing
+MINSIDEDISPENSEVOLUME=10.0  # minimum final volume in well to use side-dispensing.  Side-dispensing with small volumes may result in pulling droplet up sidewall
 
 _Sample__allsamples = []
 tiphistory={}
@@ -199,7 +200,10 @@ class Sample(object):
         if self.volume+volume < MINDEPOSITVOLUME:
             print "Warning: Dispense of %.1ful into %s results in total of %.1ful which is less than minimum deposit volume of %.1f ul"%(volume,self.name,self.volume+volume,MINDEPOSITVOLUME)
         well=[self.well if self.well!=None else 2**(tipMask-1)-1 ]
-        w.dispense(tipMask,well,self.bottomSideLC,volume,self.plate)
+        if self.volume+volume>=MINSIDEDISPENSEVOLUME:
+            w.dispense(tipMask,well,self.bottomSideLC,volume,self.plate)
+        else:
+            w.dispense(tipMask,well,self.bottomLC,volume,self.plate)
 
         # Assume we're diluting the contents
         if self.conc==None and conc==None:
