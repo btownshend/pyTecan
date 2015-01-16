@@ -4,14 +4,18 @@ defaults=struct('sampfile','','opdfile','','data',[],'refadj',false,'refconc',[]
 args=processargs(defaults,varargin);
 
 if isempty(args.sampfile)
-  if exist('./analyticTRP.m','file')
-    args.sampfile='analyticTRP.m';
-  elseif exist('./multispike.m','file')
-    args.sampfile='multispike.m';
-  elseif exist('./NGSTRP.m','file')
-    args.sampfile='NGSTRP.m';
-  else
+  flist=dir('*.gem');
+  for i=1:length(flist)
+    mfilename=strrep(flist(i).name,'.gem','.m');
+    if exist(mfilename,'file')
+      args.sampfile=mfilename;
+      break;
+    end
+  end
+  if isempty(args.sampfile)
     error('No sample file (use ''sampfile'' optional arg to specify)\n');
+  else
+    fprintf('Loading robot setup from %s\n', args.sampfile);
   end
 end
 
@@ -30,11 +34,13 @@ else
   if isempty(args.opdfile)
     opdfile=dir('*.opd');
     if isempty(opdfile)
-      error('No OPD file found\n');
+      fprintf('No lcoal OPD file found, checking in smolke server\n');
+      opdfile=opdlocate();
     elseif length(opdfile)>1
       error('More than one OPD file found (use ''opdfile'' optional arg to specify)\n');
+    else
+      opdfile=opdfile.name;
     end
-    opdfile=opdfile.name;
   else
     opdfile=args.opdfile;
   end
