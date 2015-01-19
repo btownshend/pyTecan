@@ -325,12 +325,12 @@ class TRP(object):
         stgt=findsamps(tgt,False)
         adjustSrcDil(stgt,dil)
         self.e.stage('Dilute',[],[],stgt,[stgt[i].volume*dil[i] for i in range(len(stgt))])
-        return tgt
+        return tgt   #  The name of the samples are unchanged -- the predilution names
         
     def runQPCRDIL(self,src,vol,srcdil,tgt=None,dilPlate=False):
         if isinstance(srcdil,list) and ( not isinstance(src,list) or len(srcdil)!=len(src)):
             print "Cannot have multiple dilutions for a single sample"
-            assert(FALSE)
+            assert(False)
             
         if tgt==None:
             tgt=[]
