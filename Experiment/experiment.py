@@ -250,7 +250,10 @@ class Experiment(object):
             watervols=[volume[i]*(1-sum(reagentvols))-samples[i].volume for i in range(len(samples))]
 
         if min(watervols)<-0.01:
-            print "Error: Ingredients add up to more than desired volume;  need to add water=",watervols
+            print "Error: Ingredients add up to more than desired volume by %.1f ul"%(-min(watervols))
+            for s in samples:
+                if (s.volume>0):
+                    print "Note: %s already contains %.1f ul\n"%(s.name,s.volume)
             assert(False)
 
         if sum(watervols)>0.01:
