@@ -44,6 +44,7 @@ class Experiment(object):
         # Access PTC and RIC early to be sure they are working
         self.w.pyrun("PTC\\ptctest.py")
         #        self.w.periodicWash(15,4)
+        self.w.userprompt("Verify that PTC thermocycler lid pressure is set to '1'.")
         
     def setreagenttemp(self,temp=None):
         if temp==None:
