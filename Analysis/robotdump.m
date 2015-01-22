@@ -19,6 +19,7 @@ c=1;
 colbreak=[];
 tbl{1,c}='Name'; c=c+1;
 tbl{1,c}='Dilution'; c=c+1;
+tbl{1,c}='DilChain'; c=c+1;
 colbreak(c-1)=1;
 for p=1:length(primers)
   tbl{1,c}=primers{p};
@@ -75,6 +76,7 @@ for i=1:length(data.results)
   c=1;
   tbl{r,c}=usamp.name;c=c+1;
   tbl{r,c}=sprintf('%s/%.0f',usamp.dilrelative,usamp.dilution);c=c+1;
+  tbl{r,c}=sprintf('%.1f/%.1f/%.1f',usamp.dilchain);c=c+1;
   for p=1:length(primers)
     if isfield(usamp,primers{p})
       tbl{r,c}=usamp.(primers{p}).samp.well;

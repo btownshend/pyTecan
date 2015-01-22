@@ -187,8 +187,10 @@ for i=1:length(sel)
   
   % Calculation dilution based on volumes of ingredients
   [vols,o]=sort(samp.volumes,'descend');
+  map=containers.Map();
   for k=1:length(o)
     nmk=samp.ingredients{o(k)};
+    map(nmk)=vols(k);
     if ~any(strcmp(nmk,{'SSD','MPosRT','MNegRT'})) && ~strncmp(upper(nmk),'WATER',5) && ~strncmp(nmk,'MQ',2)  && ~strncmp(nmk,'MLig',4) && ~strncmp(nmk,'MStp',4)
       if nmk(1)=='M'
         rdilstr=data.samps(find(strcmp({data.samps.name},nmk))).concentration;
@@ -212,6 +214,31 @@ for i=1:length(sel)
       end
       break;
     end
+  end
+  dilchain=nan(1,3);   % Chain is Stop->RT, RT->Lig, Lig->QPCR
+  if isKey(map,'MStpX') && isKey(map,'MPosRT')
+    dilchain(1)=(map('MPosRT')*2)/(map('MStpX')*2);
+  elseif isKey(map,'MStpX') && isKey(map,'MNegRT')
+    dilchain(1)=(map('MNegRT')*2)/(map('MStpX')*2);
+  end
+  if isKey(map,'MLigase') && isKey(map,'MPosRT')
+    dilchain(2)=(map('MLigase')*3)/(map('MPosRT')*2);
+  elseif isKey(map,'MLigase') && isKey(map,'MNegRT')
+    dilchain(2)=(map('MLigase')*3)/(map('MNegRT')*2);
+  end
+  if isKey(map,'MQAX') && isKey(map,'MLigase')
+    dilchain(3)=(map('MQAX')*6/9)/(map('MLigase')*3);
+  elseif isKey(map,'MQBX') && isKey(map,'MLigase')
+    dilchain(3)=(map('MQBX')*6/9)/(map('MLigase')*3);
+  elseif isKey(map,'MQMX') && isKey(map,'MLigase')
+    dilchain(3)=(map('MQMX')*6/9)/(map('MLigase')*3);
+  end
+  if ~isfield(result,'dilchain')
+    result.dilchain=dilchain;
+  elseif any(result.dilchain ~= dilchain & isfinite(dilchain) & isfinite(result.dilchain))
+    error('Inconsistent dilution chain: %s vs. %s\n', sprintf('%f/',result.dilchain),sprintf('%f/',dilchain));
+  else
+    result.dilchain(isfinite(dilchain))=dilchain(isfinite(dilchain));
   end
   if ~isfield(result,'dilution')
     result.dilution=1;
