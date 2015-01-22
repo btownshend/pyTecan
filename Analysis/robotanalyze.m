@@ -34,7 +34,7 @@ else
   if isempty(args.opdfile)
     opdfile=dir('*.opd');
     if isempty(opdfile)
-      fprintf('No lcoal OPD file found, checking in smolke server\n');
+      fprintf('No local OPD file found, checking in Smolke server\n');
       opdfile=opdlocate();
     elseif length(opdfile)>1
       error('More than one OPD file found (use ''opdfile'' optional arg to specify)\n');
@@ -85,6 +85,7 @@ else
       fprintf('More than one miner file found - ignoring\n');
       data.useminer=false;
     else
+      fprintf('Loading PCR-Miner data from %s\n', minerfile.name);
       data.md=minerload(minerfile.name);
       data.useminer=true;
     end
