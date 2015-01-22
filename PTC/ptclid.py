@@ -11,7 +11,7 @@ p=ptc.PTC()
 res=p.execute('LID %s'%(cmd))
 if len(res)>0:
     logging.debug( "Result=%s",res)
-for i in range(5):
+for i in range(10):
     lidstatus=p.getlidstatus()
     logging.info( "Lid is %s"%lidstatus)
     if cmd=="OPEN":
