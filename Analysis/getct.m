@@ -37,7 +37,9 @@ for i=1:length(dots)
   if pt(1)=='R'
     hasRT=true;
   end
-  if pt(1)~='D' && pt(1)~='R' && (pt(1)<'1' || pt(1)>'9')
+  if (pt(1)>='1' && pt(1)<='9')
+    parts{end}=[parts{end},'_',pt];
+  elseif pt(1)~='D' && pt(1)~='R'
     parts{end+1}=pt;
   end
   pdot=dots(i)+1;
