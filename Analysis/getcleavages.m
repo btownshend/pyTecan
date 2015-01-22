@@ -13,8 +13,13 @@ for i=1:length(utmpls)
   % Locate template measurement and ligation measurement
   indtmpl=find(strcmp(tmpls,tmpl)&strcmp(types,'tmpl'));
   indlig=find(strcmp(tmpls,tmpl) &strcmp(types,'Lig'));
-  if length(indtmpl)~=1
+  if length(indtmpl)<1
     fprintf('getcleavages: Unable to locate template for %s\n', tmpl);
+    continue;
+  end
+  if length(indtmpl)>1
+    fprintf('getcleavages: Multiple possible templates for %s\n', tmpl);
+    keyboard
     continue;
   end
   if length(indlig)<1
