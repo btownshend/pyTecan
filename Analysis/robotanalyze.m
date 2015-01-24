@@ -70,7 +70,11 @@ else
   end
   
   % Setup primers, ct0 is concentration of nucleotides at Ct=0 in uM
-  ct0M=2.35;
+  if data.useminer
+    ct0M=2.35*10/350;
+  else
+    ct0M=2.35;
+  end
   eff=1.92;
   data.primers=struct(...
       'AS',struct('ct0',ct0M,'eff',eff),...
