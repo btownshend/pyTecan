@@ -186,9 +186,9 @@ end
 d=pwd;
 d=d(max(strfind(d,'/'))+1:end);
 if data.useminer
-  suptitle(sprintf('Miner results for %s',d));
+  suptitle(sprintf('Miner MX results for %s',d));
 else
-  suptitle(sprintf('Internal results for %s',d));
+  suptitle(sprintf('Internal MX results for %s',d));
 end
   
 
