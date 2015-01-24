@@ -38,7 +38,7 @@ for i=1:length(dots)
     hasRT=true;
   end
   if (pt(1)>='1' && pt(1)<='9')
-    parts{end}=[parts{end},'_',pt];
+    parts{end}=[parts{end},'-',pt];
   elseif pt(1)~='D' && pt(1)~='R'
     parts{end+1}=pt;
   end
