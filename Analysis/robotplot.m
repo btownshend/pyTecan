@@ -83,10 +83,11 @@ end
 
 setfig('analyze'); clf;
 nx=1;pnum=1;
-ny=any(isfinite(cleavage(:)))+any(isfinite(yield(:)))+any(isfinite(tconc(:)))+any(any(isfinite(tconc+yield)))+1;
+showABMcleavage=false;
+ny=(showABMcleavage && any(isfinite(cleavage(:))))+any(isfinite(yield(:)))+any(isfinite(tconc(:)))+any(any(isfinite(tconc+yield)))+1;
 
 sel=any(isfinite(cleavage),2);
-if any(sel)
+if showABMcleavage && any(sel)
   if pnum==ny-1
     subplot(ny,nx,pnum:pnum+1);
   else
