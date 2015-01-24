@@ -72,7 +72,20 @@ for i=1:length(data.results)
   else
     rowbreak(r-1)=0;
   end
-
+  if strcmp(usamp.type,'tmpl') && isfield(data,'summary')
+    % Use summary values of cleavage, yield
+    sel=find(strcmp(usamp.tmpl,{data.summary.tmpl}));
+    if length(sel)==1
+      s=data.summary(sel);
+      usamp.yield=s.yield;
+      usamp.cleavage=s.cleavage;
+      if isfield(usamp,'MX')
+        usamp.rnagain=s.yield/usamp.MX.conc;
+      end
+    else
+      fprintf('Unable to find summary data for template %s\n', usamp.tmpl);
+    end
+  end
   c=1;
   tbl{r,c}=usamp.name;c=c+1;
   tbl{r,c}=sprintf('%s/%.0f',usamp.dilrelative,usamp.dilution);c=c+1;

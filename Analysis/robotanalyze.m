@@ -147,6 +147,7 @@ else
   d2=data;
 end
 d3=getcleavages(d2);
+d3.summary=combinecleavages(d3);
 robotdump(d3);
 
 % Make some plots...

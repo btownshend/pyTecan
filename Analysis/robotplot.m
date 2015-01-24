@@ -239,3 +239,31 @@ if sum(theosel)>0
   title('Frac(theo) in spike-in');
 end
 
+if isfield(data,'summary')
+  setfig('Robot Summary'); clf;
+  subplot(311);
+  bar([data.summary.cleavage]*100);
+  ylabel('Cleavage (%)(B/(A+B))');
+  set(gca,'XTick',1:length(data.summary));
+  set(gca,'XTickLabel',{data.summary.tmpl});
+  set(gca,'XTickLabelRotation',45);
+
+  subplot(3,1,2);
+  bar([data.summary.yield]);
+  ylabel('Yield (nM) (A+B)');
+  set(gca,'XTick',1:length(data.summary));
+  set(gca,'XTickLabel',{data.summary.tmpl});
+  set(gca,'XTickLabelRotation',45);
+
+  subplot(3,1,3);
+  bar([data.summary.yield]./[data.summary.yieldM]*100);
+  ylabel('Ligation Efficiency (A+B)/M');
+  set(gca,'XTick',1:length(data.summary));
+  set(gca,'XTickLabel',{data.summary.tmpl});
+  set(gca,'XTickLabelRotation',45);
+end
+if data.useminer
+  suptitle(sprintf('Miner A/B results for %s',d));
+else
+  suptitle(sprintf('Internal A/B results for %s',d));
+end
