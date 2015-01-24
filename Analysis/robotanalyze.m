@@ -1,6 +1,6 @@
 % Analyze TRP data
 function data=robotanalyze(varargin)
-defaults=struct('sampfile','','opdfile','','data',[],'refadj',false,'refconc',[],'useinternal',false);
+defaults=struct('sampfile','','opdfile','','data',[],'refadj',false,'refconc',[],'useinternal',false,'minerfile',[]);
 args=processargs(defaults,varargin);
 
 if isempty(args.sampfile)
@@ -48,6 +48,27 @@ else
   opd=opdread(opdfile);
   data.opd=ctcalc(opd);
 
+  if args.useinternal
+    data.useminer=false;
+  else
+    if isempty(args.minerfile)
+      minerfile=dir('./Miner_*_Analyzed_Data.txt');
+    else
+      minerfile=dir(args.minerfile);
+    end
+    if isempty(minerfile)
+      fprintf('No Miner analysis file found\n');
+      data.useminer=false;
+    elseif length(minerfile)>1
+      fprintf('More than one miner file found - ignoring\n');
+      data.useminer=false;
+    else
+      fprintf('Loading PCR-Miner data from %s\n', minerfile.name);
+      data.md=minerload(minerfile.name);
+      data.useminer=true;
+    end
+  end
+  
   % Setup primers, ct0 is concentration of nucleotides at Ct=0 in uM
   ct0M=2.35;
   eff=1.92;
@@ -73,23 +94,6 @@ else
   data.primers.BS3=data.primers.BS;
   data.primers.BX2=data.primers.BX;
   data.primers.BX3=data.primers.BX;
-
-  if args.useinternal
-    data.useminer=false;
-  else
-    minerfile=dir('./Miner_*_Analyzed_Data.txt');
-    if isempty(minerfile)
-      fprintf('No Miner analysis file found\n');
-      data.useminer=false;
-    elseif length(minerfile)>1
-      fprintf('More than one miner file found - ignoring\n');
-      data.useminer=false;
-    else
-      fprintf('Loading PCR-Miner data from %s\n', minerfile.name);
-      data.md=minerload(minerfile.name);
-      data.useminer=true;
-    end
-  end
 end
 
 if data.useminer && ~isfield(data,'md')
