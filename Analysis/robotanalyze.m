@@ -152,4 +152,5 @@ robotdump(d3);
 
 % Make some plots...
 robotplot(d3);
+replicatediff(d3);
 data=d3;
