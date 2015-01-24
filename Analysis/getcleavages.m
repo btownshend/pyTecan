@@ -33,7 +33,7 @@ for i=1:length(utmpls)
   
     % Figure out prefix of template, ligation product
     % each entry in this table is {template qPCR product, ligation qPCR product, ligation prefix} 
-    pairs={{'WX','AX','AT7'},{'WX','BX','BT7W'},{'AS','BS','BN7'},{'BS','AS','AN7'},{'BS','WS','WN7'},{'AX','BX','BN7'},{'BX','AX','AN7'},{'MX','AX','AT7'},{'MX','BX','BT7W'},{'MX','AX','AN7'},{'MX','BX','BN7'}};
+    pairs={{'WX','AX','AT7'},{'WX','BX','BT7W'},{'AS','BS','BN7'},{'BS','AS','AN7'},{'BS','WS','WN7'},{'AX','BX','BN7'},{'BX','AX','AN7'},{'MX','AX','AT7'},{'MX','BX','BT7W'},{'MX','AX','AN7'},{'MX','BX','BN7'},{'WX','AX','AN7'}};
     thepair=[];
     for j=1:length(pairs)
       p=pairs{j};
