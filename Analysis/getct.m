@@ -125,7 +125,12 @@ for i=1:length(sel)
   % Lookup length of qPCR product
   v.length=nan;
   if isfield(data,'lengths')
-    nsel=strcmp({data.lengths.samp},basename);
+    nsel=false(1,length(data.lengths));
+    for k=1:length(data.lengths)
+      if strncmp(data.lengths(k).samp,basename,length(data.lengths(k).samp))
+        nsel(k)=true;
+      end
+    end
     psel=strcmp({data.lengths.primers},v.primer) ;
     lsel=nsel&psel;
     if sum(lsel)==0
