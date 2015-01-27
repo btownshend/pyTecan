@@ -69,7 +69,7 @@ for i=1:length(utmpls)
     end
     
     if unclvd<0
-      fprintf('Warning: %s has less template in the ligation product than it started with\n', tmpl);
+      fprintf('Warning: %s has inconsistent MX concentration.\n', tmpl);
       continue;
     end
     lig.cleavage=clvd/(clvd+unclvd);
