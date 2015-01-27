@@ -130,14 +130,61 @@ end
 % end
 
 % Load length information
-fd=fopen('lengths.csv','r');
-if fd<0
-  error('Unable to open lengths.csv');
+fd=fopen('seqs.csv','r');
+lnum=1;
+data.lengths=[];
+if fd>0
+  while true
+    % Read name, sequence
+    line=fgetl(fd);
+    if line==-1
+      break;
+    end
+    commas=strfind(line,',');
+    if length(commas)<1
+      fprintf('Syntax error at line %d of seqs.csv:  expected at least 1 comma\n');
+      continue;
+    end
+    name=line(1:commas(1)-1);
+    lens=struct('MX',[],'WX',[],'AX',[],'BX',[]);
+    commas(end+1)=length(line)+1;
+    for k=2:length(commas)
+      seq=line(commas(k-1)+1:commas(k)-1);
+      seq=upper(strrep(seq,' ',''));
+      if ~strncmp(seq,'GCTGTC',6)
+        fprintf('Bad seq for %s: %s\n  Expected GCTGTC*GACAGC\n',seqs(i).samp, seq);
+        continue;
+      end
+      lens.WX(end+1)=35+length(seq)+17;
+      lens.AX(end+1)=56+length(seq)+17;
+      lens.BX(end+1)=56+length(seq)+17;
+      mstart=strfind(seq,'TCCGGTCTGATGAGTCC');
+      if isempty(mstart)
+        fprintf('Unable to locate MidPrimer in %s: %s\n', name,seq);
+      else
+        lens.MX(end+1)=length(seq)+1-mstart(1)+17;
+      end
+    end
+    fns=fieldnames(lens);
+    for i=1:length(fns)
+      fn=fns{i};
+      if length(lens.(fn))>0
+        data.lengths=[data.lengths,struct('samp',name,'seq',seq,'ligation','*','primers',fn,'length',round(mean(lens.(fn))))];
+        fprintf('%s: %s=%d\n', data.lengths(end).samp,data.lengths(end).primers,data.lengths(end).length);
+      end
+    end
+  end
+  fclose(fd);
+else
+  % Try lengths.csv instead
+  fd=fopen('lengths.csv','r');
+  if fd<0
+    error('Unable to open seqs.csv or lengths.csv');
+  end
+  ts=textscan(fd,'%[^,],%[^,],%[^,],%d');
+  fclose(fd);
+  data.lengths=struct('samp',ts{1},'ligation',ts{2},'primers',ts{3},'length',num2cell(ts{4}));
 end
-
-ts=textscan(fd,'%[^,],%[^,],%[^,],%d');
-fclose(fd);
-data.lengths=struct('samp',ts{1},'ligation',ts{2},'primers',ts{3},'length',num2cell(ts{4}));
 
 % Run analysis
 data.results=getct(data);
