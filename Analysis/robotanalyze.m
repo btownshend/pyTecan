@@ -152,7 +152,7 @@ if fd>0
       seq=line(commas(k-1)+1:commas(k)-1);
       seq=upper(strrep(seq,' ',''));
       if ~strncmp(seq,'GCTGTC',6)
-        fprintf('Bad seq for %s: %s\n  Expected GCTGTC*GACAGC\n',seqs(i).samp, seq);
+        fprintf('Bad seq "%s"\n  Expected GCTGTC*GACAGC\n',seq);
         continue;
       end
       lens.WX(end+1)=35+length(seq)+17;
