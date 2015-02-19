@@ -14,6 +14,7 @@ class Experiment(object):
     #    READERPLATE=Plate("Reader",4,1,12,8,False,15)
     QPCRPLATE=Plate("qPCR",4,1,12,8,False,15)
     DILPLATE=Plate("Dilutions",4,2,12,8,False,15)
+    MAGPLATE=Plate("MagPlate",4,2,12,8,False,15)   # HSP9601 on magnetic plate; Same place as dilutions for now
     WATERLOC=Plate("Water",3,2,1,4,False,100,100000)
     BLEACHLOC=Plate("Bleach",3,3,1,4,False,0,100000)
     PTCPOS=Plate("PTC",25,1,1,1)
@@ -302,6 +303,20 @@ class Experiment(object):
         if waitForCompletion:
             self.waitpgm()
             
+    def magmove(self,toMag):
+        # move to magnet
+        self.w.flushQueue()
+        self.lihahome()
+        cmt="magmove %s"%toMag
+        self.w.comment(cmt)
+        if toMag:
+            self.w.vector("Microplate Landscape",self.SAMPLEPLATE,self.w.SAFETOEND,True,self.w.DONOTMOVE,self.w.CLOSE)
+            self.w.vector("Magplate",self.MAGPLATE,self.w.SAFETOEND,True,self.w.DONOTMOVE,self.w.OPEN)
+        else:
+            self.w.vector("Magplate",self.MAGPLATE,self.w.SAFETOEND,True,self.w.DONOTMOVE,self.w.CLOSE)
+            self.w.vector("Microplate Landscape",self.SAMPLEPLATE,self.w.SAFETOEND,True,self.w.DONOTMOVE,self.w.OPEN)
+        self.w.romahome()
+
     def pause(self,duration):
     	self.w.starttimer()
         self.w.waittimer(duration)
