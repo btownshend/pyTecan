@@ -168,10 +168,9 @@ class Sample(object):
 
     def aspirate(self,tipMask,w,volume,multi=False):
         if volume<2 and not multi and self.name!="Water":
-            print "WARNING: Inaccurate for < 2ul:  attempting to aspirate %.1f ul"%volume
-        
         # Aspirates more than dispensed
         aspVolume=volume+ASPIRATEEXTRA
+            print "WARNING: Inaccurate for < 2ul:  attempting to aspirate %.1f ul from %s"%(volume,self.name)
         if self.well==None:
                 well=[]
                 for i in range(4):
