@@ -302,7 +302,7 @@ class TRP(object):
         adjustSrcDil(ssrc,srcdil)
         
         primer=[prefix[i]+suffix[i] for i in range(len(prefix))]
-        print "primer=",primer
+        #print "primer=",primer
         if any(p=='AS' for p in primer):
                self.e.stage('PCRAS',[self.r.PCRAS],[ssrc[i] for i in range(len(ssrc)) if primer[i]=='AS'],[stgt[i] for i in range(len(stgt)) if primer[i]=='AS'],[vol[i] for i in range(len(vol)) if primer[i]=='AS'])
         if any(p=='BS' for p in primer):
