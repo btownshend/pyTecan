@@ -220,6 +220,42 @@ class Experiment(object):
         if self.useDiTis and dropDITI:
             self.w.dropDITI(tipMask&self.DITIMASK,self.WASTE)
 
+    def dispose(self, volume, src,  mix=False, getDITI=True, dropDITI=True):
+        'Dispose of a given volume by aspirating and not dispensing (will go to waste during next wash)'
+        if self.ptcrunning and (src.plate==Experiment.SAMPLEPLATE or src.plate==Experiment.MAGPLATE )>0:
+            self.waitpgm()
+        if volume>self.MAXVOLUME:
+            reuseTip=False   # Since we need to wash to get rid of it
+            print "Splitting large transfer of %.1f ul into smaller chunks < %.1f ul "%(volume,self.MAXVOLUME),
+            if reuseTip:
+                print "with tip reuse"
+            else:
+                print "without tip reuse"
+            self.dispose(self.MAXVOLUME,src,mix,getDITI,dropDITI)
+            self.dispose(volume-self.MAXVOLUME,src,False,getDITI,dropDITI)
+            return
+        
+        cmt="Remove and dispose of %.1f ul from %s"%(volume, src.name)
+        ditivolume=volume+src.inliquidLC.singletag
+        if mix and not src.isMixed:
+            cmt=cmt+" with src mix"
+            ditivolume=max(ditivolume,src.volume)
+        if self.useDiTis:
+            tipMask=4
+            if getDITI:
+                self.w.getDITI(tipMask&self.DITIMASK,ditivolume)
+        else:
+            tipMask=self.cleantip()
+        #print "*",cmt
+        self.w.comment(cmt)
+
+        if mix and not src.isMixed:
+            src.mix(tipMask,self.w)
+        src.aspirate(tipMask,self.w,volume)
+
+        if self.useDiTis and dropDITI:
+            self.w.dropDITI(tipMask&self.DITIMASK,self.WASTE)
+
     def stage(self,stagename,reagents,sources,samples,volume,finalx=1.0,destMix=True,dilutant=None):
         # Add water to sample wells as needed (multi)
         # Pipette reagents into sample wells (multi)
