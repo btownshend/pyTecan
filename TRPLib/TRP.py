@@ -173,7 +173,7 @@ class TRP(object):
 
         MT7vol=vol*1.0/self.r.MT7.conc.dilutionneeded()
         sourcevols=[vol*1.0/s.conc.dilutionneeded() for s in ssrc]
-        theovols=[vol*1.0/self.r.Theo.conc.dilutionneeded()*(1 if t else 0) for t in theo]
+        theovols=[(vol*1.0/self.r.Theo.conc.dilutionneeded() if t else 0) for t in theo]
         watervols=[vol-theovols[i]-sourcevols[i]-MT7vol for i in range(len(ssrc))]
 
         if sum(watervols)>0.01:
