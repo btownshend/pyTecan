@@ -501,6 +501,21 @@ class WorkList(object):
         else:
             self.list.append('Comment("%s")'%text)
 
+    def starttimer(self,timer=1):
+        if timer<1 or timer>100:
+            print "starttimer: Bad timer (%d); must be between 1 and 100"%timer
+            assert(0)
+        self.list.append('StartTimer("%d")'%timer)
+            
+    def waittimer(self,duration,timer=1):
+        if timer<1 or timer>100:
+            print "waittimer: Bad timer (%d); must be between 1 and 100"%timer
+            assert(0)
+        if duration<.02 or duration >86400:
+            print "waittimer: Bad duration (%f); must be between 0.02 and 86400 seconds"%duration
+            assert(0)
+        self.list.append('WaitTimer("%d","%f")'%(timer,duration))
+            
     def userprompt(self, text,timeout=-1,prepend=False):
         self.flushQueue()
         cmd='UserPrompt("%s",0,%d)'%(text,timeout)

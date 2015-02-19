@@ -302,6 +302,10 @@ class Experiment(object):
         if waitForCompletion:
             self.waitpgm()
             
+    def pause(self,duration):
+    	self.w.starttimer()
+        self.w.waittimer(duration)
+
     def waitpgm(self, sanitize=True):
         if not self.ptcrunning:
             return
