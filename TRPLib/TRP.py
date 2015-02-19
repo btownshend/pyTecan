@@ -56,7 +56,7 @@ def uniqueTargets(tgts):
             for k in range(100):
                 nm="%s.%d"%(tgts[i],k+2)
                 if nm not in tgts:
-                    tgts[i]=nm;
+                    tgts[i]=nm
                     break
     return tgts
 
@@ -88,7 +88,7 @@ class TRP(object):
     def __init__(self):
         'Create a new TRP run'
         self.e=Experiment()
-        self.r=Reagents();
+        self.r=Reagents()
         self.e.setreagenttemp(6.0)
         self.e.sanitize(3,50)    # Heavy sanitize
             
@@ -179,7 +179,7 @@ class TRP(object):
         if sum(watervols)>0.01:
             self.e.multitransfer(watervols,self.e.WATER,stgt,(False,False))
         self.e.multitransfer([MT7vol for s in stgt],self.r.MT7,stgt,(False,False))
-        self.e.multitransfer([tv for tv in theovols if tv>0.01],self.r.Theo,[stgt[i] for i in range(len(theovols)) if theovols[i]>0],(False,False),ignoreContents=True);
+        self.e.multitransfer([tv for tv in theovols if tv>0.01],self.r.Theo,[stgt[i] for i in range(len(theovols)) if theovols[i]>0],(False,False),ignoreContents=True)
         for i in range(len(ssrc)):
             self.e.transfer(sourcevols[i],ssrc[i],stgt[i],(True,True))
         return tgt
@@ -311,9 +311,9 @@ class TRP(object):
                self.e.stage('PCRAX',[self.r.PCRAX],[ssrc[i] for i in range(len(ssrc)) if primer[i]=='AX'],[stgt[i] for i in range(len(stgt)) if primer[i]=='AX'],[vol[i] for i in range(len(vol)) if primer[i]=='AX'])
         if any(p=='BX' for p in primer):
                self.e.stage('PCRBX',[self.r.PCRBX],[ssrc[i] for i in range(len(ssrc)) if primer[i]=='BX'],[stgt[i] for i in range(len(stgt)) if primer[i]=='BX'],[vol[i] for i in range(len(vol)) if primer[i]=='BX'])
-        pgm="PCR%d"%ncycles;
-        #        self.e.w.pyrun('PTC\\ptcsetpgm.py %s TEMP@95,120 TEMP@95,30 TEMP@55,30 TEMP@72,25 GOTO@2,%d TEMP@72,180 TEMP@16,2'%(pgm,ncycles-1));
-        self.e.w.pyrun('PTC\\ptcsetpgm.py %s TEMP@95,120 TEMP@95,10 TEMP@57,10 GOTO@2,%d TEMP@72,120 TEMP@25,2'%(pgm,ncycles-1));
+        pgm="PCR%d"%ncycles
+        #        self.e.w.pyrun('PTC\\ptcsetpgm.py %s TEMP@95,120 TEMP@95,30 TEMP@55,30 TEMP@72,25 GOTO@2,%d TEMP@72,180 TEMP@16,2'%(pgm,ncycles-1))
+        self.e.w.pyrun('PTC\\ptcsetpgm.py %s TEMP@95,120 TEMP@95,10 TEMP@57,10 GOTO@2,%d TEMP@72,120 TEMP@25,2'%(pgm,ncycles-1))
         self.e.runpgm(pgm,4.80+1.55*ncycles,False,max(vol),hotlidmode="CONSTANT",hotlidtemp=100)
         return tgt
     
