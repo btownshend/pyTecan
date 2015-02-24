@@ -502,12 +502,14 @@ class WorkList(object):
             self.list.append('Comment("%s")'%text)
 
     def starttimer(self,timer=1):
+        self.flushQueue()
         if timer<1 or timer>100:
             print "starttimer: Bad timer (%d); must be between 1 and 100"%timer
             assert(0)
         self.list.append('StartTimer("%d")'%timer)
             
     def waittimer(self,duration,timer=1):
+        self.flushQueue()
         if timer<1 or timer>100:
             print "waittimer: Bad timer (%d); must be between 1 and 100"%timer
             assert(0)
