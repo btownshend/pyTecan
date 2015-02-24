@@ -205,6 +205,10 @@ class Sample(object):
             # Manual conditioning handled in worklist
             remove=aspVolume*ASPIRATEFACTOR+MULTIEXCESS
 
+        if self.volume<remove and self.volume>0:
+            print "WARNING: Removing all contents (%.1f from %.1ful) from %s"%(remove,self.volume,self.name)
+            remove=self.volume
+            self.ingredients={}
         for k in self.ingredients:
             self.ingredients[k] *= (self.volume-remove)/self.volume
         self.volume=self.volume-remove
