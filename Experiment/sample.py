@@ -177,6 +177,9 @@ class Sample(object):
     def aspirate(self,tipMask,w,volume,multi=False):
         if volume<2 and not multi and self.name!="Water":
             print "WARNING: Inaccurate for < 2ul:  attempting to aspirate %.1f ul from %s"%(volume,self.name)
+        if volume>self.volume and self.volume>0:
+            print "ERROR:Attempt to aspirate %.1f ul from %s that contains only %.1f ul"%(volume, self.name, self.volume)
+            
         if self.hasBeads:
             aspVolume=volume
         else:
