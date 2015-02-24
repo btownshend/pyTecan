@@ -117,6 +117,7 @@ class Sample(object):
             self.bottomSideLC=liquidclass.LC("%s-BottomSide"%liquidClass.name,liquidClass.singletag,liquidClass.multicond,liquidClass.multiexcess)
             self.inliquidLC=liquidclass.LC("%s-InLiquid"%liquidClass.name,liquidClass.singletag,liquidClass.multicond,liquidClass.multiexcess)
 
+        self.beadsLC=liquidclass.LC("%s-BottomBeads"%liquidClass.name,liquidClass.singletag,liquidClass.multicond,liquidClass.multiexcess)
         self.mixLC=liquidclass.LC("%s-MixSlow"%liquidClass.name,liquidClass.singletag,liquidClass.multicond,liquidClass.multiexcess)
         self.airLC=liquidclass.LC("Air")
         # Same as bottom for now 
@@ -124,7 +125,14 @@ class Sample(object):
         self.history=""
         __allsamples.append(self)
         self.isMixed=True
+        self.hasBeads=False		# Setting this to true overrides the manual conditioning
 
+    def setHasBeads(self):
+        'Mark this sample as containing beads and remove tip-touching liquid class'
+        self.hasBeads=True
+        self.bottomSideLC=self.beadsLC
+        self.bottomLC=self.beadsLC
+        
     @classmethod
     def clearall(cls):
         'Clear all samples'
@@ -168,9 +176,13 @@ class Sample(object):
 
     def aspirate(self,tipMask,w,volume,multi=False):
         if volume<2 and not multi and self.name!="Water":
-        # Aspirates more than dispensed
-        aspVolume=volume+ASPIRATEEXTRA
             print "WARNING: Inaccurate for < 2ul:  attempting to aspirate %.1f ul from %s"%(volume,self.name)
+        if self.hasBeads:
+            aspVolume=volume
+        else:
+            # Aspirates more than dispensed
+            aspVolume=volume+ASPIRATEEXTRA
+
         if self.well==None:
                 well=[]
                 for i in range(4):
@@ -180,9 +192,19 @@ class Sample(object):
                 well=[self.well]
         
         lc=self.chooseLC(aspVolume)
-        w.aspirate(tipMask,well,lc,aspVolume,self.plate)
-        # Manual conditioning handled in worklist
-        remove=aspVolume*ASPIRATEFACTOR+MULTIEXCESS
+        if self.hasBeads:
+            # With beads don't do any manual conditioning and don't remove extra (since we usually want to control exact amounts left behind, if any)
+            w.aspirateNC(tipMask,well,lc,aspVolume,self.plate)
+            remove=aspVolume*ASPIRATEFACTOR
+            if self.volume==aspVolume:
+                # Removing all, ignore excess remove
+                remove=self.volume
+                self.ingredients={}
+        else:
+            w.aspirate(tipMask,well,lc,aspVolume,self.plate)
+            # Manual conditioning handled in worklist
+            remove=aspVolume*ASPIRATEFACTOR+MULTIEXCESS
+
         for k in self.ingredients:
             self.ingredients[k] *= (self.volume-remove)/self.volume
         self.volume=self.volume-remove
