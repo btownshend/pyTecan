@@ -240,7 +240,10 @@ class Sample(object):
         if self.conc==None and conc==None:
             pass
         elif conc==None or volume==0:
-            self.conc=self.conc.dilute((self.volume+volume)/self.volume)
+            if self.volume==0:
+                self.conc=None
+            else:
+                self.conc=self.conc.dilute((self.volume+volume)/self.volume)
         elif self.conc==None or self.volume==0:
             self.conc=conc.dilute((self.volume+volume)/volume)
         else:
