@@ -228,6 +228,9 @@ class Sample(object):
         if self.volume+volume < MINDEPOSITVOLUME:
             print "Warning: Dispense of %.1ful into %s results in total of %.1ful which is less than minimum deposit volume of %.1f ul"%(volume,self.name,self.volume+volume,MINDEPOSITVOLUME)
         well=[self.well if self.well!=None else 2**(tipMask-1)-1 ]
+        if self.well==None:
+            print "self.well=None, using well=%d"%well[0]
+
         if self.volume+volume > self.plate.maxVolume:
             print "Warning: Dispense of %.1ful into %s results in total of %.1ful which is more than the maximum volume of %.1f ul"%(volume,self.name,self.volume+volume,self.plate.maxVolume)
             
