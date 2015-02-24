@@ -370,6 +370,11 @@ class Experiment(object):
 
     def pause(self,duration):
     	self.w.starttimer()
+        if duration>30:
+            # Might as well sanitize while we're waiting
+            elapsed=self.w.elapsed
+            self.sanitize()
+            self.w.elapsed=elapsed		# Don't count this time since the wait will handle it
         self.w.waittimer(duration)
 
     def waitpgm(self, sanitize=True):
