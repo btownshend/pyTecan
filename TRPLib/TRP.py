@@ -421,6 +421,7 @@ class TRP(object):
 
         tgt=uniqueTargets(tgt)
         stgt=findsamps(tgt)
+        #print "stgt[0]=",str(stgt[0])
         ssrc=findsamps(src,False)
         adjustSrcDil(ssrc,srcdil)
         
