@@ -30,9 +30,10 @@ class Reagents:
     MQMX=Sample("MQMX",Experiment.REAGENTPLATE,None,10.0/6)
     MQWX=Sample("MQWX",Experiment.REAGENTPLATE,None,10.0/6)
     SSD=Sample("SSD",Experiment.REAGENTPLATE,None,10.0)
-    all=[MT7,MPosRT,MNegRT,MLigAT7,MLigBT7W,MLigase,Theo,MStopX,MQRef,MQAX,MQBX,PCRAX,PCRBX,MQMX,SSD,MLIGBOTH,MQWX]
     MLigAT7W=Sample("MLigAT7W",Experiment.REAGENTPLATE,None,3)
 #    MLIGBOTH=Sample("MLigBoth",Experiment.REAGENTPLATE,None,3.0)
+#    BeadBuffer=Sample("BeadBuffer",Experiment.REAGENTPLATE,None,None)
+    all=[MT7,MPosRT,MNegRT,MLigAT7,MLigBT7W,MLigase,Theo,MStopX,MQRef,MQAX,MQBX,PCRAX,PCRBX,MQMX,SSD,MLigAT7W,MQWX]
     UNUSED=Sample("Leaky",Experiment.SAMPLEPLATE,None,0)
     
 def listify(x):
