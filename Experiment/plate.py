@@ -11,6 +11,11 @@ class Plate(object):
         self.unusableVolume=unusableVolume
         self.maxVolume=maxVolume
         
+    def movetoloc(self,otherplate):
+        self.grid=otherplate.grid
+        self.pos=otherplate.pos
+        self.unusableVolume=otherplate.unusableVolume
+        
     def wellname(self,well):
         if well==None:
             return "None"
