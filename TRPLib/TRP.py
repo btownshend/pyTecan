@@ -105,7 +105,7 @@ class TRP(object):
         #Sample.printallsamples("At completion")
         hasError=False
         for s in Sample.getAllOnPlate():
-            if s.volume<1.0 and s.conc!=None:
+            if s.volume<1.0 and s.conc!=None and not s.hasBeads:
                 print "ERROR: Insufficient volume for ", s," need at least ",1.0-s.volume," ul additional"
                 hasError=True
             elif s.volume<2.5 and s.conc!=None:
