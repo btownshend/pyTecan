@@ -517,7 +517,8 @@ class WorkList(object):
             print "waittimer: Bad duration (%f); must be between 0.02 and 86400 seconds"%duration
             assert(0)
         self.list.append('WaitTimer("%d","%f")'%(timer,duration))
-            
+        self.elapsed+=duration
+        
     def userprompt(self, text,timeout=-1,prepend=False):
         self.flushQueue()
         cmd='UserPrompt("%s",0,%d)'%(text,timeout)
