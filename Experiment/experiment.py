@@ -10,11 +10,12 @@ ptcrunning=False
 class Experiment(object):
     WASHLOC=Plate("Wash",1,2,1,8,False,0)
     REAGENTPLATE=Plate("Reagents",18,1,6,5,False,20,1700)
+    SAMPLEPLATELOC=Plate("Samples",4,3,12,8,False,15)
+    MAGPLATELOC=Plate("MagPlate",18,2,12,8,False,9)   # HSP9601 on magnetic plate  (Unusable volume of 9ul)
     SAMPLEPLATE=Plate("Samples",4,3,12,8,False,15)
     #    READERPLATE=Plate("Reader",4,1,12,8,False,15)
     QPCRPLATE=Plate("qPCR",4,1,12,8,False,15)
     DILPLATE=Plate("Dilutions",4,2,12,8,False,15)
-    MAGPLATE=Plate("MagPlate",4,2,12,8,False,15)   # HSP9601 on magnetic plate; Same place as dilutions for now
     WATERLOC=Plate("Water",3,2,1,4,False,100,100000)
     BLEACHLOC=Plate("Bleach",3,3,1,4,False,0,100000)
     PTCPOS=Plate("PTC",25,1,1,1)
@@ -234,7 +235,7 @@ class Experiment(object):
 
     def dispose(self, volume, src,  mix=False, getDITI=True, dropDITI=True):
         'Dispose of a given volume by aspirating and not dispensing (will go to waste during next wash)'
-        if self.ptcrunning and (src.plate==Experiment.SAMPLEPLATE or src.plate==Experiment.MAGPLATE )>0:
+        if self.ptcrunning and src.plate==Experiment.SAMPLEPLATE:
             self.waitpgm()
         if volume>self.MAXVOLUME:
             reuseTip=False   # Since we need to wash to get rid of it
@@ -358,11 +359,13 @@ class Experiment(object):
         cmt="magmove %s"%toMag
         self.w.comment(cmt)
         if toMag:
-            self.w.vector("Microplate Landscape",self.SAMPLEPLATE,self.w.SAFETOEND,True,self.w.DONOTMOVE,self.w.CLOSE)
-            self.w.vector("Magplate",self.MAGPLATE,self.w.SAFETOEND,True,self.w.DONOTMOVE,self.w.OPEN)
+            self.w.vector("Microplate Landscape",self.SAMPLEPLATELOC,self.w.SAFETOEND,True,self.w.DONOTMOVE,self.w.CLOSE)
+            self.w.vector("Magplate",self.MAGPLATELOC,self.w.SAFETOEND,True,self.w.DONOTMOVE,self.w.OPEN)
+            self.SAMPLEPLATE.movetoloc(self.MAGPLATELOC)
         else:
-            self.w.vector("Magplate",self.MAGPLATE,self.w.SAFETOEND,True,self.w.DONOTMOVE,self.w.CLOSE)
-            self.w.vector("Microplate Landscape",self.SAMPLEPLATE,self.w.SAFETOEND,True,self.w.DONOTMOVE,self.w.OPEN)
+            self.w.vector("Magplate",self.MAGPLATELOC,self.w.SAFETOEND,True,self.w.DONOTMOVE,self.w.CLOSE)
+            self.w.vector("Microplate Landscape",self.SAMPLEPLATELOC,self.w.SAFETOEND,True,self.w.DONOTMOVE,self.w.OPEN)
+            self.SAMPLEPLATE.movetoloc(self.SAMPLEPLATELOC)
         self.w.romahome()
 
     def pause(self,duration):
