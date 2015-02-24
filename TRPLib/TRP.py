@@ -213,7 +213,129 @@ class TRP(object):
         self.runT7Pgm(vol,dur)
         tgt=self.runT7Stop(theo,vol,tgt,stopmaster)
         return tgt
+
+    def runBeadCleanup(self,src,tgt=None,beadFactor=1.0,beads="Streptavidin+BT1200",wash="Water",elutant="Water",elutionVol=30,washVol=50,incTime=60,sepTime=60,washTime=60,numWashes=2,eluteTime=60,leaveOn=True,keepWash=False):
+        if leaveOn:
+            if tgt!=None:
+                print "runBeadCleanup: specified a target, but also leaveOn is True"
+                assert(0)
+            tgt=src
+
+        if tgt==None:
+            tgt=[]
+
+        [src,tgt,elutionVol,beadFactor,elutant,wash,beadlist]=listify([src,tgt,elutionVol,beadFactor,elutant,wash,beads])
+        if len(tgt)==0:
+            for i in range(len(src)):
+                tgt.append("%s.BC"%src[i])
+
+        if keepWash:
+            washTgt=[]
+            for i in range(len(src)):
+                washTgt.append("%s.Wash"%src[i])
+            sWashTgt=findsamps(washTgt)
+            
+        tgt=uniqueTargets(tgt)
+        stgt=findsamps(tgt)
+        ssrc=findsamps(src,False)
+        for s in ssrc:
+            if s.plate!=self.e.SAMPLEPLATE:
+                print "runBeadCleanup: src ",s," is not in sample plate."
+                assert(0)
+            
+        if beads!=None:
+            sbeads=findsamps(beadlist,False)
+
+        # Change the liquid class for the source tube to prevent side-touching
+        for s in ssrc:
+            s.setHasBeads()	# Mark the source tubes as having beads to change condition, liquid classes
+
+        origIngredients=[s.ingredients for s in ssrc]
+        origVolumes=[s.volume for s in ssrc]
+        origConcs=[s.conc for s in ssrc]
+        if beads!=None:
+            # Transfer the beads
+            for i in range(len(ssrc)):
+                sbeads[i].isMixed=False	# Force a mix
+                ssrc[i].dilute(beadFactor[i]+1)
+                self.e.transfer(ssrc[i].volume*beadFactor[i],sbeads[i],ssrc[i],(True,True))	# Mix beads before and after
+
+            self.e.pause(incTime)		# Wait for binding
+
+        residualVolume=10 		# Amount to leave behind during removal of supernatant (and subsequent replacements)
+            
+        if any([s.volume>residualVolume]):
+            # Separate and remove supernatant
+            self.e.magmove(True)	# Move to magnet
+            self.e.pause(sepTime)	# Wait for separation
+
+            # Remove the supernatant
+            for i in range(len(ssrc)):
+                if ssrc[i].volume > residualVolume:
+                    if keepWash:
+                        self.e.transfer(ssrc[i].volume-residualVolume,ssrc[i],sWashTgt[i])	# Keep supernatants
+                        sWashTgt[i].conc=None	# Allow it to be reused
+                    else:
+                        self.e.dispose(ssrc[i].volume-residualVolume,ssrc[i])	# Discard supernatant
+                
+            # Wash
+            swash=findsamps(wash,False)
+            for washnum in range(numWashes):
+                self.e.magmove(False)	# Take off magnet
+                for i in range(len(ssrc)):
+                    self.e.transfer(washVol-ssrc[i].volume,swash[i],ssrc[i],mix=(False,True))	# Add wash
+
+                self.e.pause(washTime)
+                self.e.magmove(True)	# Back to magnet
+                self.e.pause(sepTime)
+
+                for i in range(len(ssrc)):
+                    if keepWash:
+                        self.e.transfer(ssrc[i].volume-residualVolume,ssrc[i],sWashTgt[i])	# Remove wash
+                        sWashTgt[i].conc=None	# Allow it to be reused
+                    else:
+                        self.e.dispose(ssrc[i].volume-residualVolume,ssrc[i])	# Remove wash
+
+            # Should only be residualVolume left with beads now
         
+            # Remove from magnet
+            self.e.magmove(False)
+
+        # Added elutant
+        selutant=findsamps(elutant,False)
+        for i in range(len(ssrc)):
+            if elutionVol[i]<30:
+                print "Warning: elution from beads with %.1f ul < minimum of 30ul"%elutionVol[i]
+            self.e.transfer(elutionVol[i]-ssrc[i].volume,selutant[i],ssrc[i],(False,True))	# Add elution buffer and mix
+
+        # Go through some cycles of waiting, mixing
+        nEluteCycles=2
+        for i in range(nEluteCycles):
+            self.e.pause(eluteTime/nEluteCycles)
+
+            # Mix some more
+            for s in ssrc:
+                self.e.mix(s,3)
+
+        # Restore the ingredients list
+        for i in range(len(ssrc)):
+            ssrc[i].ingredients={}
+            for k in origIngredients[i]:
+                ssrc[i].ingredients[k]=origIngredients[i][k]*ssrc[i].volume/origVolumes[i]
+            ssrc[i].conc=origConcs[i]
+            ssrc[i].dilute(ssrc[i].volume/origVolumes[i])
+            
+        if not leaveOn:
+            self.e.magmove(True)	# Move back to magnet
+            self.e.pause(sepTime)	# Wait for separation
+
+            for i in range(len(ssrc)):
+                self.e.transfer(elutionVol[i]-residualVolume,ssrc[i],stgt[i])	# Transfer elution to new tube
+
+            self.e.magmove(False)
+
+        return tgt
+
     def runRT(self,pos,src,vol,srcdil,tgt=None):
         if tgt==None:
             tgt=[]
