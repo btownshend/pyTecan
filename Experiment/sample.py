@@ -130,6 +130,7 @@ class Sample(object):
     def setHasBeads(self):
         'Mark this sample as containing beads and remove tip-touching liquid class'
         self.hasBeads=True
+        self.isMixed=False   # Bead containing samples are never marked as mixed
         self.bottomSideLC=self.beadsLC
         self.bottomLC=self.beadsLC
         
@@ -339,7 +340,8 @@ class Sample(object):
                 self.history+="(MB)"
 
             tiphistory[tipMask]+=" %s-Mix[%d]"%(self.name,mixvol)
-            self.isMixed=True
+            if not self.hasBeads:
+                self.isMixed=True
             return True
             
     def __str__(self):

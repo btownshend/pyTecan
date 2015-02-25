@@ -196,7 +196,7 @@ class Experiment(object):
         if mix[0] and not src.isMixed:
             cmt=cmt+" with src mix"
             ditivolume=max(ditivolume,src.volume)
-        if mix[1] and dest.volume>0:
+        if mix[1] and dest.volume>0 and not src.isMixed:
             cmt=cmt+" with dest mix"
             ditivolume=max(ditivolume,volume+dest.volume)
             #            print "Mix volume=%.1f ul"%(ditivolume)
@@ -209,7 +209,7 @@ class Experiment(object):
         #print "*",cmt
         self.w.comment(cmt)
 
-        if mix[0] and not src.isMixed:
+        if mix[0]:
             src.mix(tipMask,self.w)
         src.aspirate(tipMask,self.w,volume)
         dest.dispense(tipMask,self.w,volume,src.conc)
