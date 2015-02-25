@@ -276,6 +276,7 @@ class TRP(object):
                     if keepWash:
                         self.e.transfer(ssrc[i].volume-residualVolume,ssrc[i],sWashTgt[i])	# Keep supernatants
                         sWashTgt[i].conc=None	# Allow it to be reused
+                        sWashTgt[i].setHasBeads()   # To have it mixed before any aspirations
                     else:
                         self.e.dispose(ssrc[i].volume-residualVolume,ssrc[i])	# Discard supernatant
                 
@@ -332,6 +333,8 @@ class TRP(object):
 
             for i in range(len(ssrc)):
                 self.e.transfer(elutionVol[i]-residualVolume,ssrc[i],stgt[i])	# Transfer elution to new tube
+                print "Temporarily marking ", stgt[i], " as having beads"
+                stgt[i].setHasBeads()		# In case some got carried along
 
             self.e.magmove(False)
 
