@@ -32,8 +32,8 @@ class Reagents:
     SSD=Sample("SSD",Experiment.REAGENTPLATE,None,10.0)
     MLigAT7W=Sample("MLigAT7W",Experiment.REAGENTPLATE,None,3)
 #    MLIGBOTH=Sample("MLigBoth",Experiment.REAGENTPLATE,None,3.0)
-#    BeadBuffer=Sample("BeadBuffer",Experiment.REAGENTPLATE,None,None)
-    all=[MT7,MPosRT,MNegRT,MLigAT7,MLigBT7W,MLigase,Theo,MStopX,MQRef,MQAX,MQBX,PCRAX,PCRBX,MQMX,SSD,MLigAT7W,MQWX]
+    DuplexBuffer=Sample("DuplexBuffer",Experiment.REAGENTPLATE,None,None)
+    all=[MT7,MPosRT,MNegRT,MLigAT7,MLigBT7W,MLigase,Theo,MStopX,MQRef,MQAX,MQBX,PCRAX,PCRBX,MQMX,SSD,MLigAT7W,MQWX,DuplexBuffer]
     UNUSED=Sample("Leaky",Experiment.SAMPLEPLATE,None,0)
     
 def listify(x):
@@ -215,7 +215,7 @@ class TRP(object):
         tgt=self.runT7Stop(theo,vol,tgt,stopmaster)
         return tgt
 
-    def runBeadCleanup(self,src,tgt=None,beadFactor=1.0,beads="Streptavidin+BT1200",wash="Water",elutant="Water",elutionVol=30,washVol=50,incTime=60,sepTime=60,washTime=60,numWashes=2,eluteTime=60,leaveOn=True,keepWash=False):
+    def runBeadCleanup(self,src,tgt=None,beadFactor=1.0,beads="Streptavidin+BT1200",wash="DuplexBuffer",elutant="DuplexBuffer",elutionVol=30,washVol=50,incTime=60,sepTime=60,washTime=60,numWashes=2,eluteTime=60,leaveOn=True,keepWash=False):
         if leaveOn:
             if tgt!=None:
                 print "runBeadCleanup: specified a target, but also leaveOn is True"
