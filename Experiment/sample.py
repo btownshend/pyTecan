@@ -317,8 +317,7 @@ class Sample(object):
             return self.bottomLC
         
         # Mix, return true if actually did a mix, false otherwise
-    def mix(self,tipMask,w,preaspirateAir=False):
-        nmix=4
+    def mix(self,tipMask,w,preaspirateAir=False,nmix=4):
         if self.isMixed:
             #print "Sample %s is already mixed"%self.name
             return False

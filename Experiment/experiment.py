@@ -222,16 +222,15 @@ class Experiment(object):
             self.w.dropDITI(tipMask&self.DITIMASK,self.WASTE)
 
     # Mix
-    def mix(self, src, ntimes=1):
+    def mix(self, src, nmix=4):
         if self.ptcrunning and (src.plate==Experiment.SAMPLEPLATE or dest.plate==Experiment.SAMPLEPLATE)>0:
             self.waitpgm()
 
         cmt="Mix %s"%(src.name)
         tipMask=self.cleantip()
         self.w.comment(cmt)
-        for i in range(ntimes):
-            src.isMixed=False	# Force a mix
-            src.mix(tipMask,self.w,False)
+        src.isMixed=False	# Force a mix
+        src.mix(tipMask,self.w,False,nmix=nmix)
 
     def dispose(self, volume, src,  mix=False, getDITI=True, dropDITI=True):
         'Dispose of a given volume by aspirating and not dispensing (will go to waste during next wash)'

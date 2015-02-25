@@ -316,7 +316,7 @@ class TRP(object):
 
             # Mix some more
             for s in ssrc:
-                self.e.mix(s,3)
+                self.e.mix(s,nmix=4)
 
         # Restore the ingredients list
         for i in range(len(ssrc)):
