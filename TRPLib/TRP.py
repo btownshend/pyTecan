@@ -259,7 +259,7 @@ class TRP(object):
             for i in range(len(ssrc)):
                 sbeads[i].isMixed=False	# Force a mix
                 ssrc[i].dilute(beadFactor[i]+1)
-                self.e.transfer(ssrc[i].volume*beadFactor[i],sbeads[i],ssrc[i],(True,True))	# Mix beads before and after
+                self.e.transfer(ssrc[i].volume*beadFactor[i],sbeads[i],ssrc[i],(i==0,True))	# Mix beads before and after
 
             self.e.pause(incTime)		# Wait for binding
 
