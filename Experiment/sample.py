@@ -349,7 +349,11 @@ class Sample(object):
             s+=" %-18s"%("[%s]"%str(self.conc))
         else:
             s+=" %-18s"%""
-        s+=" %-30s"%("(%s.%s,%.2f ul)"%(str(self.plate),self.plate.wellname(self.well),self.volume))
+        if self.hasBeads:
+            beadString=",beads"
+        else:
+            beadString=""
+        s+=" %-30s"%("(%s.%s,%.2f ul%s)"%(str(self.plate),self.plate.wellname(self.well),self.volume,beadString))
         s+=" %s"%self.history
         if SHOWINGREDIENTS:
                 s+=self.ingredientstr()
