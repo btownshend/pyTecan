@@ -1,4 +1,5 @@
 import sys
+import math
 import liquidclass
 from worklist import WorkList
 from concentration import Concentration
@@ -228,9 +229,11 @@ class Sample(object):
     def dispense(self,tipMask,w,volume,conc):
         if self.volume+volume < MINDEPOSITVOLUME:
             print "Warning: Dispense of %.1ful into %s results in total of %.1ful which is less than minimum deposit volume of %.1f ul"%(volume,self.name,self.volume+volume,MINDEPOSITVOLUME)
-        well=[self.well if self.well!=None else 2**(tipMask-1)-1 ]
+
+        #well=[self.well if self.well!=None else 2**(tipMask-1)-1 ]
+        well=[self.well if self.well!=None else int(math.log(tipMask,2)) ]
         if self.well==None:
-            print "self.well=None, using well=%d"%well[0]
+            print "Warning: Dispense with well==None, not sure what right logic is..., using well=%d"%well[0]
 
         if self.volume+volume > self.plate.maxVolume:
             print "Warning: Dispense of %.1ful into %s results in total of %.1ful which is more than the maximum volume of %.1f ul"%(volume,self.name,self.volume+volume,self.plate.maxVolume)
