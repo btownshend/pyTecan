@@ -361,10 +361,12 @@ class Experiment(object):
             self.w.vector("Microplate Landscape",self.SAMPLEPLATELOC,self.w.SAFETOEND,True,self.w.DONOTMOVE,self.w.CLOSE)
             self.w.vector("Magplate",self.MAGPLATELOC,self.w.SAFETOEND,True,self.w.DONOTMOVE,self.w.OPEN)
             self.SAMPLEPLATE.movetoloc(self.MAGPLATELOC)
+            Sample.addallhistory("{+M}")
         else:
             self.w.vector("Magplate",self.MAGPLATELOC,self.w.SAFETOEND,True,self.w.DONOTMOVE,self.w.CLOSE)
             self.w.vector("Microplate Landscape",self.SAMPLEPLATELOC,self.w.SAFETOEND,True,self.w.DONOTMOVE,self.w.OPEN)
             self.SAMPLEPLATE.movetoloc(self.SAMPLEPLATELOC)
+            Sample.addallhistory("{-M}")
         self.w.romahome()
 
     def pause(self,duration):
