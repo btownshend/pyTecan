@@ -273,8 +273,10 @@ class Experiment(object):
         # Pipette reagents into sample wells (multi)
         # Pipette sources into sample wells
         # Concs are in x (>=1)
-        #        Sample.printallsamples("Before "+stagename)
-        #print "\nStage: ", stagename, "reagents=",[str(r) for r in reagents], ",sources=",[str(s) for s in sources],",samples=",[str(s) for s in samples],str(volume)
+
+        # Sample.printallsamples("Before "+stagename)
+        # print "\nStage: ", stagename, "reagents=",[str(r) for r in reagents], ",sources=",[str(s) for s in sources],",samples=",[str(s) for s in samples],str(volume)
+
         if len(samples)==0:
             print "No samples\n"
             return
