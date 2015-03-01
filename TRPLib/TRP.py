@@ -338,9 +338,30 @@ class TRP(object):
                 stgt[i].setHasBeads()		# In case some got carried along
 
             self.e.magmove(False)
+    
+            return tgt
 
+    def beadSupernatant(self,src,tgt=None,sepTime=60,residualVolume=10):
+        if tgt==None:
+            tgt=[]
+
+        [src,tgt]=listify([src,tgt])
+        if len(tgt)==0:
+            for i in range(len(src)):
+                tgt.append("%s.SN"%src[i])
+
+        ssrc=findsamps(src,False)
+        stgt=findsamps(tgt)
+
+        self.e.magmove(True)	# Move to magnet
+        self.e.pause(sepTime)	# Wait for separation
+
+        for i in range(len(ssrc)):
+            self.e.transfer((ssrc[i].volume-residualVolume)/ASPIRATEFACTOR,ssrc[i],stgt[i])	# Transfer elution to new tube
+
+        self.e.magmove(False)
         return tgt
-
+    
     def runRT(self,pos,src,vol,srcdil,tgt=None):
         if tgt==None:
             tgt=[]
