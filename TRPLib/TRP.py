@@ -216,7 +216,7 @@ class TRP(object):
         tgt=self.runT7Stop(theo,vol,tgt,stopmaster)
         return tgt
 
-    def runBeadCleanup(self,src,tgt=None,beadFactor=1.0,beads="Streptavidin+BT1200",wash="DuplexBuffer",elutant="DuplexBuffer",elutionVol=30,washVol=50,incTime=60,sepTime=60,washTime=60,numWashes=2,eluteTime=60,leaveOn=True,keepWash=False):
+    def runBeadCleanup(self,src,tgt=None,beads="WashedBeads",wash="BeadBuffer",elutant="Water",elutionVol=30,washVol=50,incTime=60,sepTime=60,washTime=60,numWashes=2,eluteTime=60,leaveOn=True,keepWash=False,residualVolume=10):
         if leaveOn:
             if tgt!=None:
                 print "runBeadCleanup: specified a target, but also leaveOn is True"
@@ -226,7 +226,7 @@ class TRP(object):
         if tgt==None:
             tgt=[]
 
-        [src,tgt,elutionVol,beadFactor,elutant,wash,beadlist]=listify([src,tgt,elutionVol,beadFactor,elutant,wash,beads])
+        [src,tgt,elutionVol,elutant,wash,beadlist]=listify([src,tgt,elutionVol,elutant,wash,beads])
         if len(tgt)==0:
             for i in range(len(src)):
                 tgt.append("%s.BC"%src[i])
@@ -259,8 +259,9 @@ class TRP(object):
             # Transfer the beads
             for i in range(len(ssrc)):
                 sbeads[i].isMixed=False	# Force a mix
-                ssrc[i].dilute(beadFactor[i]+1)
-                self.e.transfer(ssrc[i].volume*beadFactor[i],sbeads[i],ssrc[i],(i==0,True))	# Mix beads before and after
+                bconc=sbeads[i].conc.dilutionneeded()
+                ssrc[i].conc=Concentration(bconc/(bconc-1))
+                self.e.transfer(ssrc[i].volume/(bconc-1),sbeads[i],ssrc[i],(i==0,True))	# Mix beads before and after
 
             self.e.pause(incTime)		# Wait for binding
 
