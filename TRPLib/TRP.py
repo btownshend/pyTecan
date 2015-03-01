@@ -197,12 +197,13 @@ class TRP(object):
             stopmaster=["MStpS_NT" if t==0 else "MStpS_WT" for t in theo]
             
         stgt=findsamps(tgt)
-        ## Stop
-        self.e.dilute(stgt,2)
 
+        ## Stop
         sstopmaster=findsamps(stopmaster,False)
         for i in range(len(stgt)):
-            self.e.transfer(vol,sstopmaster[i],stgt[i],(False,True))
+            stgt[i].conc=Concentration(1/(1-1/sstopmaster[i].conc.dilutionneeded()))
+            finalvol=stgt[i].volume*stgt[i].conc.dilutionneeded();
+            self.e.transfer(finalvol-stgt[i].volume,sstopmaster[i],stgt[i],(False,True))
 
         return tgt
     
