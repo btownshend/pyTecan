@@ -1,4 +1,4 @@
-from Experiment.sample import Sample
+from Experiment.sample import Sample, ASPIRATEFACTOR
 from Experiment.experiment import Experiment
 from Experiment.experiment import Concentration
 import os
@@ -274,11 +274,11 @@ class TRP(object):
             for i in range(len(ssrc)):
                 if ssrc[i].volume > residualVolume:
                     if keepWash:
-                        self.e.transfer(ssrc[i].volume-residualVolume,ssrc[i],sWashTgt[i])	# Keep supernatants
+                        self.e.transfer((ssrc[i].volume-residualVolume)/ASPIRATEFACTOR,ssrc[i],sWashTgt[i])	# Keep supernatants
                         sWashTgt[i].conc=None	# Allow it to be reused
                         sWashTgt[i].setHasBeads()   # To have it mixed before any aspirations
                     else:
-                        self.e.dispose(ssrc[i].volume-residualVolume,ssrc[i])	# Discard supernatant
+                        self.e.dispose((ssrc[i].volume-residualVolume)/ASPIRATEFACTOR,ssrc[i])	# Discard supernatant
                 
             # Wash
             swash=findsamps(wash,False)
@@ -293,10 +293,10 @@ class TRP(object):
 
                 for i in range(len(ssrc)):
                     if keepWash:
-                        self.e.transfer(ssrc[i].volume-residualVolume,ssrc[i],sWashTgt[i])	# Remove wash
+                        self.e.transfer((ssrc[i].volume-residualVolume)/ASPIRATEFACTOR,ssrc[i],sWashTgt[i])	# Remove wash
                         sWashTgt[i].conc=None	# Allow it to be reused
                     else:
-                        self.e.dispose(ssrc[i].volume-residualVolume,ssrc[i])	# Remove wash
+                        self.e.dispose((ssrc[i].volume-residualVolume)/ASPIRATEFACTOR,ssrc[i])	# Remove wash
 
             # Should only be residualVolume left with beads now
         
@@ -332,7 +332,7 @@ class TRP(object):
             self.e.pause(sepTime)	# Wait for separation
 
             for i in range(len(ssrc)):
-                self.e.transfer(elutionVol[i]-residualVolume,ssrc[i],stgt[i])	# Transfer elution to new tube
+                self.e.transfer((elutionVol[i]-residualVolume)/ASPIRATEFACTOR,ssrc[i],stgt[i])	# Transfer elution to new tube
                 print "Temporarily marking ", stgt[i], " as having beads"
                 stgt[i].setHasBeads()		# In case some got carried along
 
