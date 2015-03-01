@@ -363,6 +363,11 @@ class TRP(object):
         return tgt
     
     def runRT(self,pos,src,vol,srcdil,tgt=None):
+        result=self.runRTSetup(pos,src,vol,srcdil,tgt)
+        self.runRTPgm
+        return result
+    
+    def runRTSetup(self,pos,src,vol,srcdil,tgt=None):
         if tgt==None:
             tgt=[]
         [pos,src,tgt,vol,srcdil]=listify([pos,src,tgt,vol,srcdil])
@@ -384,11 +389,13 @@ class TRP(object):
             self.e.stage('RTPos',[self.r.MPosRT],[ssrc[i] for i in range(len(ssrc)) if pos[i]],[stgt[i] for i in range(len(stgt)) if pos[i]],[vol[i] for i in range(len(vol)) if pos[i]])
         if any(not p for p in pos):
             self.e.stage('RTNeg',[self.r.MNegRT],[ssrc[i] for i in range(len(ssrc)) if not pos[i]],[stgt[i] for i in range(len(stgt)) if not pos[i]],[vol[i] for i in range(len(vol)) if not pos[i]])
+        return tgt
+
+    def runRTPgm(self):
         dur=20
         pgm="TRP37-%d"%dur
         self.e.w.pyrun('PTC\\ptcsetpgm.py %s TEMP@37,%d TEMP@25,2'%(pgm,dur*60))
-        self.e.runpgm("TRP37-%d"%dur,dur,False,max(vol))
-        return tgt
+        self.e.runpgm("TRP37-%d"%dur,dur,False,100)		# Volume doesn't matter since it's just an incubation, use 100ul
  
     def runLig(self,prefix=None,src=None,vol=None,srcdil=None,tgt=None,master=None,anneal=True,ligtemp=25):
         if tgt==None:
