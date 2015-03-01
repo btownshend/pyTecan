@@ -308,6 +308,7 @@ class TRP(object):
         for i in range(len(ssrc)):
             if elutionVol[i]<30:
                 print "Warning: elution from beads with %.1f ul < minimum of 30ul"%elutionVol[i]
+            ssrc[i].conc=None
             self.e.transfer(elutionVol[i]-ssrc[i].volume,selutant[i],ssrc[i],(False,True))	# Add elution buffer and mix
 
         # Go through some cycles of waiting, mixing
