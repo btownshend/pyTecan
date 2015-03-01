@@ -442,7 +442,23 @@ class TRP(object):
         
         self.e.runpgm(pgm,27,False,max(vol),hotlidmode="TRACKING",hotlidtemp=10)
         return tgt
- 
+
+    def runLigOnBeads(self,src=None,anneal=True,ligtemp=25):
+        'Run ligation on beads; assume src already includes MLig splint+extension master and is at 1.5x of final concentration'
+        ssrc=findsamps(src,False)
+        if anneal:
+            self.e.runpgm("TRPANN",5,False,max([s.volume for s in ssrc]),hotlidmode="CONSTANT",hotlidtemp=100)
+
+        ## Add ligase
+        for i in range(len(ssrc)):
+            ssrc[i].conc=Concentration(1/(1-1/self.r.MLigase.conc.dilutionneeded()))
+            finalvol=ssrc[i].volume*ssrc[i].conc.dilutionneeded();
+            self.e.transfer(finalvol-ssrc[i].volume,self.r.MLigase,ssrc[i],(False,True))
+
+        pgm="LIG15-%.0f"%ligtemp
+        self.e.w.pyrun('PTC\\ptcsetpgm.py %s TEMP@%.0f,900 TEMP@65,600 TEMP@25,30'%(pgm,ligtemp))
+        self.e.runpgm(pgm,27,False,max([s.volume for s in ssrc]),hotlidmode="TRACKING",hotlidtemp=10)
+        
     def runPCR(self,prefix,src,vol,srcdil,tgt=None,ncycles=20,suffix='S'):
         if tgt==None:
             tgt=[]
