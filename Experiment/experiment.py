@@ -379,7 +379,8 @@ class Experiment(object):
             self.sanitize()
             self.w.elapsed=elapsed		# Don't count this time since the wait will handle it
         self.w.waittimer(duration)
-
+        Sample.addallhistory("{%ds}"%duration)
+        
     def waitpgm(self, sanitize=True):
         if not self.ptcrunning:
             return
