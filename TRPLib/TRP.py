@@ -265,8 +265,6 @@ class TRP(object):
 
             self.e.pause(incTime)		# Wait for binding
 
-        residualVolume=10 		# Amount to leave behind during removal of supernatant (and subsequent replacements)
-            
         if any([s.volume>residualVolume]):
             # Separate and remove supernatant
             self.e.magmove(True)	# Move to magnet
