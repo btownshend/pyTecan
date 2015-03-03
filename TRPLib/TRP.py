@@ -3,6 +3,7 @@ from Experiment.experiment import Experiment
 from Experiment.experiment import Concentration
 import os
 import sys
+import math
 
 maxVolumePerWell=150
 
@@ -216,6 +217,24 @@ class TRP(object):
         tgt=self.runT7Stop(theo,vol,tgt,stopmaster)
         return tgt
 
+    def intervalMix(self,src,dur,mixTime=60):
+        'Pause for incubations, mixing at regular intervals'
+        ssrc=findsamps(src,False)
+        self.e.pause(mixTime/2)
+        dur=dur-mixTime/2
+        while dur>mixTime:
+            elapsed=self.e.w.elapsed
+            for s in ssrc:
+                self.e.mix(s,nmix=2)
+            self.e.w.flushQueue()
+            mixElapsed=self.e.w.elapsed-elapsed;
+            # print "Mixed ",s.name," for ", mixElapsed, " seconds, dur=",dur
+            if mixTime>mixElapsed:
+                self.e.pause(mixTime-mixElapsed)
+            dur=dur-(self.e.w.elapsed-elapsed)
+        if dur>0:
+            self.e.pause(dur)
+
     def runBeadCleanup(self,src,tgt=None,beads="WashedBeads",wash="BeadBuffer",elutant="Water",elutionVol=30,washVol=50,incTime=60,sepTime=30,washTime=60,numWashes=2,eluteTime=60,leaveOn=True,keepWash=False,residualVolume=10):
         if leaveOn:
             if tgt!=None:
@@ -253,7 +272,7 @@ class TRP(object):
                 self.e.transfer(ssrc[i].volume/(bconc-1),sbeads[i],ssrc[i],(i==0,True))	# Mix beads before and after
                 ssrc[i].setHasBeads()	# Mark the source tubes as having beads to change condition, liquid classes
                 
-            self.e.pause(incTime)		# Wait for binding
+            self.intervalMix(src,incTime) # Wait for binding
 
         self.beadWash(src,sepTime=sepTime,residualVolume=residualVolume,keepWash=keepWash,numWashes=numWashes,wash=wash,washVol=washVol,washTime=washTime)
 
@@ -331,13 +350,7 @@ class TRP(object):
             self.e.transfer(elutionVol[i]-ssrc[i].volume,selutant[i],ssrc[i],(False,True))	# Add elution buffer and mix
 
         # Go through some cycles of waiting, mixing
-        nEluteCycles=2
-        for i in range(nEluteCycles):
-            self.e.pause(eluteTime/nEluteCycles)
-
-            # Mix some more
-            for s in ssrc:
-                self.e.mix(s,nmix=4)
+        self.intervalMix(src,eluteTime)
 
     def beadSupernatant(self,src,tgt=None,sepTime=60,residualVolume=10):
         if tgt==None:
