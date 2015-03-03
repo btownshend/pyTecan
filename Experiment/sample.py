@@ -337,6 +337,16 @@ class Sample(object):
             if self.volume-mixvol>=MINLIQUIDDETECTVOLUME:
                 w.mix(tipMask,well,self.inliquidLC,mixvol,self.plate,nmix)
                 self.history+="(MLD)"
+            elif self.plate.name=="Samples" or self.plate.name=="Reagents":
+                height=self.plate.getliquidheight(self.volume)-1.2		# At least 1.2mm below liquid height
+                mixheight=math.floor(height)
+                if mixheight<2:
+                    mixheight=2
+                mixLC=liquidclass.LC("Mix_%d"%mixheight)
+                for i in range(nmix):
+                    w.aspirateNC(tipMask,well,mixLC,mixvol,self.plate)
+                    w.dispense(tipMask,well,mixLC,mixvol,self.plate)
+                self.history+="(M@%d)"%(mixheight)
             else:
                 w.mix(tipMask,well,self.mixLC,mixvol,self.plate,nmix)
                 self.history+="(MB)"
