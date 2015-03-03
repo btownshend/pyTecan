@@ -533,7 +533,7 @@ class TRP(object):
         if dilPlate:
             stgt=findsamps(tgt,True,Experiment.DILPLATE)
         else:
-            stgt=findsamps(tgt,True,Experiment.QPCRPLATE)
+            stgt=findsamps(tgt,True,Experiment.SAMPLEPLATE)
         ssrc=findsamps(src,False)
         adjustSrcDil(ssrc,[d for d in srcdil])
         
