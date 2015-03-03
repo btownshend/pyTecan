@@ -507,7 +507,8 @@ class WorkList(object):
             print "starttimer: Bad timer (%d); must be between 1 and 100"%timer
             assert(0)
         self.list.append('StartTimer("%d")'%timer)
-            
+        self.timerstart=self.elapsed
+        
     def waittimer(self,duration,timer=1):
         self.flushQueue()
         if timer<1 or timer>100:
@@ -517,7 +518,7 @@ class WorkList(object):
             print "waittimer: Bad duration (%f); must be between 0.02 and 86400 seconds"%duration
             assert(0)
         self.list.append('WaitTimer("%d","%f")'%(timer,duration))
-        self.elapsed+=duration
+        self.elapsed=max(self.elapsed,self.timerstart+duration)	# Assume the elapsed time is the timer length
         
     def userprompt(self, text,timeout=-1,prepend=False):
         self.flushQueue()
