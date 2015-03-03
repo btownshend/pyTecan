@@ -223,7 +223,7 @@ class Experiment(object):
 
     # Mix
     def mix(self, src, nmix=4):
-        if self.ptcrunning and (src.plate==Experiment.SAMPLEPLATE or dest.plate==Experiment.SAMPLEPLATE)>0:
+        if self.ptcrunning and src.plate==Experiment.SAMPLEPLATE:
             self.waitpgm()
 
         cmt="Mix %s"%(src.name)
