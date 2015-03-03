@@ -220,20 +220,16 @@ class TRP(object):
     def intervalMix(self,src,dur,mixTime=60):
         'Pause for incubations, mixing at regular intervals'
         ssrc=findsamps(src,False)
-        self.e.pause(mixTime/2)
-        dur=dur-mixTime/2
+        self.e.starttimer()
         while dur>mixTime:
-            elapsed=self.e.w.elapsed
+            self.e.waittimer(mixTime)
+            self.e.starttimer()
+            dur=dur-mixTime
             for s in ssrc:
                 self.e.mix(s,nmix=2)
             self.e.w.flushQueue()
-            mixElapsed=self.e.w.elapsed-elapsed;
-            # print "Mixed ",s.name," for ", mixElapsed, " seconds, dur=",dur
-            if mixTime>mixElapsed:
-                self.e.pause(mixTime-mixElapsed)
-            dur=dur-(self.e.w.elapsed-elapsed)
-        if dur>0:
-            self.e.pause(dur)
+
+        self.e.waittimer(dur)
 
     def runBeadCleanup(self,src,tgt=None,beads="WashedBeads",wash="BeadBuffer",elutant="Water",elutionVol=30,washVol=50,incTime=60,sepTime=30,washTime=60,numWashes=2,eluteTime=60,leaveOn=True,keepWash=False,residualVolume=10):
         if leaveOn:
@@ -303,7 +299,8 @@ class TRP(object):
             
             # Separate and remove supernatant
             self.e.magmove(True)	# Move to magnet
-            self.e.pause(sepTime)	# Wait for separation
+            self.e.starttimer()
+            self.e.waittimer(sepTime)	# Wait for separation
 
             # Remove the supernatant
             for i in range(len(ssrc)):
@@ -322,9 +319,11 @@ class TRP(object):
                 for i in range(len(ssrc)):
                     self.e.transfer(washVol-ssrc[i].volume,swash[i],ssrc[i],mix=(False,True))	# Add wash
 
-                self.e.pause(washTime)
+                self.e.starttimer()
+                self.e.waittimer(washTime)
                 self.e.magmove(True)	# Back to magnet
-                self.e.pause(sepTime)
+                self.e.starttimer()
+                self.e.waittimer(sepTime)
 
                 for i in range(len(ssrc)):
                     if keepWash:

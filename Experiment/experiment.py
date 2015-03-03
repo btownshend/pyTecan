@@ -371,15 +371,18 @@ class Experiment(object):
             Sample.addallhistory("{-M}")
         self.w.romahome()
 
-    def pause(self,duration):
+    def starttimer(self):
     	self.w.starttimer()
+
+    def waittimer(self,duration):
         if duration>10:
             # Might as well sanitize while we're waiting
             elapsed=self.w.elapsed
             self.sanitize()
-            self.w.elapsed=elapsed+max(self.w.elapsed-elapsed-duration,0)	# Don't count this time since the wait will handle it
-        self.w.waittimer(duration)
-        Sample.addallhistory("{%ds}"%duration)
+        self.w.elapsed=elapsed+max(self.w.elapsed-elapsed-duration,0)	# Don't count this time since the wait will handle it
+        if duration>0:
+            self.w.waittimer(duration)
+            Sample.addallhistory("{%ds}"%duration)
         
     def waitpgm(self, sanitize=True):
         if not self.ptcrunning:
