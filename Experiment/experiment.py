@@ -373,11 +373,11 @@ class Experiment(object):
 
     def pause(self,duration):
     	self.w.starttimer()
-        if duration>30:
+        if duration>10:
             # Might as well sanitize while we're waiting
             elapsed=self.w.elapsed
             self.sanitize()
-            self.w.elapsed=elapsed		# Don't count this time since the wait will handle it
+            self.w.elapsed=elapsed+max(self.w.elapsed-elapsed-duration,0)	# Don't count this time since the wait will handle it
         self.w.waittimer(duration)
         Sample.addallhistory("{%ds}"%duration)
         
