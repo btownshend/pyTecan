@@ -216,7 +216,7 @@ class TRP(object):
         tgt=self.runT7Stop(theo,vol,tgt,stopmaster)
         return tgt
 
-    def runBeadCleanup(self,src,tgt=None,beads="WashedBeads",wash="BeadBuffer",elutant="Water",elutionVol=30,washVol=50,incTime=60,sepTime=60,washTime=60,numWashes=2,eluteTime=60,leaveOn=True,keepWash=False,residualVolume=10):
+    def runBeadCleanup(self,src,tgt=None,beads="WashedBeads",wash="BeadBuffer",elutant="Water",elutionVol=30,washVol=50,incTime=60,sepTime=30,washTime=60,numWashes=2,eluteTime=60,leaveOn=True,keepWash=False,residualVolume=10):
         if leaveOn:
             if tgt!=None:
                 print "runBeadCleanup: specified a target, but also leaveOn is True"
