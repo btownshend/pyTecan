@@ -343,9 +343,16 @@ class Sample(object):
                 if mixheight<2:
                     mixheight=2
                 mixLC=liquidclass.LC("Mix_%d"%mixheight)
+                blowoutLC=liquidclass.LC("Blowout")
+                blowvol=20
+                w.aspirateNC(tipMask,well,self.airLC,2*blowvol+0.1,self.plate)
                 for i in range(nmix):
                     w.aspirateNC(tipMask,well,mixLC,mixvol,self.plate)
                     w.dispense(tipMask,well,mixLC,mixvol,self.plate)
+                w.dispense(tipMask,well,blowoutLC,blowvol,self.plate)
+                w.dispense(tipMask,well,mixLC,0.1,self.plate)
+                w.dispense(tipMask,well,blowoutLC,blowvol,self.plate)
+                w.dispense(tipMask,well,mixLC,0.1,self.plate)
                 self.history+="(M@%d)"%(mixheight)
             else:
                 w.mix(tipMask,well,self.mixLC,mixvol,self.plate,nmix)
