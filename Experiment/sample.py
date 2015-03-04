@@ -345,7 +345,7 @@ class Sample(object):
                 mixLC=liquidclass.LC("Mix_%d"%mixheight)
                 blowoutLC=liquidclass.LC("Blowout")
                 blowvol=20
-                w.aspirateNC(tipMask,well,self.airLC,2*blowvol+0.1,self.plate)
+                w.aspirateNC(tipMask,well,self.airLC,2*blowvol+0.2,self.plate)
                 for i in range(nmix):
                     w.aspirateNC(tipMask,well,mixLC,mixvol,self.plate)
                     w.dispense(tipMask,well,mixLC,mixvol,self.plate)
