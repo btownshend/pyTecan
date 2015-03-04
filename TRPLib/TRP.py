@@ -299,8 +299,7 @@ class TRP(object):
             
             # Separate and remove supernatant
             self.e.magmove(True)	# Move to magnet
-            self.e.starttimer()
-            self.e.waittimer(sepTime)	# Wait for separation
+            self.e.pause(sepTime)	# Wait for separation
 
             # Remove the supernatant
             for i in range(len(ssrc)):
@@ -319,11 +318,9 @@ class TRP(object):
                 for i in range(len(ssrc)):
                     self.e.transfer(washVol-ssrc[i].volume,swash[i],ssrc[i],mix=(False,True))	# Add wash
 
-                self.e.starttimer()
-                self.e.waittimer(washTime)
+                self.e.pause(washTime)
                 self.e.magmove(True)	# Back to magnet
-                self.e.starttimer()
-                self.e.waittimer(sepTime)
+                self.e.pause(sepTime)
 
                 for i in range(len(ssrc)):
                     if keepWash:

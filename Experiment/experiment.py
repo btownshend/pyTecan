@@ -383,6 +383,10 @@ class Experiment(object):
         if duration>0:
             self.w.waittimer(duration)
             Sample.addallhistory("{%ds}"%duration)
+
+    def pause(self,duration):
+        self.starttimer()
+        self.waittimer(duration)
         
     def waitpgm(self, sanitize=True):
         if not self.ptcrunning:
