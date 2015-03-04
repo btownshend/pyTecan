@@ -337,7 +337,7 @@ class Sample(object):
             if self.volume-mixvol>=MINLIQUIDDETECTVOLUME:
                 w.mix(tipMask,well,self.inliquidLC,mixvol,self.plate,nmix)
                 self.history+="(MLD)"
-            elif self.plate.name=="Samples" or self.plate.name=="Reagents":
+            elif (self.plate.name=="Samples" or self.plate.name=="Reagents") and self.volume>=30:
                 height=self.plate.getliquidheight(self.volume)-1.2		# At least 1.2mm below liquid height
                 mixheight=math.floor(height)
                 if mixheight<2:
