@@ -502,7 +502,9 @@ class TRP(object):
         [tgt,dil]=listify([tgt,dil])
         tgt=uniqueTargets(tgt)
         stgt=findsamps(tgt,False)
-        self.e.stage('Dilute',[],[],stgt,[stgt[i].volume*dil[i] for i in range(len(stgt))])
+        dilutant=self.e.WATER
+        for i in range(len(stgt)):
+            self.e.transfer(stgt[i].volume*(dil[i]-1),dilutant,stgt[i],mix=(False,True))
         return tgt   #  The name of the samples are unchanged -- the predilution names
         
     def runQPCRDIL(self,src,vol,srcdil,tgt=None,dilPlate=False):
