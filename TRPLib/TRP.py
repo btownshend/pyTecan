@@ -243,9 +243,9 @@ class TRP(object):
                 print "runBeadCleanup: src ",s," is not in sample plate."
                 assert(0)
             
-        origIngredients=[s.ingredients for s in ssrc]
-        origVolumes=[s.volume for s in ssrc]
-        origConcs=[s.conc for s in ssrc]
+        # origIngredients=[s.ingredients for s in ssrc]
+        # origVolumes=[s.volume for s in ssrc]
+        # origConcs=[s.conc for s in ssrc]
 
         if beads!=None:
             # Transfer the beads
@@ -263,13 +263,13 @@ class TRP(object):
         # Add elutant, mix and wait
         self.beadAddElutant(src,elutant=elutant,elutionVol=elutionVol,eluteTime=eluteTime)
 
-        # Restore the ingredients list
-        for i in range(len(ssrc)):
-            ssrc[i].ingredients={}
-            for k in origIngredients[i]:
-                ssrc[i].ingredients[k]=origIngredients[i][k]*ssrc[i].volume/origVolumes[i]
-            ssrc[i].conc=origConcs[i]
-            ssrc[i].dilute(ssrc[i].volume/origVolumes[i])
+        # # Restore the ingredients list
+        # for i in range(len(ssrc)):
+        #     ssrc[i].ingredients={}
+        #     for k in origIngredients[i]:
+        #         ssrc[i].ingredients[k]=origIngredients[i][k]*ssrc[i].volume/origVolumes[i]
+        #     ssrc[i].conc=origConcs[i]
+        #     ssrc[i].dilute(ssrc[i].volume/origVolumes[i])
             
         if not leaveOn:
             tgt=self.beadSupernatant(src,tgt,sepTime,residualVolume)
