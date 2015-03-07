@@ -7,9 +7,15 @@ class Concentration(object):
         if self.stock==None:
             return "None"
         elif self.final==None or (self.final==1.0 and self.units=='x'):
-            return "%.2f%s"%(self.stock,self.units)
+            if self.stock==0  or self.stock >=0.1:
+                return "%.2f%s"%(self.stock,self.units)
+            else:
+                return "%.2g%s"%(self.stock,self.units)
         else:
-            return "%.2f%s->%.2f%s"%(self.stock,self.units,self.final,self.units)
+            if (self.stock==0  or self.stock >=0.1) and (self.final==0 or self.final>=0.1):
+                return "%.2f%s->%.2f%s"%(self.stock,self.units,self.final,self.units)
+            else:
+                return "%.2g%s->%.2g%s"%(self.stock,self.units,self.final,self.units)
     def dilute(self,factor):
         if self.stock==None:
             return Concentration(None,None,'x')
