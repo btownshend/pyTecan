@@ -77,15 +77,6 @@ def findsamps(x,createIfMissing=True,plate=Experiment.SAMPLEPLATE):
         s.append(t)
     return s
 
-def adjustSrcDil(src,srcdil):
-    'Adjust source concentration to give desired dilution'
-    for i in range(len(src)):
-        if src[i].conc==None:
-            print "Warning: adjusting ",src[i].name," with no concentration to ",srcdil[i]
-            src[i].conc=Concentration(srcdil[i],1)
-        else:
-            src[i].conc.final=src[i].conc.stock*1.0/srcdil[i]
-
 class TRP(object):
            
     def __init__(self):
@@ -146,9 +137,6 @@ class TRP(object):
         stgt=findsamps(tgt,True,plate)
         ssrc=findsamps(src,False)
 
-        origdil=[x.conc.stock/x.conc.final for x in ssrc]
-        # print "About to dilute ",str(ssrc[0])," by ",dil[0]," using ",vol[0]," ul, origdil=",origdil[0]
-        adjustSrcDil(ssrc,dil)
         if dilutant!=None:
             if dilutant.conc==None:
                 self.e.stage('SAVE',[],ssrc,stgt,[vol[i]*dil[i] for i in range(len(vol))],dilutant=dilutant)
@@ -157,7 +145,6 @@ class TRP(object):
         else:
             self.e.stage('SAVE',[],ssrc,stgt,[vol[i]*dil[i] for i in range(len(vol))])
         # Back out the dilution
-        adjustSrcDil(ssrc,origdil)
         return tgt
             
     def runT7Setup(self,theo,src,vol,srcdil,tgt):
@@ -174,7 +161,6 @@ class TRP(object):
         # Convert sample names to actual samples
         stgt=findsamps(tgt)
         ssrc=findsamps(src,False)
-        adjustSrcDil(ssrc,srcdil)
         self.e.w.comment("runT7: source=%s"%[str(s) for s in ssrc])
 
         MT7vol=vol*1.0/self.r.MT7.conc.dilutionneeded()
@@ -208,7 +194,7 @@ class TRP(object):
             stgt[i].conc=Concentration(1/(1-1/sstopmaster[i].conc.dilutionneeded()))
             finalvol=stgt[i].volume*stgt[i].conc.dilutionneeded();
             self.e.transfer(finalvol-stgt[i].volume,sstopmaster[i],stgt[i],(False,True))
-
+            
         return tgt
     
     def runT7(self,theo,src,vol,srcdil,tgt=None,dur=15,stopmaster=None):
@@ -267,7 +253,6 @@ class TRP(object):
             for i in range(len(ssrc)):
                 sbeads[i].isMixed=False	# Force a mix
                 bconc=sbeads[i].conc.dilutionneeded()
-                ssrc[i].conc=Concentration(bconc/(bconc-1))
                 self.e.transfer(ssrc[i].volume/(bconc-1),sbeads[i],ssrc[i],(i==0,True))	# Mix beads before and after
                 ssrc[i].setHasBeads()	# Mark the source tubes as having beads to change condition, liquid classes
                 
@@ -345,7 +330,6 @@ class TRP(object):
         for i in range(len(ssrc)):
             if elutionVol[i]<30:
                 print "Warning: elution from beads with %.1f ul < minimum of 30ul"%elutionVol[i]
-            ssrc[i].conc=None
             self.e.transfer(elutionVol[i]-ssrc[i].volume,selutant[i],ssrc[i],(False,True))	# Add elution buffer and mix
 
         # Go through some cycles of waiting, mixing
@@ -391,7 +375,6 @@ class TRP(object):
         tgt=uniqueTargets(tgt)
         stgt=findsamps(tgt)
         ssrc=findsamps(src,False)
-        adjustSrcDil(ssrc,srcdil)
 
         #    e.stage('MPosRT',[self.r.MOSBuffer,self.r.MOS],[],[self.r.MPosRT],ASPIRATEFACTOR*(self.vol.RT*nRT/2)/2+self.vol.Extra+MULTIEXCESS,2)
         #    e.stage('MNegRT',[self.r.MOSBuffer],[],[self.r.MNegRT],ASPIRATEFACTOR*(self.vol.RT*negRT)/2+self.vol.Extra+MULTIEXCESS,2)
@@ -431,8 +414,6 @@ class TRP(object):
                 print "runLig: srcdil=%.2f, but must be at least %.2f"%(i,minsrcdil)
                 assert(False)
 
-        adjustSrcDil(ssrc,srcdil)
-
         i=0
         while i<len(stgt):
             lasti=i+1
@@ -461,7 +442,6 @@ class TRP(object):
 
         ## Add ligase
         for i in range(len(ssrc)):
-            ssrc[i].conc=Concentration(1/(1-1/self.r.MLigase.conc.dilutionneeded()))
             finalvol=ssrc[i].volume*ssrc[i].conc.dilutionneeded();
             self.e.transfer(finalvol-ssrc[i].volume,self.r.MLigase,ssrc[i],(False,True))
 
@@ -482,7 +462,6 @@ class TRP(object):
         stgt=findsamps(tgt)
         #print "stgt[0]=",str(stgt[0])
         ssrc=findsamps(src,False)
-        adjustSrcDil(ssrc,srcdil)
         
         primer=[prefix[i]+suffix[i] for i in range(len(prefix))]
         #print "primer=",primer
@@ -504,7 +483,6 @@ class TRP(object):
         [prefix,src,vol,suffix]=listify([prefix,src,vol,suffix])
 
         ssrc=findsamps(src,False)
-        adjustSrcDil(ssrc,[vol[i]/ssrc[i].volume for i in range(len(ssrc))])
         
         primer=[prefix[i]+suffix[i] for i in range(len(prefix))]
         sprimer=[self.r.PCRAS if p=='AS' else self.r.PCRBS if p=='BS' else self.r.PCRAX if p=='AX' else self.r.PCRBX if p=='BX' else None for p in primer ]
@@ -525,7 +503,6 @@ class TRP(object):
         [tgt,dil]=listify([tgt,dil])
         tgt=uniqueTargets(tgt)
         stgt=findsamps(tgt,False)
-        adjustSrcDil(stgt,dil)
         self.e.stage('Dilute',[],[],stgt,[stgt[i].volume*dil[i] for i in range(len(stgt))])
         return tgt   #  The name of the samples are unchanged -- the predilution names
         
@@ -547,7 +524,6 @@ class TRP(object):
         else:
             stgt=findsamps(tgt,True,Experiment.SAMPLEPLATE)
         ssrc=findsamps(src,False)
-        adjustSrcDil(ssrc,[d for d in srcdil])
         
         self.e.stage('QPCRDIL',[Reagents.SSD],ssrc,stgt,max(vol))
         return tgt
@@ -558,7 +534,6 @@ class TRP(object):
         self.e.w.comment("runQPCR: primers=%s, source=%s"%([p for p in primers],[s for s in src]))
         [src,vol,srcdil]=listify([src,vol,srcdil])
         ssrc=findsamps(src,False)
-        adjustSrcDil(ssrc,[d for d in srcdil])
 
         # Build a list of sets to be run
         all=[]
