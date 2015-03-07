@@ -508,15 +508,10 @@ class TRP(object):
         return tgt   #  The name of the samples are unchanged -- the predilution names
         
     def runQPCRDIL(self,src,vol,srcdil,tgt=None,dilPlate=False):
-        if isinstance(srcdil,list) and ( not isinstance(src,list) or len(srcdil)!=len(src)):
-            print "Cannot have multiple dilutions for a single sample"
-            assert(False)
-            
         if tgt==None:
             tgt=[]
-        ## QPCR setup
-        # e.g. trp.runQPCR(src=["1.RT-B","1.RT+B","1.RTNeg-B","1.RTNeg+B","2.RT-A","2.RT-B","2.RTNeg+B","2.RTNeg+B"],vol=10,srcdil=100)
         [src,vol,srcdil]=listify([src,vol,srcdil])
+        vol=[float(v) for v in vol]
         if len(tgt)==0:
             tgt=["%s.D%.0f"%(src[i],srcdil[i]) for i in range(len(src))]
         tgt=uniqueTargets(tgt)
@@ -525,8 +520,18 @@ class TRP(object):
         else:
             stgt=findsamps(tgt,True,Experiment.SAMPLEPLATE)
         ssrc=findsamps(src,False)
-        
-        self.e.stage('QPCRDIL',[Reagents.SSD],ssrc,stgt,max(vol))
+        ssdvol=[v/Reagents.SSD.conc.dilutionneeded() for v in vol]
+        srcvol=[vol[i]/srcdil[i] for i in range(len(vol))]
+        watervol=[vol[i]-ssdvol[i]-srcvol[i] for i in range(len(vol))]
+        print "srcdil=",srcdil,", ssdvol=",ssdvol,", srcvol=", srcvol, ", watervol=", watervol
+        self.e.multitransfer(watervol,self.e.WATER,stgt,(False,False))
+        self.e.multitransfer(ssdvol,Reagents.SSD,stgt,(False,False))
+        for i in range(len(ssrc)):
+            stgt[i].conc=None		# Assume dilutant does not have a concentration of its own
+            self.e.transfer(srcvol[i],ssrc[i],stgt[i],(True,True))
+            if stgt[i].conc != None:
+                stgt[i].conc.final=None	# Final conc are meaningless now
+            
         return tgt
         
     def runQPCR(self,src,vol,srcdil,primers=["A","B"],nreplicates=1):
