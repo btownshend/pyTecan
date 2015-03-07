@@ -95,7 +95,10 @@ class TRP(object):
         self.e.setreagenttemp(6.0)
         self.e.sanitize(3,50)    # Heavy sanitize
             
-    def addTemplates(self,names,stockconc,finalconc=1.0,units="nM",plate=Experiment.REAGENTPLATE):
+    def addTemplates(self,names,stockconc,finalconc=None,units="nM",plate=Experiment.REAGENTPLATE):
+        if finalconc==None:
+            print "Warning: final concentration of template not specified, assuming 0.6x (should add to addTemplates() call"
+            finalconc=0.6*stockconc
         for s in names:
             Sample(s,plate,None,Concentration(stockconc,finalconc,units))
 
