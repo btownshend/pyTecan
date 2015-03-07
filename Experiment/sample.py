@@ -257,8 +257,12 @@ class Sample(object):
             # Both have concentrations, they should match
             c1=self.conc.dilute((self.volume+volume)/self.volume)
             c2=src.conc.dilute((self.volume+volume)/volume)
-            assert(abs(c1.stock/c1.final-c2.stock/c2.final)<.01)
-            self.conc=Concentration(c1.stock/c1.final,1.0,'x')  # Since there are multiple ingredients express concentration as x
+            if ( abs(c1.stock/c1.final-c2.stock/c2.final)>.01 ):
+                print "Warning: Dispense of %.1ful of %s@%.2fx into %.1ful of %s@%.2f does not equalize concentrations\n"%(volume,src.name,src.conc.dilutionneeded(),self.volume,self.name,self.conc.dilutionneeded())
+                #assert(abs(c1.stock/c1.final-c2.stock/c2.final)<.01)
+                self.conc=None
+            else:
+                self.conc=Concentration(c1.stock/c1.final,1.0,'x')  # Since there are multiple ingredients express concentration as x
          # Set to not mixed after second ingredient added
         self.isMixed=self.volume==0
         self.volume=self.volume+volume
