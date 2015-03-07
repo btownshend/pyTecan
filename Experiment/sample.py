@@ -226,7 +226,7 @@ class Sample(object):
         'Aspirate air over a well'
         w.aspirateNC(tipMask,[self.well],self.airLC,volume,self.plate)
         
-    def dispense(self,tipMask,w,volume,conc):
+    def dispense(self,tipMask,w,volume,src):
         if self.volume+volume < MINDEPOSITVOLUME:
             print "Warning: Dispense of %.1ful into %s results in total of %.1ful which is less than minimum deposit volume of %.1f ul"%(volume,self.name,self.volume+volume,MINDEPOSITVOLUME)
 
@@ -244,25 +244,27 @@ class Sample(object):
             w.dispense(tipMask,well,self.bottomLC,volume,self.plate)
 
         # Assume we're diluting the contents
-        if self.conc==None and conc==None:
+        if self.conc==None and src.conc==None:
             pass
-        elif conc==None or volume==0:
+        elif src.conc==None or volume==0:
             if self.volume==0:
                 self.conc=None
             else:
                 self.conc=self.conc.dilute((self.volume+volume)/self.volume)
         elif self.conc==None or self.volume==0:
-            self.conc=conc.dilute((self.volume+volume)/volume)
+            self.conc=src.conc.dilute((self.volume+volume)/volume)
         else:
             # Both have concentrations, they should match
             c1=self.conc.dilute((self.volume+volume)/self.volume)
-            c2=conc.dilute((self.volume+volume)/volume)
+            c2=src.conc.dilute((self.volume+volume)/volume)
             assert(abs(c1.stock/c1.final-c2.stock/c2.final)<.01)
             self.conc=Concentration(c1.stock/c1.final,1.0,'x')  # Since there are multiple ingredients express concentration as x
          # Set to not mixed after second ingredient added
         self.isMixed=self.volume==0
         self.volume=self.volume+volume
-
+        self.addhistory(src.name,volume,tipMask)
+        self.addingredients(src,volume)
+            
     def addhistory(self,name,vol,tip):
         if vol>0:
             if SHOWTIPS:
