@@ -190,8 +190,8 @@ class TRP(object):
         ## Stop
         sstopmaster=findsamps(stopmaster,False)
         for i in range(len(stgt)):
-            stgt[i].conc=Concentration(1/(1-1/sstopmaster[i].conc.dilutionneeded()))
-            finalvol=stgt[i].volume*stgt[i].conc.dilutionneeded();
+            stopvol=stgt[i].volume/(sstopmaster[i].conc.dilutionneeded()-1)
+            finalvol=stgt[i].volume+stopvol
             self.e.transfer(finalvol-stgt[i].volume,sstopmaster[i],stgt[i],(False,True))
             
         return tgt
