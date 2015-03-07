@@ -137,14 +137,13 @@ class TRP(object):
         stgt=findsamps(tgt,True,plate)
         ssrc=findsamps(src,False)
 
-        if dilutant!=None:
-            if dilutant.conc==None:
-                self.e.stage('SAVE',[],ssrc,stgt,[vol[i]*dil[i] for i in range(len(vol))],dilutant=dilutant)
-            else:
-                self.e.stage('SAVE',[dilutant],ssrc,stgt,[vol[i]*dil[i] for i in range(len(vol))])
-        else:
-            self.e.stage('SAVE',[],ssrc,stgt,[vol[i]*dil[i] for i in range(len(vol))])
-        # Back out the dilution
+        if dilutant==None:
+            dilutant=self.e.WATER
+        self.e.multitransfer([vol[i]*(dil[i]-1) for i in range(len(vol))],dilutant,stgt,(False,False))
+        for i in range(len(ssrc)):
+            self.e.transfer(vol[i],ssrc[i],stgt[i],(True,True))
+            stgt[i].conc=Concentration(1.0/dil[i])
+            
         return tgt
             
     def runT7Setup(self,theo,src,vol,srcdil,tgt):
