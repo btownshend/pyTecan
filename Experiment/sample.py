@@ -338,12 +338,13 @@ class Sample(object):
                 w.mix(tipMask,well,self.inliquidLC,mixvol,self.plate,nmix)
                 self.history+="(MLD)"
             elif (self.plate.name=="Samples" or self.plate.name=="Reagents") and self.volume>=30:
-                height=self.plate.getliquidheight(self.volume)-1.2		# At least 1.2mm below liquid height
-                mixheight=math.floor(height)
+                height=self.plate.getliquidheight(self.volume)
+                mixheight=math.floor(height-1.2)			# At least 1.2mm below liquid height
                 if mixheight<2:
                     mixheight=2
+                blowheight=math.ceil(height+1)			# At least 1mm above surface
                 mixLC=liquidclass.LC("Mix_%d"%mixheight)
-                blowoutLC=liquidclass.LC("Blowout")
+                blowoutLC=liquidclass.LC("Blowout_%d"%blowheight)
                 blowvol=20
                 w.aspirateNC(tipMask,well,self.airLC,2*blowvol+0.2,self.plate)
                 for i in range(nmix):
