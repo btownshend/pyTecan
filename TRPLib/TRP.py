@@ -567,6 +567,7 @@ class TRP(object):
             t=[a[1] for a in all if a[0]==s]
             v=[a[3]/dil[a[2]] for a in all if a[0]==s]
             for i in range(len(t)):
+                t[i].conc=None		# Concentration of master mix is irrelevant now
                 self.e.transfer(v[i],s,t[i],(False,False))
         
         return [a[1] for a in all]
