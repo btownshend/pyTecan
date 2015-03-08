@@ -263,6 +263,7 @@ class Sample(object):
                 self.conc=None
             else:
                 self.conc=Concentration(c1.stock/c1.final,1.0,'x')  # Since there are multiple ingredients express concentration as x
+
          # Set to not mixed after second ingredient added
         self.isMixed=self.volume==0
         self.volume=self.volume+volume
@@ -300,13 +301,14 @@ class Sample(object):
             tiphistory[tip]=fstr
 
     @staticmethod
-    def addallhistory(msg,addToEmpty=False):
+    def addallhistory(msg,addToEmpty=False,onlyplate=None):
         'Add history entry to all samples (such as # during thermocycling)'
         for s in __allsamples:
-            if len(s.history)>0:
-                s.history+=" "+msg
-            elif addToEmpty:
-                s.history=msg
+            if onlyplate==None or onlyplate==s.plate.name:
+                if len(s.history)>0:
+                    s.history+=" "+msg
+                elif addToEmpty:
+                    s.history=msg
                 
     def addingredients(self,src,vol):
         'Update ingredients by adding ingredients from src'
