@@ -240,7 +240,7 @@ if sum(theosel)>0
   title('Frac(theo) in spike-in');
 end
 
-if isfield(data,'summary')
+if isfield(data,'summary') && ~isempty(data.summary)
   setfig('Robot Summary'); clf;
   subplot(311);
   bar([data.summary.cleavage]*100);

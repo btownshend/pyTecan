@@ -72,7 +72,7 @@ for i=1:length(data.results)
   else
     rowbreak(r-1)=0;
   end
-  if strcmp(usamp.type,'tmpl') && isfield(data,'summary')
+  if strcmp(usamp.type,'tmpl') && isfield(data,'summary') && ~isempty(data.summary)
     % Use summary values of cleavage, yield
     sel=find(strcmp(usamp.tmpl,{data.summary.tmpl}));
     if length(sel)==1
