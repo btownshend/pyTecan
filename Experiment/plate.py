@@ -23,7 +23,7 @@ class Plate(object):
         'Get liquid height in mm above ZMax'
         angle=17.5*math.pi/180;
         # Use data from Robot/Calibration/20150302-LiquidHeights
-        if self.name=="Samples":
+        if self.name=="Samples" or self.name=="Dilutions":
             if volume<60 and not self.warned:
                 print "%s plate liquid heights not validated for <60 ul (attempted to measure %.1f ul)"%(self.name,volume)
                 self.warned=True
