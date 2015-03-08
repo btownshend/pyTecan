@@ -258,7 +258,7 @@ class Sample(object):
             c1=self.conc.dilute((self.volume+volume)/self.volume)
             c2=src.conc.dilute((self.volume+volume)/volume)
             if ( abs(c1.stock/c1.final-c2.stock/c2.final)>.01 ):
-                print "Warning: Dispense of %.1ful of %s@%.2fx into %.1ful of %s@%.2fx does not equalize concentrations\n"%(volume,src.name,src.conc.dilutionneeded(),self.volume,self.name,self.conc.dilutionneeded())
+                print "Warning: Dispense of %.1ful of %s@%.2fx into %.1ful of %s@%.2fx does not equalize concentrations"%(volume,src.name,src.conc.dilutionneeded(),self.volume,self.name,self.conc.dilutionneeded())
                 #assert(abs(c1.stock/c1.final-c2.stock/c2.final)<.01)
                 self.conc=None
             else:
