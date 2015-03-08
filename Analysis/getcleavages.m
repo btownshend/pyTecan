@@ -19,8 +19,6 @@ for i=1:length(utmpls)
   end
   if length(indtmpl)>1
     fprintf('getcleavages: Multiple possible templates for %s\n', tmpl);
-    keyboard
-    continue;
   end
   if length(indlig)<1
     fprintf('getcleavages: Unable to locate ligation product for %s\n', tmpl);
