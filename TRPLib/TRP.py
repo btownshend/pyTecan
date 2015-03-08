@@ -339,6 +339,27 @@ class TRP(object):
         self.runRTPgm
         return result
     
+    def runRxOnBeads(self,src,vol,master):
+        'Run reaction on beads in given total volume'
+        [vol,src,master]=listify([vol,src,master])
+        ssrc=findsamps(src,False)
+        smaster=findsamps(master)
+        mastervol=[vol[i]/smaster[i].conc.dilutionneeded() for i in range(len(vol))]
+        watervol=[vol[i]-ssrc[i].volume-mastervol[i] for i in range(len(vol))]
+        if any([w < -0.01 for w in watervol]):
+            print "runRTOnBeads: negative amount of water needed"
+            assert(False)
+        for i in range(len(ssrc)):
+            if  watervol[i]>0:
+                self.e.transfer(watervol[i],self.e.WATER,ssrc[i],(False,False))
+        for i in range(len(ssrc)):
+            self.e.transfer(mastervol[i],smaster[i],ssrc[i],(False,True))
+
+    def runRTOnBeads(self,src,vol):
+        'Run RT on beads in given volume'
+        self.runRxOnBeads(src,vol,"MPosRT")
+        self.runRTPgm()
+        
     def runRTSetup(self,pos,src,vol,srcdil,tgt=None):
         if tgt==None:
             tgt=[]
@@ -403,29 +424,30 @@ class TRP(object):
         if anneal:
             self.e.runpgm("TRPANN",5,False,max(vol),hotlidmode="CONSTANT",hotlidtemp=100)
         self.e.stage('Ligation',[self.r.MLigase],[],stgt,vol)
+        self.runLigPgm(max(vol),ligtemp)
+        return tgt
+        
+    def runLigPgm(self,vol,ligtemp):
         if ligtemp==25:
             pgm="LIG15RT"
         else:
             pgm="LIG15-%.0f"%ligtemp
             self.e.w.pyrun('PTC\\ptcsetpgm.py %s TEMP@%.0f,900 TEMP@65,600 TEMP@25,30'%(pgm,ligtemp))
         
-        self.e.runpgm(pgm,27,False,max(vol),hotlidmode="TRACKING",hotlidtemp=10)
-        return tgt
+        self.e.runpgm(pgm,27,False,vol,hotlidmode="TRACKING",hotlidtemp=10)
 
-    def runLigOnBeads(self,src=None,anneal=True,ligtemp=25):
-        'Run ligation on beads; assume src already includes MLig splint+extension master and is at 1.5x of final concentration'
+    def runLigOnBeads(self,src,vol,ligmaster,anneal=True,ligtemp=25):
+        'Run ligation on beads'
+        [vol,src]=listify([vol,src])
+        annealvol=[v*(1-1/self.r.MLigase.conc.dilutionneeded()) for v in vol]
         ssrc=findsamps(src,False)
+        self.runRxOnBeads(src,annealvol,ligmaster)
         if anneal:
             self.e.runpgm("TRPANN",5,False,max([s.volume for s in ssrc]),hotlidmode="CONSTANT",hotlidtemp=100)
 
         ## Add ligase
-        for i in range(len(ssrc)):
-            finalvol=ssrc[i].volume*ssrc[i].conc.dilutionneeded();
-            self.e.transfer(finalvol-ssrc[i].volume,self.r.MLigase,ssrc[i],(False,True))
-
-        pgm="LIG15-%.0f"%ligtemp
-        self.e.w.pyrun('PTC\\ptcsetpgm.py %s TEMP@%.0f,900 TEMP@65,600 TEMP@25,30'%(pgm,ligtemp))
-        self.e.runpgm(pgm,27,False,max([s.volume for s in ssrc]),hotlidmode="TRACKING",hotlidtemp=10)
+        self.runRxOnBeads(src,vol,"MLigase")
+        self.runLigPgm(max(vol),ligtemp)
         
     def runPCR(self,prefix,src,vol,srcdil,tgt=None,ncycles=20,suffix='S'):
         if tgt==None:
@@ -460,15 +482,8 @@ class TRP(object):
     def runPCROnBeads(self,prefix,src,vol,ncycles,suffix,annealtemp=57):
         [prefix,src,vol,suffix]=listify([prefix,src,vol,suffix])
 
-        ssrc=findsamps(src,False)
-        
-        primer=[prefix[i]+suffix[i] for i in range(len(prefix))]
-        sprimer=[self.r.PCRAS if p=='AS' else self.r.PCRBS if p=='BS' else self.r.PCRAX if p=='AX' else self.r.PCRBX if p=='BX' else None for p in primer ]
-        for i in range(len(ssrc)):
-            pvol=vol[i]*sprimer[i].conc.final/sprimer[i].conc.stock
-            wvol=vol[i]-pvol-ssrc[i].volume
-            self.e.transfer(wvol,self.e.WATER,ssrc[i],mix=(False,False))
-            self.e.transfer(pvol,sprimer[i],ssrc[i],mix=(False,True))
+        primer=["MPCR"+prefix[i]+suffix[i] for i in range(len(prefix))]
+        self.runRxOnBeads(src,vol,primer)
 
         pgm="PCR%d"%ncycles
         #        self.e.w.pyrun('PTC\\ptcsetpgm.py %s TEMP@95,120 TEMP@95,30 TEMP@55,30 TEMP@72,25 GOTO@2,%d TEMP@72,180 TEMP@16,2'%(pgm,ncycles-1))
