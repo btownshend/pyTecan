@@ -219,60 +219,35 @@ class TRP(object):
 
         self.e.waittimer(dur)
 
-    def runBeadCleanup(self,src,tgt=None,beads="WashedBeads",wash="BeadBuffer",elutant="Water",elutionVol=30,washVol=50,incTime=60,sepTime=30,washTime=60,numWashes=2,eluteTime=60,leaveOn=True,keepWash=False,residualVolume=10):
-        if leaveOn:
-            if tgt!=None:
-                print "runBeadCleanup: specified a target, but also leaveOn is True"
-                assert(0)
-            tgt=src
+    def bindBeads(self,src,beads="Dynabeads",buffer="BeadBuffer",incTime=60,addBuffer=False):
+        [src,beads,buffer]=listify([src,beads,buffer])
 
-        if tgt==None:
-            tgt=[]
-
-        [src,tgt,wash,beadlist]=listify([src,tgt,wash,beads])
-        if len(tgt)==0:
-            for i in range(len(src)):
-                tgt.append("%s.BC"%src[i])
-
-        tgt=uniqueTargets(tgt)
-        stgt=findsamps(tgt)
         ssrc=findsamps(src,False)
         for s in ssrc:
             if s.plate!=self.e.SAMPLEPLATE:
                 print "runBeadCleanup: src ",s," is not in sample plate."
                 assert(0)
             
-        # origIngredients=[s.ingredients for s in ssrc]
-        # origVolumes=[s.volume for s in ssrc]
-        # origConcs=[s.conc for s in ssrc]
-
-        if beads!=None:
-            # Transfer the beads
-            sbeads=findsamps(beadlist,False)
+        sbeads=findsamps(beads,False)
+        sbuffer=findsamps(buffer,False)
+        # Calculate volumes needed
+        if addBuffer:
+            buffervol=[ssrc[i].volume/(sbuffer[i].conc.dilutionneeded()-1) for i in range(len(ssrc))]
+            # Add binding buffer to bring to 1x (beads will already be in 1x, so don't need to provide for them)
             for i in range(len(ssrc)):
-                sbeads[i].isMixed=False	# Force a mix
-                bconc=sbeads[i].conc.dilutionneeded()
-                self.e.transfer(ssrc[i].volume/(bconc-1),sbeads[i],ssrc[i],(i==0,True))	# Mix beads before and after
-                ssrc[i].setHasBeads()	# Mark the source tubes as having beads to change condition, liquid classes
-                
-            self.intervalMix(src,incTime) # Wait for binding
+                self.e.transfer(buffervol[i],sbuffer[i],ssrc[i],(False,True))
+        else:
+            buffervol=[0.0 for i in range(len(ssrc))]
 
-        self.beadWash(src,sepTime=sepTime,residualVolume=residualVolume,keepWash=keepWash,numWashes=numWashes,wash=wash,washVol=washVol,washTime=washTime)
-
-        # Add elutant, mix and wait
-        self.beadAddElutant(src,elutant=elutant,elutionVol=elutionVol,eluteTime=eluteTime)
-
-        # # Restore the ingredients list
-        # for i in range(len(ssrc)):
-        #     ssrc[i].ingredients={}
-        #     for k in origIngredients[i]:
-        #         ssrc[i].ingredients[k]=origIngredients[i][k]*ssrc[i].volume/origVolumes[i]
-        #     ssrc[i].conc=origConcs[i]
-        #     ssrc[i].dilute(ssrc[i].volume/origVolumes[i])
+        beadvol=[(ssrc[i].volume+buffervol[i])/(sbeads[i].conc.dilutionneeded()-1) for i in range(len(ssrc))]
+        # Transfer the beads
+        for i in range(len(ssrc)):
+            sbeads[i].isMixed=False	# Force a mix
+            self.e.transfer(beadvol[i],sbeads[i],ssrc[i],(i==0,True))	# Mix beads before and after
+            ssrc[i].setHasBeads()	# Mark the source tubes as having beads to change condition, liquid classes
+            ssrc[i].conc=None		# Can't track concentration of beads
             
-        if not leaveOn:
-            tgt=self.beadSupernatant(src,tgt,sepTime,residualVolume)
-            return tgt
+        self.intervalMix(src,incTime) # Wait for binding
 
     def beadWash(self,src,sepTime=60,residualVolume=10,keepWash=False,numWashes=2,wash="BeadBuffer",washVol=50,washTime=60):
         [src,wash]=listify([src,wash])
