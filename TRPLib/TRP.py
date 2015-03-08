@@ -329,6 +329,7 @@ class TRP(object):
         for i in range(len(ssrc)):
             if elutionVol[i]<30:
                 print "Warning: elution from beads with %.1f ul < minimum of 30ul"%elutionVol[i]
+                print "  src=",ssrc[i]
             self.e.transfer(elutionVol[i]-ssrc[i].volume,selutant[i],ssrc[i],(False,True))	# Add elution buffer and mix
 
         # Go through some cycles of waiting, mixing
@@ -520,10 +521,11 @@ class TRP(object):
         else:
             stgt=findsamps(tgt,True,Experiment.SAMPLEPLATE)
         ssrc=findsamps(src,False)
+
         ssdvol=[v/Reagents.SSD.conc.dilutionneeded() for v in vol]
         srcvol=[vol[i]/srcdil[i] for i in range(len(vol))]
         watervol=[vol[i]-ssdvol[i]-srcvol[i] for i in range(len(vol))]
-        print "srcdil=",srcdil,", ssdvol=",ssdvol,", srcvol=", srcvol, ", watervol=", watervol
+#        print "srcdil=",srcdil,", ssdvol=",ssdvol,", srcvol=", srcvol, ", watervol=", watervol
         self.e.multitransfer(watervol,self.e.WATER,stgt,(False,False))
         self.e.multitransfer(ssdvol,Reagents.SSD,stgt,(False,False))
         for i in range(len(ssrc)):
