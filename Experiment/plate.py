@@ -43,7 +43,8 @@ class Plate(object):
             v0=7.5
         else:
             print "No liquid height equation for plate %s"%self.name
-            assert(0)
+            return None
+
         h0=h1-r1/math.tan(angle/2);
         v1=math.pi/3*(h1-h0)*r1*r1-v0;
         if volume>=v1:

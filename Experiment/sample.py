@@ -347,6 +347,8 @@ class Sample(object):
                 self.history+="(MLD)"
             else:
                 height=self.plate.getliquidheight(self.volume)
+                if height==None:
+                    height=2		# Guess...
                 mixheight=math.floor(height-1.2)			# At least 1.2mm below liquid height
                 if mixheight<2:
                     mixheight=2
