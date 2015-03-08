@@ -251,15 +251,17 @@ class TRP(object):
             
         self.intervalMix(src,incTime) # Wait for binding
 
-    def beadWash(self,src,sepTime=60,residualVolume=10,keepWash=False,numWashes=2,wash="BeadBuffer",washVol=50,washTime=60):
+
+    def beadWash(self,src,washTgt=None,sepTime=30,residualVolume=10,keepWash=False,numWashes=2,wash="Water",washVol=50,washTime=60):
         [src,wash]=listify([src,wash])
         ssrc=findsamps(src,False)
         if any([s.volume>residualVolume for s in ssrc]):
             if keepWash:
-                washTgt=[]
-                for i in range(len(src)):
-                    washTgt.append("%s.Wash"%src[i])
-                sWashTgt=findsamps(washTgt)
+                if washTgt==None:
+                    washTgt=[]
+                    for i in range(len(src)):
+                        washTgt.append("%s.Wash"%src[i])
+                sWashTgt=findsamps(washTgt,plate=self.e.DILPLATE)
             
             # Separate and remove supernatant
             self.e.magmove(True)	# Move to magnet
@@ -274,30 +276,29 @@ class TRP(object):
                         sWashTgt[i].setHasBeads()   # To have it mixed before any aspirations
                     else:
                         self.e.dispose((ssrc[i].volume-residualVolume)/ASPIRATEFACTOR,ssrc[i])	# Discard supernatant
+            self.e.magmove(False)	# Take off magnet
                 
-            # Wash
-            swash=findsamps(wash,False)
-            for washnum in range(numWashes):
-                self.e.magmove(False)	# Take off magnet
-                for i in range(len(ssrc)):
-                    self.e.transfer(washVol-ssrc[i].volume,swash[i],ssrc[i],mix=(False,True))	# Add wash
+        # Wash
+        swash=findsamps(wash,False)
+        for washnum in range(numWashes):
+            for i in range(len(ssrc)):
+                self.e.transfer(washVol-ssrc[i].volume,swash[i],ssrc[i],mix=(False,True))	# Add wash
 
-                self.e.pause(washTime)
-                self.e.magmove(True)	# Back to magnet
-                self.e.pause(sepTime)
+            self.e.pause(washTime)
+            self.e.magmove(True)	# Back to magnet
+            self.e.pause(sepTime)
 
-                for i in range(len(ssrc)):
-                    if keepWash:
-                        self.e.transfer((ssrc[i].volume-residualVolume)/ASPIRATEFACTOR,ssrc[i],sWashTgt[i])	# Remove wash
-                        sWashTgt[i].conc=None	# Allow it to be reused
-                    else:
-                        self.e.dispose((ssrc[i].volume-residualVolume)/ASPIRATEFACTOR,ssrc[i])	# Remove wash
+            for i in range(len(ssrc)):
+                if keepWash:
+                    self.e.transfer((ssrc[i].volume-residualVolume)/ASPIRATEFACTOR,ssrc[i],sWashTgt[i])	# Remove wash
+                    sWashTgt[i].conc=None	# Allow it to be reused
+                else:
+                    self.e.dispose((ssrc[i].volume-residualVolume)/ASPIRATEFACTOR,ssrc[i])	# Remove wash
+            self.e.magmove(False)	# Take off magnet
 
-            # Should only be residualVolume left with beads now
-        
-            # Remove from magnet
-            self.e.magmove(False)
-
+        # Should only be residualVolume left with beads now
+        if keepWash:
+            return washTgt
 
     def beadAddElutant(self,src,elutant="Water",elutionVol=30,eluteTime=60):
         [src,elutionVol,elutant]=listify([src,elutionVol,elutant])
