@@ -26,65 +26,6 @@ if length(sel)==0
   result=struct();
   return;
 end
-result=struct('name',sampname);
-% Split based on dots
-dots=find([sampname,'.']=='.');
-parts={};
-pdot=1;
-hasRT=false;
-for i=1:length(dots)
-  pt=sampname(pdot:dots(i)-1);
-  if pt(1)=='R'
-    hasRT=true;
-  end
-  if (pt(1)>='1' && pt(1)<='9')
-    parts{end}=[parts{end},'-',pt];
-  elseif pt(1)~='D' && pt(1)~='R'
-    parts{end+1}=pt;
-  end
-  pdot=dots(i)+1;
-end
-
-if length(parts)>=2 && parts{2}(1)=='T'
-  if length(parts)>=3
-    parts={[parts{1},'-',parts{2}],parts{3:end}};
-  else
-    parts={[parts{1},'-',parts{2}]};
-  end
-end
-result.tmpl=parts{1};
-
-if length(parts)==1
-  if hasRT
-    result.type='rt';
-    result.cond='rt';
-  else
-    result.type='tmpl';
-    result.cond='tmpl';
-  end
-else
-  if parts{2}(end)=='-'
-    result.cond='-';
-  elseif parts{2}(end)=='+'
-    result.cond=parts{2};
-  else
-    result.cond='?';
-  end
-
-  if length(parts)==1
-    result.type='T7';
-  else
-    if parts{end}(1)=='L'
-      result.type='Lig';
-      result.ligprefix=parts{end}(2:end);
-    elseif length(parts{end})>=4 && strcmp(parts{end}(1:4),'MLig')
-      result.type='Lig';
-      result.ligprefix=parts{end}(5:end);
-    else
-      result.type=parts{end};
-    end
-  end
-end
 
 if ~data.useminer && isfield(data,'opd')
   if ~isfield(data.opd,'ct')
@@ -94,21 +35,24 @@ end
   
 for i=1:length(sel)
   samp=data.samps(sel(i));
-  v=struct('samp',samp);
+  v=robotidentify(samp);
+
+  % At this point, all fields should be identical for all with sel (except primer)
+  if i==1
+    result=rmfield(v,'primer');
+    result.name=sampname;
+  else
+    if ~strcmp(result.tmpl,v.tmpl)
+      error('Different templates for same sample: %s vs. %s\n', result.tmpl, v.tmpl);
+    end
+    if ~strcmp(result.type,v.type)
+      error('Different types for same sample: %s vs. %s\n', result.type, v.type);
+    end
+  end
+
   if ~strcmp(v.samp.plate,'qPCR')
     error('%s is on plate %s, not qPCR plate\n', v.name, v.plate);
   end
-  firstdot=find(samp.name=='.',1);
-  if ~isempty(firstdot)
-    basename=samp.name(1:firstdot-1);
-  else
-    basename=samp.name;
-  end
-  if ~strcmp(samp.name(length(sampname)+(1:2)),'.Q')
-    error('Expected QPCR sample to start with "%s", but found "%s"\n',[sampname,'.Q'],samp.name);
-  end
-  v.primer=samp.name(length(sampname)+3:end);
-  v.primer=strrep(v.primer,'.','');
   if length(v.primer)==1
     fprintf('In %s, converting old style primer name "%s" to 2-letter code: ', samp.name, v.primer);
     if ~isempty(strfind(samp.name,'_X'))
@@ -127,14 +71,14 @@ for i=1:length(sel)
   if isfield(data,'lengths')
     nsel=false(1,length(data.lengths));
     for k=1:length(data.lengths)
-      if strncmp(data.lengths(k).samp,basename,length(data.lengths(k).samp))
+      if strncmp(data.lengths(k).samp,v.tmpl,length(data.lengths(k).samp))
         nsel(k)=true;
       end
     end
     psel=strcmp({data.lengths.primers},v.primer) ;
     lsel=nsel&psel;
     if sum(lsel)==0
-      fprintf('%s/%s not found in data.lengths\n',basename, v.primer);
+      fprintf('%s/%s not found in data.lengths\n',v.tmpl, v.primer);
     elseif sum(lsel)>1
       fsel=find(lsel);
       lsel2=[];
@@ -148,16 +92,16 @@ for i=1:length(sel)
         lsel2=[lsel2,fsel(i)];
       end
       if length(lsel2)>1
-        fprintf('%s/%s has duplicates in data.lengths\n',basename, v.primer);
+        fprintf('%s/%s has duplicates in data.lengths\n',v.tmpl, v.primer);
         keyboard
       elseif length(lsel2)<1
-        fprintf('%s/%s not found in data.lengths that match ligation\n',basename, v.primer);
+        fprintf('%s/%s not found in data.lengths that match ligation\n',v.tmpl, v.primer);
       else
         v.length=data.lengths(lsel2).length;
       end
     else
       v.length=data.lengths(lsel).length;
-      %      fprintf('%s/%s has length=%d\n',basename, v.primer,v.length);
+      %      fprintf('%s/%s has length=%d\n',v.tmpl, v.primer,v.length);
     end
   else
     fprintf('Data is missing primer lengths field\n');
