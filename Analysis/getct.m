@@ -132,10 +132,6 @@ for i=1:length(sel)
     v.ct=nan;
   end
 
-  if isfield(result,v.primer) && ~isempty(result.(v.primer))
-    fprintf('Have multiple samples for primer %s\n', v.primer);
-  end
-  
   % Calculation dilution based on volumes of ingredients
   [vols,o]=sort(samp.volumes,'descend');
   map=containers.Map();
@@ -203,7 +199,13 @@ for i=1:length(sel)
     v.conc=nan;
   end
 
-  result.(v.primer)=v;
+  if isfield(result,v.primer)
+    % Append replicates
+    fprintf('Have multiple samples for primer %s\n', v.primer);
+    result.(v.primer)(end+1)=v;
+  else
+    result.(v.primer)=v;
+  end
 end
 
 if isfield(result,'T') && isfield(result,'M')

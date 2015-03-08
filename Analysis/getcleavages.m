@@ -29,6 +29,11 @@ for i=1:length(utmpls)
   
   for ii=1:length(indlig)
     lig=data.results{indlig(ii)};
+    if length(indtmpl)>1
+      choose=max(indtmpl(indtmpl<indlig(ii)));  % Choose the alphabetically prior one
+      indtmpl=choose;
+      fprintf('Using tmpl %s for lig %s\n', data.results{indtmpl}.name, lig.name);
+    end
     t=data.results{indtmpl};
   
     % Figure out prefix of template, ligation product

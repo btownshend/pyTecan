@@ -92,25 +92,31 @@ for i=1:length(data.results)
   tbl{r,c}=sprintf('%.1f/%.1f/%.1f',usamp.dilchain);c=c+1;
   for p=1:length(primers)
     if isfield(usamp,primers{p})
-      tbl{r,c}=usamp.(primers{p}).samp.well;
+      tbl{r,c}=usamp.(primers{p})(1).samp.well;
+      for rep=2:length(usamp.(primers{p}))
+        tbl{r,c}=[tbl{r,c},'/',usamp.(primers{p})(rep).samp.well];
+      end
     end
     c=c+1;
   end
   for p=1:length(primers)
     if isfield(usamp,primers{p})
-      tbl{r,c}=sprintf('%d',usamp.(primers{p}).length);
+      tbl{r,c}=sprintf('%d',usamp.(primers{p})(1).length);
     end
     c=c+1;
   end
   for p=1:length(primers)
     if isfield(usamp,primers{p})
-      tbl{r,c}=sprintf('%.2f',usamp.(primers{p}).ct);
+      tbl{r,c}=sprintf('%.2f',usamp.(primers{p})(1).ct);
+      for rep=2:length(usamp.(primers{p}))
+        tbl{r,c}=[tbl{r,c},'/',sprintf('%.2f',usamp.(primers{p})(rep).ct)];
+      end
     end
     c=c+1;
   end
   for p=1:length(primers)
     if isfield(usamp,primers{p})
-      tbl{r,c}=sprintf('%.2f',usamp.(primers{p}).conc);
+      tbl{r,c}=sprintf('%.2f',usamp.(primers{p})(1).conc);
     end
     c=c+1;
   end
