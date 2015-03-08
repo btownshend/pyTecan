@@ -25,7 +25,7 @@ class Plate(object):
         # Use data from Robot/Calibration/20150302-LiquidHeights
         if self.name=="Samples":
             if volume<60 and not self.warned:
-                print "%s plate liquid heights not validated for <60 ul"%self.name
+                print "%s plate liquid heights not validated for <60 ul (attempted to measure %.1f ul)"%(self.name,volume)
                 self.warned=True
             r1=2.56;
             h1=9.64;
