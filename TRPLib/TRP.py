@@ -313,7 +313,7 @@ class TRP(object):
         # Go through some cycles of waiting, mixing
         self.intervalMix(src,eluteTime)
 
-    def beadSupernatant(self,src,tgt=None,sepTime=60,residualVolume=10):
+    def beadSupernatant(self,src,tgt=None,sepTime=30,residualVolume=10,plate=None):
         if tgt==None:
             tgt=[]
 
@@ -323,7 +323,7 @@ class TRP(object):
                 tgt.append("%s.SN"%src[i])
 
         ssrc=findsamps(src,False)
-        stgt=findsamps(tgt)
+        stgt=findsamps(tgt,plate=plate)
 
         self.e.magmove(True)	# Move to magnet
         self.e.pause(sepTime)	# Wait for separation
