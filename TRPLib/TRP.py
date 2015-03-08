@@ -11,8 +11,8 @@ class Reagents:
     MT7=Sample("MT7",Experiment.REAGENTPLATE,None,2.5)
     MPosRT=Sample("MPosRT",Experiment.REAGENTPLATE,None,2)
     MNegRT=Sample("MNegRT",Experiment.REAGENTPLATE,None,2)
-    MLigAT7=Sample("MLigAT7",Experiment.REAGENTPLATE,None,3)
-    MLigBT7W=Sample("MLigBT7W",Experiment.REAGENTPLATE,None,3)
+    MLigAT7=Sample("MLigAT7",Experiment.REAGENTPLATE,None,2)	# Conc is relative to annealing time (not to post-ligase)
+    MLigBT7W=Sample("MLigBT7W",Experiment.REAGENTPLATE,None,2)
     MLigase=Sample("MLigase",Experiment.REAGENTPLATE,None,3)
 
     Theo=Sample("Theo",Experiment.REAGENTPLATE,None,Concentration(25,7.5,'mM'))
@@ -32,9 +32,11 @@ class Reagents:
     MQWX=Sample("MQWX",Experiment.REAGENTPLATE,None,10.0/6)
     SSD=Sample("SSD",Experiment.REAGENTPLATE,None,10.0)
     MLigAT7W=Sample("MLigAT7W",Experiment.REAGENTPLATE,None,3)
-#    MLIGBOTH=Sample("MLigBoth",Experiment.REAGENTPLATE,None,3.0)
-    BeadBuffer=Sample("BeadBuffer",Experiment.REAGENTPLATE,None,None)
-    all=[MT7,MPosRT,MNegRT,MLigAT7,MLigBT7W,MLigase,Theo,MStopX,MQRef,MQAX,MQBX,PCRAX,PCRBX,MQMX,SSD,MLigAT7W,MQWX,BeadBuffer]
+    BeadBuffer=Sample("BeadBuffer",Experiment.REAGENTPLATE,None,4)
+    Dynabeads=Sample("Dynabeads",Experiment.REAGENTPLATE,None,Concentration(6,2,'mg/ml'))
+    MQT7W=Sample("MQT7X",Experiment.REAGENTPLATE,None,15.0/9)
+    MStopBeads=Sample("MStpBeads",Experiment.REAGENTPLATE,None,3.7)
+    all=[MT7,MPosRT,MNegRT,MLigAT7,MLigBT7W,MLigase,Theo,MStopX,MQRef,MQAX,MQBX,PCRAX,PCRBX,MQMX,SSD,MLigAT7W,MQWX,Dynabeads,MQT7W,BeadBuffer,MStopBeads]
     UNUSED=Sample("Leaky",Experiment.SAMPLEPLATE,None,0)
     
 def listify(x):
