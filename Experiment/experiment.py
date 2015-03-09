@@ -375,7 +375,9 @@ class Experiment(object):
             # Might as well sanitize while we're waiting
             elapsed=self.w.elapsed
             self.sanitize()
-        self.w.elapsed=elapsed+max(self.w.elapsed-elapsed-duration,0)	# Don't count this time since the wait will handle it
+            self.w.elapsed=elapsed+max(self.w.elapsed-elapsed-duration,0)	# Don't count this time since the wait will handle it
+        else:
+            self.w.elapsed+=duration
         if duration>0:
             self.w.waittimer(duration)
             Sample.addallhistory("{%ds}"%duration)
