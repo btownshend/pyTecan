@@ -93,7 +93,7 @@ class Experiment(object):
             # print no sanitize needed
             self.w.comment("Sanitize not needed cleanTips=%d"%self.cleanTips)
             return
-        self.w.comment("Sanitize")
+        self.w.comment("Sanitize (cleanTips=%d)"%self.cleanTips)
         self.w.wash(15,1,2)
         fixedWells=[]
         for i in range(4):
