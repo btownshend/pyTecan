@@ -211,14 +211,20 @@ class TRP(object):
         'Pause for incubations, mixing at regular intervals'
         ssrc=findsamps(src,False)
         self.e.starttimer()
-        while dur>mixTime:
-            self.e.waittimer(mixTime)
-            self.e.starttimer()
-            dur=dur-mixTime
-            for s in ssrc:
-                self.e.mix(s,nmix=2)
-            self.e.w.flushQueue()
-
+        if dur>mixTime:
+            # Will need at least one mix
+            # Get clean tips
+            self.e.sanitize()
+            while dur>mixTime:
+                if len(src)<=4:
+                    # Fake that they are clean so we can reuse them for each mix
+                    self.e.cleanTips=0xf
+                self.e.waittimer(mixTime)
+                self.e.starttimer()
+                dur=dur-mixTime
+                for s in ssrc:
+                    self.e.mix(s,nmix=2)
+                self.e.w.flushQueue()
         self.e.waittimer(dur)
 
     def bindBeads(self,src,beads="Dynabeads",buffer="BeadBuffer",incTime=60,addBuffer=False):
@@ -252,20 +258,26 @@ class TRP(object):
         self.intervalMix(src,incTime) # Wait for binding
 
 
-    def beadWash(self,src,washTgt=None,sepTime=30,residualVolume=10,keepWash=False,numWashes=2,wash="Water",washVol=50,washTime=60):
+    def beadWash(self,src,washTgt=None,sepTime=30,residualVolume=10,keepWash=False,numWashes=2,wash="Water",washVol=50):
         [src,wash]=listify([src,wash])
         ssrc=findsamps(src,False)
+        # Do all washes while on magnet
+        self.e.magmove(True)	# Move to magnet
+        self.e.pause(sepTime)	# Wait for separation
+
         if any([s.volume>residualVolume for s in ssrc]):
             if keepWash:
                 if washTgt==None:
                     washTgt=[]
                     for i in range(len(src)):
                         washTgt.append("%s.Wash"%src[i])
-                sWashTgt=findsamps(washTgt,plate=self.e.DILPLATE)
+                if any([s.volume-residualVolume+numWashes*(washVol-residualVolume) > self.e.DILPLATE.maxVolume-20 for s in ssrc]):
+                    print "Saving %.1f ul of wash in eppendorfs"%(numWashes*washVol)
+                    sWashTgt=findsamps(washTgt,plate=self.e.EPPENDORFS)
+                else:
+                    sWashTgt=findsamps(washTgt,plate=self.e.DILPLATE)
             
             # Separate and remove supernatant
-            self.e.magmove(True)	# Move to magnet
-            self.e.pause(sepTime)	# Wait for separation
 
             # Remove the supernatant
             for i in range(len(ssrc)):
@@ -276,16 +288,13 @@ class TRP(object):
                         sWashTgt[i].setHasBeads()   # To have it mixed before any aspirations
                     else:
                         self.e.dispose((ssrc[i].volume-residualVolume)/ASPIRATEFACTOR,ssrc[i])	# Discard supernatant
-            self.e.magmove(False)	# Take off magnet
                 
         # Wash
         swash=findsamps(wash,False)
         for washnum in range(numWashes):
             for i in range(len(ssrc)):
-                self.e.transfer(washVol-ssrc[i].volume,swash[i],ssrc[i],mix=(False,True))	# Add wash
+                self.e.transfer(washVol-ssrc[i].volume,swash[i],ssrc[i],mix=(False,False))	# Add wash
 
-            self.e.pause(washTime)
-            self.e.magmove(True)	# Back to magnet
             self.e.pause(sepTime)
 
             for i in range(len(ssrc)):
@@ -294,7 +303,8 @@ class TRP(object):
                     sWashTgt[i].conc=None	# Allow it to be reused
                 else:
                     self.e.dispose((ssrc[i].volume-residualVolume)/ASPIRATEFACTOR,ssrc[i])	# Remove wash
-            self.e.magmove(False)	# Take off magnet
+
+        self.e.magmove(False)	# Take off magnet
 
         # Should only be residualVolume left with beads now
         if keepWash:
