@@ -348,27 +348,29 @@ class Sample(object):
             else:
                 height=self.plate.getliquidheight(self.volume)
                 if height==None:
-                    height=2		# Guess...
-                mixheight=math.floor(height-1.2)			# At least 1.2mm below liquid height
-                if mixheight<2:
-                    mixheight=2
-                blowheight=math.ceil(height+1)			# At least 1mm above surface
-                mixLC=liquidclass.LC("Mix_%d"%mixheight)
-                blowoutLC=liquidclass.LC("Blowout_%d"%blowheight)
-                blowvol=20
-                w.aspirateNC(tipMask,well,self.airLC,2*(blowvol+0.1),self.plate)
-                if self.volume<30:
                     w.mix(tipMask,well,self.mixLC,mixvol,self.plate,nmix)
-                    self.history+="(MB)"
+                    self.history+="(MB*)"
                 else:
-                    for i in range(nmix):
-                        w.aspirateNC(tipMask,well,mixLC,mixvol,self.plate)
-                        w.dispense(tipMask,well,mixLC,mixvol,self.plate)
-                    self.history+="(M@%d)"%(mixheight)
-                w.dispense(tipMask,well,blowoutLC,blowvol,self.plate)
-                w.dispense(tipMask,well,mixLC,0.1,self.plate)
-                w.dispense(tipMask,well,blowoutLC,blowvol,self.plate)
-                w.dispense(tipMask,well,mixLC,0.1,self.plate)
+                    mixheight=math.floor(height-1)			# At least 1mm below liquid height
+                    if mixheight<2:
+                        mixheight=2
+                    blowheight=math.ceil(height)			# Anywhere above
+#                    print 'Vol=%.1f ul, height=%.1f mm, mix=%d, blow=%d'%(self.volume,height,mixheight,blowheight)
+                    mixLC=liquidclass.LC("Mix_%d"%mixheight)
+                    dipLC=liquidclass.LC("Dip")
+                    blowoutLC=liquidclass.LC("Blowout_%d"%blowheight)
+                    blowvol=20
+                    w.aspirateNC(tipMask,well,self.airLC,(blowvol+0.1),self.plate)
+                    if self.volume<30:
+                        w.mix(tipMask,well,self.mixLC,mixvol,self.plate,nmix)
+                        self.history+="(MB)"
+                    else:
+                        for i in range(nmix):
+                            w.aspirateNC(tipMask,well,mixLC,mixvol,self.plate)
+                            w.dispense(tipMask,well,mixLC,mixvol,self.plate)
+                        self.history+="(M@%d)"%(mixheight)
+                    w.dispense(tipMask,well,blowoutLC,blowvol,self.plate)
+                    w.dispense(tipMask,well,dipLC,0.1,self.plate)
 
             tiphistory[tipMask]+=" %s-Mix[%d]"%(self.name,mixvol)
             if not self.hasBeads:
