@@ -275,19 +275,24 @@ class TRP(object):
         # Do all washes while on magnet
         self.e.magmove(True)	# Move to magnet
         self.sepWait(ssrc,sepTime)
+        if keepWash:
+            if washTgt==None:
+                washTgt=[]
+                for i in range(len(src)):
+                    washTgt.append("%s.Wash"%src[i])
+            if any([s.volume-residualVolume+numWashes*(washVol-residualVolume) > self.e.DILPLATE.maxVolume-20 for s in ssrc]):
+                print "Saving %.1f ul of wash in eppendorfs"%(numWashes*washVol)
+                sWashTgt=findsamps(washTgt,plate=self.e.EPPENDORFS,unique=True)
+            else:
+                sWashTgt=findsamps(washTgt,plate=self.e.DILPLATE,unique=True)
+
+        if keepFinal:
+            if finalTgt==None:
+                finalTgt=[]
+                for i in range(len(src)):
+                    finalTgt.append("%s.Final"%src[i])
 
         if any([s.volume>residualVolume for s in ssrc]):
-            if keepWash:
-                if washTgt==None:
-                    washTgt=[]
-                    for i in range(len(src)):
-                        washTgt.append("%s.Wash"%src[i])
-                if any([s.volume-residualVolume+numWashes*(washVol-residualVolume) > self.e.DILPLATE.maxVolume-20 for s in ssrc]):
-                    print "Saving %.1f ul of wash in eppendorfs"%(numWashes*washVol)
-                    sWashTgt=findsamps(washTgt,plate=self.e.EPPENDORFS)
-                else:
-                    sWashTgt=findsamps(washTgt,plate=self.e.DILPLATE)
-            
             # Separate and remove supernatant
 
             # Remove the supernatant
@@ -303,9 +308,17 @@ class TRP(object):
         # Wash
         swash=findsamps(wash,False)
         for washnum in range(numWashes):
-            for i in range(len(ssrc)):
-                self.e.transfer(washVol-ssrc[i].volume,swash[i],ssrc[i],mix=(False,False))	# Add wash
+            if keepFinal and washnum==numWashes-1:
+                'Retain sample of final'
+                self.e.magmove(False)
+                for i in range(len(ssrc)):
+                    self.e.transfer(washVol-ssrc[i].volume,swash[i],ssrc[i],mix=(False,True))	# Add wash
 
+                self.saveSamps(src=src,tgt=finalTgt,vol=keepVol,dil=keepDil,plate=Experiment.DILPLATE)
+                self.e.magmove(True)
+            else:
+                for i in range(len(ssrc)):
+                    self.e.transfer(washVol-ssrc[i].volume,swash[i],ssrc[i],mix=(False,False))	# Add wash
 
             self.sepWait(ssrc,sepTime)
                 
@@ -319,8 +332,13 @@ class TRP(object):
         self.e.magmove(False)	# Take off magnet
 
         # Should only be residualVolume left with beads now
+        result=[]
         if keepWash:
-            return washTgt
+            result=result+washTgt
+        if keepFinal:
+            result=result+finalTgt
+
+        return result
 
     def beadAddElutant(self,src,elutant="Water",elutionVol=30,eluteTime=60):
         [src,elutionVol,elutant]=listify([src,elutionVol,elutant])
