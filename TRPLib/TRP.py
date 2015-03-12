@@ -65,7 +65,7 @@ def uniqueTargets(tgts):
                     break
     return tgts
 
-def findsamps(x,createIfMissing=True,plate=Experiment.SAMPLEPLATE):
+def findsamps(x,createIfMissing=True,plate=Experiment.SAMPLEPLATE,unique=False):
     'Find or create samples for given sample names'
     s=[]
     for i in x:
@@ -76,6 +76,9 @@ def findsamps(x,createIfMissing=True,plate=Experiment.SAMPLEPLATE):
             else:
                 print "Unable to locate sample '%s'"%i
                 assert(False)
+        elif unique and t.volume>0:
+            print "findsamps(%s) -> sample already exists and contains %.1ful but unique flag was set"%(i,t.volume)
+            assert(False)
         s.append(t)
     return s
 
@@ -136,7 +139,7 @@ class TRP(object):
         if plate==None:
             plate=self.e.REAGENTPLATE
             
-        stgt=findsamps(tgt,True,plate)
+        stgt=findsamps(tgt,True,plate,unique=True)
         ssrc=findsamps(src,False)
 
         if dilutant==None:
@@ -160,7 +163,7 @@ class TRP(object):
         tgt=uniqueTargets(tgt)
 
         # Convert sample names to actual samples
-        stgt=findsamps(tgt)
+        stgt=findsamps(tgt,unique=True)
         ssrc=findsamps(src,False)
         self.e.w.comment("runT7: source=%s"%[str(s) for s in ssrc])
 
@@ -331,9 +334,8 @@ class TRP(object):
         if len(tgt)==0:
             for i in range(len(src)):
                 tgt.append("%s.SN"%src[i])
-
         ssrc=findsamps(src,False)
-        stgt=findsamps(tgt,plate=plate)
+        stgt=findsamps(tgt,plate=plate,unique=True)
 
         self.e.magmove(True)	# Move to magnet
         self.e.pause(sepTime)	# Wait for separation
@@ -382,7 +384,7 @@ class TRP(object):
                     tgt.append("%s.RT-"%src[i])
 
         tgt=uniqueTargets(tgt)
-        stgt=findsamps(tgt)
+        stgt=findsamps(tgt,unique=True)
         ssrc=findsamps(src,False)
 
         #    e.stage('MPosRT',[self.r.MOSBuffer,self.r.MOS],[],[self.r.MPosRT],ASPIRATEFACTOR*(self.vol.RT*nRT/2)/2+self.vol.Extra+MULTIEXCESS,2)
@@ -412,7 +414,7 @@ class TRP(object):
             tgt=["%s.%s"%(src[i],master[i]) for i in range(len(src))]
 
         tgt=uniqueTargets(tgt)
-        stgt=findsamps(tgt)
+        stgt=findsamps(tgt,unique=True)
         ssrc=findsamps(src,False)
         smaster=findsamps(master,False)
 
@@ -469,7 +471,7 @@ class TRP(object):
             tgt=["%s.P%c%c"%(src[i],prefix[i],suffix[i]) for i in range(len(src))]
 
         tgt=uniqueTargets(tgt)
-        stgt=findsamps(tgt)
+        stgt=findsamps(tgt,unique=True)
         #print "stgt[0]=",str(stgt[0])
         ssrc=findsamps(src,False)
         
@@ -520,9 +522,9 @@ class TRP(object):
             tgt=["%s.D%.0f"%(src[i],srcdil[i]) for i in range(len(src))]
         tgt=uniqueTargets(tgt)
         if dilPlate:
-            stgt=findsamps(tgt,True,Experiment.DILPLATE)
+            stgt=findsamps(tgt,True,Experiment.DILPLATE,unique=True)
         else:
-            stgt=findsamps(tgt,True,Experiment.SAMPLEPLATE)
+            stgt=findsamps(tgt,True,Experiment.SAMPLEPLATE,unique=True)
         ssrc=findsamps(src,False)
 
         ssdvol=[v/Reagents.SSD.conc.dilutionneeded() for v in vol]
@@ -555,7 +557,7 @@ class TRP(object):
                         sampname="%s.Q%s"%(src[i],p)
                     else:
                         sampname="%s.Q%s.%d"%(src[i],p,repl+1)
-                    tgt=findsamps([sampname],True,Experiment.QPCRPLATE)
+                    tgt=findsamps([sampname],True,Experiment.QPCRPLATE,unique=True)
                     all=all+[(ssrc[i],tgt[0],p,vol[i])]
 
         # Fill the master mixes
