@@ -335,7 +335,7 @@ class TRP(object):
         # Go through some cycles of waiting, mixing
         self.intervalMix(src,eluteTime)
 
-    def beadSupernatant(self,src,tgt=None,sepTime=30,residualVolume=10,plate=None):
+    def beadSupernatant(self,src,tgt=None,sepTime=None,residualVolume=10,plate=None):
         if tgt==None:
             tgt=[]
 
