@@ -190,7 +190,7 @@ class TRP(object):
         if stopmaster==None:
             stopmaster=["MStpS_NT" if t==0 else "MStpS_WT" for t in theo]
             
-        stgt=findsamps(tgt)
+        stgt=findsamps(tgt,False)
 
         ## Stop
         sstopmaster=findsamps(stopmaster,False)
