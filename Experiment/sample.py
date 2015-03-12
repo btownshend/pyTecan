@@ -4,6 +4,8 @@ import liquidclass
 from worklist import WorkList
 from concentration import Concentration
 
+
+MAXVOLUME=200
 ASPIRATEFACTOR=1.02
 ASPIRATEEXTRA=1.0
 #MINLIQUIDDETECTVOLUME=70
@@ -338,7 +340,14 @@ class Sample(object):
         if self.isMixed:
             #print "Sample %s is already mixed"%self.name
             return False
-        mixvol=self.volume;  # -self.plate.unusableVolume;  # Can mix entire volume, if air is aspirated, it will just be dispensed first without making a bubble
+        blowvol=20
+        extraspace=blowvol+0.1
+        if preaspirateAir:
+            extraspace+=5
+        mixvol=self.volume		  # -self.plate.unusableVolume;  # Can mix entire volume, if air is aspirated, it will just be dispensed first without making a bubble
+        if self.volume>MAXVOLUME-extraspace:
+            mixvol=MAXVOLUME-extraspace
+            print "Warning: Mix of %s limited to %.0f ul instead of full volume of %.0ful"%(self.name,mixvol,self.volume)
         well=[self.well if self.well!=None else 2**(tipMask-1)-1 ]
         if mixvol<self.plate.unusableVolume:
             #print "Not enough volume in sample %s to mix"%self.name
@@ -365,7 +374,6 @@ class Sample(object):
                     mixLC=liquidclass.LC("Mix_%d"%mixheight)
                     dipLC=liquidclass.LC("Dip")
                     blowoutLC=liquidclass.LC("Blowout_%d"%blowheight)
-                    blowvol=20
                     w.aspirateNC(tipMask,well,self.airLC,(blowvol+0.1),self.plate)
                     if self.volume<30:
                         w.mix(tipMask,well,self.mixLC,mixvol,self.plate,nmix)
