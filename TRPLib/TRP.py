@@ -185,7 +185,7 @@ class TRP(object):
         self.e.w.pyrun('PTC\\ptcsetpgm.py %s TEMP@37,%d TEMP@25,2'%(pgm,dur*60))
         self.e.runpgm(pgm,dur, False,vol)
 
-    def runT7Stop(self,theo,vol,tgt,stopmaster=None):
+    def runT7Stop(self,theo,tgt,stopmaster=None):
         [theo,tgt,stopmaster]=listify([theo,tgt,stopmaster])
         if stopmaster==None:
             stopmaster=["MStpS_NT" if t==0 else "MStpS_WT" for t in theo]
@@ -207,7 +207,7 @@ class TRP(object):
         [theo,src,tgt,srcdil,stopmaster]=listify([theo,src,tgt,srcdil,stopmaster])
         tgt=self.runT7Setup(theo,src,vol,srcdil,tgt)
         self.runT7Pgm(vol,dur)
-        tgt=self.runT7Stop(theo,vol,tgt,stopmaster)
+        tgt=self.runT7Stop(theo,tgt,stopmaster)
         return tgt
 
     def intervalMix(self,src,dur,mixTime=60):
