@@ -260,13 +260,21 @@ class TRP(object):
             
         self.intervalMix(src,incTime) # Wait for binding
 
-
-    def beadWash(self,src,washTgt=None,sepTime=30,residualVolume=10,keepWash=False,numWashes=2,wash="Water",washVol=50):
+    def sepWait(self,ssrc,sepTime=None):
+        if sepTime==None:
+            maxvol=max([s.volume for s in ssrc])
+            if maxvol > 50:
+                sepTime=60
+            else:
+                sepTime=30
+        self.e.pause(sepTime)	# Wait for separation
+        
+    def beadWash(self,src,washTgt=None,sepTime=None,residualVolume=10,keepWash=False,numWashes=2,wash="Water",washVol=50,keepFinal=False,finalTgt=None,keepVol=4.2,keepDil=5):
         [src,wash]=listify([src,wash])
         ssrc=findsamps(src,False)
         # Do all washes while on magnet
         self.e.magmove(True)	# Move to magnet
-        self.e.pause(sepTime)	# Wait for separation
+        self.sepWait(ssrc,sepTime)
 
         if any([s.volume>residualVolume for s in ssrc]):
             if keepWash:
@@ -298,8 +306,9 @@ class TRP(object):
             for i in range(len(ssrc)):
                 self.e.transfer(washVol-ssrc[i].volume,swash[i],ssrc[i],mix=(False,False))	# Add wash
 
-            self.e.pause(sepTime)
 
+            self.sepWait(ssrc,sepTime)
+                
             for i in range(len(ssrc)):
                 if keepWash:
                     self.e.transfer((ssrc[i].volume-residualVolume)/ASPIRATEFACTOR,ssrc[i],sWashTgt[i])	# Remove wash
@@ -338,7 +347,7 @@ class TRP(object):
         stgt=findsamps(tgt,plate=plate,unique=True)
 
         self.e.magmove(True)	# Move to magnet
-        self.e.pause(sepTime)	# Wait for separation
+        self.sepWait(ssrc,sepTime)
 
         for i in range(len(ssrc)):
             self.e.transfer((ssrc[i].volume-residualVolume)/ASPIRATEFACTOR,ssrc[i],stgt[i])	# Transfer elution to new tube
