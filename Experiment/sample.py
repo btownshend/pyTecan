@@ -77,10 +77,16 @@ class Sample(object):
     def __init__(self,name,plate,well=None,conc=None,volume=0,liquidClass=liquidclass.LCDefault):
         if well==None:
             # Find first unused well
+            found=False
             well=0
-            for s in __allsamples:
-                if s.plate==plate and s.well>=well:
-                    well=s.well+1
+            while not found:
+                found=True
+                for s in __allsamples:
+                    if s.plate==plate and s.well==well:
+                        well=well+1
+                        found=False
+                        break
+                    
         elif well==-1:
             well=None
                     
