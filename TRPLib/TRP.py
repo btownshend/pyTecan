@@ -447,10 +447,8 @@ class TRP(object):
         self.runLigPgm(max(vol),ligtemp)
         return tgt
         
-    def runLigPgm(self,vol,ligtemp):
-        if ligtemp==25:
-            pgm="LIG15RT"
-        else:
+    def runLigPgm(self,vol,ligtemp,inactivate=True):
+        if inactivate:
             pgm="LIG15-%.0f"%ligtemp
             self.e.w.pyrun('PTC\\ptcsetpgm.py %s TEMP@%.0f,900 TEMP@65,600 TEMP@25,30'%(pgm,ligtemp))
         
@@ -467,8 +465,8 @@ class TRP(object):
 
         ## Add ligase
         self.runRxOnBeads(src,vol,"MLigase")
-        self.runLigPgm(max(vol),ligtemp)
-        
+        self.runLigPgm(max(vol),ligtemp,inactivate=False)	# Do not heat inactivate since it may denature the beads
+
     def runPCR(self,prefix,src,vol,srcdil,tgt=None,ncycles=20,suffix='S'):
         if tgt==None:
             tgt=[]
