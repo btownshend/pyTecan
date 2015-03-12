@@ -138,7 +138,7 @@ for i=1:length(sel)
   for k=1:length(o)
     nmk=samp.ingredients{o(k)};
     map(nmk)=vols(k);
-    if ~any(strcmp(nmk,{'SSD','MPosRT','MNegRT'})) && ~strncmp(upper(nmk),'WATER',5) && ~strncmp(nmk,'MQ',2)  && ~strncmp(nmk,'MLig',4) && ~strncmp(nmk,'MStp',4) && ~strcmp(nmk,'Dynabeads')
+    if ~any(strcmp(nmk,{'SSD','MPosRT','MNegRT'})) && ~strncmp(upper(nmk),'WATER',5) && ~strncmp(nmk,'MQ',2)  && ~strncmp(nmk,'MLig',4) && ~strncmp(nmk,'MStp',4) && ~strcmp(nmk,'Dynabeads') && ~strcmp(nmk,'BeadBuffer')
       if nmk(1)=='M'
         rdilstr=data.samps(find(strcmp({data.samps.name},nmk))).concentration;
         if rdilstr(end)~='x'
