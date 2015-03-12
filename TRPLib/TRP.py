@@ -355,9 +355,9 @@ class TRP(object):
         self.e.magmove(False)
         return tgt
     
-    def runRT(self,pos,src,vol,srcdil,tgt=None):
+    def runRT(self,pos,src,vol,srcdil,tgt=None,dur=20):
         result=self.runRTSetup(pos,src,vol,srcdil,tgt)
-        self.runRTPgm
+        self.runRTPgm(dur)
         return result
     
     def runRxOnBeads(self,src,vol,master):
@@ -376,10 +376,10 @@ class TRP(object):
         for i in range(len(ssrc)):
             self.e.transfer(mastervol[i],smaster[i],ssrc[i],(False,True))
 
-    def runRTOnBeads(self,src,vol):
+    def runRTOnBeads(self,src,vol,dur=20):
         'Run RT on beads in given volume'
         self.runRxOnBeads(src,vol,"MPosRT")
-        self.runRTPgm()
+        self.runRTPgm(dur)
         
     def runRTSetup(self,pos,src,vol,srcdil,tgt=None):
         if tgt==None:
@@ -404,8 +404,7 @@ class TRP(object):
             self.e.stage('RTNeg',[self.r.MNegRT],[ssrc[i] for i in range(len(ssrc)) if not pos[i]],[stgt[i] for i in range(len(stgt)) if not pos[i]],[vol[i] for i in range(len(vol)) if not pos[i]])
         return tgt
 
-    def runRTPgm(self):
-        dur=20
+    def runRTPgm(self,dur=20):
         pgm="TRP37-%d"%dur
         self.e.w.pyrun('PTC\\ptcsetpgm.py %s TEMP@37,%d TEMP@25,2'%(pgm,dur*60))
         self.e.runpgm("TRP37-%d"%dur,dur,False,100)		# Volume doesn't matter since it's just an incubation, use 100ul
