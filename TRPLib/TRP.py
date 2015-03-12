@@ -545,8 +545,13 @@ class TRP(object):
 #        print "srcdil=",srcdil,", ssdvol=",ssdvol,", srcvol=", srcvol, ", watervol=", watervol
         self.e.multitransfer(watervol,self.e.WATER,stgt,(False,False))
         self.e.multitransfer(ssdvol,Reagents.SSD,stgt,(False,False))
+        
         for i in range(len(ssrc)):
             stgt[i].conc=None		# Assume dilutant does not have a concentration of its own
+            # Check if we can align the tips here
+            if i<len(ssrc)-3 and stgt[i].well+1==stgt[i+1].well and stgt[i].well+2==stgt[i+2].well and stgt[i].well+3==stgt[i+3].well and stgt[i].well%4==0 and self.e.cleanTips!=15:
+                print "Aligning tips"
+                self.e.sanitize()
             self.e.transfer(srcvol[i],ssrc[i],stgt[i],(True,True))
             if stgt[i].conc != None:
                 stgt[i].conc.final=None	# Final conc are meaningless now
@@ -563,8 +568,8 @@ class TRP(object):
         # Build a list of sets to be run
         all=[]
         for repl in range(nreplicates):
-            for i in range(len(ssrc)):
-                for p in primers:
+            for p in primers:
+                for i in range(len(ssrc)):
                     if repl==0:
                         sampname="%s.Q%s"%(src[i],p)
                     else:
@@ -582,11 +587,13 @@ class TRP(object):
             dil[p]=1.0/(1-1/mq.conc.dilutionneeded())
             
         # Add the samples
-        for s in ssrc:
-            t=[a[1] for a in all if a[0]==s]
-            v=[a[3]/dil[a[2]] for a in all if a[0]==s]
-            for i in range(len(t)):
-                t[i].conc=None		# Concentration of master mix is irrelevant now
-                self.e.transfer(v[i],s,t[i],(False,False))
-        
+        self.e.sanitize()		# In case we are aligned
+        for a in all:
+            s=a[0]
+            t=a[1]
+            p=a[2]
+            v=a[3]/dil[p]
+            t.conc=None		# Concentration of master mix is irrelevant now
+            self.e.transfer(v,s,t,(False,False))
+            
         return [a[1] for a in all]
