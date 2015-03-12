@@ -235,7 +235,7 @@ class WorkList(object):
             
         if self.delayEnabled and allowDelay:
             self.opQueue.append([op,tipMask,wells,liquidClass,volume,loc,cycles])
-            self.comment("*Queued: %s tip=%d well=%s.%s vol=%s lc=%s"%(op,tipMask,str(loc),str(wells),str(volume),str(liquidClass)))
+#            self.comment("*Queued: %s tip=%d well=%s.%s vol=%s lc=%s"%(op,tipMask,str(loc),str(wells),str(volume),str(liquidClass)))
             return
 
         if op=='Mix':
