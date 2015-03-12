@@ -324,7 +324,7 @@ class Experiment(object):
             print "ERROR: Attempt to start a progam on PTC when it is already running"
             assert(False)
         if len(pgm)>8:
-            print "ERROR: PTC program name too long"
+            print "ERROR: PTC program name (%s) too long (max is 8 char)"%pgm
             assert(False)
         # move to thermocycler
         self.w.flushQueue()
