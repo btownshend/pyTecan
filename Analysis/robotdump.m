@@ -80,7 +80,7 @@ for i=1:length(data.results)
       usamp.yield=s.yield;
       usamp.cleavage=s.cleavage;
       if isfield(usamp,'MX')
-        usamp.rnagain=s.yield/usamp.MX.conc;
+        usamp.rnagain=s.yield/nanmean([usamp.MX.conc]);
       end
     else
       fprintf('Unable to find summary data for template %s\n', usamp.tmpl);

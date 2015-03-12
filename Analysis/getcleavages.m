@@ -77,7 +77,7 @@ for i=1:length(utmpls)
     end
     lig.cleavage=clvd/(clvd+unclvd);
     lig.yield=yield;
-    lig.rnagain=yield/t.(thepair{1}).conc;
+    lig.rnagain=yield/nanmean([t.(thepair{1}).conc]);
     
     data.results{indlig(ii)}=lig;
   end
