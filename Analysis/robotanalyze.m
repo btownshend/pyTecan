@@ -149,7 +149,7 @@ if fd>0
       continue;
     end
     name=line(1:commas(1)-1);
-    lens=struct('MX',[],'WX',[],'AX',[],'BX',[]);
+    lens=struct('MX',[],'WX',[],'AX',[],'BX',[],'T7X',[]);
     commas(end+1)=length(line)+1;
     for k=2:length(commas)
       seq=line(commas(k-1)+1:commas(k)-1);
@@ -158,9 +158,11 @@ if fd>0
         fprintf('Bad seq "%s"\n  Expected GCTGTC*GACAGC\n',seq);
         continue;
       end
-      lens.WX(end+1)=35+length(seq)+17;
-      lens.AX(end+1)=56+length(seq)+17;
-      lens.BX(end+1)=56+length(seq)+17;
+      lenX=17; lenT7=24; lenW=11; lenA=21;lenB=21;
+      lens.WX(end+1)=lenT7+lenW+length(seq)+lenX;
+      lens.AX(end+1)=lenA+lenT7+lenW+length(seq)+lenX;
+      lens.BX(end+1)=lenB+lenT7+lenW+length(seq)+lenX;
+      lens.T7X(end+1)=lenT7+lenW+length(seq)+lenX;
       mstart=strfind(seq,'TCCGGTCTGATGAGTCC');
       if isempty(mstart)
         fprintf('Unable to locate MidPrimer in %s: %s\n', name,seq);
