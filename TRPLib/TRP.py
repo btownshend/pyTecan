@@ -451,8 +451,14 @@ class TRP(object):
         if inactivate:
             pgm="LIG15-%.0f"%ligtemp
             self.e.w.pyrun('PTC\\ptcsetpgm.py %s TEMP@%.0f,900 TEMP@65,600 TEMP@25,30'%(pgm,ligtemp))
-        
-        self.e.runpgm(pgm,27,False,vol,hotlidmode="TRACKING",hotlidtemp=10)
+            self.e.runpgm(pgm,27,False,vol,hotlidmode="TRACKING",hotlidtemp=10)
+        elif ligtemp==25:
+            self.e.w.comment('Ligation at room temp')
+            self.e.pause(15*60)
+        else:
+            pgm="TRP%.0f-15"%ligtemp
+            self.e.w.pyrun('PTC\\ptcsetpgm.py %s TEMP@%.0f,900 TEMP@25,30'%(pgm,ligtemp))
+            self.e.runpgm(pgm,17,False,vol,hotlidmode="TRACKING",hotlidtemp=10)
 
     def runLigOnBeads(self,src,vol,ligmaster,anneal=True,ligtemp=25):
         'Run ligation on beads'
