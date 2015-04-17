@@ -534,15 +534,21 @@ class TRP(object):
         self.e.w.pyrun('PTC\\ptcsetpgm.py %s TEMP@95,120 TEMP@95,10 TEMP@%f,10 GOTO@2,%d TEMP@72,120 TEMP@25,2'%(pgm,annealtemp,ncycles-1))
         self.e.runpgm(pgm,4.80+1.55*ncycles,False,max(vol),hotlidmode="CONSTANT",hotlidtemp=100)
     
-    def diluteInPlace(self,tgt,dil):
+    def diluteInPlace(self,tgt,dil=None,finalvol=None):
         # Dilute in place
         # e.g.: trp.diluteInPlace(tgt=rt1,dil=2)
-        [tgt,dil]=listify([tgt,dil])
+        [tgt,dil,finalvol]=listify([tgt,dil,finalvol])
         tgt=uniqueTargets(tgt)
         stgt=findsamps(tgt,False)
         dilutant=self.e.WATER
         for i in range(len(stgt)):
-            self.e.transfer(stgt[i].volume*(dil[i]-1),dilutant,stgt[i],mix=(False,True))
+            if finalvol[i]!=None and dil[i]==None:
+                self.e.transfer(finalvol[i]-stgt[i].volume,dilutant,stgt[i],mix=(False,True))
+            elif finalvol[i]==None and dil[i]!=None:
+                self.e.transfer(stgt[i].volume*(dil[i]-1),dilutant,stgt[i],mix=(False,True))
+            else:
+                print "diluteInPlace: cannot specify both dil and finalvol"
+                assert(False)
         return tgt   #  The name of the samples are unchanged -- the predilution names
         
     def runQPCRDIL(self,src,vol,srcdil,tgt=None,dilPlate=False):
