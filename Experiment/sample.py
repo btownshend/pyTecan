@@ -309,10 +309,10 @@ class Sample(object):
             tiphistory[tip]=fstr
 
     @staticmethod
-    def addallhistory(msg,addToEmpty=False,onlyplate=None):
+    def addallhistory(msg,addToEmpty=False,onlyplate=None,onlybeads=False):
         'Add history entry to all samples (such as # during thermocycling)'
         for s in __allsamples:
-            if onlyplate==None or onlyplate==s.plate.name:
+            if (onlyplate==None or onlyplate==s.plate.name) and (not onlybeads or s.hasBeads):
                 if len(s.history)>0:
                     s.history+=" "+msg
                 elif addToEmpty:
