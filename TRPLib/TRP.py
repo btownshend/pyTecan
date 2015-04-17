@@ -416,6 +416,10 @@ class TRP(object):
         stgt=findsamps(tgt,unique=True)
         ssrc=findsamps(src,False)
 
+        # Adjust source dilution
+        for i in range(len(ssrc)):
+            ssrc[i].conc=Concentration(srcdil[i],1)
+            
         #    e.stage('MPosRT',[self.r.MOSBuffer,self.r.MOS],[],[self.r.MPosRT],ASPIRATEFACTOR*(self.vol.RT*nRT/2)/2+self.vol.Extra+MULTIEXCESS,2)
         #    e.stage('MNegRT',[self.r.MOSBuffer],[],[self.r.MNegRT],ASPIRATEFACTOR*(self.vol.RT*negRT)/2+self.vol.Extra+MULTIEXCESS,2)
         if any(p for p in pos):
