@@ -42,3 +42,5 @@ SELEX/analyticTRP1.m
 SELEX/analyticTRP_2tp.m
 
 SELEX/NGSTRP3.m
+
+Analysis/getctold.m
