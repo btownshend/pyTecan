@@ -230,8 +230,8 @@ class TRP(object):
                 self.e.w.flushQueue()
         self.e.waittimer(dur)
 
-    def bindBeads(self,src,beads="Dynabeads",buffer="BeadBuffer",incTime=60,addBuffer=False):
-        [src,beads,buffer]=listify([src,beads,buffer])
+    def bindBeads(self,src,beads="Dynabeads",beadConc=None,buffer="BeadBuffer",incTime=60,addBuffer=False):
+        [src,beads,buffer,beadConc]=listify([src,beads,buffer,beadConc])
 
         ssrc=findsamps(src,False)
         for s in ssrc:
@@ -250,7 +250,9 @@ class TRP(object):
         else:
             buffervol=[0.0 for i in range(len(ssrc))]
 
-        beadvol=[(ssrc[i].volume+buffervol[i])/(sbeads[i].conc.dilutionneeded()-1) for i in range(len(ssrc))]
+        beadConc=[sbeads[i].conc.final if beadConc[i]==None else beadConc[i] for i in range(len(sbeads))]
+        beadvol=[(ssrc[i].volume+buffervol[i])/(sbeads[i].conc.stock/beadConc[i]-1) for i in range(len(ssrc))]
+
         # Transfer the beads
         for i in range(len(ssrc)):
             sbeads[i].isMixed=False	# Force a mix
