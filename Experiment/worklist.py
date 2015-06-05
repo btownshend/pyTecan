@@ -560,7 +560,7 @@ class WorkList(object):
         self.execute("C:\Python27\python.exe C:\cygwin\Home\Admin\%s"%cmd,resultvar="ecode")
         self.condition("ecode","==","0",label)
         msg='Python command %s failed with ecode=~ecode~'%cmd
-        self.email(dest='robot',subject=msg)
+        self.email(dest='cdsrobot@gmail.com',subject=msg)
         self.userprompt(msg)
         self.comment(label)
 
