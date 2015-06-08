@@ -187,12 +187,16 @@ class TRP(object):
         self.e.w.pyrun('PTC\\ptcsetpgm.py %s TEMP@37,%d TEMP@25,2'%(pgm,dur*60))
         self.e.runpgm(pgm,dur, False,vol)
 
-    def runT7Stop(self,theo,tgt,stopmaster=None):
-        [theo,tgt,stopmaster]=listify([theo,tgt,stopmaster])
+    def runT7Stop(self,theo,tgt,stopmaster=None,srcdil=2):
+        [theo,tgt,stopmaster,srcdil]=listify([theo,tgt,stopmaster,srcdil])
         if stopmaster==None:
             stopmaster=["MStpS_NT" if t==0 else "MStpS_WT" for t in theo]
             
         stgt=findsamps(tgt,False)
+
+        # Adjust source dilution
+        for i in range(len(stgt)):
+            stgt[i].conc=Concentration(srcdil[i],1)
 
         ## Stop
         sstopmaster=findsamps(stopmaster,False)
@@ -456,8 +460,12 @@ class TRP(object):
         minsrcdil=1/(1-1/smaster[0].conc.dilutionneeded()-1/self.r.MLigase.conc.dilutionneeded())
         for i in srcdil:
             if i<minsrcdil:
-                print "runLig: srcdil=%.2f, but must be at least %.2f"%(i,minsrcdil)
+                print "runLig: srcdil=%.2f, but must be at least %.2f based on concentrations of master mixes"%(i,minsrcdil)
                 assert(False)
+
+        # Adjust source dilution
+        for i in range(len(ssrc)):
+            ssrc[i].conc=Concentration(srcdil[i],1)
 
         i=0
         while i<len(stgt):
