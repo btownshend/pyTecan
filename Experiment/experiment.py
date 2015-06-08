@@ -383,8 +383,11 @@ class Experiment(object):
             self.w.vector("Microplate Landscape",plate,self.w.SAFETOEND,True,self.w.DONOTMOVE,self.w.OPEN)
         self.w.romahome()
 
-    def shake(self,plate,dur=30,speed=500,accel=1):
+    def shake(self,plate,dur=60,speed=1600,accel=1):
         # Move the plate to the shaker, run for the given time, and bring plate back
+        # Recommended speeds (from http://www.qinstruments.com/en/applications/optimization-of-mixing-parameters.html )
+        #  10% fill:  1800-2200, 25%: 1600-2000, 50%: 1400-1800, 75%: 1200-1600
+        # At 1600, 150ul is ok, but 200ul spills out
         self.shakermove(plate,True)
         self.w.pyrun("BioShake\\bioexec.py setElmLockPos")
         self.w.pyrun("BioShake\\bioexec.py setShakeTargetSpeed%d"%speed)
