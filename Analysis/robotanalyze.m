@@ -150,24 +150,62 @@ if fd>0
     end
     name=line(1:commas(1)-1);
     lens=struct('MX',[],'WX',[],'AX',[],'BX',[],'T7X',[]);
+    primers=struct('M','TCCGGTCTGATGAGTCC','T7W','AATTTAATACGACTCACTATAGGGAAACAAACAAAGCTGTCACCGGA','W','AAACAAACAAAGCTGTCACCGGA','A','CTTTTCCGTATATCTCGCCAG','B','CGGAAATTTCAAAGGTGCTTC','T7','AATTTAATACGACTCACTATAGGG','X','GGACGAAACAGCAAAAAGAAAAATAAAAA','XShort','GGACGAAACAGCAAAAAGAAAA');
     commas(end+1)=length(line)+1;
     for k=2:length(commas)
       seq=line(commas(k-1)+1:commas(k)-1);
       seq=upper(strrep(seq,' ',''));
       if ~strncmp(seq,'GCTGTC',6)
-        fprintf('Bad seq "%s"\n  Expected GCTGTC*GACAGC\n',seq);
-        continue;
-      end
-      lenX=17; lenT7=24; lenW=11; lenA=21;lenB=21;
-      lens.WX(end+1)=lenT7+lenW+length(seq)+lenX;
-      lens.AX(end+1)=lenA+lenT7+lenW+length(seq)+lenX;
-      lens.BX(end+1)=lenB+lenT7+lenW+length(seq)+lenX;
-      lens.T7X(end+1)=lenT7+lenW+length(seq)+lenX;
-      mstart=strfind(seq,'TCCGGTCTGATGAGTCC');
-      if isempty(mstart)
-        fprintf('Unable to locate MidPrimer in %s: %s\n', name,seq);
+        %fprintf('Bad seq "%s"\n  Expected GCTGTC*GACAGC\n',seq);
+        % Use full sequence search
+        mstart=strfind(seq,primers.M);
+        wstart=strfind(seq,primers.W);
+        astart=strfind(seq,primers.A);
+        bstart=strfind(seq,primers.B);
+        t7start=strfind(seq,primers.T7);
+        xstart=strfind(seq,primers.XShort);
+        if isempty(xstart)
+          fprintf('Unable to locate X (%s) in seq: %s\n', primers.X, seq);
+          continue;
+        end
+        if ~isempty(mstart)
+          lens.MX(end+1)=xstart-mstart+length(primers.X);
+        else
+          lens.MX(end+1)=nan;
+        end
+        if ~isempty(wstart)
+          lens.WX(end+1)=xstart-wstart+length(primers.X)+length(primers.T7W)-length(primers.W);
+        else
+          lens.WX(end+1)=nan;
+        end
+        if ~isempty(astart)
+          lens.AX(end+1)=xstart-astart+length(primers.X);
+        else
+          lens.AX(end+1)=nan;
+        end
+        if ~isempty(bstart)
+          lens.BX(end+1)=xstart-bstart+length(primers.X);
+        else
+          lens.BX(end+1)=nan;
+        end
+        if ~isempty(t7start)
+          lens.T7X(end+1)=xstart-t7start+length(primers.X);
+        else
+          lens.T7X(end+1)=nan;
+        end
       else
-        lens.MX(end+1)=length(seq)+1-mstart(1)+17;
+        % Compute
+        lenX=17; lenT7=24; lenW=11; lenA=21;lenB=21;
+        lens.WX(end+1)=lenT7+lenW+length(seq)+lenX;
+        lens.AX(end+1)=lenA+lenT7+lenW+length(seq)+lenX;
+        lens.BX(end+1)=lenB+lenT7+lenW+length(seq)+lenX;
+        lens.T7X(end+1)=lenT7+lenW+length(seq)+lenX;
+        mstart=strfind(seq,primers.M);
+        if isempty(mstart)
+          fprintf('Unable to locate MidPrimer in %s: %s\n', name,seq);
+        else
+          lens.MX(end+1)=length(seq)+1-mstart(1)+17;
+        end
       end
     end
     fns=fieldnames(lens);
