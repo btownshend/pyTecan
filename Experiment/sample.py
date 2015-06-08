@@ -317,6 +317,14 @@ class Sample(object):
                     s.history+=" "+msg
                 elif addToEmpty:
                     s.history=msg
+
+    @staticmethod
+    def mixall(plate):
+        'Mark all on given plate as mixed'
+        for s in __allsamples:
+            if plate==s.plate.name:
+                s.isMixed=True
+                s.history+=" {S}"
                 
     def addingredients(self,src,vol):
         'Update ingredients by adding ingredients from src'
