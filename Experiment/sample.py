@@ -88,7 +88,8 @@ class Sample(object):
                         well=well+1
                         found=False
                         break
-                    
+        elif not isinstance(well,int):
+            well=plate.wellnumber(well)
         elif well==-1:
             well=None
                     
