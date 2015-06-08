@@ -565,7 +565,7 @@ class TRP(object):
                 assert(False)
         return tgt   #  The name of the samples are unchanged -- the predilution names
         
-    def runQPCRDIL(self,src,vol,srcdil,tgt=None,dilPlate=False):
+    def runQPCRDIL(self,src,vol,srcdil,tgt=None,dilPlate=False,shaker=True):
         if tgt==None:
             tgt=[]
         [src,vol,srcdil]=listify([src,vol,srcdil])
@@ -590,12 +590,14 @@ class TRP(object):
             stgt[i].conc=None		# Assume dilutant does not have a concentration of its own
             # Check if we can align the tips here
             if i<len(ssrc)-3 and stgt[i].well+1==stgt[i+1].well and stgt[i].well+2==stgt[i+2].well and stgt[i].well+3==stgt[i+3].well and stgt[i].well%4==0 and self.e.cleanTips!=15:
-                print "Aligning tips"
+                #print "Aligning tips"
                 self.e.sanitize()
-            self.e.transfer(srcvol[i],ssrc[i],stgt[i],(True,True))
+            self.e.transfer(srcvol[i],ssrc[i],stgt[i],(True,not shaker))
             if stgt[i].conc != None:
                 stgt[i].conc.final=None	# Final conc are meaningless now
             
+        if shaker:
+            self.e.shake(stgt[0].plate)
         return tgt
         
     def runQPCR(self,src,vol,srcdil,primers=["A","B"],nreplicates=1):
