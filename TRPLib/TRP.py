@@ -8,12 +8,12 @@ import math
 maxVolumePerWell=150
 
 class Reagents:
-    MT7=Sample("MT7",Experiment.REAGENTPLATE,None,2.5)
-    MPosRT=Sample("MPosRT",Experiment.REAGENTPLATE,None,2)
+    MT7=Sample("MT7",Experiment.REAGENTPLATE,"A1",2.5)
+    MPosRT=Sample("MPosRT",Experiment.REAGENTPLATE,"B1",2)
     MNegRT=Sample("MNegRT",Experiment.REAGENTPLATE,None,2)
-    MLigAT7=Sample("MLigAT7",Experiment.REAGENTPLATE,None,2)	# Conc is relative to annealing time (not to post-ligase)
-    MLigBT7W=Sample("MLigBT7W",Experiment.REAGENTPLATE,None,2)
-    MLigase=Sample("MLigase",Experiment.REAGENTPLATE,None,3)
+    MLigAT7=Sample("MLigAT7",Experiment.REAGENTPLATE,"D1",3)	# Conc is relative to annealing time (not to post-ligase)
+    MLigBT7W=Sample("MLigBT7W",Experiment.REAGENTPLATE,"E1",3)
+    MLigase=Sample("MLigase",Experiment.REAGENTPLATE,"A2",3)
 
     Theo=Sample("Theo",Experiment.REAGENTPLATE,None,Concentration(25,7.5,'mM'))
     #EDTA=Sample("EDTA",Experiment.REAGENTPLATE,None,Concentration(50.0,4,'mM'))
@@ -22,22 +22,24 @@ class Reagents:
     #BT47=Sample("BT047",Experiment.REAGENTPLATE,None,Concentration(10,0.4,'uM'))
     #BT29=Sample("BT029",Experiment.REAGENTPLATE,None,Concentration(10,0.4,'uM'))
     #BT30=Sample("BT030",Experiment.REAGENTPLATE,None,Concentration(10,0.4,'uM'))
-    MStopX=Sample("MStpX",Experiment.REAGENTPLATE,None,2)
-    MQRef=Sample("MQREF",Experiment.REAGENTPLATE,None,10.0/6)
-    MQAX=Sample("MQAX",Experiment.REAGENTPLATE,None,10.0/6)
-    MQBX=Sample("MQBX",Experiment.REAGENTPLATE,None,10.0/6)
-    PCRAX=Sample("MPCRAX",Experiment.REAGENTPLATE,None,4.0/3)
-    PCRBX=Sample("MPCRBX",Experiment.REAGENTPLATE,None,4.0/3)
-    MQMX=Sample("MQMX",Experiment.REAGENTPLATE,None,10.0/6)
-    MQWX=Sample("MQWX",Experiment.REAGENTPLATE,None,10.0/6)
-    SSD=Sample("SSD",Experiment.REAGENTPLATE,None,10.0)
-    MLigAT7W=Sample("MLigAT7W",Experiment.REAGENTPLATE,None,3)
-    BeadBuffer=Sample("BeadBuffer",Experiment.REAGENTPLATE,None,4)
-    Dynabeads=Sample("Dynabeads",Experiment.REAGENTPLATE,None,Concentration(6,2,'mg/ml'))
-    MQT7W=Sample("MQT7X",Experiment.REAGENTPLATE,None,15.0/9)
-    MStopBeads=Sample("MStpBeads",Experiment.REAGENTPLATE,None,3.7)
-    all=[MT7,MPosRT,MNegRT,MLigAT7,MLigBT7W,MLigase,Theo,MStopX,MQRef,MQAX,MQBX,PCRAX,PCRBX,MQMX,SSD,MLigAT7W,MQWX,Dynabeads,MQT7W,BeadBuffer,MStopBeads]
-    UNUSED=Sample("Leaky",Experiment.SAMPLEPLATE,None,0)
+    MStopX=Sample("MStpX",Experiment.REAGENTPLATE,"C2",2)
+    MQRef=Sample("MQREF",Experiment.REAGENTPLATE,"D2",10.0/6)
+    MQAX=Sample("MQAX",Experiment.REAGENTPLATE,"E2",10.0/6)
+    MQBX=Sample("MQBX",Experiment.REAGENTPLATE,"A3",10.0/6)
+    PCRAX=Sample("MPCRAX",Experiment.REAGENTPLATE,"B3",4.0/3)
+    PCRBX=Sample("MPCRBX",Experiment.REAGENTPLATE,"C3",4.0/3)
+    MQMX=Sample("MQMX",Experiment.REAGENTPLATE,"D3",10.0/6)
+    MQWX=Sample("MQWX",Experiment.REAGENTPLATE,"E3",10.0/6)
+    SSD=Sample("SSD",Experiment.REAGENTPLATE,"A4",10.0)
+    MLigAT7W=Sample("MLigAT7W",Experiment.REAGENTPLATE,"B4",3)
+    BeadBuffer=Sample("BeadBuffer",Experiment.REAGENTPLATE,"C4",4)
+    Dynabeads=Sample("Dynabeads",Experiment.REAGENTPLATE,"D4",Concentration(6,2,'mg/ml'))
+    MQT7W=Sample("MQT7X",Experiment.REAGENTPLATE,"E4",15.0/9)
+    MStopBeads=Sample("MStpBeads",Experiment.REAGENTPLATE,"A5",3.7)
+    QPCRREF=Sample("QPCRREF",Experiment.REAGENTPLATE,"B5",Concentration(50,50,'pM'))
+    all=[MT7,MPosRT,MNegRT,MLigAT7,MLigBT7W,MLigase,Theo,MStopX,MQRef,MQAX,MQBX,PCRAX,PCRBX,MQMX,SSD,MLigAT7W,MQWX,Dynabeads,MQT7W,BeadBuffer,MStopBeads,QPCRREF]
+    UNUSED=Sample("LeakyA1",Experiment.SAMPLEPLATE,"A1",0)
+    UNUSED2=Sample("LeakyH12",Experiment.SAMPLEPLATE,"H12",0)
     
 def listify(x):
     'Convert a list of (lists or scalars) into a list of equal length lists'
