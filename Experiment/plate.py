@@ -60,6 +60,14 @@ class Plate(object):
         col=int(well/self.ny)
         row=well-col*self.ny
         return "%c%d"%(chr(65+row),col+1)
+
+    def wellnumber(self,wellname):
+        'Convert a wellname, such as "A3" to a well index -- inverse of wellname()'
+        for i in range(self.nx*self.ny):
+            if self.wellname(i)==wellname:
+                return i
+        print "Illegal well name, %s, for plate %s"%(wellname, self.name)
+        assert(False)
     
     def __str__(self):
         return self.name
