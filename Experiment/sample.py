@@ -94,7 +94,8 @@ class Sample(object):
                     
         for s in __allsamples:
             if s.plate==plate and s.well==well:
-                print "Aliasing %s as %s"%(s.name,name)
+                print "Attempt to assign sample %s to plate %s, well %s that already contains %s"%(name,str(plate),plate.wellname(well),s.name)
+#                print "Aliasing %s as %s"%(s.name,name)
                 assert(False)
             if s.name==name:
                 print "Already have a sample called %s"%name
@@ -424,7 +425,7 @@ class Sample(object):
 
     @staticmethod
     def printprep(fd=sys.stdout):
-        notes="Reagents:"
+        notes="Reagents to provide:"
         total=0
         for s in __allsamples:
             if s.conc!=None:
@@ -433,8 +434,8 @@ class Sample(object):
                 c=""   
             if s.volume==s.initvolume:
                 'Not used'
-                note="%s%s in %s.%s not consumed"%(s.name,c,str(s.plate),s.plate.wellname(s.well))
-                notes=notes+"\n"+note
+                #note="%s%s in %s.%s not consumed"%(s.name,c,str(s.plate),s.plate.wellname(s.well))
+                #notes=notes+"\n"+note
             elif s.initvolume>0:
                 note="%s%s in %s.%s consume %.1f ul, provide %.1f ul"%(s.name,c,str(s.plate),s.plate.wellname(s.well),s.initvolume-s.volume,s.initvolume)
                 notes=notes+"\n"+note
