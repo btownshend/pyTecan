@@ -13,6 +13,7 @@ class Experiment(object):
     SAMPLEPLATELOC=Plate("Samples",4,3,12,8,False,15)
     MAGPLATELOC=Plate("MagPlate",18,2,12,8,False,9)   # HSP9601 on magnetic plate  (Unusable volume of 9ul)
     SAMPLEPLATE=Plate("Samples",4,3,12,8,False,15)
+    SHAKERPLATELOC=Plate("Shaker",1,1,1,1)
     #    READERPLATE=Plate("Reader",4,1,12,8,False,15)
     QPCRPLATE=Plate("qPCR",4,1,12,8,False,15)
     DILPLATE=Plate("Dilutions",4,2,12,8,False,15)
@@ -367,6 +368,34 @@ class Experiment(object):
             self.SAMPLEPLATE.movetoloc(self.SAMPLEPLATELOC)
             Sample.addallhistory("{-M}",onlyplate=self.SAMPLEPLATE.name,onlybeads=True)
         self.w.romahome()
+
+    def shakermove(self,plate,toShaker):
+        # move to shake
+        self.w.flushQueue()
+        self.lihahome()
+        cmt="shakermove %s"%toShaker
+        self.w.comment(cmt)
+        if toShaker:
+            self.w.vector("Microplate Landscape",plate,self.w.SAFETOEND,True,self.w.DONOTMOVE,self.w.CLOSE)
+            self.w.vector("Shaker",self.SHAKERPLATELOC,self.w.SAFETOEND,True,self.w.DONOTMOVE,self.w.OPEN)
+        else:
+            self.w.vector("Shaker",self.SHAKERPLATELOC,self.w.SAFETOEND,True,self.w.DONOTMOVE,self.w.CLOSE)
+            self.w.vector("Microplate Landscape",plate,self.w.SAFETOEND,True,self.w.DONOTMOVE,self.w.OPEN)
+        self.w.romahome()
+
+    def shake(self,plate,dur=30,speed=500,accel=1):
+        # Move the plate to the shaker, run for the given time, and bring plate back
+        self.shakermove(plate,True)
+        self.w.pyrun("BioShake\\bioexec.py setElmLockPos")
+        self.w.pyrun("BioShake\\bioexec.py setShakeTargetSpeed%d"%speed)
+        self.w.pyrun("BioShake\\bioexec.py setShakeAcceleration%d"%accel)
+        self.w.pyrun("BioShake\\bioexec.py shakeOn")
+        self.starttimer()
+        Sample.mixall(plate.name)
+        self.waittimer(dur)
+        self.w.pyrun("BioShake\\bioexec.py shakeOff")
+        self.w.pyrun("BioShake\\bioexec.py setElmUnlockPos")
+        self.shakermove(plate,False)
 
     def starttimer(self):
     	self.w.starttimer()
