@@ -65,6 +65,8 @@ class Sample(object):
         for p in sorted(plates, key=lambda p:p.name.upper()):
             print >>fd,"Samples in plate: ",p
             for s in __allsamples:
+                if len(s.history)==0:
+                    continue   # Not used
                 if s.plate==p:
                     if w!=None:
                         print >>fd,s,("%06x"%(w.getHashCode(grid=s.plate.grid,pos=s.plate.pos,well=s.well)&0xffffff))
