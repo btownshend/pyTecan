@@ -388,6 +388,11 @@ class Experiment(object):
         # Recommended speeds (from http://www.qinstruments.com/en/applications/optimization-of-mixing-parameters.html )
         #  10% fill:  1800-2200, 25%: 1600-2000, 50%: 1400-1800, 75%: 1200-1600
         # At 1600, 150ul is ok, but 200ul spills out
+        # Check volumes on plate
+        samps=Sample.getAllOnPlate(plate)
+        maxvol=max([x.volume for x in samps])
+        if (maxvol>150 and speed>=1600) or (maxvol>100 and speed>1800) or (maxvol>50 and speed>2000) or (maxvol>20 and speed>2200):
+            print "WARNING: %s plate contains wells with up to %.0f ul, which may spill at %d RPM"%(plate.name, maxvol, speed)
         self.shakermove(plate,True)
         self.w.pyrun("BioShake\\bioexec.py setElmLockPos")
         self.w.pyrun("BioShake\\bioexec.py setShakeTargetSpeed%d"%speed)
