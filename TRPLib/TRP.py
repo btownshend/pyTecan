@@ -605,14 +605,16 @@ class TRP(object):
         ## QPCR setup
         # e.g. trp.runQPCR(src=["1.RT-B","1.RT+B","1.RTNeg-B","1.RTNeg+B","2.RT-A","2.RT-B","2.RTNeg+B","2.RTNeg+B"],vol=10,srcdil=100)
         self.e.w.comment("runQPCR: primers=%s, source=%s"%([p for p in primers],[s for s in src]))
-        [src,vol,srcdil]=listify([src,vol,srcdil])
+        [src,vol,srcdil,nreplicates]=listify([src,vol,srcdil,nreplicates])
         ssrc=findsamps(src,False)
 
         # Build a list of sets to be run
         all=[]
-        for repl in range(nreplicates):
+        for repl in range(max(nreplicates)):
             for p in primers:
                 for i in range(len(ssrc)):
+                    if nreplicates[i]<=repl:
+                        continue
                     if repl==0:
                         sampname="%s.Q%s"%(src[i],p)
                     else:
