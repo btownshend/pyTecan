@@ -326,9 +326,9 @@ class Sample(object):
     def mixall(plate):
         'Mark all on given plate as mixed'
         for s in __allsamples:
-            if plate==s.plate.name:
+            if plate==s.plate.name and s.volume>0:
                 s.isMixed=True
-                s.history+=" {S}"
+                s.history+=" (MS)"
                 
     def addingredients(self,src,vol):
         'Update ingredients by adding ingredients from src'
