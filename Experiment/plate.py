@@ -7,18 +7,29 @@ class Plate(object):
         self.name=name
         self.grid=grid
         self.pos=pos
+        self.unusableVolume=unusableVolume
+        self.homegrid=grid
+        self.homepos=pos
+        self.homeUnusableVolume=unusableVolume
         self.nx=nx
         self.ny=ny
         self.pierce=pierce
-        self.unusableVolume=unusableVolume
         self.maxVolume=maxVolume
         self.warned=False
-        
-    def movetoloc(self,otherplate):
-        self.grid=otherplate.grid
-        self.pos=otherplate.pos
-        self.unusableVolume=otherplate.unusableVolume
+        self.curloc="Home"
 
+    def movetoloc(self,dest,newloc=None):
+        self.curloc=dest
+        if  dest=="Home":
+            self.grid=self.homegrid
+            self.pos=self.homepos
+            self.unusableVolume=self.homeUnusableVolume
+        else:
+            assert(newloc!=None)
+            self.grid=newloc.grid
+            self.pos=newloc.pos
+            self.unusableVolume=newloc.unusableVolume
+            
     def getliquidheight(self,volume):
         'Get liquid height in mm above ZMax'
         angle=17.5*math.pi/180;

@@ -335,8 +335,9 @@ class Experiment(object):
         self.w.comment(cmt)
         #print "*",cmt
         self.w.pyrun("PTC\\ptclid.py OPEN")
-        self.w.vector("Microplate Landscape",self.SAMPLEPLATE,self.w.SAFETOEND,True,self.w.DONOTMOVE,self.w.CLOSE)
-        self.w.vector("PTC200",self.PTCPOS,self.w.SAFETOEND,True,self.w.DONOTMOVE,self.w.OPEN)
+        self.moveplate(self.SAMPLEPLATE,"PTC")
+        #self.w.vector("Microplate Landscape",self.SAMPLEPLATE,self.w.SAFETOEND,True,self.w.DONOTMOVE,self.w.CLOSE)
+        #self.w.vector("PTC200",self.PTCPOS,self.w.SAFETOEND,True,self.w.DONOTMOVE,self.w.OPEN)
         self.w.vector("Hotel 1 Lid",self.HOTELPOS,self.w.SAFETOEND,True,self.w.DONOTMOVE,self.w.CLOSE)
         self.w.vector("PTC200lid",self.PTCPOS,self.w.SAFETOEND,True,self.w.DONOTMOVE,self.w.OPEN)
         self.w.romahome()
@@ -351,36 +352,46 @@ class Experiment(object):
         if waitForCompletion:
             self.waitpgm()
             
-    def magmove(self,toMag):
-        # move to magnet
+    def moveplate(self,plate,dest="Home"):
+        # move to given destination (one of "Home","Magnet","Shaker","PTC" )
+        if plate.curloc==dest:
+            print "Plate %s is already at %s"%(plate.name,dest)
+            return
+        
+        print "Move plate %s from %s to %s"%(plate.name,plate.curloc,dest)
         self.w.flushQueue()
         self.lihahome()
-        cmt="magmove %s"%toMag
+        cmt="moveplate %s %s"%(plate.name,dest)
         self.w.comment(cmt)
-        if toMag:
-            self.w.vector("Microplate Landscape",self.SAMPLEPLATELOC,self.w.SAFETOEND,True,self.w.DONOTMOVE,self.w.CLOSE)
-            self.w.vector("Magplate",self.MAGPLATELOC,self.w.SAFETOEND,True,self.w.DONOTMOVE,self.w.OPEN)
-            self.SAMPLEPLATE.movetoloc(self.MAGPLATELOC)
-            Sample.addallhistory("{+M}",onlyplate=self.SAMPLEPLATE.name,onlybeads=True)
-        else:
-            self.w.vector("Magplate",self.MAGPLATELOC,self.w.SAFETOEND,True,self.w.DONOTMOVE,self.w.CLOSE)
-            self.w.vector("Microplate Landscape",self.SAMPLEPLATELOC,self.w.SAFETOEND,True,self.w.DONOTMOVE,self.w.OPEN)
-            self.SAMPLEPLATE.movetoloc(self.SAMPLEPLATELOC)
-            Sample.addallhistory("{-M}",onlyplate=self.SAMPLEPLATE.name,onlybeads=True)
-        self.w.romahome()
-
-    def shakermove(self,plate,toShaker):
-        # move to shake
-        self.w.flushQueue()
-        self.lihahome()
-        cmt="shakermove %s"%toShaker
-        self.w.comment(cmt)
-        if toShaker:
+        if plate.curloc=="Home":
             self.w.vector("Microplate Landscape",plate,self.w.SAFETOEND,True,self.w.DONOTMOVE,self.w.CLOSE)
-            self.w.vector("Shaker",self.SHAKERPLATELOC,self.w.SAFETOEND,True,self.w.DONOTMOVE,self.w.OPEN)
-        else:
+        elif plate.curloc=="Magnet":
+            self.w.vector("Magplate",self.MAGPLATELOC,self.w.SAFETOEND,True,self.w.DONOTMOVE,self.w.CLOSE)
+        elif plate.curloc=="Shaker":
             self.w.vector("Shaker",self.SHAKERPLATELOC,self.w.SAFETOEND,True,self.w.DONOTMOVE,self.w.CLOSE)
+        elif plate.curloc=="PTC":
+            self.w.vector("PTC200",self.PTCPOS,self.w.SAFETOEND,True,self.w.DONOTMOVE,self.w.CLOSE)
+        else:
+            print "Plate %s is in unknown location: %s"%(plate.name,plate.curloc)
+            assert(False)
+
+        if dest=="Home":
+            plate.movetoloc(dest)
             self.w.vector("Microplate Landscape",plate,self.w.SAFETOEND,True,self.w.DONOTMOVE,self.w.OPEN)
+        elif dest=="Magnet":
+            plate.movetoloc(dest,self.MAGPLATELOC)
+            self.w.vector("Magplate",self.MAGPLATELOC,self.w.SAFETOEND,True,self.w.DONOTMOVE,self.w.OPEN)
+        elif dest=="Shaker":
+            plate.movetoloc(dest,self.SHAKERPLATELOC)
+            self.w.vector("Shaker",self.SHAKERPLATELOC,self.w.SAFETOEND,True,self.w.DONOTMOVE,self.w.OPEN)
+        elif dest=="PTC":
+            plate.movetoloc(dest,self.PTCPOS)
+            self.w.vector("PTC200",self.PTCPOS,self.w.SAFETOEND,True,self.w.DONOTMOVE,self.w.OPEN)
+        else:
+            print "Attempt to move plate %s to unknown location: %s"%(plate.name,dest)
+            assert(False)
+
+        Sample.addallhistory("{->%s}"%dest,onlyplate=plate.name)
         self.w.romahome()
 
     def shake(self,plate,dur=60,speed=1600,accel=1):
@@ -393,7 +404,8 @@ class Experiment(object):
         maxvol=max([x.volume for x in samps])
         if (maxvol>150 and speed>=1600) or (maxvol>100 and speed>1800) or (maxvol>50 and speed>2000) or (maxvol>20 and speed>2200):
             print "WARNING: %s plate contains wells with up to %.0f ul, which may spill at %d RPM"%(plate.name, maxvol, speed)
-        self.shakermove(plate,True)
+        oldloc=plate.curloc
+        self.moveplate(plate,"Shaker")
         self.w.pyrun("BioShake\\bioexec.py setElmLockPos")
         self.w.pyrun("BioShake\\bioexec.py setShakeTargetSpeed%d"%speed)
         self.w.pyrun("BioShake\\bioexec.py setShakeAcceleration%d"%accel)
@@ -405,7 +417,7 @@ class Experiment(object):
         self.starttimer()
         self.waittimer(10)
         self.w.pyrun("BioShake\\bioexec.py setElmUnlockPos")
-        self.shakermove(plate,False)
+        self.moveplate(plate,oldloc)
 
     def starttimer(self):
     	self.w.starttimer()
@@ -456,8 +468,9 @@ class Experiment(object):
         self.w.vector("PTC200Wiggle",self.PTCPOS,self.w.ENDTOSAFE,False,self.w.DONOTMOVE,self.w.OPEN,True)
         self.w.vector("PTC200WigglePos",self.PTCPOS,self.w.ENDTOSAFE,False,self.w.DONOTMOVE,self.w.DONOTMOVE)
 
-        self.w.vector("PTC200",self.PTCPOS,self.w.SAFETOEND,True,self.w.DONOTMOVE,self.w.CLOSE)
-        self.w.vector("Microplate Landscape",self.SAMPLEPLATE,self.w.SAFETOEND,True,self.w.DONOTMOVE,self.w.OPEN)
+        self.moveplate(self.SAMPLEPLATE,"Home")
+        #self.w.vector("PTC200",self.PTCPOS,self.w.SAFETOEND,True,self.w.DONOTMOVE,self.w.CLOSE)
+        #self.w.vector("Microplate Landscape",self.SAMPLEPLATE,self.w.SAFETOEND,True,self.w.DONOTMOVE,self.w.OPEN)
         # Verify plate is in place
         self.w.vector("Microplate Landscape",self.SAMPLEPLATE,self.w.SAFETOEND,False,self.w.DONOTMOVE,self.w.CLOSE)
         self.w.vector("Microplate Landscape",self.SAMPLEPLATE,self.w.ENDTOSAFE,False,self.w.OPEN,self.w.DONOTMOVE)

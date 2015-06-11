@@ -282,7 +282,8 @@ class TRP(object):
         [src,wash]=listify([src,wash])
         ssrc=findsamps(src,False)
         # Do all washes while on magnet
-        self.e.magmove(True)	# Move to magnet
+        assert(len(set([s.plate for s in ssrc]))==1)	# All on same plate
+        self.e.moveplate(ssrc[0].plate,"Magnet")	# Move to magnet
         self.sepWait(ssrc,sepTime)
         if keepWash:
             if washTgt==None:
@@ -319,12 +320,12 @@ class TRP(object):
         for washnum in range(numWashes):
             if keepFinal and washnum==numWashes-1:
                 'Retain sample of final'
-                self.e.magmove(False)
+                self.e.moveplate(ssrc[0].plate,"Home")
                 for i in range(len(ssrc)):
                     self.e.transfer(washVol-ssrc[i].volume,swash[i],ssrc[i],mix=(False,True))	# Add wash
 
                 self.saveSamps(src=src,tgt=finalTgt,vol=keepVol,dil=keepDil,plate=Experiment.DILPLATE)
-                self.e.magmove(True)
+                self.e.moveplate(ssrc[0].plate,"Magnet")	# Move to magnet
             else:
                 for i in range(len(ssrc)):
                     self.e.transfer(washVol-ssrc[i].volume,swash[i],ssrc[i],mix=(False,False))	# Add wash
@@ -338,7 +339,7 @@ class TRP(object):
                 else:
                     self.e.dispose((ssrc[i].volume-residualVolume)/ASPIRATEFACTOR,ssrc[i])	# Remove wash
 
-        self.e.magmove(False)	# Take off magnet
+        self.e.moveplate(ssrc[0].plate,"Home")
 
         # Should only be residualVolume left with beads now
         result=[]
@@ -373,13 +374,13 @@ class TRP(object):
         ssrc=findsamps(src,False)
         stgt=findsamps(tgt,plate=plate,unique=True)
 
-        self.e.magmove(True)	# Move to magnet
+        self.e.moveplate(ssrc[0].plate,"Magnet")	# Move to magnet
         self.sepWait(ssrc,sepTime)
 
         for i in range(len(ssrc)):
             self.e.transfer((ssrc[i].volume-residualVolume)/ASPIRATEFACTOR,ssrc[i],stgt[i])	# Transfer elution to new tube
 
-        self.e.magmove(False)
+        self.e.moveplate(ssrc[0].plate,"Home")
         return tgt
     
     def runRT(self,pos,src,vol,srcdil,tgt=None,dur=20):
