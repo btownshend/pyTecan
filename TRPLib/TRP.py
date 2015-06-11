@@ -265,9 +265,9 @@ class TRP(object):
         # Transfer the beads
         for i in range(len(ssrc)):
             sbeads[i].isMixed=False	# Force a mix
-            self.e.transfer(beadvol[i],sbeads[i],ssrc[i],(i==0,True))	# Mix beads before and after
-            ssrc[i].setHasBeads()	# Mark the source tubes as having beads to change condition, liquid classes
             ssrc[i].conc=None		# Can't track concentration of beads
+            self.e.transfer(beadvol[i],sbeads[i],ssrc[i],(i==0,False))	# Mix beads before
+            ssrc[i].setHasBeads()	# Mark the source tubes as having beads to change condition, liquid classes
             
         self.intervalMix(src,incTime) # Wait for binding
 
