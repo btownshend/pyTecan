@@ -414,7 +414,17 @@ class Sample(object):
         else:
             beadString=""
         s+=" %-30s"%("(%s.%s,%.2f ul%s)"%(str(self.plate),self.plate.wellname(self.well),self.volume,beadString))
-        s+=" %s"%self.history
+        hist=self.history
+        trunchistory=True
+        if trunchistory and len(hist)>0:
+            # Remove any trailing {xx} or (xx) markers from history
+            wds=hist.strip().split(' ')
+            for i in range(len(wds)-1,-1,-1):
+                if wds[i][0]!='(' and wds[i][0]!='{':
+                    break
+            hist=' '.join(wds[:i+1])
+
+        s+=" %s"%hist
         if SHOWINGREDIENTS:
                 s+=self.ingredientstr()
         return s
