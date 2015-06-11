@@ -432,7 +432,7 @@ class Experiment(object):
             self.w.elapsed+=duration
         if duration>0:
             self.w.waittimer(duration)
-            Sample.addallhistory("{%ds}"%duration)
+            #Sample.addallhistory("{%ds}"%duration)
 
     def pause(self,duration):
         self.starttimer()
