@@ -219,25 +219,28 @@ class TRP(object):
         tgt=self.runT7Stop(theo,tgt,stopmaster)
         return tgt
 
-    def intervalMix(self,src,dur,mixTime=60):
+    def intervalMix(self,src,dur,mixTime=60,useShaker=True):
         'Pause for incubations, mixing at regular intervals'
         ssrc=findsamps(src,False)
-        self.e.starttimer()
-        if dur>mixTime:
-            # Will need at least one mix
-            # Get clean tips
-            self.e.sanitize()
-            while dur>mixTime:
-                if len(src)<=4:
-                    # Fake that they are clean so we can reuse them for each mix
-                    self.e.cleanTips=0xf
-                self.e.waittimer(mixTime)
-                self.e.starttimer()
-                dur=dur-mixTime
-                for s in ssrc:
-                    self.e.mix(s,nmix=2)
-                self.e.w.flushQueue()
-        self.e.waittimer(dur)
+        if useShaker:
+            self.e.shake(ssrc[0].plate,dur=mixTime)
+        else:
+            self.e.starttimer()
+            if dur>mixTime:
+                # Will need at least one mix
+                # Get clean tips
+                self.e.sanitize()
+                while dur>mixTime:
+                    if len(src)<=4:
+                        # Fake that they are clean so we can reuse them for each mix
+                        self.e.cleanTips=0xf
+                    self.e.waittimer(mixTime)
+                    self.e.starttimer()
+                    dur=dur-mixTime
+                    for s in ssrc:
+                        self.e.mix(s,nmix=2)
+                    self.e.w.flushQueue()
+            self.e.waittimer(dur)
 
     def bindBeads(self,src,beads="Dynabeads",beadConc=None,buffer="BeadBuffer",incTime=60,addBuffer=False):
         [src,beads,buffer,beadConc]=listify([src,beads,buffer,beadConc])
