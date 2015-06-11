@@ -23,7 +23,7 @@ class QSetup(object):
         
     def addSamples(self, src, needDil, primers,nreplicates=1):
         'Add sample(s) to list of qPCRs to do'
-        print "addSamples(src=",src,", needDil=",needDil,", primers=",primers,", nrep=",nreplicates,")"
+        print "addSamples(src=",src,", needDil=","%.1f"%needDil,", primers=",primers,", nrep=",nreplicates,")"
         self.samples=self.samples+src
         self.needDil=self.needDil+[needDil]*len(src)
         self.primers=self.primers+[primers]*len(src)
