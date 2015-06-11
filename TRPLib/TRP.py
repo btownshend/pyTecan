@@ -96,8 +96,10 @@ class TRP(object):
     def addTemplates(self,names,stockconc,finalconc=None,units="nM",plate=Experiment.REAGENTPLATE):
         if finalconc==None:
             print "Warning: final concentration of template not specified, assuming 0.6x (should add to addTemplates() call"
+            [names,stockconc]=listify([names,stockconc])
             finalconc=[0.6*x for x in stockconc]
-        [names,stockconc,finalconc]=listify([names,stockconc,finalconc])
+        else:
+            [names,stockconc,finalconc]=listify([names,stockconc,finalconc])
         for i in range(len(names)):
             Sample(names[i],plate,None,Concentration(stockconc[i],finalconc[i],units))
 
