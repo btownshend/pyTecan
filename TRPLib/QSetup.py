@@ -5,7 +5,11 @@ import sys
 import math
 
 class QSetup(object):
-
+    MAXDIL=20.0
+    MINDILVOL=32
+    MAXDILVOL=100
+    TGTINVOL=5
+    
     def __init__(self,vol=15):
         'Create a new QPCR setup structure'
         self.volume=vol
@@ -94,14 +98,14 @@ class QSetup(object):
         for stage in range(4):
             stageDil=needDil[:]
             for i in range(len(stageDil)):
-                if stageDil[i]>25:
-                    nstages=math.ceil(math.log(stageDil[i])/math.log(25))
+                if stageDil[i]>self.MAXDIL:
+                    nstages=math.ceil(math.log(stageDil[i])/math.log(self.MAXDIL))
                     stageDil[i]=math.pow(stageDil[i],1/nstages)
             inds=[i for i in range(len(stageDil)) if stageDil[i]!=1]
             if len(inds)==0:
                 break
             print "Dilution stage ",stage,": ",[round(x,1) for x in stageDil if x!=1]
-            vol=[max(60,x*5) for x in [stageDil[i] for i in inds]]  # Make sure there's enough for  qPCR (6ul each) or next dilution (typicaly 5ul) and leaves 15 at end
+            vol=[min(self.MAXDILVOL,max(self.MINDILVOL,x*self.TGTINVOL)) for x in [stageDil[i] for i in inds]]  # Make sure there's enough for  qPCR (6ul each) or next dilution (typicaly 5ul) and leaves 15 at end
             ptmp=trp.runQPCRDIL(src=[dilProds[i] for i in inds],vol=vol,srcdil=[stageDil[i] for i in inds],tgt=None,dilPlate=True)  
             for i in range(len(inds)):
                 dilProds[inds[i]]=ptmp[i]
