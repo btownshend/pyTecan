@@ -15,7 +15,7 @@ class Reagents:
     MLigBT7W=Sample("MLigBT7W",Experiment.REAGENTPLATE,"E1",3)
     MLigase=Sample("MLigase",Experiment.REAGENTPLATE,"A2",3)
 
-    Theo=Sample("Theo",Experiment.REAGENTPLATE,None,Concentration(25,7.5,'mM'))
+    Theo=Sample("Theo",Experiment.REAGENTPLATE,"E6",Concentration(25,7.5,'mM'))
     #EDTA=Sample("EDTA",Experiment.REAGENTPLATE,None,Concentration(50.0,4,'mM'))
     #BT43=Sample("BT43",Experiment.REAGENTPLATE,None,Concentration(10,0.5,'uM'))
     #EVA=Sample("EvaGreen",Experiment.REAGENTPLATE,None,2)
