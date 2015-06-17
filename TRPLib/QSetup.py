@@ -5,10 +5,10 @@ import sys
 import math
 
 class QSetup(object):
-    MAXDIL=20.0
-    MINDILVOL=32
-    MAXDILVOL=100
-    TGTINVOL=5
+    MAXDIL=32.0
+    MINDILVOL=40.0
+    MAXDILVOL=100.0
+    TGTINVOL=4
     
     def __init__(self,vol=15):
         'Create a new QPCR setup structure'
