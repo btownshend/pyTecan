@@ -394,7 +394,7 @@ class Experiment(object):
         Sample.addallhistory("{->%s}"%dest,onlyplate=plate.name)
         self.w.romahome()
 
-    def shake(self,plate,dur=60,speed=1600,accel=1):
+    def shake(self,plate,dur=60,speed=1600,accel=1,returnPlate=True):
         # Move the plate to the shaker, run for the given time, and bring plate back
         # Recommended speeds (from http://www.qinstruments.com/en/applications/optimization-of-mixing-parameters.html )
         #  10% fill:  1800-2200, 25%: 1600-2000, 50%: 1400-1800, 75%: 1200-1600
@@ -417,7 +417,8 @@ class Experiment(object):
         self.starttimer()
         self.waittimer(10)
         self.w.pyrun("BioShake\\bioexec.py setElmUnlockPos")
-        self.moveplate(plate,oldloc)
+        if returnPlate:
+            self.moveplate(plate,oldloc)
 
     def starttimer(self):
     	self.w.starttimer()
