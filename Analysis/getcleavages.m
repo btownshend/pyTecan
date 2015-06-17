@@ -72,7 +72,7 @@ for i=1:length(utmpls)
     end
     
     if unclvd<0
-      fprintf('Warning: %s has inconsistent MX concentration.\n', tmpl);
+      fprintf('Warning: %s has inconsistent MX concentration. (clvd=%f, unclvd=%d, yield=%f)\n', tmpl, clvd, unclvd, yield);
       continue;
     end
     lig.cleavage=clvd/(clvd+unclvd);
