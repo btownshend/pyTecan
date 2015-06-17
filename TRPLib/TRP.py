@@ -22,6 +22,7 @@ class Reagents:
     #BT47=Sample("BT047",Experiment.REAGENTPLATE,None,Concentration(10,0.4,'uM'))
     #BT29=Sample("BT029",Experiment.REAGENTPLATE,None,Concentration(10,0.4,'uM'))
     #BT30=Sample("BT030",Experiment.REAGENTPLATE,None,Concentration(10,0.4,'uM'))
+    MStopXBio=Sample("MStopXBio",Experiment.REAGENTPLATE,"B2",2)
     MStopX=Sample("MStpX",Experiment.REAGENTPLATE,"C2",2)
     MQRef=Sample("MQREF",Experiment.REAGENTPLATE,"D2",10.0/6)
     MQAX=Sample("MQAX",Experiment.REAGENTPLATE,"E2",10.0/6)
