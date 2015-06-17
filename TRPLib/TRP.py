@@ -570,6 +570,7 @@ class TRP(object):
             else:
                 print "diluteInPlace: cannot specify both dil and finalvol"
                 assert(False)
+        #print "after dilute, stgt[0]=",str(stgt[0]),",mixed=",stgt[0].isMixed
         return tgt   #  The name of the samples are unchanged -- the predilution names
         
     def runQPCRDIL(self,src,vol,srcdil,tgt=None,dilPlate=False,shaker=True):

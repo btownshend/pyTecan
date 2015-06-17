@@ -23,7 +23,7 @@ class QSetup(object):
         
     def addSamples(self, src, needDil, primers,nreplicates=1):
         'Add sample(s) to list of qPCRs to do'
-        print "addSamples(src=",src,", needDil=","%.1f"%needDil,", primers=",primers,", nrep=",nreplicates,")"
+        #print "addSamples(src=",src,", needDil=","%.1f"%needDil,", primers=",primers,", nrep=",nreplicates,")"
         self.samples=self.samples+src
         self.needDil=self.needDil+[needDil]*len(src)
         self.primers=self.primers+[primers]*len(src)
@@ -79,14 +79,14 @@ class QSetup(object):
 
     def addReferences(self,mindil=1,nsteps=6,dstep=4,nreplicates=1,ref="QPCRREF"):
         'Add all needed references'
-        print "addReferences(mindil=",mindil,", nsteps=",nsteps,", dstep=",dstep,", nrep=", nreplicates, ", ref=",ref,")"
+        #print "addReferences(mindil=",mindil,", nsteps=",nsteps,", dstep=",dstep,", nrep=", nreplicates, ", ref=",ref,")"
         for i in range(nsteps):
             self.addSamples(src=[ref],needDil=mindil*math.pow(dstep,i),primers=self.allprimers(),nreplicates=nreplicates)
         self.addSamples(src=["Water"],needDil=1,primers=self.allprimers(),nreplicates=nreplicates)
 
     def run(self,trp):
         'Run the dilutions and QPCR setup'
-        print "run()"
+        #print "run()"
 
         # Find reuses
         #self.findReuses()   # Not used yet

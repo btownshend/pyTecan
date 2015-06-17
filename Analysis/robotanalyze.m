@@ -213,7 +213,7 @@ if fd>0
       fn=fns{i};
       if length(lens.(fn))>0
         data.lengths=[data.lengths,struct('samp',name,'seq',seq,'ligation','*','primers',fn,'length',round(mean(lens.(fn))))];
-        fprintf('%s: %s=%d\n', data.lengths(end).samp,data.lengths(end).primers,data.lengths(end).length);
+        %        fprintf('%s: %s=%d\n', data.lengths(end).samp,data.lengths(end).primers,data.lengths(end).length);
       end
     end
   end
