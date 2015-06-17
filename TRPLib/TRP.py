@@ -183,7 +183,8 @@ class TRP(object):
         self.e.multitransfer([MT7vol for s in stgt],self.r.MT7,stgt,(False,False))
         self.e.multitransfer([tv for tv in theovols if tv>0.01],self.r.Theo,[stgt[i] for i in range(len(theovols)) if theovols[i]>0],(False,False),ignoreContents=True)
         for i in range(len(ssrc)):
-            self.e.transfer(sourcevols[i],ssrc[i],stgt[i],(True,True))
+            self.e.transfer(sourcevols[i],ssrc[i],stgt[i],(True,False))
+        self.e.shake(stgt[0].plate,returnPlate=False)
         return tgt
     
     def runT7Pgm(self,vol,dur):
@@ -207,8 +208,9 @@ class TRP(object):
         for i in range(len(stgt)):
             stopvol=stgt[i].volume/(sstopmaster[i].conc.dilutionneeded()-1)
             finalvol=stgt[i].volume+stopvol
-            self.e.transfer(finalvol-stgt[i].volume,sstopmaster[i],stgt[i],(False,True))
+            self.e.transfer(finalvol-stgt[i].volume,sstopmaster[i],stgt[i],(False,False))
             
+        self.e.shake(stgt[0].plate,returnPlate=True)
         return tgt
     
     def runT7(self,theo,src,vol,srcdil,tgt=None,dur=15,stopmaster=None):
@@ -219,29 +221,6 @@ class TRP(object):
         self.runT7Pgm(vol,dur)
         tgt=self.runT7Stop(theo,tgt,stopmaster)
         return tgt
-
-    def intervalMix(self,src,dur,mixTime=60,useShaker=True):
-        'Pause for incubations, mixing at regular intervals'
-        ssrc=findsamps(src,False)
-        if useShaker:
-            self.e.shake(ssrc[0].plate,dur=mixTime)
-        else:
-            self.e.starttimer()
-            if dur>mixTime:
-                # Will need at least one mix
-                # Get clean tips
-                self.e.sanitize()
-                while dur>mixTime:
-                    if len(src)<=4:
-                        # Fake that they are clean so we can reuse them for each mix
-                        self.e.cleanTips=0xf
-                    self.e.waittimer(mixTime)
-                    self.e.starttimer()
-                    dur=dur-mixTime
-                    for s in ssrc:
-                        self.e.mix(s,nmix=2)
-                    self.e.w.flushQueue()
-            self.e.waittimer(dur)
 
     def bindBeads(self,src,beads="Dynabeads",beadConc=None,buffer="BeadBuffer",incTime=60,addBuffer=False):
         [src,beads,buffer,beadConc]=listify([src,beads,buffer,beadConc])
@@ -259,7 +238,7 @@ class TRP(object):
             buffervol=[ssrc[i].volume/(sbuffer[i].conc.dilutionneeded()-1) for i in range(len(ssrc))]
             # Add binding buffer to bring to 1x (beads will already be in 1x, so don't need to provide for them)
             for i in range(len(ssrc)):
-                self.e.transfer(buffervol[i],sbuffer[i],ssrc[i],(False,True))
+                self.e.transfer(buffervol[i],sbuffer[i],ssrc[i],(False,False))
         else:
             buffervol=[0.0 for i in range(len(ssrc))]
 
@@ -273,7 +252,8 @@ class TRP(object):
             self.e.transfer(beadvol[i],sbeads[i],ssrc[i],(i==0,False))	# Mix beads before
             ssrc[i].setHasBeads()	# Mark the source tubes as having beads to change condition, liquid classes
             
-        self.intervalMix(src,incTime) # Wait for binding
+
+        self.e.shake(ssrc[0].plate,dur=incTime,returnPlate=False)
 
     def sepWait(self,ssrc,sepTime=None):
         if sepTime==None:
@@ -328,8 +308,9 @@ class TRP(object):
                 'Retain sample of final'
                 self.e.moveplate(ssrc[0].plate,"Home")
                 for i in range(len(ssrc)):
-                    self.e.transfer(washVol-ssrc[i].volume,swash[i],ssrc[i],mix=(False,True))	# Add wash
+                    self.e.transfer(washVol-ssrc[i].volume,swash[i],ssrc[i],mix=(False,False))	# Add wash
 
+                self.e.shake(ssrc[0].plate)
                 self.saveSamps(src=src,tgt=finalTgt,vol=keepVol,dil=keepDil,plate=Experiment.DILPLATE)
                 self.e.moveplate(ssrc[0].plate,"Magnet")	# Move to magnet
             else:
@@ -364,10 +345,8 @@ class TRP(object):
             if elutionVol[i]<30:
                 print "Warning: elution from beads with %.1f ul < minimum of 30ul"%elutionVol[i]
                 print "  src=",ssrc[i]
-            self.e.transfer(elutionVol[i]-ssrc[i].volume,selutant[i],ssrc[i],(False,True))	# Add elution buffer and mix
-
-        # Go through some cycles of waiting, mixing
-        self.intervalMix(src,eluteTime)
+            self.e.transfer(elutionVol[i]-ssrc[i].volume,selutant[i],ssrc[i],(False,False))	
+        self.e.shake(ssrc[0].plate,dur=eluteTime)
 
     def beadSupernatant(self,src,tgt=None,sepTime=None,residualVolume=10,plate=None):
         if tgt==None:
@@ -437,9 +416,10 @@ class TRP(object):
         #    e.stage('MPosRT',[self.r.MOSBuffer,self.r.MOS],[],[self.r.MPosRT],ASPIRATEFACTOR*(self.vol.RT*nRT/2)/2+self.vol.Extra+MULTIEXCESS,2)
         #    e.stage('MNegRT',[self.r.MOSBuffer],[],[self.r.MNegRT],ASPIRATEFACTOR*(self.vol.RT*negRT)/2+self.vol.Extra+MULTIEXCESS,2)
         if any(p for p in pos):
-            self.e.stage('RTPos',[self.r.MPosRT],[ssrc[i] for i in range(len(ssrc)) if pos[i]],[stgt[i] for i in range(len(stgt)) if pos[i]],[vol[i] for i in range(len(vol)) if pos[i]])
+            self.e.stage('RTPos',[self.r.MPosRT],[ssrc[i] for i in range(len(ssrc)) if pos[i]],[stgt[i] for i in range(len(stgt)) if pos[i]],[vol[i] for i in range(len(vol)) if pos[i]],destMix=False)
         if any(not p for p in pos):
-            self.e.stage('RTNeg',[self.r.MNegRT],[ssrc[i] for i in range(len(ssrc)) if not pos[i]],[stgt[i] for i in range(len(stgt)) if not pos[i]],[vol[i] for i in range(len(vol)) if not pos[i]])
+            self.e.stage('RTNeg',[self.r.MNegRT],[ssrc[i] for i in range(len(ssrc)) if not pos[i]],[stgt[i] for i in range(len(stgt)) if not pos[i]],[vol[i] for i in range(len(vol)) if not pos[i]],destMix=False)
+        self.e.shake(stgt[0].plate,returnPlate=False)
         return tgt
 
     def runRTPgm(self,dur=20):
@@ -480,12 +460,14 @@ class TRP(object):
             lasti=i+1
             while lasti<len(stgt) and smaster[i]==smaster[lasti]:
                 lasti=lasti+1
-            self.e.stage('LigAnneal',[smaster[i]],ssrc[i:lasti],stgt[i:lasti],[vol[j]/1.5 for j in range(i,lasti)],1.5)
+            self.e.stage('LigAnneal',[smaster[i]],ssrc[i:lasti],stgt[i:lasti],[vol[j]/1.5 for j in range(i,lasti)],1.5,destMix=False)
             i=lasti
             
         if anneal:
+            self.e.shake(stgt[0].plate,returnPlate=False)
             self.e.runpgm("TRPANN",5,False,max(vol),hotlidmode="CONSTANT",hotlidtemp=100)
-        self.e.stage('Ligation',[self.r.MLigase],[],stgt,vol)
+        self.e.stage('Ligation',[self.r.MLigase],[],stgt,vol,destMix=False)
+        self.e.shake(stgt[0].plate,returnPlate=False)
         self.runLigPgm(max(vol),ligtemp)
         return tgt
         
@@ -532,14 +514,15 @@ class TRP(object):
         primer=[prefix[i]+suffix[i] for i in range(len(prefix))]
         #print "primer=",primer
         if any(p=='AS' for p in primer):
-               self.e.stage('PCRAS',[self.r.PCRAS],[ssrc[i] for i in range(len(ssrc)) if primer[i]=='AS'],[stgt[i] for i in range(len(stgt)) if primer[i]=='AS'],[vol[i] for i in range(len(vol)) if primer[i]=='AS'])
+               self.e.stage('PCRAS',[self.r.PCRAS],[ssrc[i] for i in range(len(ssrc)) if primer[i]=='AS'],[stgt[i] for i in range(len(stgt)) if primer[i]=='AS'],[vol[i] for i in range(len(vol)) if primer[i]=='AS'],destMix=False)
         if any(p=='BS' for p in primer):
-               self.e.stage('PCRBS',[self.r.PCRBS],[ssrc[i] for i in range(len(ssrc)) if primer[i]=='BS'],[stgt[i] for i in range(len(stgt)) if primer[i]=='BS'],[vol[i] for i in range(len(vol)) if primer[i]=='BS'])
+               self.e.stage('PCRBS',[self.r.PCRBS],[ssrc[i] for i in range(len(ssrc)) if primer[i]=='BS'],[stgt[i] for i in range(len(stgt)) if primer[i]=='BS'],[vol[i] for i in range(len(vol)) if primer[i]=='BS'],destMix=False)
         if any(p=='AX' for p in primer):
-               self.e.stage('PCRAX',[self.r.PCRAX],[ssrc[i] for i in range(len(ssrc)) if primer[i]=='AX'],[stgt[i] for i in range(len(stgt)) if primer[i]=='AX'],[vol[i] for i in range(len(vol)) if primer[i]=='AX'])
+               self.e.stage('PCRAX',[self.r.PCRAX],[ssrc[i] for i in range(len(ssrc)) if primer[i]=='AX'],[stgt[i] for i in range(len(stgt)) if primer[i]=='AX'],[vol[i] for i in range(len(vol)) if primer[i]=='AX'],destMix=False)
         if any(p=='BX' for p in primer):
-               self.e.stage('PCRBX',[self.r.PCRBX],[ssrc[i] for i in range(len(ssrc)) if primer[i]=='BX'],[stgt[i] for i in range(len(stgt)) if primer[i]=='BX'],[vol[i] for i in range(len(vol)) if primer[i]=='BX'])
+               self.e.stage('PCRBX',[self.r.PCRBX],[ssrc[i] for i in range(len(ssrc)) if primer[i]=='BX'],[stgt[i] for i in range(len(stgt)) if primer[i]=='BX'],[vol[i] for i in range(len(vol)) if primer[i]=='BX'],destMix=False)
         pgm="PCR%d"%ncycles
+        self.e.shake(stgt[0].plate,returnPlate=False)
         #        self.e.w.pyrun('PTC\\ptcsetpgm.py %s TEMP@95,120 TEMP@95,30 TEMP@55,30 TEMP@72,25 GOTO@2,%d TEMP@72,180 TEMP@16,2'%(pgm,ncycles-1))
         self.e.w.pyrun('PTC\\ptcsetpgm.py %s TEMP@95,120 TEMP@95,10 TEMP@57,10 GOTO@2,%d TEMP@72,120 TEMP@25,2'%(pgm,ncycles-1))
         self.e.runpgm(pgm,4.80+1.55*ncycles,False,max(vol),hotlidmode="CONSTANT",hotlidtemp=100)
@@ -565,13 +548,14 @@ class TRP(object):
         dilutant=self.e.WATER
         for i in range(len(stgt)):
             if finalvol[i]!=None and dil[i]==None:
-                self.e.transfer(finalvol[i]-stgt[i].volume,dilutant,stgt[i],mix=(False,True))
+                self.e.transfer(finalvol[i]-stgt[i].volume,dilutant,stgt[i],mix=(False,False))
             elif finalvol[i]==None and dil[i]!=None:
-                self.e.transfer(stgt[i].volume*(dil[i]-1),dilutant,stgt[i],mix=(False,True))
+                self.e.transfer(stgt[i].volume*(dil[i]-1),dilutant,stgt[i],mix=(False,False))
             else:
                 print "diluteInPlace: cannot specify both dil and finalvol"
                 assert(False)
         #print "after dilute, stgt[0]=",str(stgt[0]),",mixed=",stgt[0].isMixed
+        self.e.shake(stgt[0].plate)
         return tgt   #  The name of the samples are unchanged -- the predilution names
         
     def runQPCRDIL(self,src,vol,srcdil,tgt=None,dilPlate=False,shaker=True):
