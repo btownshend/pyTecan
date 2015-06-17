@@ -358,7 +358,7 @@ class Experiment(object):
             print "Plate %s is already at %s"%(plate.name,dest)
             return
         
-        print "Move plate %s from %s to %s"%(plate.name,plate.curloc,dest)
+        #print "Move plate %s from %s to %s"%(plate.name,plate.curloc,dest)
         self.w.flushQueue()
         self.lihahome()
         cmt="moveplate %s %s"%(plate.name,dest)

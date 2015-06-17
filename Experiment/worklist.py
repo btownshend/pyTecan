@@ -63,7 +63,7 @@ class WorkList(object):
         self.flushQueue()
         tipMask=15
         speed=10   # 0.1-400 (mm/s)
-        self.comment('*MoveLiha to '+str(loc))
+        #self.comment('*MoveLiha to '+str(loc))
         self.list.append( 'MoveLiha(%d,%d,%d,1,"0104?",0,4,0,%.1f,0)'%(tipMask,loc.grid,loc.pos-1,speed))
         self.elapsed+=3.11
         
@@ -206,7 +206,7 @@ class WorkList(object):
     def flushQueue(self):
         if not self.delayEnabled or len(self.opQueue)==0:
             return
-        self.comment('*Flush queue')
+        #self.comment('*Flush queue')
         self.optimizeQueue()
         for d in self.opQueue:
             self.aspirateDispense(d[0],d[1],d[2],d[3],d[4],d[5],d[6],False)
@@ -422,7 +422,7 @@ class WorkList(object):
         
     def wash(self, tipMask,wasteVol=1,cleanerVol=2,deepClean=False):
         self.flushQueue()
-        self.comment("*Wash with tips=%d, wasteVol=%d, cleanerVol=%d, deep=%s"%(tipMask,wasteVol,cleanerVol,"Y" if deepClean else "N"))
+        #self.comment("*Wash with tips=%d, wasteVol=%d, cleanerVol=%d, deep=%s"%(tipMask,wasteVol,cleanerVol,"Y" if deepClean else "N"))
         wasteLoc=(1,1)
         if deepClean:
             cleanerLoc=(1,2)
