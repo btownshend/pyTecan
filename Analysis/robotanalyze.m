@@ -150,7 +150,7 @@ if fd>0
     end
     name=line(1:commas(1)-1);
     lens=struct('MX',[],'WX',[],'AX',[],'BX',[],'T7X',[]);
-    primers=struct('M','TCCGGTCTGATGAGTCC','T7W','AATTTAATACGACTCACTATAGGGAAACAAACAAAGCTGTCACCGGA','W','AAACAAACAAAGCTGTCACCGGA','A','CTTTTCCGTATATCTCGCCAG','B','CGGAAATTTCAAAGGTGCTTC','T7','AATTTAATACGACTCACTATAGGG','X','GGACGAAACAGCAAAAAGAAAAATAAAAA','XShort','GGACGAAACAGCAAAAAGAAAA');
+    primers=struct('M','TCCGGTCTGATGAGTCC','MCtl','TCCGGTACGTGAGGTCC','T7W','AATTTAATACGACTCACTATAGGGAAACAAACAAAGCTGTCACCGGA','W','AAACAAACAAAGCTGTCACCGGA','A','CTTTTCCGTATATCTCGCCAG','B','CGGAAATTTCAAAGGTGCTTC','T7','AATTTAATACGACTCACTATAGGG','X','GGACGAAACAGCAAAAAGAAAAATAAAAA','XShort','GGACGAAACAGCAAAAAGAAAA');
     commas(end+1)=length(line)+1;
     for k=2:length(commas)
       seq=line(commas(k-1)+1:commas(k)-1);
@@ -159,11 +159,17 @@ if fd>0
         %fprintf('Bad seq "%s"\n  Expected GCTGTC*GACAGC\n',seq);
         % Use full sequence search
         mstart=strfind(seq,primers.M);
+        if isempty(mstart)
+          if isempty(strfind(seq,primers.MCtl))
+            fprintf('Seq %s does not have an "M" or "MCtl" region\n', name);
+          end
+        end
         wstart=strfind(seq,primers.W);
         astart=strfind(seq,primers.A);
         bstart=strfind(seq,primers.B);
         t7start=strfind(seq,primers.T7);
         xstart=strfind(seq,primers.XShort);
+        ribostart=strfind(seq,'GCTGTCACCGGA');
         if isempty(xstart)
           fprintf('Unable to locate X (%s) in seq: %s\n', primers.X, seq);
           continue;
@@ -180,16 +186,22 @@ if fd>0
         end
         if ~isempty(astart)
           lens.AX(end+1)=xstart-astart+length(primers.X);
+        elseif ~isempty(ribostart)
+          lens.AX(end+1)=xstart-ribostart+lenA+lenT7+lenW+length(primers.X);
         else
           lens.AX(end+1)=nan;
         end
         if ~isempty(bstart)
           lens.BX(end+1)=xstart-bstart+length(primers.X);
+        elseif ~isempty(ribostart)
+          lens.BX(end+1)=xstart-ribostart+lenB+lenT7+lenW+length(primers.X);
         else
           lens.BX(end+1)=nan;
         end
         if ~isempty(t7start)
           lens.T7X(end+1)=xstart-t7start+length(primers.X);
+        elseif ~isempty(ribostart)
+          lens.T7X(end+1)=xstart-ribostart+lenT7+lenW+length(primers.X);
         else
           lens.T7X(end+1)=nan;
         end
