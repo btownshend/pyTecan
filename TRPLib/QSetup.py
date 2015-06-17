@@ -105,7 +105,11 @@ class QSetup(object):
             if len(inds)==0:
                 break
             print "Dilution stage ",stage,": ",[round(x,1) for x in stageDil if x!=1]
-            vol=[min(self.MAXDILVOL,max(self.MINDILVOL,x*self.TGTINVOL)) for x in [stageDil[i] for i in inds]]  # Make sure there's enough for  qPCR (6ul each) or next dilution (typicaly 5ul) and leaves 15 at end
+            if stage>0:
+                vol=[self.MAXDILVOL for i in inds]
+            else:
+                vol=[min(self.MAXDILVOL,max(self.MINDILVOL,x*self.TGTINVOL)) for x in [stageDil[i] for i in inds]]  # Make sure there's enough for  qPCR (6ul each) or next dilution (typicaly 5ul) and leaves 15 at end
+                print "vol=",vol
             ptmp=trp.runQPCRDIL(src=[dilProds[i] for i in inds],vol=vol,srcdil=[stageDil[i] for i in inds],tgt=None,dilPlate=True)  
             for i in range(len(inds)):
                 dilProds[inds[i]]=ptmp[i]
