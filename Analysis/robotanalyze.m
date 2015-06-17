@@ -231,6 +231,12 @@ end
 
 % Run analysis
 data.results=getct(data);
+
+% Build QPCR model
+data=robotcalib(data);
+setfig('QPCR Calib'); clf;
+data.qpcr.plot();
+
 if args.refadj
   d2=adjustdilutions(data,args.refconc);
 else

@@ -192,11 +192,16 @@ for i=1:length(sel)
     result.dilrelative='None';
   end
   % Calculate concentrations
-  p=data.primers.(v.primer);
-  if isfinite(v.ct)
-    v.conc=(p.eff^-v.ct*p.ct0*result.dilution)/(double(v.length))*1000;
+  if isfield(data,'qpcr')
+    v.conc=data.qpcr.getconc(v.primer,v.samp.well);
   else
-    v.conc=nan;
+    fprintf('No QPCR data found; falling back to model\n');
+    p=data.primers.(v.primer);
+    if isfinite(v.ct)
+      v.conc=(p.eff^-v.ct*p.ct0*result.dilution)/(double(v.length))*1000;
+    else
+      v.conc=nan;
+    end
   end
 
   if isfield(result,v.primer)
