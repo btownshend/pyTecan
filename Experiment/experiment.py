@@ -412,6 +412,7 @@ class Experiment(object):
         self.w.pyrun("BioShake\\bioexec.py shakeOn")
         self.starttimer()
         Sample.mixall(plate.name)
+        Sample.addallhistory("(S%d)"%dur,onlyplate=plate.name)
         self.waittimer(dur)
         self.w.pyrun("BioShake\\bioexec.py shakeOff")
         self.starttimer()

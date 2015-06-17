@@ -328,7 +328,6 @@ class Sample(object):
         for s in __allsamples:
             if plate==s.plate.name and s.volume>0:
                 s.isMixed=True
-                s.history+=" (MS)"
                 
     def addingredients(self,src,vol):
         'Update ingredients by adding ingredients from src'
