@@ -78,7 +78,7 @@ class Sample(object):
             for t in tiphistory:
                 print >>fd,"%d: %s\n"%(t,tiphistory[t])
             
-    def __init__(self,name,plate,well=None,conc=None,volume=0,liquidClass=liquidclass.LCDefault):
+    def __init__(self,name,plate,well=None,conc=None,volume=0,liquidClass=liquidclass.LCDefault,hasBeads=False):
         if well==None:
             # Find first unused well
             found=False
@@ -138,15 +138,9 @@ class Sample(object):
         self.history=""
         __allsamples.append(self)
         self.isMixed=True
-        self.hasBeads=False		# Setting this to true overrides the manual conditioning
+        self.initHasBeads=hasBeads
+        self.hasBeads=hasBeads		# Setting this to true overrides the manual conditioning
 
-    def setHasBeads(self):
-        'Mark this sample as containing beads and remove tip-touching liquid class'
-        self.hasBeads=True
-        self.isMixed=False   # Bead containing samples are never marked as mixed
-        self.bottomSideLC=self.beadsLC
-        self.bottomLC=self.beadsLC
-        
     @classmethod
     def clearall(cls):
         'Clear all samples'
@@ -154,6 +148,7 @@ class Sample(object):
             s.volume=s.initvolume
             s.history=""
             s.isMixed=True
+            s.hasBeads=s.initHasBeads
             if s.volume==0:
                 s.conc=None
                 s.ingredients={}
@@ -209,7 +204,7 @@ class Sample(object):
                 well=[self.well]
         
         lc=self.chooseLC(aspVolume)
-        if self.hasBeads:
+        if self.hasBeads and self.plate.curloc=="Magnet":
             # With beads don't do any manual conditioning and don't remove extra (since we usually want to control exact amounts left behind, if any)
             w.aspirateNC(tipMask,well,lc,aspVolume,self.plate)
             remove=aspVolume*ASPIRATEFACTOR
@@ -232,6 +227,7 @@ class Sample(object):
         if self.volume+.001<self.plate.unusableVolume and self.volume>0:
             # TODO - this hould be more visible in output
             print "Warning: Aspiration of %.1ful from %s brings volume down to %.1ful which is less than its unusable volume of %.1f ul"%(aspVolume,self.name,self.volume,self.plate.unusableVolume)
+
         self.addhistory("",-remove,tipMask)
 
     def aspirateAir(self,tipMask,w,volume):
@@ -250,7 +246,9 @@ class Sample(object):
         if self.volume+volume > self.plate.maxVolume:
             print "Warning: Dispense of %.1ful into %s results in total of %.1ful which is more than the maximum volume of %.1f ul"%(volume,self.name,self.volume+volume,self.plate.maxVolume)
             
-        if self.volume+volume>=MINSIDEDISPENSEVOLUME:
+        if self.hasBeads and self.plate.curloc=="Magnet":
+            w.dispense(tipMask,well,self.beadsLC,volume,self.plate)
+        elif self.volume+volume>=MINSIDEDISPENSEVOLUME:
             w.dispense(tipMask,well,self.bottomSideLC,volume,self.plate)
         else:
             w.dispense(tipMask,well,self.bottomLC,volume,self.plate)
@@ -278,6 +276,10 @@ class Sample(object):
 
          # Set to not mixed after second ingredient added
         self.isMixed=self.volume==0
+        if src.hasBeads and src.plate.curloc!="Magnet":
+            #print "Set %s to have beads since %s does\n"%(self.name,src.name)
+            self.hasBeads=True
+            self.isMixed=False
         self.volume=self.volume+volume
         self.addhistory(src.name,volume,tipMask)
         self.addingredients(src,volume)
@@ -343,6 +345,8 @@ class Sample(object):
             return self.inliquidLC
         elif self.volume==0 and aspirateVolume==0:
             return self.emptyLC
+        elif self.hasBeads and self.plate.curloc=="Magnet":
+            return self.beadsLC
         else:
             return self.bottomLC
         
@@ -398,8 +402,7 @@ class Sample(object):
                     w.dispense(tipMask,well,dipLC,0.1,self.plate)
 
             tiphistory[tipMask]+=" %s-Mix[%d]"%(self.name,mixvol)
-            if not self.hasBeads:
-                self.isMixed=True
+            self.isMixed=not self.hasBeads
             return True
             
     def __str__(self):
