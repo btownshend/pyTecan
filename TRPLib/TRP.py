@@ -230,28 +230,29 @@ class TRP(object):
             if s.plate!=self.e.SAMPLEPLATE:
                 print "runBeadCleanup: src ",s," is not in sample plate."
                 assert(0)
+            s.conc=None		# Can't track concentration of beads
             
         sbeads=findsamps(beads,False)
         sbuffer=findsamps(buffer,False)
         # Calculate volumes needed
+        beadConc=[sbeads[i].conc.final if beadConc[i]==None else beadConc[i] for i in range(len(sbeads))]
+        beadDil=sbeads[i].conc.stock/beadConc[i]
         if addBuffer:
-            buffervol=[ssrc[i].volume/(sbuffer[i].conc.dilutionneeded()-1) for i in range(len(ssrc))]
+            totalvol=[s.volume/(1-1.0/beadDil-1.0/sbuffer[i].conc.dilutionneeded()) for s in ssrc]
+            buffervol=[totalvol[i]/sbuffer[i].conc.dilutionneeded() for i in range(len(ssrc))]
             # Add binding buffer to bring to 1x (beads will already be in 1x, so don't need to provide for them)
             for i in range(len(ssrc)):
                 self.e.transfer(buffervol[i],sbuffer[i],ssrc[i],(False,False))
         else:
             buffervol=[0.0 for i in range(len(ssrc))]
+            totalvol=[s.volume/(1-1.0/beadDil) for s in ssrc]
 
-        beadConc=[sbeads[i].conc.final if beadConc[i]==None else beadConc[i] for i in range(len(sbeads))]
-        beadvol=[(ssrc[i].volume+buffervol[i])/(sbeads[i].conc.stock/beadConc[i]-1) for i in range(len(ssrc))]
+        beadvol=[t/beadDil for t in totalvol]
 
         # Transfer the beads
         for i in range(len(ssrc)):
             sbeads[i].isMixed=False	# Force a mix
-            ssrc[i].conc=None		# Can't track concentration of beads
-            self.e.transfer(beadvol[i],sbeads[i],ssrc[i],(i==0,False))	# Mix beads before
-            ssrc[i].setHasBeads()	# Mark the source tubes as having beads to change condition, liquid classes
-            
+            self.e.transfer(beadvol[i],sbeads[i],ssrc[i],(True,False))	# Mix beads before
 
         self.e.shake(ssrc[0].plate,dur=incTime,returnPlate=False)
 
@@ -265,6 +266,9 @@ class TRP(object):
         self.e.pause(sepTime)	# Wait for separation
         
     def beadWash(self,src,washTgt=None,sepTime=None,residualVolume=10,keepWash=False,numWashes=2,wash="Water",washVol=50,keepFinal=False,finalTgt=None,keepVol=4.2,keepDil=5):
+        # Perform washes
+        # If keepWash is true, retain all washes (combined)
+        # If keepFinal is true, take a sample of the final wash (diluted by keepDil)
         [src,wash]=listify([src,wash])
         ssrc=findsamps(src,False)
         # Do all washes while on magnet
@@ -297,7 +301,6 @@ class TRP(object):
                     if keepWash:
                         self.e.transfer((ssrc[i].volume-residualVolume)/ASPIRATEFACTOR,ssrc[i],sWashTgt[i])	# Keep supernatants
                         sWashTgt[i].conc=None	# Allow it to be reused
-                        sWashTgt[i].setHasBeads()   # To have it mixed before any aspirations
                     else:
                         self.e.dispose((ssrc[i].volume-residualVolume)/ASPIRATEFACTOR,ssrc[i])	# Discard supernatant
                 
@@ -316,7 +319,9 @@ class TRP(object):
             else:
                 for i in range(len(ssrc)):
                     self.e.transfer(washVol-ssrc[i].volume,swash[i],ssrc[i],mix=(False,False))	# Add wash
-
+                self.e.shake(ssrc[0].plate,returnPlate=False)
+                self.e.moveplate(ssrc[0].plate,"Magnet")
+                
             self.sepWait(ssrc,sepTime)
                 
             for i in range(len(ssrc)):
@@ -357,6 +362,8 @@ class TRP(object):
             for i in range(len(src)):
                 tgt.append("%s.SN"%src[i])
         ssrc=findsamps(src,False)
+        if plate==None:
+            plate=self.e.SAMPLEPLATE
         stgt=findsamps(tgt,plate=plate,unique=True)
 
         self.e.moveplate(ssrc[0].plate,"Magnet")	# Move to magnet
@@ -511,6 +518,10 @@ class TRP(object):
         #print "stgt[0]=",str(stgt[0])
         ssrc=findsamps(src,False)
         
+        # Adjust source dilution
+        for i in range(len(ssrc)):
+            ssrc[i].conc=Concentration(srcdil[i],1)
+
         primer=[prefix[i]+suffix[i] for i in range(len(prefix))]
         #print "primer=",primer
         if any(p=='AS' for p in primer):
