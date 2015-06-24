@@ -1,0 +1,17 @@
+export PYTHONPATH=../../pyTecan
+if [ $# != 1 ]
+then
+    echo Usage: tecanmake file.py
+    exit 1
+fi	 
+FILE=$(echo $1 | sed -e 's/\.py//')
+UDIR=$(mktemp -d /tmp/tecanmakeXXXXX)
+UNOPT=$UDIR/TMP_UNOPT
+sed -e 's/setOptimization(True)/setOptimization(False)/'  "$FILE.py" > $UNOPT.py
+python "$FILE.py">"$FILE.log"
+python "$UNOPT.py">"$UNOPT.log"
+cat "$FILE.log"
+echo 'Diffs between optimized and unoptimized versions:'
+diff $FILE.txt $UNOPT.txt
+#rm -rf $UDIR
+

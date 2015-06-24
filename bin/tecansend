@@ -1,0 +1,1 @@
+scp *.gem "Admin@171.64.80.58:'/cygdrive/c/Program Files (x86)/Tecan/Gemini/Data'"
