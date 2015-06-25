@@ -5,12 +5,11 @@ import sys
 import math
 
 class QSetup(object):
-    MAXDIL=32.0
     MINDILVOL=40.0
     MAXDILVOL=100.0
     TGTINVOL=4
     
-    def __init__(self,vol=15):
+    def __init__(self,vol=15,maxdil=32):
         'Create a new QPCR setup structure'
         self.volume=vol
         self.samples=[]
@@ -20,6 +19,7 @@ class QSetup(object):
         self.dilProds=[]
         self.reuse=[]   # Index of prior dilution that can be used as input to this one; otherwise None
         self.stages=[]
+        self.MAXDIL=maxdil
         
     def addSamples(self, src, needDil, primers,nreplicates=1):
         'Add sample(s) to list of qPCRs to do'
