@@ -5,8 +5,8 @@ import sys
 import math
 
 class QSetup(object):
-    MINDILVOL=40.0
-    MAXDILVOL=100.0
+    MINDILVOL=45.0
+    MAXDILVOL=150.0
     TGTINVOL=4
     
     def __init__(self,vol=15,maxdil=32):
