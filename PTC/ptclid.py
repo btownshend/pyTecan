@@ -17,12 +17,16 @@ for i in range(10):
     if cmd=="OPEN":
         if lidstatus=="OPEN":
             exit(0)
+        elif lidstatus=="ER_TIMEOUT":
+            logging.warning("Got ER_TIMEOUT, continuing wait")
         elif lidstatus!="OPENING":
             logging.error( "Unexpected lid status: %s"%lidstatus)
             exit(1)
     else:
         if lidstatus=="CLOSED":
             exit(0)
+        elif lidstatus=="ER_TIMEOUT":
+            logging.warning("Got ER_TIMEOUT, continuing wait")
         elif lidstatus!="CLOSING":
             logging.error( "Unexpected lid status: %s"%lidstatus)
             exit(1)
