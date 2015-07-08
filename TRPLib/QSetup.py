@@ -101,10 +101,10 @@ class QSetup(object):
                 if stageDil[i]>self.MAXDIL:
                     nstages=math.ceil(math.log(stageDil[i])/math.log(self.MAXDIL))
                     stageDil[i]=math.pow(stageDil[i],1/nstages)
-            inds=[i for i in range(len(stageDil)) if stageDil[i]!=1]
+            inds=[i for i in range(len(stageDil)) if stageDil[i]>1.1]
             if len(inds)==0:
                 break
-            print "Dilution stage ",stage,": ",[round(x,1) for x in stageDil if x!=1]
+            print "Dilution stage ",stage,": ",[round(x,1) for x in stageDil if x>1.1]
             if stage>0:
                 vol=[self.MAXDILVOL for i in inds]
             else:
