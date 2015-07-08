@@ -5,7 +5,7 @@ import sys
 import math
 
 class QSetup(object):
-    MINDILVOL=45.0
+    MINDILVOL=50.0
     MAXDILVOL=150.0
     TGTINVOL=4
     
