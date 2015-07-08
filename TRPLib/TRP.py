@@ -135,7 +135,7 @@ class TRP(object):
         self.e.savesummary(scriptname+".txt")
         Sample.savematlab(scriptname+".m")
         
-    def saveSamps(self,src,vol,dil,tgt=None,dilutant=None,plate=None):
+    def saveSamps(self,src,vol,dil,tgt=None,dilutant=None,plate=None,mix=(True,True)):
         if tgt==None:
             tgt=[]
         [src,vol,dil]=listify([src,vol,dil])
@@ -152,7 +152,7 @@ class TRP(object):
             dilutant=self.e.WATER
         self.e.multitransfer([vol[i]*(dil[i]-1) for i in range(len(vol))],dilutant,stgt,(False,False))
         for i in range(len(ssrc)):
-            self.e.transfer(vol[i],ssrc[i],stgt[i],(True,True))
+            self.e.transfer(vol[i],ssrc[i],stgt[i],mix)
             stgt[i].conc=Concentration(1.0/dil[i])
             
         return tgt
