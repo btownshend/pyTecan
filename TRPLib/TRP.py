@@ -217,7 +217,10 @@ class TRP(object):
         return tgt
     
     def runT7Pgm(self,vol,dur):
-        pgm="TRP37-%d"%dur
+        if dur<100:
+            pgm="TRP37-%d"%dur
+        else:
+            pgm="T37-%d"%dur
         self.e.w.pyrun('PTC\\ptcsetpgm.py %s TEMP@37,%d TEMP@25,2'%(pgm,dur*60))
         self.e.runpgm(pgm,dur, False,vol)
 
@@ -459,9 +462,12 @@ class TRP(object):
         return tgt
 
     def runRTPgm(self,dur=20):
-        pgm="TRP37-%d"%dur
+        if dur<100:
+            pgm="TRP37-%d"%dur
+        else:
+            pgm="T37-%d"%dur
         self.e.w.pyrun('PTC\\ptcsetpgm.py %s TEMP@37,%d TEMP@25,2'%(pgm,dur*60))
-        self.e.runpgm("TRP37-%d"%dur,dur,False,100)		# Volume doesn't matter since it's just an incubation, use 100ul
+        self.e.runpgm(pgm,dur,False,100)		# Volume doesn't matter since it's just an incubation, use 100ul
  
     def runLig(self,prefix=None,src=None,vol=None,srcdil=None,tgt=None,master=None,anneal=True,ligtemp=25):
         if tgt==None:
