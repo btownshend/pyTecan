@@ -85,6 +85,35 @@ def findsamps(x,createIfMissing=True,plate=Experiment.SAMPLEPLATE,unique=False):
         s.append(t)
     return s
 
+def diluteName(name,dilution):
+    # Create a name for a dilution of another sample
+    # Collapses any current dilution
+    components = name.split('.')
+    curdil=1
+    replicate=1
+    if len(components[-1])==1:
+        replicate=int(components[-1])
+        components=components[:-1]
+        
+    if components[-1][0]=='D':
+        olddilstr=components[-1][1:]
+        curdil=float(olddilstr.replace("_","."))
+        if curdil==0:
+            curdil=1
+        else:
+            components=components[:-1]
+    dilstr="%.2f"%(curdil*dilution)
+    while dilstr[-1]=='0':
+        dilstr=dilstr[:-1]
+    if dilstr[-1]=='.':
+        dilstr=dilstr[:-1]
+    dilstr=dilstr.replace(".","_")
+    result=".".join(components) + ".D"+dilstr
+#    if replicate!=1:
+#        result=result+"."+"%d"%replicate
+#    print "%s diluted %.2f -> %s"%(name,dilution,result)
+    return result
+
 class TRP(object):
            
     def __init__(self):
@@ -140,7 +169,7 @@ class TRP(object):
             tgt=[]
         [src,vol,dil]=listify([src,vol,dil])
         if len(tgt)==0:
-            tgt=["%s.D%.0f"%(src[i],dil[i]) for i in range(len(src))]
+            tgt=[diluteName(src[i],dil[i]) for i in range(len(src))]
         tgt=uniqueTargets(tgt)
         if plate==None:
             plate=self.e.REAGENTPLATE
@@ -569,13 +598,14 @@ class TRP(object):
         self.e.shake(stgt[0].plate)
         return tgt   #  The name of the samples are unchanged -- the predilution names
         
+    
     def runQPCRDIL(self,src,vol,srcdil,tgt=None,dilPlate=False,shaker=True):
         if tgt==None:
             tgt=[]
         [src,vol,srcdil]=listify([src,vol,srcdil])
         vol=[float(v) for v in vol]
         if len(tgt)==0:
-            tgt=["%s.D%.0f"%(src[i],srcdil[i]) for i in range(len(src))]
+            tgt=[diluteName(src[i],srcdil[i]) for i in range(len(src))]
         tgt=uniqueTargets(tgt)
         if dilPlate:
             stgt=findsamps(tgt,True,Experiment.DILPLATE,unique=True)
