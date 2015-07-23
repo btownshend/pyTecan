@@ -10,7 +10,7 @@
 % Returns [] if sample is not a qPCR product
 function r=robotidentify(samp)
 
-ignores={'Water','SSD','Dynabeads','MStpBeads','MStpX','MStopXBio','MLigase','BeadBuffer'};
+ignores={'Water','SSD','Dynabeads','MStpBeads','MStpX','MStpXConc','MStopXBio','MLigase','BeadBuffer'};
 targets={'Theo'};
 hasT7=false;
 hasRT=false;
