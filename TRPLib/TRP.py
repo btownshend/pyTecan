@@ -181,6 +181,8 @@ class TRP(object):
             dilutant=self.e.WATER
         self.e.multitransfer([vol[i]*(dil[i]-1) for i in range(len(vol))],dilutant,stgt,(False,False))
         for i in range(len(ssrc)):
+            if not ssrc[i].isMixed:
+                self.e.shake(ssrc[i].plate,returnPlate=True)
             self.e.transfer(vol[i],ssrc[i],stgt[i],mix)
             stgt[i].conc=Concentration(1.0/dil[i])
             
@@ -635,6 +637,8 @@ class TRP(object):
             if i<len(ssrc)-3 and stgt[i].well+1==stgt[i+1].well and stgt[i].well+2==stgt[i+2].well and stgt[i].well+3==stgt[i+3].well and stgt[i].well%4==0 and self.e.cleanTips!=15:
                 #print "Aligning tips"
                 self.e.sanitize()
+            if not ssrc[i].isMixed:
+                self.e.shake(ssrc[i].plate,returnPlate=True)
             self.e.transfer(srcvol[i],ssrc[i],stgt[i],(False,False))
             if stgt[i].conc != None:
                 stgt[i].conc.final=None	# Final conc are meaningless now
@@ -680,6 +684,8 @@ class TRP(object):
             p=a[2]
             v=a[3]/dil[p]
             t.conc=None		# Concentration of master mix is irrelevant now
+            if not s.isMixed:
+                self.e.shake(s.plate,returnPlate=True)
             self.e.transfer(v,s,t,(False,False))
             
         return [a[1] for a in all]
