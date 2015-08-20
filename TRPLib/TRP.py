@@ -420,7 +420,7 @@ class TRP(object):
         mastervol=[vol[i]/smaster[i].conc.dilutionneeded() for i in range(len(vol))]
         watervol=[vol[i]-ssrc[i].volume-mastervol[i] for i in range(len(vol))]
         if any([w < -0.01 for w in watervol]):
-            print "runRTOnBeads: negative amount of water needed"
+            print "runRxOnBeads: negative amount of water needed: ",w
             assert(False)
         for i in range(len(ssrc)):
             if  watervol[i]>0:
