@@ -345,8 +345,8 @@ class TRP(object):
                 'Retain sample of final'
                 self.e.moveplate(ssrc[0].plate,"Home")
                 for i in range(len(ssrc)):
-                    self.e.transfer(washVol-ssrc[i].volume,swash[i],ssrc[i],mix=(False,False))	# Add wash
-
+                    self.e.transfer(washVol-ssrc[i].volume,swash[i],ssrc[i],mix=(False,True))	# Add wash
+                self.e.shake(ssrc[0].plate,returnPlate=True)
                 self.saveSamps(src=src,tgt=finalTgt,vol=keepVol,dil=keepDil,plate=Experiment.DILPLATE)
                 self.e.moveplate(ssrc[0].plate,"Magnet")	# Move to magnet
             else:
@@ -383,7 +383,7 @@ class TRP(object):
             if elutionVol[i]<30:
                 print "Warning: elution from beads with %.1f ul < minimum of 30ul"%elutionVol[i]
                 print "  src=",ssrc[i]
-            self.e.transfer(elutionVol[i]-ssrc[i].volume,selutant[i],ssrc[i],(False,False))	
+            self.e.transfer(elutionVol[i]-ssrc[i].volume,selutant[i],ssrc[i],(False,True))	
         self.e.shake(ssrc[0].plate,dur=eluteTime,returnPlate=returnPlate)
 
     def beadSupernatant(self,src,tgt=None,sepTime=None,residualVolume=10,plate=None):
