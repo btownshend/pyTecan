@@ -412,7 +412,7 @@ class TRP(object):
         self.runRTPgm(dur)
         return result
     
-    def runRxOnBeads(self,src,vol,master):
+    def runRxOnBeads(self,src,vol,master,returnPlate=True):
         'Run reaction on beads in given total volume'
         [vol,src,master]=listify([vol,src,master])
         ssrc=findsamps(src,False)
@@ -426,11 +426,12 @@ class TRP(object):
             if  watervol[i]>0:
                 self.e.transfer(watervol[i],self.e.WATER,ssrc[i],(False,False))
         for i in range(len(ssrc)):
-            self.e.transfer(mastervol[i],smaster[i],ssrc[i],(False,True))
-
+            self.e.transfer(mastervol[i],smaster[i],ssrc[i],(False,False))
+        self.e.shake(ssrc[0].plate,returnPlate=returnPlate)
+        
     def runRTOnBeads(self,src,vol,dur=20):
         'Run RT on beads in given volume'
-        self.runRxOnBeads(src,vol,"MPosRT")
+        self.runRxOnBeads(src,vol,"MPosRT",returnPlate=False)
         self.runRTPgm(dur)
         
     def runRTSetup(self,pos,src,vol,srcdil,tgt=None):
@@ -531,12 +532,12 @@ class TRP(object):
         [vol,src]=listify([vol,src])
         annealvol=[v*(1-1/self.r.MLigase.conc.dilutionneeded()) for v in vol]
         ssrc=findsamps(src,False)
-        self.runRxOnBeads(src,annealvol,ligmaster)
+        self.runRxOnBeads(src,annealvol,ligmaster,returnPlate=not anneal)
         if anneal:
             self.e.runpgm("TRPANN",5,False,max([s.volume for s in ssrc]),hotlidmode="CONSTANT",hotlidtemp=100)
 
         ## Add ligase
-        self.runRxOnBeads(src,vol,"MLigase")
+        self.runRxOnBeads(src,vol,"MLigase",returnPlate=False)
         self.runLigPgm(max(vol),ligtemp,inactivate=False)	# Do not heat inactivate since it may denature the beads
 
     def runPCR(self,prefix,src,vol,srcdil,tgt=None,ncycles=20,suffix='S'):
@@ -578,7 +579,7 @@ class TRP(object):
         [prefix,src,vol,suffix]=listify([prefix,src,vol,suffix])
 
         primer=["MPCR"+prefix[i]+suffix[i] for i in range(len(prefix))]
-        self.runRxOnBeads(src,vol,primer)
+        self.runRxOnBeads(src,vol,primer,returnPlate=(save!=None))
 
         pgm="PCR%d"%ncycles
         #        self.e.w.pyrun('PTC\\ptcsetpgm.py %s TEMP@95,120 TEMP@95,30 TEMP@55,30 TEMP@72,25 GOTO@2,%d TEMP@72,180 TEMP@16,2'%(pgm,ncycles-1))
