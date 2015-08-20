@@ -575,11 +575,13 @@ class TRP(object):
         self.e.runpgm(pgm,4.80+1.55*ncycles,False,max(vol),hotlidmode="CONSTANT",hotlidtemp=100)
         return tgt
 
-    def runPCROnBeads(self,prefix,src,vol,ncycles,suffix,annealtemp=57):
+    def runPCROnBeads(self,prefix,src,vol,ncycles,suffix,annealtemp=57,save=None):
         [prefix,src,vol,suffix]=listify([prefix,src,vol,suffix])
 
         primer=["MPCR"+prefix[i]+suffix[i] for i in range(len(prefix))]
         self.runRxOnBeads(src,vol,primer,returnPlate=(save!=None))
+        if save!=None:
+            self.saveSamps(src=src,vol=5,dil=10,tgt=save,plate=self.e.DILPLATE,mix=(False,False))
 
         pgm="PCR%d"%ncycles
         #        self.e.w.pyrun('PTC\\ptcsetpgm.py %s TEMP@95,120 TEMP@95,30 TEMP@55,30 TEMP@72,25 GOTO@2,%d TEMP@72,180 TEMP@16,2'%(pgm,ncycles-1))
