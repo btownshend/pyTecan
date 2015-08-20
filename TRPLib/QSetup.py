@@ -3,6 +3,9 @@ import TRP
 import os
 import sys
 import math
+from Experiment.experiment import Experiment
+from Experiment.sample import Sample
+from TRPLib.TRP import uniqueTargets, diluteName
 
 class QSetup(object):
     MINDILVOL=50.0
@@ -24,13 +27,24 @@ class QSetup(object):
         
     def addSamples(self, src, needDil, primers,nreplicates=1):
         'Add sample(s) to list of qPCRs to do'
-        #print "addSamples(src=",src,", needDil=","%.1f"%needDil,", primers=",primers,", nrep=",nreplicates,")"
-        self.samples=self.samples+src
-        self.needDil=self.needDil+[needDil]*len(src)
-        self.primers=self.primers+[primers]*len(src)
-        self.nreplicates=self.nreplicates+[nreplicates]*len(src)
-        self.stages=self.stages+[int(math.ceil(math.log(needDil)/math.log(self.MAXDIL)))]*len(src)
-        self.reuse=self.reuse+[None]*len(src)
+        saveDil=min(needDil,self.MAXDIL)
+        saveVol=max(self.MINDILVOL/saveDil,self.TGTINVOL)
+        tgt=[diluteName(src[i],saveDil) for i in range(len(src))]
+        sv=tgt
+        for i in range(len(tgt)):
+            t=Sample.lookup(tgt[i])
+            if t==None or t.volume==0:
+                #print "Save ",src[i]
+                svtmp=self.trp.saveSamps(src=[src[i]],tgt=[tgt[i]],vol=saveVol,dil=saveDil,plate=Experiment.DILPLATE,mix=(False,False))
+                sv[i]=svtmp[0]
+        #print "addSamples(src=",src,", tgt=",tgt,", needDil=","%.1f"%needDil,", primers=",primers,", nrep=",nreplicates,")"
+        needDil=needDil/saveDil
+        self.samples=self.samples+sv
+        self.needDil=self.needDil+[needDil]*len(sv)
+        self.primers=self.primers+[primers]*len(sv)
+        self.nreplicates=self.nreplicates+[nreplicates]*len(sv)
+        self.stages=self.stages+[int(math.ceil(math.log(needDil)/math.log(self.MAXDIL)))]*len(sv)
+        self.reuse=self.reuse+[None]*len(sv)
 
     def findReuses(self):
         'Find any prior dilutions that can be reused'
