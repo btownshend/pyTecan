@@ -188,7 +188,8 @@ class Sample(object):
             print "WARNING: Inaccurate for < 2ul:  attempting to aspirate %.1f ul from %s"%(volume,self.name)
         if volume>self.volume and self.volume>0:
             print "ERROR:Attempt to aspirate %.1f ul from %s that contains only %.1f ul"%(volume, self.name, self.volume)
-            
+        if not self.isMixed:
+            print "WARNING: Aspirate %.1f ul from unmixed sample %s. "%(volume,self.name)
         if self.hasBeads:
             aspVolume=volume
         else:
@@ -323,7 +324,7 @@ class Sample(object):
                     s.history+=" "+msg
                 elif addToEmpty:
                     s.history=msg
-
+            
     @staticmethod
     def mixall(plate):
         'Mark all on given plate as mixed'
