@@ -347,7 +347,6 @@ class TRP(object):
                 for i in range(len(ssrc)):
                     self.e.transfer(washVol-ssrc[i].volume,swash[i],ssrc[i],mix=(False,False))	# Add wash
 
-                self.e.shake(ssrc[0].plate)
                 self.saveSamps(src=src,tgt=finalTgt,vol=keepVol,dil=keepDil,plate=Experiment.DILPLATE)
                 self.e.moveplate(ssrc[0].plate,"Magnet")	# Move to magnet
             else:
@@ -606,7 +605,6 @@ class TRP(object):
                 print "diluteInPlace: cannot specify both dil and finalvol"
                 assert(False)
         #print "after dilute, stgt[0]=",str(stgt[0]),",mixed=",stgt[0].isMixed
-        self.e.shake(stgt[0].plate)
         return tgt   #  The name of the samples are unchanged -- the predilution names
         
     
@@ -643,7 +641,6 @@ class TRP(object):
             if stgt[i].conc != None:
                 stgt[i].conc.final=None	# Final conc are meaningless now
             
-        #self.e.shake(stgt[0].plate)
         return tgt
         
     def runQPCR(self,src,vol,srcdil,primers=["A","B"],nreplicates=1):
