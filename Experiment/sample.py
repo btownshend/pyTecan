@@ -352,7 +352,7 @@ class Sample(object):
         
         # Mix, return true if actually did a mix, false otherwise
     def mix(self,tipMask,w,preaspirateAir=False,nmix=4):
-        if self.isMixed:
+        if self.isMixed and not self.hasBeads:
             #print "Sample %s is already mixed"%self.name
             return False
         blowvol=20
@@ -402,7 +402,7 @@ class Sample(object):
                     w.dispense(tipMask,well,dipLC,0.1,self.plate)
 
             tiphistory[tipMask]+=" %s-Mix[%d]"%(self.name,mixvol)
-            self.isMixed=not self.hasBeads
+            self.isMixed=True
             return True
             
     def __str__(self):
