@@ -9,7 +9,7 @@ class QSetup(object):
     MAXDILVOL=150.0
     TGTINVOL=4
     
-    def __init__(self,vol=15,maxdil=32):
+    def __init__(self,trp,vol=15,maxdil=32):
         'Create a new QPCR setup structure'
         self.volume=vol
         self.samples=[]
@@ -20,6 +20,7 @@ class QSetup(object):
         self.reuse=[]   # Index of prior dilution that can be used as input to this one; otherwise None
         self.stages=[]
         self.MAXDIL=maxdil
+        self.trp=trp
         
     def addSamples(self, src, needDil, primers,nreplicates=1):
         'Add sample(s) to list of qPCRs to do'
@@ -84,7 +85,7 @@ class QSetup(object):
             self.addSamples(src=[ref],needDil=mindil*math.pow(dstep,i),primers=self.allprimers(),nreplicates=nreplicates)
         self.addSamples(src=["Water"],needDil=1,primers=self.allprimers(),nreplicates=nreplicates)
 
-    def run(self,trp):
+    def run(self):
         'Run the dilutions and QPCR setup'
         #print "run()"
 
@@ -110,7 +111,7 @@ class QSetup(object):
             else:
                 vol=[min(self.MAXDILVOL,max(self.MINDILVOL,x*self.TGTINVOL)) for x in [stageDil[i] for i in inds]]  # Make sure there's enough for  qPCR (6ul each) or next dilution (typicaly 5ul) and leaves 15 at end
                 print "vol=",vol
-            ptmp=trp.runQPCRDIL(src=[dilProds[i] for i in inds],vol=vol,srcdil=[stageDil[i] for i in inds],tgt=None,dilPlate=True)  
+            ptmp=self.trp.runQPCRDIL(src=[dilProds[i] for i in inds],vol=vol,srcdil=[stageDil[i] for i in inds],tgt=None,dilPlate=True)  
             for i in range(len(inds)):
                 dilProds[inds[i]]=ptmp[i]
             needDil=[needDil[i]/stageDil[i] for i in range(len(needDil))]
@@ -120,4 +121,4 @@ class QSetup(object):
         for p in self.allprimers():
             # Build list of relevant entries
             ind=[ i for i in range(len(self.samples)) if p in self.primers[i]]
-            trp.runQPCR(src=[self.dilProds[i] for i in ind],vol=self.volume,srcdil=10.0/4,primers=[p],nreplicates=[self.nreplicates[i] for i in ind])
+            self.trp.runQPCR(src=[self.dilProds[i] for i in ind],vol=self.volume,srcdil=10.0/4,primers=[p],nreplicates=[self.nreplicates[i] for i in ind])
