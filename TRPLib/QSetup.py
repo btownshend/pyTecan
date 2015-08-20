@@ -78,11 +78,13 @@ class QSetup(object):
     def allprimers(self):
         return set([p for sublist in self.primers for p in sublist])
 
-    def addReferences(self,mindil=1,nsteps=6,dstep=4,nreplicates=1,ref="QPCRREF"):
+    def addReferences(self,mindil=1,nsteps=6,dstep=4,nreplicates=1,ref="QPCRREF",primers=None):
         'Add all needed references'
         #print "addReferences(mindil=",mindil,", nsteps=",nsteps,", dstep=",dstep,", nrep=", nreplicates, ", ref=",ref,")"
+        if primers==None:
+            primers=self.allprimers()
         for i in range(nsteps):
-            self.addSamples(src=[ref],needDil=mindil*math.pow(dstep,i),primers=self.allprimers(),nreplicates=nreplicates)
+            self.addSamples(src=[ref],needDil=mindil*math.pow(dstep,i),primers=primers,nreplicates=nreplicates)
         self.addSamples(src=["Water"],needDil=1,primers=self.allprimers(),nreplicates=nreplicates)
 
     def run(self):
