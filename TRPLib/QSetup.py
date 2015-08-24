@@ -37,7 +37,8 @@ class QSetup(object):
             t=Sample.lookup(tgt[i])
             if t==None or t.volume==0:
                 #print "Save ",src[i]
-                svtmp=self.trp.saveSamps(src=[src[i]],tgt=[tgt[i]],vol=saveVol,dil=saveDil,plate=Experiment.DILPLATE,mix=(False,False))
+                svtmp=self.trp.runQPCRDIL(src=[src[i]],vol=saveVol*saveDil,srcdil=saveDil,tgt=[tgt[i]],dilPlate=True)  
+                #svtmp=self.trp.saveSamps(src=[src[i]],tgt=[tgt[i]],vol=saveVol,dil=saveDil,plate=Experiment.DILPLATE,mix=(False,False))
                 sv[i]=svtmp[0]
         #print "addSamples(src=",src,", tgt=",tgt,", needDil=","%.1f"%needDil,", primers=",primers,", nrep=",nreplicates,")"
         needDil=needDil/saveDil
