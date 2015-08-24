@@ -28,6 +28,8 @@ class QSetup(object):
     def addSamples(self, src, needDil, primers,nreplicates=1):
         'Add sample(s) to list of qPCRs to do'
         saveDil=min(needDil,self.MAXDIL)
+        if needDil/saveDil>1 and needDil/saveDil<2:
+            saveDil=math.sqrt(needDil)
         saveVol=max(self.MINDILVOL/saveDil,self.TGTINVOL)
         tgt=[diluteName(src[i],saveDil) for i in range(len(src))]
         sv=tgt
