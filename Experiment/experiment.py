@@ -352,7 +352,7 @@ class Experiment(object):
         if waitForCompletion:
             self.waitpgm()
             
-    def moveplate(self,plate,dest="Home"):
+    def moveplate(self,plate,dest="Home",returnHome=True):
         # move to given destination (one of "Home","Magnet","Shaker","PTC" )
         if plate.curloc==dest:
             print "Plate %s is already at %s"%(plate.name,dest)
@@ -392,7 +392,8 @@ class Experiment(object):
             assert(False)
 
         Sample.addallhistory("{->%s}"%dest,onlyplate=plate.name)
-        self.w.romahome()
+        if returnHome:
+            self.w.romahome()
 
     def shake(self,plate,dur=60,speed=1600,accel=1,returnPlate=True):
         # Move the plate to the shaker, run for the given time, and bring plate back
@@ -405,7 +406,7 @@ class Experiment(object):
         if (maxvol>151 and speed>=1600) or (maxvol>101 and speed>1800) or (maxvol>51 and speed>2000) or (maxvol>21 and speed>2200):
             print "WARNING: %s plate contains wells with up to %.2f ul, which may spill at %d RPM"%(plate.name, maxvol, speed)
         oldloc=plate.curloc
-        self.moveplate(plate,"Shaker")
+        self.moveplate(plate,"Shaker",returnHome=False)
         self.w.pyrun("BioShake\\bioexec.py setElmLockPos")
         self.w.pyrun("BioShake\\bioexec.py setShakeTargetSpeed%d"%speed)
         self.w.pyrun("BioShake\\bioexec.py setShakeAcceleration%d"%accel)
