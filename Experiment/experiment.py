@@ -417,7 +417,7 @@ class Experiment(object):
         self.waittimer(dur)
         self.w.pyrun("BioShake\\bioexec.py shakeOff")
         self.starttimer()
-        self.waittimer(10)
+        self.waittimer(5)
         self.w.pyrun("BioShake\\bioexec.py setElmUnlockPos")
         if returnPlate:
             self.moveplate(plate,oldloc)
