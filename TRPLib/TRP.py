@@ -215,7 +215,7 @@ class TRP(object):
         self.e.multitransfer([tv for tv in theovols if tv>0.01],self.r.Theo,[stgt[i] for i in range(len(theovols)) if theovols[i]>0],(False,False),ignoreContents=True)
         for i in range(len(ssrc)):
             self.e.transfer(sourcevols[i],ssrc[i],stgt[i],(True,False))
-        self.e.shake(stgt[0].plate,returnPlate=False)
+        self.e.shake(stgt[0].plate,returnPlate=True)
         return tgt
     
     def runT7Pgm(self,vol,dur):
