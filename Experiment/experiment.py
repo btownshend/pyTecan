@@ -13,7 +13,7 @@ class Experiment(object):
     SAMPLEPLATELOC=Plate("Samples",4,3,12,8,False,15)
     MAGPLATELOC=Plate("MagPlate",18,2,12,8,False,9)   # HSP9601 on magnetic plate  (Unusable volume of 9ul)
     SAMPLEPLATE=Plate("Samples",4,3,12,8,False,15)
-    SHAKERPLATELOC=Plate("Shaker",1,1,1,1)
+    SHAKERPLATELOC=Plate("Shaker",9,0,1,1)
     #    READERPLATE=Plate("Reader",4,1,12,8,False,15)
     QPCRPLATE=Plate("qPCR",4,1,12,8,False,15)
     DILPLATE=Plate("Dilutions",4,2,12,8,False,15)
