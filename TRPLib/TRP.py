@@ -187,7 +187,27 @@ class TRP(object):
             stgt[i].conc=Concentration(1.0/dil[i])
             
         return tgt
-            
+    
+    def distribute(self,src,dil,vol,wells,tgt=None,dilutant=None,plate=Experiment.SAMPLEPLATE):
+        
+        if tgt==None:
+            tgt=[]
+        if len(tgt)==0:
+            tgt=["%s.dist%d"%(src[0],j) for j in range(wells)]
+        
+        tgt=uniqueTargets(tgt)
+        stgt=findsamps(tgt,unique=True)
+        ssrc=findsamps(src,False)
+        if dilutant==None:
+            dilutant=self.e.WATER
+        self.e.multitransfer([vol*(dil-1) for i in range(wells)],dilutant,stgt,(False,False))
+        if not ssrc[0].isMixed:
+            self.e.shake(ssrc[0].plate,returnPlate=True)
+        self.e.multitransfer([vol for i in range(wells)],ssrc[0],stgt,(True,False))
+        for i in range(len(stgt)):
+            stgt[i].conc=Concentration(1.0/dil)
+        return tgt
+
     def runT7Setup(self,theo,src,vol,srcdil,tgt):
         [theo,src,tgt,srcdil]=listify([theo,src,tgt,srcdil])
         if len(tgt)==0:
