@@ -215,7 +215,7 @@ class TRP(object):
     ########################
     # Run a reaction in place
     ########################
-    def runRxOnBeads(self,src,vol,master,returnPlate=True):
+    def runRxInPlace(self,src,vol,master,returnPlate=True):
         'Run reaction on beads in given total volume'
         [vol,src,master]=listify([vol,src,master])
         ssrc=findsamps(src,False)
@@ -223,7 +223,7 @@ class TRP(object):
         mastervol=[vol[i]/smaster[i].conc.dilutionneeded() for i in range(len(vol))]
         watervol=[vol[i]-ssrc[i].volume-mastervol[i] for i in range(len(vol))]
         if any([w < -0.01 for w in watervol]):
-            print "runRxOnBeads: negative amount of water needed: ",w
+            print "runRxInPlace: negative amount of water needed: ",w
             assert(False)
         for i in range(len(ssrc)):
             if  watervol[i]>0:
@@ -468,7 +468,7 @@ class TRP(object):
     
     def runRTOnBeads(self,src,vol,dur=20):
         'Run RT on beads in given volume'
-        self.runRxOnBeads(src,vol,"MPosRT",returnPlate=False)
+        self.runRxInPlace(src,vol,"MPosRT",returnPlate=False)
         self.runRTPgm(dur)
         
     def runRTSetup(self,pos,src,vol,srcdil,tgt=None):
@@ -572,12 +572,12 @@ class TRP(object):
         [vol,src]=listify([vol,src])
         annealvol=[v*(1-1/self.r.MLigase.conc.dilutionneeded()) for v in vol]
         ssrc=findsamps(src,False)
-        self.runRxOnBeads(src,annealvol,ligmaster,returnPlate=not anneal)
+        self.runRxInPlace(src,annealvol,ligmaster,returnPlate=not anneal)
         if anneal:
             self.e.runpgm("TRPANN",5,False,max([s.volume for s in ssrc]),hotlidmode="CONSTANT",hotlidtemp=100)
 
         ## Add ligase
-        self.runRxOnBeads(src,vol,"MLigase",returnPlate=False)
+        self.runRxInPlace(src,vol,"MLigase",returnPlate=False)
         self.runLigPgm(max(vol),ligtemp,inactivate=False)	# Do not heat inactivate since it may denature the beads
 
     ########################
@@ -622,7 +622,7 @@ class TRP(object):
         [prefix,src,vol,suffix]=listify([prefix,src,vol,suffix])
 
         primer=["MPCR"+prefix[i]+suffix[i] for i in range(len(prefix))]
-        self.runRxOnBeads(src,vol,primer,returnPlate=(save!=None))
+        self.runRxInPlace(src,vol,primer,returnPlate=(save!=None))
         if save!=None:
             self.saveSamps(src=src,vol=5,dil=10,tgt=save,plate=self.e.DILPLATE,mix=(False,False))
 
