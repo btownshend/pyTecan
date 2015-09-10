@@ -164,6 +164,9 @@ class TRP(object):
         self.e.savesummary(scriptname+".txt")
         Sample.savematlab(scriptname+".m")
         
+    ########################
+    # Save samples to another well
+    ########################
     def saveSamps(self,src,vol,dil,tgt=None,dilutant=None,plate=None,mix=(True,True)):
         if tgt==None:
             tgt=[]
@@ -208,6 +211,52 @@ class TRP(object):
             stgt[i].conc=Concentration(1.0/dil)
         return tgt
 
+
+    ########################
+    # Dilute samples in place
+    ########################
+    def diluteInPlace(self,tgt,dil=None,finalvol=None):
+        # Dilute in place
+        # e.g.: trp.diluteInPlace(tgt=rt1,dil=2)
+        [tgt,dil,finalvol]=listify([tgt,dil,finalvol])
+        tgt=uniqueTargets(tgt)
+        stgt=findsamps(tgt,False)
+        dilutant=self.e.WATER
+        for i in range(len(stgt)):
+            if finalvol[i]!=None and dil[i]==None:
+                self.e.transfer(finalvol[i]-stgt[i].volume,dilutant,stgt[i],mix=(False,False))
+            elif finalvol[i]==None and dil[i]!=None:
+                self.e.transfer(stgt[i].volume*(dil[i]-1),dilutant,stgt[i],mix=(False,False))
+            else:
+                print "diluteInPlace: cannot specify both dil and finalvol"
+                assert(False)
+        #print "after dilute, stgt[0]=",str(stgt[0]),",mixed=",stgt[0].isMixed
+        return tgt   #  The name of the samples are unchanged -- the predilution names
+
+    ########################
+    # Run a reaction in place
+    ########################
+    def runRxInPlace(self,src,vol,master,returnPlate=True):
+        'Run reaction on beads in given total volume'
+        [vol,src,master]=listify([vol,src,master])
+        ssrc=findsamps(src,False)
+        smaster=findsamps(master)
+        mastervol=[vol[i]/smaster[i].conc.dilutionneeded() for i in range(len(vol))]
+        watervol=[vol[i]-ssrc[i].volume-mastervol[i] for i in range(len(vol))]
+        if any([w < -0.01 for w in watervol]):
+            print "runRxInPlace: negative amount of water needed: ",w
+            assert(False)
+        for i in range(len(ssrc)):
+            if  watervol[i]>0:
+                self.e.transfer(watervol[i],self.e.WATER,ssrc[i],(False,False))
+        for i in range(len(ssrc)):
+            self.e.transfer(mastervol[i],smaster[i],ssrc[i],(False,False))
+        self.e.shake(ssrc[0].plate,returnPlate=returnPlate)
+        
+
+    ########################
+    # T7 - Transcription
+    ########################
     def runT7Setup(self,theo,src,vol,srcdil,tgt):
         [theo,src,tgt,srcdil]=listify([theo,src,tgt,srcdil])
         if len(tgt)==0:
@@ -276,6 +325,9 @@ class TRP(object):
         tgt=self.runT7Stop(theo,tgt,stopmaster)
         return tgt
 
+    ########################
+    # Beads
+    ########################
     def bindBeads(self,src,beads="Dynabeads",beadConc=None,buffer="BeadBuffer",incTime=60,addBuffer=False):
         [src,beads,buffer,beadConc]=listify([src,beads,buffer,beadConc])
 
@@ -426,32 +478,50 @@ class TRP(object):
 
         self.e.moveplate(ssrc[0].plate,"Home")
         return tgt
+
+    def beadCombine(self,src,residualVolume=10,suspendVolume=150,sepTime=None,mixTime=30):
+        'Combine everything in the src wells into a single well'
+        if len(src)==1:
+            return src
+        nmove=int(len(src)/2)
+        ssrc=findsamps(src)
+        mvto=ssrc[:nmove]
+        mvfrom=ssrc[-nmove:]
+        # Make sure all destination wells are empty and source wells don't have too much
+        if any([s.volume>residualVolume for s in mvto]) or any([s.volume>suspendVolume for s in mvfrom]):
+            self.e.moveplate(mvto[0].plate,"Magnet")	# Move to magnet
+            self.sepWait(mvto,sepTime)
+            for s in mvto:
+                if s.volume>residualVolume:
+                    self.e.dispose((s.volume-residualVolume)/ASPIRATEFACTOR,s)
+            for s in mvfrom:
+                if s.volume>suspendVolume:
+                    self.e.dispose((s.volume-suspendVolume)/ASPIRATEFACTOR,s)
+        # Make sure all source wells contains suspendVolume
+        if any([s.volume<suspendVolume for s in mvfrom]):
+            self.e.multitransfer(volumes=[suspendVolume-s.volume for d in mvfrom],src=self.e.WATER,dests=mvfrom)
+            self.e.shake(mvto[0].plate,dur=mixTime,returnPlate=True)
+        # now move from source to dest (can reuse tip)
+        tipMask=self.e.cleantip()
+        for i in range(nmove):
+            mvfrom[i].aspirate(tipMask,self.e.w,suspendVolume-residualVolume)
+            mvto[i].dispense(tipMask,self.e.w,suspendVolume-residualVolume,mvfrom[i])
+
+        self.e.shake(mvto[0].plate,dur=mixTime,returnPlate=True)
+            
+        return self.beadCombine(src[:-nmove])
     
+    ########################
+    # RT - Reverse Transcription
+    ########################
     def runRT(self,pos,src,vol,srcdil,tgt=None,dur=20):
         result=self.runRTSetup(pos,src,vol,srcdil,tgt)
         self.runRTPgm(dur)
         return result
     
-    def runRxOnBeads(self,src,vol,master,returnPlate=True):
-        'Run reaction on beads in given total volume'
-        [vol,src,master]=listify([vol,src,master])
-        ssrc=findsamps(src,False)
-        smaster=findsamps(master)
-        mastervol=[vol[i]/smaster[i].conc.dilutionneeded() for i in range(len(vol))]
-        watervol=[vol[i]-ssrc[i].volume-mastervol[i] for i in range(len(vol))]
-        if any([w < -0.01 for w in watervol]):
-            print "runRxOnBeads: negative amount of water needed: ",w
-            assert(False)
-        for i in range(len(ssrc)):
-            if  watervol[i]>0:
-                self.e.transfer(watervol[i],self.e.WATER,ssrc[i],(False,False))
-        for i in range(len(ssrc)):
-            self.e.transfer(mastervol[i],smaster[i],ssrc[i],(False,False))
-        self.e.shake(ssrc[0].plate,returnPlate=returnPlate)
-        
     def runRTOnBeads(self,src,vol,dur=20):
         'Run RT on beads in given volume'
-        self.runRxOnBeads(src,vol,"MPosRT",returnPlate=False)
+        self.runRxInPlace(src,vol,"MPosRT",returnPlate=False)
         self.runRTPgm(dur)
         
     def runRTSetup(self,pos,src,vol,srcdil,tgt=None):
@@ -490,6 +560,9 @@ class TRP(object):
         self.e.w.pyrun('PTC\\ptcsetpgm.py %s TEMP@37,%d TEMP@25,2'%(pgm,dur*60))
         self.e.runpgm(pgm,dur,False,100)		# Volume doesn't matter since it's just an incubation, use 100ul
  
+    ########################
+    # Lig - Ligation
+    ########################
     def runLig(self,prefix=None,src=None,vol=None,srcdil=None,tgt=None,master=None,anneal=True,ligtemp=25):
         if tgt==None:
             tgt=[]
@@ -552,14 +625,17 @@ class TRP(object):
         [vol,src]=listify([vol,src])
         annealvol=[v*(1-1/self.r.MLigase.conc.dilutionneeded()) for v in vol]
         ssrc=findsamps(src,False)
-        self.runRxOnBeads(src,annealvol,ligmaster,returnPlate=not anneal)
+        self.runRxInPlace(src,annealvol,ligmaster,returnPlate=not anneal)
         if anneal:
             self.e.runpgm("TRPANN",5,False,max([s.volume for s in ssrc]),hotlidmode="CONSTANT",hotlidtemp=100)
 
         ## Add ligase
-        self.runRxOnBeads(src,vol,"MLigase",returnPlate=False)
+        self.runRxInPlace(src,vol,"MLigase",returnPlate=False)
         self.runLigPgm(max(vol),ligtemp,inactivate=False)	# Do not heat inactivate since it may denature the beads
 
+    ########################
+    # PCR
+    ########################
     def runPCR(self,prefix,src,vol,srcdil,tgt=None,ncycles=20,suffix='S'):
         if tgt==None:
             tgt=[]
@@ -599,7 +675,7 @@ class TRP(object):
         [prefix,src,vol,suffix]=listify([prefix,src,vol,suffix])
 
         primer=["MPCR"+prefix[i]+suffix[i] for i in range(len(prefix))]
-        self.runRxOnBeads(src,vol,primer,returnPlate=(save!=None))
+        self.runRxInPlace(src,vol,primer,returnPlate=(save!=None))
         if save!=None:
             self.saveSamps(src=src,vol=5,dil=10,tgt=save,plate=self.e.DILPLATE,mix=(False,False))
 
@@ -608,25 +684,9 @@ class TRP(object):
         self.e.w.pyrun('PTC\\ptcsetpgm.py %s TEMP@95,120 TEMP@95,10 TEMP@%f,10 GOTO@2,%d TEMP@72,120 TEMP@25,2'%(pgm,annealtemp,ncycles-1))
         self.e.runpgm(pgm,4.80+1.55*ncycles,False,max(vol),hotlidmode="CONSTANT",hotlidtemp=100)
     
-    def diluteInPlace(self,tgt,dil=None,finalvol=None):
-        # Dilute in place
-        # e.g.: trp.diluteInPlace(tgt=rt1,dil=2)
-        [tgt,dil,finalvol]=listify([tgt,dil,finalvol])
-        tgt=uniqueTargets(tgt)
-        stgt=findsamps(tgt,False)
-        dilutant=self.e.WATER
-        for i in range(len(stgt)):
-            if finalvol[i]!=None and dil[i]==None:
-                self.e.transfer(finalvol[i]-stgt[i].volume,dilutant,stgt[i],mix=(False,False))
-            elif finalvol[i]==None and dil[i]!=None:
-                self.e.transfer(stgt[i].volume*(dil[i]-1),dilutant,stgt[i],mix=(False,False))
-            else:
-                print "diluteInPlace: cannot specify both dil and finalvol"
-                assert(False)
-        #print "after dilute, stgt[0]=",str(stgt[0]),",mixed=",stgt[0].isMixed
-        return tgt   #  The name of the samples are unchanged -- the predilution names
-        
-    
+    ########################
+    # qPCR
+    ########################
     def runQPCRDIL(self,src,vol,srcdil,tgt=None,dilPlate=False):
         if tgt==None:
             tgt=[]
