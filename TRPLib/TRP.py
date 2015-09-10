@@ -457,6 +457,38 @@ class TRP(object):
 
         self.e.moveplate(ssrc[0].plate,"Home")
         return tgt
+
+    def beadCombine(self,src,residualVolume=10,suspendVolume=150,sepTime=None,mixTime=30):
+        'Combine everything in the src wells into a single well'
+        if len(src)==1:
+            return src
+        nmove=int(len(src)/2)
+        ssrc=findsamps(src)
+        mvto=ssrc[:nmove]
+        mvfrom=ssrc[-nmove:]
+        # Make sure all destination wells are empty and source wells don't have too much
+        if any([s.volume>residualVolume for s in mvto]) or any([s.volume>suspendVolume for s in mvfrom]):
+            self.e.moveplate(mvto[0].plate,"Magnet")	# Move to magnet
+            self.sepWait(mvto,sepTime)
+            for s in mvto:
+                if s.volume>residualVolume:
+                    self.e.dispose((s.volume-residualVolume)/ASPIRATEFACTOR,s)
+            for s in mvfrom:
+                if s.volume>suspendVolume:
+                    self.e.dispose((s.volume-suspendVolume)/ASPIRATEFACTOR,s)
+        # Make sure all source wells contains suspendVolume
+        if any([s.volume<suspendVolume for s in mvfrom]):
+            self.e.multitransfer(volumes=[suspendVolume-s.volume for d in mvfrom],src=self.e.WATER,dests=mvfrom)
+            self.e.shake(mvto[0].plate,dur=mixTime,returnPlate=True)
+        # now move from source to dest (can reuse tip)
+        tipMask=self.e.cleantip()
+        for i in range(nmove):
+            mvfrom[i].aspirate(tipMask,self.e.w,suspendVolume-residualVolume)
+            mvto[i].dispense(tipMask,self.e.w,suspendVolume-residualVolume,mvfrom[i])
+
+        self.e.shake(mvto[0].plate,dur=mixTime,returnPlate=True)
+            
+        return self.beadCombine(src[:-nmove])
     
     ########################
     # RT - Reverse Transcription
