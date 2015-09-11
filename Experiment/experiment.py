@@ -354,6 +354,10 @@ class Experiment(object):
             
     def moveplate(self,plate,dest="Home",returnHome=True):
         # move to given destination (one of "Home","Magnet","Shaker","PTC" )
+        if plate.name!="Samples" and plate.name!="Dilutions":
+            print "Only able to move samples or dilutions plates, not ",plate.name
+            assert(False)
+            
         if plate.curloc==dest:
             print "Plate %s is already at %s"%(plate.name,dest)
             return

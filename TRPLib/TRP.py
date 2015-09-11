@@ -714,9 +714,9 @@ class TRP(object):
             if i<len(ssrc)-3 and stgt[i].well+1==stgt[i+1].well and stgt[i].well+2==stgt[i+2].well and stgt[i].well+3==stgt[i+3].well and stgt[i].well%4==0 and self.e.cleanTips!=15:
                 #print "Aligning tips"
                 self.e.sanitize()
-            if not ssrc[i].isMixed:
+            if not ssrc[i].isMixed and ssrc[i].plate.name!="Eppendorfs":
                 self.e.shake(ssrc[i].plate,returnPlate=True)
-            self.e.transfer(srcvol[i],ssrc[i],stgt[i],(False,False))
+            self.e.transfer(srcvol[i],ssrc[i],stgt[i],(not ssrc[i].isMixed,False))
             if stgt[i].conc != None:
                 stgt[i].conc.final=None	# Final conc are meaningless now
             
