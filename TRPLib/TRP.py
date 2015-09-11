@@ -492,19 +492,20 @@ class TRP(object):
             self.sepWait(mvto,sepTime)
             for s in mvto:
                 if s.volume>residualVolume:
-                    self.e.dispose((s.volume-residualVolume)/ASPIRATEFACTOR,s)
+                    self.e.dispose((s.volume-residualVolume-1)/ASPIRATEFACTOR,s)
             for s in mvfrom:
                 if s.volume>suspendVolume:
-                    self.e.dispose((s.volume-suspendVolume)/ASPIRATEFACTOR,s)
+                    self.e.dispose((s.volume-suspendVolume-1)/ASPIRATEFACTOR,s)
         # Make sure all source wells contains suspendVolume
-        if any([s.volume<suspendVolume for s in mvfrom]):
-            self.e.multitransfer(volumes=[suspendVolume-s.volume for d in mvfrom],src=self.e.WATER,dests=mvfrom)
+        if any([s.volume<suspendVolume*0.9 for s in mvfrom]):
+            self.e.multitransfer(volumes=[suspendVolume-d.volume for d in mvfrom],src=self.e.WATER,dests=mvfrom)
             self.e.shake(mvto[0].plate,dur=mixTime,returnPlate=True)
         # now move from source to dest (can reuse tip)
         tipMask=self.e.cleantip()
         for i in range(nmove):
-            mvfrom[i].aspirate(tipMask,self.e.w,suspendVolume-residualVolume)
-            mvto[i].dispense(tipMask,self.e.w,suspendVolume-residualVolume,mvfrom[i])
+            vol=(mvfrom[i].volume-residualVolume-1)/ASPIRATEFACTOR
+            mvfrom[i].aspirate(tipMask,self.e.w,vol)
+            mvto[i].dispense(tipMask,self.e.w,vol,mvfrom[i])
 
         self.e.shake(mvto[0].plate,dur=mixTime,returnPlate=True)
             
