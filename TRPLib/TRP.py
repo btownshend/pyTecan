@@ -236,12 +236,12 @@ class TRP(object):
     ########################
     # Run a reaction in place
     ########################
-    def runRxInPlace(self,src,vol,master,returnPlate=True):
+    def runRxInPlace(self,src,vol,master,returnPlate=True,finalx=1.0):
         'Run reaction on beads in given total volume'
         [vol,src,master]=listify([vol,src,master])
         ssrc=findsamps(src,False)
         smaster=findsamps(master)
-        mastervol=[vol[i]/smaster[i].conc.dilutionneeded() for i in range(len(vol))]
+        mastervol=[vol[i]*finalx/smaster[i].conc.dilutionneeded() for i in range(len(vol))]
         watervol=[vol[i]-ssrc[i].volume-mastervol[i] for i in range(len(vol))]
         if any([w < -0.01 for w in watervol]):
             print "runRxInPlace: negative amount of water needed: ",w
@@ -252,7 +252,6 @@ class TRP(object):
         for i in range(len(ssrc)):
             self.e.transfer(mastervol[i],smaster[i],ssrc[i],(False,False))
         self.e.shake(ssrc[0].plate,returnPlate=returnPlate)
-        
 
     ########################
     # T7 - Transcription
@@ -625,7 +624,7 @@ class TRP(object):
         [vol,src]=listify([vol,src])
         annealvol=[v*(1-1/self.r.MLigase.conc.dilutionneeded()) for v in vol]
         ssrc=findsamps(src,False)
-        self.runRxInPlace(src,annealvol,ligmaster,returnPlate=not anneal)
+        self.runRxInPlace(src,annealvol,ligmaster,returnPlate=not anneal,finalx=1.5)
         if anneal:
             self.e.runpgm("TRPANN",5,False,max([s.volume for s in ssrc]),hotlidmode="CONSTANT",hotlidtemp=100)
 
