@@ -413,12 +413,14 @@ class TRP(object):
                 'Retain sample of final'
                 self.e.moveplate(ssrc[0].plate,"Home")
                 for i in range(len(ssrc)):
+                    ssrc[i].conc=None
                     self.e.transfer(washVol-ssrc[i].volume,swash[i],ssrc[i],mix=(False,True))	# Add wash
                 self.e.shake(ssrc[0].plate,returnPlate=True)
                 self.saveSamps(src=src,tgt=finalTgt,vol=keepVol,dil=keepDil,plate=Experiment.DILPLATE)
                 self.e.moveplate(ssrc[0].plate,"Magnet")	# Move to magnet
             else:
                 for i in range(len(ssrc)):
+                    ssrc[i].conc=None
                     self.e.transfer(washVol-ssrc[i].volume,swash[i],ssrc[i],mix=(False,False))	# Add wash
                 self.e.shake(ssrc[0].plate,returnPlate=False)
                 self.e.moveplate(ssrc[0].plate,"Magnet")
@@ -502,6 +504,7 @@ class TRP(object):
         tipMask=self.e.cleantip()
         for i in range(nmove):
             vol=(mvfrom[i].volume-residualVolume-1)/ASPIRATEFACTOR
+            mvfrom[i].conc=None
             mvfrom[i].aspirate(tipMask,self.e.w,vol)
             mvto[i].dispense(tipMask,self.e.w,vol,mvfrom[i])
 
@@ -519,6 +522,12 @@ class TRP(object):
     
     def runRTOnBeads(self,src,vol,dur=20):
         'Run RT on beads in given volume'
+        ssrc=findsamps(src,False)
+
+        # Adjust source dilution
+        for i in range(len(ssrc)):
+            ssrc[i].conc=None
+
         self.runRxInPlace(src,vol,"MPosRT",returnPlate=False)
         self.runRTPgm(dur)
         
@@ -623,6 +632,11 @@ class TRP(object):
         [vol,src]=listify([vol,src])
         annealvol=[v*(1-1/self.r.MLigase.conc.dilutionneeded()) for v in vol]
         ssrc=findsamps(src,False)
+
+        # Adjust source dilution
+        for i in range(len(ssrc)):
+            ssrc[i].conc=None
+
         self.runRxInPlace(src,annealvol,ligmaster,returnPlate=not anneal,finalx=1.5)
         if anneal:
             self.e.runpgm("TRPANN",5,False,max([s.volume for s in ssrc]),hotlidmode="CONSTANT",hotlidtemp=100)
