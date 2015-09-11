@@ -206,9 +206,9 @@ class TRP(object):
         self.e.multitransfer([vol*(dil-1) for i in range(wells)],dilutant,stgt,(False,False))
         if not ssrc[0].isMixed:
             self.e.shake(ssrc[0].plate,returnPlate=True)
-        self.e.multitransfer([vol for i in range(wells)],ssrc[0],stgt,(True,False))
         for i in range(len(stgt)):
             stgt[i].conc=Concentration(1.0/dil)
+        self.e.multitransfer([vol for i in range(wells)],ssrc[0],stgt,(False,False))
         return tgt
 
 
