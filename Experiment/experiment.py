@@ -359,7 +359,7 @@ class Experiment(object):
             assert(False)
             
         if plate.curloc==dest:
-            print "Plate %s is already at %s"%(plate.name,dest)
+            #print "Plate %s is already at %s"%(plate.name,dest)
             return
         
         #print "Move plate %s from %s to %s"%(plate.name,plate.curloc,dest)
