@@ -26,13 +26,16 @@ class QSetup(object):
         self.trp=trp
         self.debug=debug
         
-    def addSamples(self, src, needDil, primers,nreplicates=1):
+    def addSamples(self, src, needDil, primers,nreplicates=1,names=None):
         'Add sample(s) to list of qPCRs to do'
         saveDil=min(needDil,self.MAXDIL)
         if needDil/saveDil>1 and needDil/saveDil<2:
             saveDil=math.sqrt(needDil)
         saveVol=max(self.MINDILVOL/saveDil,self.TGTINVOL)
-        tgt=[diluteName(src[i],saveDil) for i in range(len(src))]
+        if names==None:
+            tgt=[diluteName(src[i],saveDil) for i in range(len(src))]
+        else:
+            tgt=[diluteName(names[i],saveDil) for i in range(len(src))]
         sv=tgt
         for i in range(len(tgt)):
             t=Sample.lookup(tgt[i])
