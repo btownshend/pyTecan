@@ -362,7 +362,7 @@ class TRP(object):
         if sepTime==None:
             maxvol=max([s.volume for s in ssrc])
             if maxvol > 50:
-                sepTime=60
+                sepTime=50
             else:
                 sepTime=30
         self.e.pause(sepTime)	# Wait for separation
