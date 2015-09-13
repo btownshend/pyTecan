@@ -34,7 +34,7 @@ class Reagents:
     SSD=Sample("SSD",Experiment.REAGENTPLATE,"A4",10.0)
     MLigAT7W=Sample("MLigAT7W",Experiment.REAGENTPLATE,"B4",3)
     BeadBuffer=Sample("BeadBuffer",Experiment.REAGENTPLATE,"C4",4)
-    Dynabeads=Sample("Dynabeads",Experiment.REAGENTPLATE,"D4",Concentration(0.5,0.5/3,'mg/ml'),hasBeads=True)
+    Dynabeads=Sample("Dynabeads",Experiment.REAGENTPLATE,"D4",3,hasBeads=True)
     MQT7W=Sample("MQT7X",Experiment.REAGENTPLATE,"E4",15.0/9)
     MStopBeads=Sample("MStpBeads",Experiment.REAGENTPLATE,"A5",3.7)
     QPCRREF=Sample("QPCRREF",Experiment.REAGENTPLATE,"B5",Concentration(50,50,'pM'))
