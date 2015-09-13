@@ -492,10 +492,10 @@ class TRP(object):
             self.sepWait(mvto,sepTime)
             for s in mvto:
                 if s.volume>residualVolume:
-                    self.e.dispose((s.volume-residualVolume-1)/ASPIRATEFACTOR,s)
+                    self.e.dispose((s.volume-residualVolume)/ASPIRATEFACTOR,s)
             for s in mvfrom:
                 if s.volume>suspendVolume:
-                    self.e.dispose((s.volume-suspendVolume-1)/ASPIRATEFACTOR,s)
+                    self.e.dispose((s.volume-suspendVolume)/ASPIRATEFACTOR,s)
         # Make sure all source wells contains suspendVolume
         if any([s.volume<suspendVolume*0.9 for s in mvfrom]):
             self.e.multitransfer(volumes=[suspendVolume-d.volume for d in mvfrom],src=self.e.WATER,dests=mvfrom)
