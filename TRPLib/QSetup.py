@@ -12,7 +12,7 @@ class QSetup(object):
     MAXDILVOL=150.0
     TGTINVOL=4
     
-    def __init__(self,trp,vol=15,maxdil=32):
+    def __init__(self,trp,vol=15,maxdil=32,debug=False):
         'Create a new QPCR setup structure'
         self.volume=vol
         self.samples=[]
@@ -24,6 +24,7 @@ class QSetup(object):
         self.stages=[]
         self.MAXDIL=maxdil
         self.trp=trp
+        self.debug=debug
         
     def addSamples(self, src, needDil, primers,nreplicates=1):
         'Add sample(s) to list of qPCRs to do'
@@ -40,7 +41,8 @@ class QSetup(object):
                 svtmp=self.trp.runQPCRDIL(src=[src[i]],vol=saveVol*saveDil,srcdil=saveDil,tgt=[tgt[i]],dilPlate=True)  
                 #svtmp=self.trp.saveSamps(src=[src[i]],tgt=[tgt[i]],vol=saveVol,dil=saveDil,plate=Experiment.DILPLATE,mix=(False,False))
                 sv[i]=svtmp[0]
-        #print "addSamples(src=",src,", tgt=",tgt,", needDil=","%.1f"%needDil,", primers=",primers,", nrep=",nreplicates,")"
+        if self.debug:
+            print "addSamples(src=",src,", tgt=",tgt,", needDil=","%.1f"%needDil,", primers=",primers,", nrep=",nreplicates,")"
         needDil=needDil/saveDil
         self.samples=self.samples+sv
         self.needDil=self.needDil+[needDil]*len(sv)
