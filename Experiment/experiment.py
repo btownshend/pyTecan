@@ -17,6 +17,7 @@ class Experiment(object):
     #    READERPLATE=Plate("Reader",4,1,12,8,False,15)
     QPCRPLATE=Plate("qPCR",4,1,12,8,False,15)
     DILPLATE=Plate("Dilutions",4,2,12,8,False,15)
+    SSDDILLOC=Plate("SSDDil",3,1,1,4,False,100,100000)
     WATERLOC=Plate("Water",3,2,1,4,False,100,100000)
     BLEACHLOC=Plate("Bleach",3,3,1,4,False,0,100000)
     PTCPOS=Plate("PTC",25,1,1,1)
@@ -24,6 +25,7 @@ class Experiment(object):
     WASTE=Plate("Waste",20,3,1,1)
     EPPENDORFS=Plate("Eppendorfs",13,1,1,16,False,30,1500)
     WATER=Sample("Water",WATERLOC,-1,None,50000)
+    SSDDIL=Sample("SSDDil",SSDDILLOC,-1,None,50000)
     BLEACH=Sample("RNase-Away",BLEACHLOC,-1,None,50000)
     DITIMASK=0   # Which tips are DiTis
     headerfile=os.path.expanduser("~/Dropbox/Synbio/Robot/pyTecan/header.gem")

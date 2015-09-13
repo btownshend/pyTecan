@@ -11,8 +11,8 @@ V;200
 998;3;Cleaner shallow, 8 Pos.;Waste;Cleaner deep, 8 Pos.;
 998;;;;
 998;0;
-998;3;;Trough 100ml;Trough 100ml;
-998;;Water;RNase Away;
+998;3;Trough 100ml;Trough 100ml;Trough 100ml;
+998;SSDDil;Water;RNase Away;
 998;3;QPCR on HSP96xx;HSP96xx on carrier;HSP96xx on carrier;
 998;QPCR;Dilutions;Sample;
 998;0;

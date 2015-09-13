@@ -689,7 +689,7 @@ class TRP(object):
         primer=["MPCR"+prefix[i]+suffix[i] for i in range(len(prefix))]
         self.runRxInPlace(src,vol,primer,returnPlate=(save!=None))
         if save!=None:
-            self.saveSamps(src=src,vol=5,dil=10,tgt=save,plate=self.e.DILPLATE,mix=(False,False))
+            self.saveSamps(src=src,vol=5,dil=10,tgt=save,plate=self.e.DILPLATE,mix=(False,False),dilutant=self.e.SSDDIL)
 
         pgm="PCR%d"%ncycles
         #        self.e.w.pyrun('PTC\\ptcsetpgm.py %s TEMP@95,120 TEMP@95,30 TEMP@55,30 TEMP@72,25 GOTO@2,%d TEMP@72,180 TEMP@16,2'%(pgm,ncycles-1))
@@ -713,12 +713,10 @@ class TRP(object):
             stgt=findsamps(tgt,True,Experiment.SAMPLEPLATE,unique=True)
         ssrc=findsamps(src,False)
 
-        ssdvol=[v/Reagents.SSD.conc.dilutionneeded() for v in vol]
         srcvol=[vol[i]/srcdil[i] for i in range(len(vol))]
-        watervol=[vol[i]-ssdvol[i]-srcvol[i] for i in range(len(vol))]
+        watervol=[vol[i]-srcvol[i] for i in range(len(vol))]
 #        print "srcdil=",srcdil,", ssdvol=",ssdvol,", srcvol=", srcvol, ", watervol=", watervol
-        self.e.multitransfer(watervol,self.e.WATER,stgt,(False,False))
-        self.e.multitransfer(ssdvol,Reagents.SSD,stgt,(False,False))
+        self.e.multitransfer(watervol,self.e.SSDDIL,stgt,(False,False))
         
         for i in range(len(ssrc)):
             stgt[i].conc=None		# Assume dilutant does not have a concentration of its own
