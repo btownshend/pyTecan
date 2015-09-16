@@ -478,39 +478,25 @@ class TRP(object):
         self.e.moveplate(ssrc[0].plate,"Home")
         return tgt
 
-    def beadCombine(self,src,residualVolume=10,suspendVolume=150,sepTime=None,mixTime=30):
-        'Combine everything in the src wells into a single well'
-        if len(src)==1:
-            return src
-        nmove=int(len(src)/2)
+    def beadCombine(self,src,residualVolume=10,suspendVolume=150,sepTime=None):
+        'Combine everything in the src wells into a the first well; assumes that there are enough beads in that well for all the combination'
         ssrc=findsamps(src)
-        mvto=ssrc[:nmove]
-        mvfrom=ssrc[-nmove:]
-        # Make sure all destination wells are empty and source wells don't have too much
-        if any([s.volume>residualVolume for s in mvto]) or any([s.volume>suspendVolume for s in mvfrom]):
-            self.e.moveplate(mvto[0].plate,"Magnet")	# Move to magnet
-            self.sepWait(mvto,sepTime)
-            for s in mvto:
-                if s.volume>residualVolume:
-                    self.e.dispose((s.volume-residualVolume)/ASPIRATEFACTOR,s)
-            for s in mvfrom:
-                if s.volume>suspendVolume:
-                    self.e.dispose((s.volume-suspendVolume)/ASPIRATEFACTOR,s)
-        # Make sure all source wells contains suspendVolume
-        if any([s.volume<suspendVolume*0.9 for s in mvfrom]):
-            self.e.multitransfer(volumes=[suspendVolume-d.volume for d in mvfrom],src=self.e.WATER,dests=mvfrom)
-            self.e.shake(mvto[0].plate,dur=mixTime,returnPlate=True)
-        # now move from source to dest (can reuse tip)
-        tipMask=self.e.cleantip()
-        for i in range(nmove):
-            vol=(mvfrom[i].volume-residualVolume-1)/ASPIRATEFACTOR
-            mvfrom[i].conc=None
-            mvfrom[i].aspirate(tipMask,self.e.w,vol)
-            mvto[i].dispense(tipMask,self.e.w,vol,mvfrom[i])
+        stgt=ssrc[0]
+        for s in ssrc[1:]:
+            # Combine s with tgt
+            if stgt.volume>residualVolume:
+                self.e.moveplate(stgt.plate,"Magnet")	# Move to magnet
+                self.sepWait([stgt],sepTime)
+                self.e.dispose((stgt.volume-residualVolume)/ASPIRATEFACTOR,stgt)
+            self.e.moveplate(stgt.plate,"Home")	
+            if s.volume<suspendVolume:
+                self.e.transfer(suspendVolume-s.volume,self.e.WATER,s,(False,False))
+            vol=(s.volume-residualVolume-1)/ASPIRATEFACTOR
+            s.conc=None
+            self.e.transfer(vol,s,stgt,mix=(True,True))
 
-        self.e.shake(mvto[0].plate,dur=mixTime,returnPlate=True)
-            
-        return self.beadCombine(src[:-nmove])
+        self.e.moveplate(stgt.plate,"Home")	
+        return src[0:1]
     
     ########################
     # RT - Reverse Transcription
