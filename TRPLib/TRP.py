@@ -282,6 +282,8 @@ class TRP(object):
         for i in range(len(ssrc)):
             self.e.transfer(sourcevols[i],ssrc[i],stgt[i],(True,False))
         self.e.shake(stgt[0].plate,returnPlate=True)
+        for t in stgt:
+            t.ingredients['BIND']=1e-20*sum(t.ingredients.values())
         return tgt
     
     def runT7Pgm(self,vol,dur):

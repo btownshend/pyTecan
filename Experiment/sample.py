@@ -223,7 +223,11 @@ class Sample(object):
             remove=self.volume
             self.ingredients={}
         for k in self.ingredients:
-            self.ingredients[k] *= (self.volume-remove)/self.volume
+            if self.plate.curloc=="Magnet" and k=='BIND':
+                pass
+            else:
+                self.ingredients[k] *= (self.volume-remove)/self.volume
+
         self.volume=self.volume-remove
         if self.volume+.001<self.plate.unusableVolume and self.volume>0:
             # TODO - this should be more visible in output
@@ -335,11 +339,14 @@ class Sample(object):
     def addingredients(self,src,vol):
         'Update ingredients by adding ingredients from src'
         for k in src.ingredients:
-            addition=src.ingredients[k]/src.volume*vol
-            if k in self.ingredients:
-                self.ingredients[k]+=addition
+            if src.plate.curloc=="Magnet" and k=='BIND-UNUSED':
+                pass  # Wasn't transferred
             else:
-                self.ingredients[k]=addition
+                addition=src.ingredients[k]/src.volume*vol
+                if k in self.ingredients:
+                    self.ingredients[k]+=addition
+                else:
+                    self.ingredients[k]=addition
             
     def chooseLC(self,aspirateVolume=0):
         if self.volume-aspirateVolume>=MINLIQUIDDETECTVOLUME:
