@@ -335,6 +335,8 @@ class TRP(object):
                 assert(0)
             s.conc=None		# Can't track concentration of beads
             
+        self.e.moveplate(ssrc[0].plate,"Home")		# Make sure we do this off the magnet
+
         sbeads=findsamps(beads,False)
         sbuffer=findsamps(buffer,False)
         # Calculate volumes needed
@@ -375,8 +377,6 @@ class TRP(object):
         ssrc=findsamps(src,False)
         # Do all washes while on magnet
         assert(len(set([s.plate for s in ssrc]))==1)	# All on same plate
-        self.e.moveplate(ssrc[0].plate,"Magnet")	# Move to magnet
-        self.sepWait(ssrc,sepTime)
         if keepWash:
             if washTgt==None:
                 washTgt=[]
@@ -396,6 +396,8 @@ class TRP(object):
 
         if any([s.volume>residualVolume for s in ssrc]):
             # Separate and remove supernatant
+            self.e.moveplate(ssrc[0].plate,"Magnet")	# Move to magnet
+            self.sepWait(ssrc,sepTime)
 
             # Remove the supernatant
             for i in range(len(ssrc)):
