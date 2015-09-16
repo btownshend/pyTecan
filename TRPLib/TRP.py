@@ -248,7 +248,7 @@ class TRP(object):
             if  watervol[i]>0:
                 self.e.transfer(watervol[i],self.e.WATER,ssrc[i],(False,False))
         for i in range(len(ssrc)):
-            self.e.transfer(mastervol[i],smaster[i],ssrc[i],(False,False))
+            self.e.transfer(mastervol[i],smaster[i],ssrc[i],(False,uessrc[i].hasBeads))
         self.e.shake(ssrc[0].plate,returnPlate=returnPlate)
 
     ########################
@@ -354,7 +354,7 @@ class TRP(object):
 
         # Transfer the beads
         for i in range(len(ssrc)):
-            self.e.transfer(beadvol[i],sbeads[i],ssrc[i],(i==0,False))	# Mix beads before
+            self.e.transfer(beadvol[i],sbeads[i],ssrc[i],(i==0,True))	# Mix beads before and after
 
         self.e.shake(ssrc[0].plate,dur=incTime,returnPlate=False)
 
@@ -409,21 +409,21 @@ class TRP(object):
         # Wash
         swash=findsamps(wash,False)
         for washnum in range(numWashes):
+            self.e.moveplate(ssrc[0].plate,"Home")
             if keepFinal and washnum==numWashes-1:
                 'Retain sample of final'
-                self.e.moveplate(ssrc[0].plate,"Home")
                 for i in range(len(ssrc)):
                     ssrc[i].conc=None
                     self.e.transfer(washVol-ssrc[i].volume,swash[i],ssrc[i],mix=(False,True))	# Add wash
                 self.e.shake(ssrc[0].plate,returnPlate=True)
                 self.saveSamps(src=src,tgt=finalTgt,vol=keepVol,dil=keepDil,plate=Experiment.DILPLATE)
-                self.e.moveplate(ssrc[0].plate,"Magnet")	# Move to magnet
             else:
                 for i in range(len(ssrc)):
                     ssrc[i].conc=None
-                    self.e.transfer(washVol-ssrc[i].volume,swash[i],ssrc[i],mix=(False,False))	# Add wash
+                    self.e.transfer(washVol-ssrc[i].volume,swash[i],ssrc[i],mix=(False,True))	# Add wash
                 self.e.shake(ssrc[0].plate,returnPlate=False)
-                self.e.moveplate(ssrc[0].plate,"Magnet")
+
+            self.e.moveplate(ssrc[0].plate,"Magnet")	# Move to magnet
                 
             self.sepWait(ssrc,sepTime)
                 
