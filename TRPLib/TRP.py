@@ -219,7 +219,6 @@ class TRP(object):
         # Dilute in place
         # e.g.: trp.diluteInPlace(tgt=rt1,dil=2)
         [tgt,dil,finalvol]=listify([tgt,dil,finalvol])
-        tgt=uniqueTargets(tgt)
         stgt=findsamps(tgt,False)
         dilutant=self.e.WATER
         for i in range(len(stgt)):
