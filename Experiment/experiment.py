@@ -413,10 +413,19 @@ class Experiment(object):
         samps=Sample.getAllOnPlate(plate)
         maxvol=max([x.volume for x in samps])
         if (maxvol>151 and speed>=1600) or (maxvol>101 and speed>1800) or (maxvol>51 and speed>2000) or (maxvol>21 and speed>2200):
-            print "WARNING: %s plate contains wells with up to %.2f ul, which may spill at %d RPM"%(plate.name, maxvol, speed)
+            print "WARNING: %s plate contains wells with up to %.2f ul, which may spill at %d RPM: "%(plate.name, maxvol, speed),
+            for x in samps:
+                if (x.volume>151 and speed>=1600) or (x.volume>101 and speed>1800) or (x.volume>51 and speed>2000) or (x.volume>21 and speed>2200):
+                    print "%s[%.1f]"%(x.name,x.volume),
+            print
         minvol=min([x.volume for x in samps if not x.isMixed]+[200])
         if (minvol<150 and speed<1400) or (minvol<100 and speed<1600) or (minvol<50 and speed<1800) or (minvol<20 and speed<2200):
-            print "WARNING: %s plate contains unmixed wells with as little as %.2f ul, which may not be mixed at %d RPM"%(plate.name, minvol, speed)
+            print "WARNING: %s plate contains unmixed wells with as little as %.2f ul, which may not be mixed at %d RPM: "%(plate.name, minvol, speed),
+            for x in samps:
+                if not x.isMixed and ((x.volume<150 and speed<1400) or (x.volume<100 and speed<1600) or (x.volume<50 and speed<1800) or (x.volume<20 and speed<2200)):
+                    print "%s[%.1f]"%(x.name,x.volume),
+            print
+
         oldloc=plate.curloc
         self.moveplate(plate,"Shaker",returnHome=False)
         self.w.pyrun("BioShake\\bioexec.py setElmLockPos")
