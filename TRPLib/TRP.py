@@ -60,10 +60,12 @@ def listify(x):
 # Make sure all target names are uniques
 def uniqueTargets(tgts):
     for i in range(len(tgts)):
-        if tgts[i] in tgts[:i]:
+        si=Sample.lookup(tgts[i])
+        if tgts[i] in tgts[:i] or (si!=None and si.volume!=0):
             for k in range(100):
                 nm="%s.%d"%(tgts[i],k+2)
-                if nm not in tgts:
+                si=Sample.lookup(nm)
+                if nm not in tgts and (si==None or si.volume==0):
                     tgts[i]=nm
                     break
     return tgts
