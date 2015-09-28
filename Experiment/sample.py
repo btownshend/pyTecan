@@ -253,6 +253,8 @@ class Sample(object):
             
         if self.hasBeads and self.plate.curloc=="Magnet":
             w.dispense(tipMask,well,self.beadsLC,volume,self.plate)
+        elif self.volume>=MINLIQUIDDETECTVOLUME:
+            w.dispense(tipMask,well,self.inliquidLC,volume,self.plate)
         elif self.volume+volume>=MINSIDEDISPENSEVOLUME:
             w.dispense(tipMask,well,self.bottomSideLC,volume,self.plate)
         else:
