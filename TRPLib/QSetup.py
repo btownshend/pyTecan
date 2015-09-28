@@ -44,8 +44,6 @@ class QSetup(object):
                 svtmp=self.trp.runQPCRDIL(src=[src[i]],vol=saveVol*saveDil,srcdil=saveDil,tgt=[tgt[i]],dilPlate=True)  
                 #svtmp=self.trp.saveSamps(src=[src[i]],tgt=[tgt[i]],vol=saveVol,dil=saveDil,plate=Experiment.DILPLATE,mix=(False,False))
                 sv[i]=svtmp[0]
-        if self.debug:
-            print "addSamples(src=",src,", tgt=",tgt,", needDil=","%.1f"%needDil,", primers=",primers,", nrep=",nreplicates,")"
         needDil=needDil/saveDil
         self.samples=self.samples+sv
         self.needDil=self.needDil+[needDil]*len(sv)
@@ -53,6 +51,8 @@ class QSetup(object):
         self.nreplicates=self.nreplicates+[nreplicates]*len(sv)
         self.stages=self.stages+[int(math.ceil(math.log(needDil)/math.log(self.MAXDIL)))]*len(sv)
         self.reuse=self.reuse+[None]*len(sv)
+        if self.debug:
+            print "addSamples(src=",src,", tgt=",tgt,", saveDil=%.1f"%saveDil, ", needDil=%.1f"%needDil,", primers=",primers,", nrep=",nreplicates,", stages=",self.stages[-1],")"
 
     def findReuses(self):
         'Find any prior dilutions that can be reused'
