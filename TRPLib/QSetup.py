@@ -108,7 +108,7 @@ class QSetup(object):
         if primers==None:
             primers=self.allprimers()
         for i in range(nsteps):
-            self.addSamples(src=[ref],needDil=mindil*math.pow(dstep,i),primers=primers,nreplicates=nreplicates)
+            self.addSamples(src=[ref],needDil=mindil*math.pow(dstep,i),primers=primers,nreplicates=nreplicates,saveVol=100)
         self.addSamples(src=["SSDDil"],needDil=1,primers=self.allprimers(),nreplicates=nreplicates)
 
     def run(self):
