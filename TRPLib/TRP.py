@@ -1,4 +1,4 @@
-from Experiment.sample import Sample, ASPIRATEFACTOR
+from Experiment.sample import Sample
 from Experiment.experiment import Experiment
 from Experiment.experiment import Concentration
 import os
@@ -406,10 +406,10 @@ class TRP(object):
             for i in range(len(ssrc)):
                 if ssrc[i].volume > residualVolume:
                     if keepWash:
-                        self.e.transfer((ssrc[i].volume-residualVolume)/ASPIRATEFACTOR,ssrc[i],sWashTgt[i])	# Keep supernatants
+                        self.e.transfer(ssrc[i].volume-residualVolume,ssrc[i],sWashTgt[i])	# Keep supernatants
                         sWashTgt[i].conc=None	# Allow it to be reused
                     else:
-                        self.e.dispose((ssrc[i].volume-residualVolume)/ASPIRATEFACTOR,ssrc[i])	# Discard supernatant
+                        self.e.dispose(ssrc[i].volume-residualVolume,ssrc[i])	# Discard supernatant
                 
         # Wash
         swash=findsamps(wash,False)
@@ -434,10 +434,10 @@ class TRP(object):
                 
             for i in range(len(ssrc)):
                 if keepWash:
-                    self.e.transfer((ssrc[i].volume-residualVolume)/ASPIRATEFACTOR,ssrc[i],sWashTgt[i])	# Remove wash
+                    self.e.transfer(ssrc[i].volume-residualVolume,ssrc[i],sWashTgt[i])	# Remove wash
                     sWashTgt[i].conc=None	# Allow it to be reused
                 else:
-                    self.e.dispose((ssrc[i].volume-residualVolume)/ASPIRATEFACTOR,ssrc[i])	# Remove wash
+                    self.e.dispose(ssrc[i].volume-residualVolume,ssrc[i])	# Remove wash
 
         self.e.moveplate(ssrc[0].plate,"Home")
 
@@ -478,7 +478,7 @@ class TRP(object):
         self.sepWait(ssrc,sepTime)
 
         for i in range(len(ssrc)):
-            self.e.transfer((ssrc[i].volume-residualVolume)/ASPIRATEFACTOR,ssrc[i],stgt[i])	# Transfer elution to new tube
+            self.e.transfer(ssrc[i].volume-residualVolume,ssrc[i],stgt[i])	# Transfer elution to new tube
 
         self.e.moveplate(ssrc[0].plate,"Home")
         return tgt
@@ -492,11 +492,11 @@ class TRP(object):
             if stgt.volume>residualVolume:
                 self.e.moveplate(stgt.plate,"Magnet")	# Move to magnet
                 self.sepWait([stgt],sepTime)
-                self.e.dispose((stgt.volume-residualVolume)/ASPIRATEFACTOR,stgt)
+                self.e.dispose(stgt.volume-residualVolume,stgt)
             self.e.moveplate(stgt.plate,"Home")	
             if s.volume<suspendVolume:
                 self.e.transfer(suspendVolume-s.volume,self.e.WATER,s,(False,False))
-            vol=(s.volume-residualVolume-1)/ASPIRATEFACTOR
+            vol=s.volume-residualVolume-1
             s.conc=None
             self.e.transfer(vol,s,stgt,mix=(True,True))
 
