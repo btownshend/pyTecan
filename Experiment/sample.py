@@ -6,13 +6,10 @@ from concentration import Concentration
 
 
 MAXVOLUME=200
-ASPIRATEFACTOR=1.02
-ASPIRATEEXTRA=1.0
 MINLIQUIDDETECTVOLUME=20
 #MINLIQUIDDETECTVOLUME=1000  # Liquid detect may be broken
 #MINMIXTOPVOLUME=50   # Use manual mix if trying to mix more than this volume  (aspirates at ZMax-1.5mm, dispenses at ZMax-5mm)
 MINMIXTOPVOLUME=1e10   # Disabled manual mix -- may be causing bubbles
-MULTIEXCESS=1  # Excess volume aspirate when using multi-dispense
 SHOWTIPS=False
 SHOWINGREDIENTS=False
 MINDEPOSITVOLUME=5.0	# Minimum volume to end up with in a well after dispensing
@@ -78,7 +75,7 @@ class Sample(object):
             for t in tiphistory:
                 print >>fd,"%d: %s\n"%(t,tiphistory[t])
             
-    def __init__(self,name,plate,well=None,conc=None,volume=0,liquidClass=liquidclass.LCDefault,hasBeads=False):
+    def __init__(self,name,plate,well=None,conc=None,volume=0,hasBeads=False):
         if well==None:
             # Find first unused well
             found=False
@@ -122,17 +119,17 @@ class Sample(object):
             self.ingredients={}
             
         if plate.pierce:
-            self.bottomLC=liquidclass.LC("%s-Pierce"%liquidClass.name,liquidClass.singletag,liquidClass.multicond,liquidClass.multiexcess)
-            self.bottomSideLC=bottomLC
+            self.bottomLC=liquidclass.LCWaterPierce
+            self.bottomSideLC=bottomLC  # Can't use side with piercing
             self.inliquidLC=self.bottomLC  # Can't use liquid detection when piercing
         else:
-            self.bottomLC=liquidclass.LC("%s-Bottom"%liquidClass.name,liquidClass.singletag,liquidClass.multicond,liquidClass.multiexcess)
-            self.bottomSideLC=liquidclass.LC("%s-BottomSide"%liquidClass.name,liquidClass.singletag,liquidClass.multicond,liquidClass.multiexcess)
-            self.inliquidLC=liquidclass.LC("%s-InLiquid"%liquidClass.name,liquidClass.singletag,liquidClass.multicond,liquidClass.multiexcess)
+            self.bottomLC=liquidclass.LCWaterBottom
+            self.bottomSideLC=liquidclass.LCWaterBottomSide
+            self.inliquidLC=liquidclass.LCWaterInLiquid
 
-        self.beadsLC=liquidclass.LC("%s-BottomBeads"%liquidClass.name,liquidClass.singletag,liquidClass.multicond,liquidClass.multiexcess)
-        self.mixLC=liquidclass.LC("%s-MixSlow"%liquidClass.name,liquidClass.singletag,liquidClass.multicond,liquidClass.multiexcess)
-        self.airLC=liquidclass.LC("Air")
+        self.beadsLC=liquidclass.LCWaterBottomBeads
+        self.mixLC=liquidclass.LCMixSlow
+        self.airLC=liquidclass.LCAir
         # Same as bottom for now 
         self.emptyLC=self.bottomLC
         self.history=""
@@ -190,11 +187,6 @@ class Sample(object):
             print "ERROR:Attempt to aspirate %.1f ul from %s that contains only %.1f ul"%(volume, self.name, self.volume)
         if not self.isMixed:
             print "WARNING: Aspirate %.1f ul from unmixed sample %s. "%(volume,self.name)
-        if self.hasBeads:
-            aspVolume=volume
-        else:
-            # Aspirates more than dispensed
-            aspVolume=volume+ASPIRATEEXTRA
 
         if self.well==None:
                 well=[]
@@ -204,19 +196,19 @@ class Sample(object):
         else:
                 well=[self.well]
         
-        lc=self.chooseLC(aspVolume)
+        lc=self.chooseLC(volume)
         if self.hasBeads and self.plate.curloc=="Magnet":
             # With beads don't do any manual conditioning and don't remove extra (since we usually want to control exact amounts left behind, if any)
-            w.aspirateNC(tipMask,well,lc,aspVolume,self.plate)
-            remove=aspVolume*ASPIRATEFACTOR
-            if self.volume==aspVolume:
+            w.aspirateNC(tipMask,well,lc,volume,self.plate)
+            remove=lc.volRemoved(volume,multi=False)
+            if self.volume==volume:
                 # Removing all, ignore excess remove
                 remove=self.volume
                 self.ingredients={}
         else:
-            w.aspirate(tipMask,well,lc,aspVolume,self.plate)
+            w.aspirate(tipMask,well,lc,volume,self.plate)
             # Manual conditioning handled in worklist
-            remove=aspVolume*ASPIRATEFACTOR+MULTIEXCESS
+            remove=lc.volRemoved(volume,multi=True)
 
         if self.volume<remove and self.volume>0:
             print "WARNING: Removing all contents (%.1f from %.1ful) from %s"%(remove,self.volume,self.name)
@@ -231,7 +223,7 @@ class Sample(object):
         self.volume=self.volume-remove
         if self.volume+.001<self.plate.unusableVolume and self.volume>0:
             # TODO - this should be more visible in output
-            print "Warning: Aspiration of %.1ful from %s brings volume down to %.1ful which is less than its unusable volume of %.1f ul"%(aspVolume,self.name,self.volume,self.plate.unusableVolume)
+            print "Warning: Aspiration of %.1ful from %s brings volume down to %.1ful which is less than its unusable volume of %.1f ul"%(remove,self.name,self.volume,self.plate.unusableVolume)
 
         self.addhistory("",-remove,tipMask)
 
@@ -396,9 +388,8 @@ class Sample(object):
                         mixheight=2
                     blowheight=math.ceil(height)			# Anywhere above
 #                    print 'Vol=%.1f ul, height=%.1f mm, mix=%d, blow=%d'%(self.volume,height,mixheight,blowheight)
-                    mixLC=liquidclass.LC("Mix_%d"%mixheight)
-                    dipLC=liquidclass.LC("Dip")
-                    blowoutLC=liquidclass.LC("Blowout_%d"%blowheight)
+                    mixLC=liquidclass.LCMix[mixheight]
+                    blowoutLC=liquidclass.LCBlowout[blowheight]
                     w.aspirateNC(tipMask,well,self.airLC,(blowvol+0.1),self.plate)
                     if self.volume<30:
                         w.mix(tipMask,well,self.mixLC,mixvol,self.plate,nmix)
@@ -409,7 +400,7 @@ class Sample(object):
                             w.dispense(tipMask,well,mixLC,mixvol,self.plate)
                         self.history+="(M@%d)"%(mixheight)
                     w.dispense(tipMask,well,blowoutLC,blowvol,self.plate)
-                    w.dispense(tipMask,well,dipLC,0.1,self.plate)
+                    w.dispense(tipMask,well,liquidclass.LCDip,0.1,self.plate)
 
             tiphistory[tipMask]+=" %s-Mix[%d]"%(self.name,mixvol)
             self.isMixed=True

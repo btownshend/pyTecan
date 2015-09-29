@@ -45,7 +45,7 @@ class Experiment(object):
         # self.sanitize()  # Not needed, TRP does it, also first use of tips will do this
         self.useDiTis=False
         self.thermotime=0
-        self.BLEACH.mixLC=liquidclass.LC("RNaseAway-Mix")
+        self.BLEACH.mixLC=liquidclass.LCBleachMix
         self.ptcrunning=False
         # Access PTC and RIC early to be sure they are working
         self.w.pyrun("PTC\\ptctest.py")
