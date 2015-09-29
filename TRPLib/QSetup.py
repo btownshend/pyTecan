@@ -26,12 +26,15 @@ class QSetup(object):
         self.trp=trp
         self.debug=debug
         
-    def addSamples(self, src, needDil, primers,nreplicates=1,names=None):
+    def addSamples(self, src, needDil, primers,nreplicates=1,names=None,saveVol=None):
         'Add sample(s) to list of qPCRs to do'
+        # saveVol is total amount (after dilution) to be immediately saved
         saveDil=min(needDil,self.MAXDIL)
         if needDil/saveDil>1 and needDil/saveDil<2:
             saveDil=math.sqrt(needDil)
-        saveVol=max(self.MINDILVOL/saveDil,self.TGTINVOL)
+        if saveVol==None:
+            saveVol=max(self.MINDILVOL,self.TGTINVOL*saveDil)
+            
         if names==None:
             tgt=[diluteName(src[i],saveDil) for i in range(len(src))]
         else:
@@ -41,8 +44,7 @@ class QSetup(object):
             t=Sample.lookup(tgt[i])
             if t==None or t.volume==0:
                 #print "Save ",src[i]
-                svtmp=self.trp.runQPCRDIL(src=[src[i]],vol=saveVol*saveDil,srcdil=saveDil,tgt=[tgt[i]],dilPlate=True)  
-                #svtmp=self.trp.saveSamps(src=[src[i]],tgt=[tgt[i]],vol=saveVol,dil=saveDil,plate=Experiment.DILPLATE,mix=(False,False))
+                svtmp=self.trp.runQPCRDIL(src=[src[i]],vol=saveVol,srcdil=saveDil,tgt=[tgt[i]],dilPlate=True)  
                 sv[i]=svtmp[0]
         needDil=needDil/saveDil
         self.samples=self.samples+sv
