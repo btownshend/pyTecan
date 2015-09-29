@@ -35,16 +35,24 @@ class Plate(object):
         angle=17.5*math.pi/180;
         # Use data from Robot/Calibration/20150302-LiquidHeights
         if self.name=="Samples" or self.name=="Dilutions":
-            if volume<60 and not self.warned:
-                print "%s plate liquid heights not validated for <60 ul (attempted to measure %.1f ul)"%(self.name,volume)
+            if volume<20 and not self.warned:
+                print "%s plate liquid heights not validated for <20 ul (attempted to measure %.1f ul)"%(self.name,volume)
                 self.warned=True
-            r1=2.56;
-            h1=9.64;
-            v0=9.9;
+            r1=2.77
+            if self.name=="Samples":
+                h1=10.04
+                v0=10.8
+            else:
+                h1=9.76
+                v0=11.9
         elif self.name=="Reagents":
-            h1=16.69
-            r1=3.99
-            v0=14.7
+            h1=17.71
+            r1=4.05
+            v0=12.9
+        elif self.name=="Eppendorfs":
+            h1=17.56
+            r1=4.42
+            v0=29.6
         elif self.name=="qPCR":
             if volume<110 and not self.warned:
                 print "%s plate liquid heights not validated for <110 ul"%self.name
