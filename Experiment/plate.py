@@ -20,15 +20,16 @@ class Plate(object):
         self.warned=False
         self.curloc="Home"
         # Use data from Robot/Calibration/20150302-LiquidHeights
-        if self.name=="Samples" or self.name=="Dilutions":
+        if self.name=="Samples":
             self.angle=17.5*math.pi/180
             self.r1=2.77
-            if self.name=="Samples":
-                self.h1=10.04
-                self.v0=10.8
-            else:
-                self.h1=9.76
-                self.v0=11.9
+            self.h1=10.04
+            self.v0=10.8
+        elif self.name=="Dilutions":
+            self.angle=17.5*math.pi/180
+            self.r1=2.77
+            self.h1=9.76
+            self.v0=11.9
         elif self.name=="Reagents":
             self.angle=17.5*math.pi/180
             self.h1=17.71
