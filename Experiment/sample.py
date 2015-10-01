@@ -292,7 +292,7 @@ class Sample(object):
         self.addingredients(src,volume)
             
     def addhistory(self,name,vol,tip):
-        if vol>0:
+        if vol>=0:
             if SHOWTIPS:
                     str="%s[%.1f#%d]"%(name,vol,tip)
             else:
@@ -302,11 +302,14 @@ class Sample(object):
             else:
                 self.history=str
         elif vol<0:
-            str=" -%.1f"%(-vol)
-            if len(self.history)>0:
-                self.history=self.history+str
+            if SHOWTIPS:
+                    str="%s[%.1f#%d]"%(name,-vol,tip)
             else:
-                self.history=str
+                    str="%s[%.1f]"%(name,-vol)
+            if len(self.history)>0:
+                self.history=self.history+" -"+str
+            else:
+                self.history="-"+str
         name=self.name
         if name=="RNase-Away":
             if tip in tiphistory and tiphistory[tip][-1]=='\n':
