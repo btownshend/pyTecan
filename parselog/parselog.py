@@ -1,9 +1,18 @@
 import debughook
 import time
+import re
+from datalog import Datalog
 
 'Parse a GEMINI log file'
 debug=False
+dl=Datalog()
+
 lnum=1
+sbl=[0,0,0,0]
+sml=[0,0,0,0]
+zadd=[0,0,0,0]
+tipSelect=0
+ldpending=False
 
 syscmds={
       'ALO':['Activate door lock output',['locknum','setting'],[]],
@@ -141,7 +150,69 @@ errorsM={13:'No access to serial EEPROM',   # System errors (M)
         19:'Door lock 2 failed',
         20:'No new device node detected',
         21:'Device node already defined'}
+
+def displaymatch(match):
+    if match is None:
+        return None
+    return '<Match: %r, groups=%r>' % (match.group(), match.groups())
+
+def gemtip(tipcmd,line2):
+    'Handle Gemini command of form:  tip 2 : aspirate 9.00ul 10, 1 HSP96xx on carrier [4,2]                 8.00ul "Water-InLiquid" Standard <all volumes> Multi'
+    fullcmd=tipcmd[8:]+line2
+    if debug:
+        print "XFR ",fullcmd
+    # Parse the line
+    parser1=re.compile(r"tip (\d+) : (\S+) +(?:(\d+\.\d+)(.l) +)?(?:\((\d)+x\))? *(\d+), +(\d+) +(.+) +\[(\d+),(\d+)\]")
+    if debug:
+        print displaymatch(parser1.match(tipcmd))
+    match=parser1.match(tipcmd)
+    g=match.groups()
+    assert(len(g)==10)
+    tip=int(g[0])
+    op=g[1]
+    if g[2]==None:
+        vol=0
+    else:
+        vol=float(g[2])
+    units=g[3]
+    if units=='nl':
+        vol=vol/1000.0
+    if g[4]!=None:
+        nmix=int(g[4])
+    else:
+        nmix=None
+    wellx=int(g[5])
+    welly=int(g[6])
+    rack=g[7]
+    grid=int(g[8])
+    pos=int(g[9])
+    parser2=re.compile(r" +(?:(\d+\.\d+)(.l) +)?\"(.+)\" (?:(.+) <(.+)> (\S+))?")
+    if debug:
+        print displaymatch(parser2.match(line2))
+    match=parser2.match(line2)
+    g=match.groups()
+    assert(len(g)==6)
+    if g[0]==None:
+        vol2=0
+    else:
+        vol2=float(g[0])
+    units=g[1]
+    if units=='nl':
+        vol2=vol2/1000.0
+    lc=g[2]
+    std=g[3]
+    volset=g[4]
+    ptype=g[5]
+    if op=="mix":
+        op="%s%d"%(op,nmix)
+    msg1="tip=%d, op=%s, vol=%.2f/%.2f, wellx=%d, welly=%d, rack=%s, grid=%d, pos=%d, lc=%s, pytpe=%s"%(tip,op,vol,vol2,wellx,welly,rack,grid,pos,lc,ptype)
+    msg2="tip=%d, wellx=%d, welly=%d, rack=%s, grid=%d, pos=%d, lc=%s"%(tip,wellx,welly,rack,grid,pos,lc)
+    if debug:
+        print "XFR",msg1
+    dl.logop(op,tip,vol,wellx,welly,rack,grid,pos,lc,std,volset,ptype=='Multi')
+    
 def fwparse(dev,send,reply,error):
+    global lnum, sbl, sml, tipSelect, ldpending, zadd
     if debug:
         if error:
             print "\tSEND:%s  ERROR:%s"%(str(send),str(reply))
@@ -191,6 +262,41 @@ def fwparse(dev,send,reply,error):
         else:
             emsg='Unknown error: <%s>'%replyecode
         print "**** Error message: %s"%emsg
+    if op=='SBL':
+        sbl=[int(r) if len(r)>0 else 0 for r in args]
+        #print "TIPS SBL=",sbl
+    if op=='SML':
+        sml=[int(r) if len(r)>0 else 0 for r in args]
+    if op=='MET' or op=='MDT':
+        if len(args[1])>0:
+            sbl=[int(args[1]) for x in [0,1,2,3]]
+        if len(args[3])>0:
+            sml=[int(args[3]) for x in [0,1,2,3]]
+        zadd=[int(x) for x in args[4:8]]
+        tipSelect=int(args[0])
+        if replyecode==0:
+            ldpending=True
+        else:
+            heights=[-1,-1,-1,-1]
+            for i in range(len(heights)):
+                if 1<<i & tipSelect != 0:
+                    print "TIPS %d %s "%(lnum,op),heights[i],sbl[i],sml[i],heights[i]+sbl[i]-sml[i]
+                    dl.logmeasure(i+1,heights[i],sbl[i],sml[i],zadd[i])
+    elif op=='REE' or op=='RVZ':
+        pass
+    elif ldpending and op=='RPZ' and int(args[0])==0:
+        heights=[int(r) for r in reply]
+        assert(len(heights)==len(sbl))
+        for i in range(len(heights)):
+            if 1<<i & tipSelect != 0:
+                print "TIPS %d  "%(lnum),heights[i],sbl[i],sml[i],heights[i]+sbl[i]-sml[i]
+                dl.logmeasure(i+1,heights[i],sbl[i],sml[i],zadd[i])
+        ldpending=False
+    elif ldpending:
+        print "**** Parser error:  got op %s without a RPZ while ldpending"%op
+        assert(False)
+        ldpending=False
+
         
 import sys
 if len(sys.argv)!=2 and len(sys.argv)!=1:
@@ -212,6 +318,7 @@ lastgeminicmd=None
 lastgeminitime=None
 geminicmdtimes={}
 geminicmdcnt={}
+tipcmd=""
 while True:
     line=fd.readline()
     if len(line)==0:
@@ -255,6 +362,13 @@ while True:
     else:
           if cmd.find('detected_volume_')==-1 or cmd.find('= -1')==-1:
                 print "Gemini %s %s"%(gtime,cmd)
+                if cmd[0:3]=='tip':
+                    tipcmd=cmd
+                else:
+                    if  len(tipcmd)>0 and cmd[0:3]=='   ':
+                        gemtip(tipcmd,cmd)
+                    tipcmd=""
+
           if cmd.startswith('Line'):
                 colon=cmd.find(':')
                 cname=cmd[(colon+2):]
@@ -275,6 +389,8 @@ while True:
                         geminicmdcnt[lastgeminicmd]=1
                 lastgeminicmd=cname
                 lasttime=t
+#print "log=",dl
+dl.printallsamples()
 
 for cmd in geminicmdtimes.keys():
       print "%s: %.0f seconds for %.0f occurrences:   %.2f second/call"%(cmd,geminicmdtimes[cmd],geminicmdcnt[cmd], geminicmdtimes[cmd]*1.0/geminicmdcnt[cmd])
