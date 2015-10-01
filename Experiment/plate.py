@@ -17,6 +17,33 @@ class Plate(object):
         self.maxVolume=maxVolume
         self.warned=False
         self.curloc="Home"
+        # Use data from Robot/Calibration/20150302-LiquidHeights
+        if self.name=="Samples" or self.name=="Dilutions":
+            self.angle=17.5*math.pi/180
+            self.r1=2.77
+            if self.name=="Samples":
+                self.h1=10.04
+                self.v0=10.8
+            else:
+                self.h1=9.76
+                self.v0=11.9
+        elif self.name=="Reagents":
+            self.angle=17.5*math.pi/180
+            self.h1=17.71
+            self.r1=4.05
+            self.v0=12.9
+        elif self.name=="Eppendorfs":
+            self.angle=17.5*math.pi/180
+            self.h1=17.56
+            self.r1=4.42
+            self.v0=29.6
+        elif self.name=="qPCR":
+            self.angle=17.5*math.pi/180
+            self.h1=10.31
+            self.r1=2.65
+            self.v0=7.5
+        else:
+            print "No liquid height equation for plate %s"%self.name
 
     def movetoloc(self,dest,newloc=None):
         self.curloc=dest
@@ -32,46 +59,43 @@ class Plate(object):
             
     def getliquidheight(self,volume):
         'Get liquid height in mm above ZMax'
-        angle=17.5*math.pi/180;
-        # Use data from Robot/Calibration/20150302-LiquidHeights
+        if not hasattr(self,"angle"):
+            print "No liquid height equation for plate %s"%self.name
+            return None
+
         if self.name=="Samples" or self.name=="Dilutions":
             if volume<20 and not self.warned:
                 print "%s plate liquid heights not validated for <20 ul (attempted to measure %.1f ul)"%(self.name,volume)
                 self.warned=True
-            r1=2.77
-            if self.name=="Samples":
-                h1=10.04
-                v0=10.8
-            else:
-                h1=9.76
-                v0=11.9
-        elif self.name=="Reagents":
-            h1=17.71
-            r1=4.05
-            v0=12.9
-        elif self.name=="Eppendorfs":
-            h1=17.56
-            r1=4.42
-            v0=29.6
         elif self.name=="qPCR":
             if volume<110 and not self.warned:
                 print "%s plate liquid heights not validated for <110 ul"%self.name
                 self.warned=True
-            h1=10.31
-            r1=2.65
-            v0=7.5
-        else:
-            print "No liquid height equation for plate %s"%self.name
-            return None
 
-        h0=h1-r1/math.tan(angle/2);
-        v1=math.pi/3*(h1-h0)*r1*r1-v0;
+        h0=self.h1-self.r1/math.tan(self.angle/2);
+        v1=math.pi/3*(self.h1-h0)*self.r1*self.r1-self.v0;
         if volume>=v1:
-            height=(volume-v1)/(math.pi*r1*r1)+h1
+            height=(volume-v1)/(math.pi*self.r1*self.r1)+self.h1
+        elif volume+self.v0<0:
+            height=h0
         else:
-            height=((volume+v0)*(3/math.pi)*((h1-h0)/r1)**2)**(1.0/3)+h0
+             height=((volume+self.v0)*(3/math.pi)*((self.h1-h0)/self.r1)**2)**(1.0/3)+h0
             #        print "%s,vol=%.1f, height=%.1f"%(self.name,volume,height)
         return height
+
+    def getliquidvolume(self,height):
+        'Compute liquid volume given height above zmax in mm'
+        if not hasattr(self,"angle"):
+            return None
+        
+        h0=self.h1-self.r1/math.tan(self.angle/2);
+        v1=math.pi/3*(self.h1-h0)*self.r1*self.r1-self.v0;
+        if height>self.h1:
+            volume=(height-self.h1)*math.pi*self.r1*self.r1+v1
+        else:
+            volume=(height-h0)**3*math.pi/3*(self.r1/(self.h1-h0))**2-self.v0
+        #print "h0=",h0,", v1=",v1,", h=",height,", vol=",volume,", h=",self.getliquidheight(volume)
+        return volume
     
     def wellname(self,well):
         if well==None:
