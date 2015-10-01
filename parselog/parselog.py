@@ -48,7 +48,7 @@ lihacmds={
       'MAY':['Position absolute slow speed for Y axis',['speed1','speed2','speed3','speed4','speed5','speed6','speed7','speed8'],[]],
       'MAZ':['Position absolute slow speed for Z axis',['speed1','speed2','speed3','speed4','speed5','speed6','speed7','speed8'],[]],
       'MDT':['Move tip, detect liquid, submerge',['tipSelect','submerge','Zstart','Zmax','Zadd1','Zadd2','Zadd3','Zadd4','Zadd5','Zadd6','Zadd7','Zadd8'],[]],
-      'MET':['Move tip, detect liquid, submerge (staty at Z-max on error)',['tipSelect','submerge','Zstart','Zmax','Zadd1','Zadd2','Zadd3','Zadd4','Zadd5','Zadd6','Zadd7','Zadd8'],[]],
+      'MET':['Move tip, detect liquid, submerge (stay at Z-max on error)',['tipSelect','submerge','Zstart','Zmax','Zadd1','Zadd2','Zadd3','Zadd4','Zadd5','Zadd6','Zadd7','Zadd8'],[]],
       'MRX':['Position relative slow speed for X axis',['X','slowSpeed'],[]],
       'MRY':['Position relative slow speed for Y axis',['Y','slowSpeed'],[]],
       'MRZ':['Position relative slow speed for Z axis',['Z','slowSpeed'],[]],
