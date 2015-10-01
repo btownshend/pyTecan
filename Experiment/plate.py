@@ -5,7 +5,7 @@ _Plate__allplates=[]
 "An object representing a microplate or other container on the deck"
 class Plate(object):
     "A plate object which includes a name, location, and size"
-    def __init__(self,name, grid, pos, nx=12, ny=8,pierce=False,unusableVolume=5,maxVolume=200):
+    def __init__(self,name, grid, pos, nx=12, ny=8,pierce=False,unusableVolume=5,maxVolume=200,zmax=None,angle=None,r1=None,h1=None,v0=None):
         self.name=name
         self.grid=grid
         self.pos=pos
@@ -19,35 +19,14 @@ class Plate(object):
         self.maxVolume=maxVolume
         self.warned=False
         self.curloc="Home"
-        # Use data from Robot/Calibration/20150302-LiquidHeights
-        if self.name=="Samples":
-            self.angle=17.5*math.pi/180
-            self.r1=2.77
-            self.h1=10.04
-            self.v0=10.8
-        elif self.name=="Dilutions":
-            self.angle=17.5*math.pi/180
-            self.r1=2.77
-            self.h1=9.76
-            self.v0=11.9
-        elif self.name=="Reagents":
-            self.angle=17.5*math.pi/180
-            self.h1=17.71
-            self.r1=4.05
-            self.v0=12.9
-        elif self.name=="Eppendorfs":
-            self.angle=17.5*math.pi/180
-            self.h1=17.56
-            self.r1=4.42
-            self.v0=29.6
-        elif self.name=="qPCR":
-            self.angle=17.5*math.pi/180
-            self.h1=10.31
-            self.r1=2.65
-            self.v0=7.5
+        self.zmax=zmax
+        if angle==None:
+            self.angle=None
         else:
-            print "No liquid height equation for plate %s"%self.name
-
+            self.angle=angle*math.pi/180
+        self.r1=r1
+        self.h1=h1
+        self.v0=v0
         __allplates.append(self)
         
     @classmethod
@@ -71,18 +50,11 @@ class Plate(object):
             
     def getliquidheight(self,volume):
         'Get liquid height in mm above ZMax'
-        if not hasattr(self,"angle"):
-            print "No liquid height equation for plate %s"%self.name
+        if self.angle==None:
+            if not self.warned:
+                print "No liquid height equation for plate %s"%self.name
+                self.warned=True
             return None
-
-        if self.name=="Samples" or self.name=="Dilutions":
-            if volume<20 and not self.warned:
-                print "%s plate liquid heights not validated for <20 ul (attempted to measure %.1f ul)"%(self.name,volume)
-                self.warned=True
-        elif self.name=="qPCR":
-            if volume<110 and not self.warned:
-                print "%s plate liquid heights not validated for <110 ul"%self.name
-                self.warned=True
 
         h0=self.h1-self.r1/math.tan(self.angle/2);
         v1=math.pi/3*(self.h1-h0)*self.r1*self.r1-self.v0;
@@ -97,7 +69,7 @@ class Plate(object):
 
     def getliquidvolume(self,height):
         'Compute liquid volume given height above zmax in mm'
-        if not hasattr(self,"angle"):
+        if self.angle==None:
             return None
         
         h0=self.h1-self.r1/math.tan(self.angle/2);
