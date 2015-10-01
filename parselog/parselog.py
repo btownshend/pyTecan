@@ -154,9 +154,6 @@ def fwparse(dev,send,reply,error):
     reply=reply[1:]
     op=send[0]
     args=send[1:]
-    if len(op)>3:
-        args.insert(0,op[3:])
-        op=op[0:3]
     if dev in devnames:
         devname=devnames[dev][0]
         cmds=devnames[dev][1]
@@ -244,7 +241,7 @@ while True:
         if cmd[0]=='>':
             if dev in send:
                 print "Double cmd to %s: %s AND %s"%(dev,send[dev],str(spcmd))
-            send[dev]=spcmd
+            send[dev]=[spcmd[0][0:3],spcmd[0][3:]]+spcmd[1:]
         elif cmd[0]=='-' or cmd[0]=='*':
             if dev not in send:
                 print "Missing cmd when received reply from %s: %s"%(dev,str(spcmd))
