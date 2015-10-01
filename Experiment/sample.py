@@ -11,6 +11,7 @@ MINLIQUIDDETECTVOLUME=20
 #MINMIXTOPVOLUME=50   # Use manual mix if trying to mix more than this volume  (aspirates at ZMax-1.5mm, dispenses at ZMax-5mm)
 MINMIXTOPVOLUME=1e10   # Disabled manual mix -- may be causing bubbles
 SHOWTIPS=False
+SHOWTIPHISTORY=False
 SHOWINGREDIENTS=False
 MINDEPOSITVOLUME=5.0	# Minimum volume to end up with in a well after dispensing
 MINSIDEDISPENSEVOLUME=10.0  # minimum final volume in well to use side-dispensing.  Side-dispensing with small volumes may result in pulling droplet up sidewall
@@ -70,7 +71,7 @@ class Sample(object):
                     else:
                         print >>fd,s
             print >>fd
-        if SHOWTIPS:
+        if SHOWTIPS and SHOWTIPHISTORY:
             print >>fd,"\nTip history:\n"
             for t in tiphistory:
                 print >>fd,"%d: %s\n"%(t,tiphistory[t])
