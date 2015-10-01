@@ -1,5 +1,7 @@
 import math
 
+_Plate__allplates=[]
+
 "An object representing a microplate or other container on the deck"
 class Plate(object):
     "A plate object which includes a name, location, and size"
@@ -45,6 +47,15 @@ class Plate(object):
         else:
             print "No liquid height equation for plate %s"%self.name
 
+        __allplates.append(self)
+        
+    @classmethod
+    def lookup(self,grid,pos):
+        for p in __allplates:
+            if p.grid==grid and p.pos==pos:
+                return p
+        return None
+               
     def movetoloc(self,dest,newloc=None):
         self.curloc=dest
         if  dest=="Home":
