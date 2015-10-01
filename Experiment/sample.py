@@ -161,6 +161,13 @@ class Sample(object):
         return None
     
     @classmethod
+    def lookupByWell(cls,plate,well):
+        for s in __allsamples:
+            if s.plate==plate and s.well==well:
+                return s
+        return None
+    
+    @classmethod
     def getAllOnPlate(cls,plate=None):  
         result=[]
         for s in __allsamples:
