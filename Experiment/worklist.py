@@ -59,6 +59,9 @@ class WorkList(object):
             s=s+chr(0x30+bitMask)
         return s
 
+    def getline(self):
+        return len(self.list)+1
+    
     def moveliha(self, loc):
         self.flushQueue()
         tipMask=15
