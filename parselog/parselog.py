@@ -3,6 +3,7 @@ import time
 
 'Parse a GEMINI log file'
 debug=False
+lnum=1
 
 syscmds={
       'ALO':['Activate door lock output',['locknum','setting'],[]],
@@ -257,6 +258,7 @@ while True:
           if cmd.startswith('Line'):
                 colon=cmd.find(':')
                 cname=cmd[(colon+2):]
+                lnum=int(cmd[4:(colon-1)])
                 #print "cname=",cname
                 tdata=time.strptime("2013 "+gtime,"%Y %H:%M:%S")
                 t=time.mktime(tdata)
