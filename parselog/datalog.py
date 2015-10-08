@@ -80,8 +80,8 @@ class Datalog(object):
     def logmeasure(self,tip,height,submerge,zmax,zadd):
         sample=self.lastSample[tip]
         if height==-1:
-            vol=sample.plate.getliquidvolume(zadd/10.0)
-            h=" @[FAIL <%d:<%.1f#%d]"%(zadd,vol,tip)
+            vol=sample.plate.getliquidvolume((zadd+submerge)/10.0)
+            h=" @[FAIL <%d:<%.1f#%d]"%(zadd+submerge,vol,tip)
         else:
             vol=sample.plate.getliquidvolume((height+submerge-zmax)/10.0)
             if vol==None:
