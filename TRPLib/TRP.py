@@ -249,7 +249,7 @@ class TRP(object):
             if  watervol[i]>0:
                 self.e.transfer(watervol[i],self.e.WATER,ssrc[i],(False,False))
         for i in range(len(ssrc)):
-            self.e.transfer(mastervol[i],smaster[i],ssrc[i],(False,uessrc[i].hasBeads))
+            self.e.transfer(mastervol[i],smaster[i],ssrc[i],(False,ssrc[i].hasBeads))
         self.e.shake(ssrc[0].plate,returnPlate=returnPlate)
 
     ########################
