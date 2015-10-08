@@ -88,6 +88,10 @@ class Datalog(object):
                 h=" @[%d,%d#%d]"%(height-zmax,submerge,tip)
             else:
                 prevol=sample.volume-sample.lastadd		# Liquid height is measured before next op, whose volume effect has already been added to sample.volume
+                if prevol==0:
+                    print "Got a liquid height measurement for a well that should be empty -- assuming it was prefilled"
+                    sample.volume=vol+sample.lastadd
+                    prevol=vol
                 expectHeight=sample.plate.getliquidheight(prevol)
                 errorHeight=(height+submerge-zmax)-expectHeight*10
                 if abs(errorHeight)>4.5:
