@@ -118,9 +118,23 @@ class QSetup(object):
         #print "addReferences(mindil=",mindil,", nsteps=",nsteps,", dstep=",dstep,", nrep=", nreplicates, ", ref=",ref,")"
         if primers==None:
             primers=self.allprimers()
+        dils=[1]
         for i in range(nsteps):
-            self.addSamples(src=[ref],needDil=mindil*math.pow(dstep,i),primers=primers,nreplicates=nreplicates,saveVol=100)
-        self.addSamples(src=["SSDDil"],needDil=1,primers=self.allprimers(),nreplicates=nreplicates)
+            needDil=mindil*math.pow(dstep,i)
+            srcDil=1
+            src=ref
+            for j in range(len(dils)):
+                if needDil/dils[j] <= self.MAXDIL:
+                    srcDil=dils[j]
+                    if srcDil==1:
+                        src=[ref]
+                    else:
+                        src=["%s.D%d"%(ref,srcDil)]
+                    break
+            self.addSamples(src=src,needDil=needDil/srcDil,primers=primers,nreplicates=nreplicates,save=False)
+            dils.append(needDil)
+
+        self.addSamples(src=["SSDDil"],needDil=1,primers=self.allprimers(),nreplicates=nreplicates,save=False)
 
     def run(self):
         'Run the dilutions and QPCR setup'
