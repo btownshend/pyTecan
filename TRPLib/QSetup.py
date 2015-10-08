@@ -11,7 +11,7 @@ class QSetup(object):
     MAXDILVOL=150.0
     TGTINVOL=4
     
-    def __init__(self,trp,vol=15,maxdil=32,mindilvol=50,debug=False):
+    def __init__(self,trp,vol=15,maxdil=16,mindilvol=50,debug=False):
         'Create a new QPCR setup structure'
         self.volume=vol
         self.samples=[]
