@@ -706,7 +706,8 @@ class TRP(object):
 
         srcvol=[vol[i]/srcdil[i] for i in range(len(vol))]
         watervol=[vol[i]-srcvol[i] for i in range(len(vol))]
-#        print "srcdil=",srcdil,", ssdvol=",ssdvol,", srcvol=", srcvol, ", watervol=", watervol
+        if len(watervol) > 4 and sum(watervol)>800:
+            print "Could optimize distribution of ",len(watervol)," moves of SSDDIL: watervol=[", ["%.1f"%w for w in watervol],"]"
         self.e.multitransfer(watervol,self.e.SSDDIL,stgt,(False,False))
         
         for i in range(len(ssrc)):
