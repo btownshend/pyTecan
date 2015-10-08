@@ -26,26 +26,37 @@ class QSetup(object):
         self.trp=trp
         self.debug=debug
         
-    def addSamples(self, src, needDil, primers,nreplicates=1,names=None,saveVol=None):
+    def addSamples(self, src, needDil, primers,nreplicates=1,names=None,saveVol=None,saveDil=None,save=True):
         'Add sample(s) to list of qPCRs to do'
-        # saveVol is total amount (after dilution) to be immediately saved
-        saveDil=min(needDil,self.MAXDIL)
-        if needDil/saveDil>1 and needDil/saveDil<2:
-            saveDil=math.sqrt(needDil)
-        if saveVol==None:
-            saveVol=max(self.MINDILVOL,self.TGTINVOL*saveDil)
+        if save:
+            # saveVol is total amount (after dilution) to be immediately saved
+            if saveDil==None:
+                saveDil=min(needDil,self.MAXDIL)
+                if needDil/saveDil>1 and needDil/saveDil<2:
+                    saveDil=math.sqrt(needDil)
+            elif saveDil>needDil:
+                print "addSamples: saveDil=",saveDil, ", but needDil is only ", needDil
+                saveDil=needDil
+    
+            if saveVol==None:
+                saveVol=max(self.MINDILVOL*1.0/saveDil,self.TGTINVOL)
             
-        if names==None:
-            tgt=[diluteName(src[i],saveDil) for i in range(len(src))]
+            if names==None:
+                tgt=[diluteName(src[i],saveDil) for i in range(len(src))]
+            else:
+                tgt=[diluteName(names[i],saveDil) for i in range(len(src))]
+            sv=tgt
+            
+            for i in range(len(tgt)):
+                t=Sample.lookup(tgt[i])
+                if t==None or t.volume==0:
+                    #print "Save ",src[i]
+                    svtmp=self.trp.runQPCRDIL(src=[src[i]],vol=saveVol*saveDil,srcdil=saveDil,tgt=[tgt[i]],dilPlate=True)  
+                    sv[i]=svtmp[0]
         else:
-            tgt=[diluteName(names[i],saveDil) for i in range(len(src))]
-        sv=tgt
-        for i in range(len(tgt)):
-            t=Sample.lookup(tgt[i])
-            if t==None or t.volume==0:
-                #print "Save ",src[i]
-                svtmp=self.trp.runQPCRDIL(src=[src[i]],vol=saveVol,srcdil=saveDil,tgt=[tgt[i]],dilPlate=True)  
-                sv[i]=svtmp[0]
+            saveDil=1
+            sv=src
+
         needDil=needDil/saveDil
         self.samples=self.samples+sv
         self.needDil=self.needDil+[needDil]*len(sv)
@@ -54,8 +65,8 @@ class QSetup(object):
         self.stages=self.stages+[int(math.ceil(math.log(needDil)/math.log(self.MAXDIL)))]*len(sv)
         self.reuse=self.reuse+[None]*len(sv)
         if self.debug:
-            print "addSamples(src=",src,", tgt=",tgt,", saveDil=%.1f"%saveDil, ", needDil=%.1f"%needDil,", primers=",primers,", nrep=",nreplicates,", stages=",self.stages[-1],")"
-
+            print "addSamples(src=",src,", tgt=",sv,", saveDil=%.1f"%saveDil, ", needDil=%.1f"%needDil,", primers=",primers,", nrep=",nreplicates,", stages=",self.stages[-1],")"
+    
     def findReuses(self):
         'Find any prior dilutions that can be reused'
         maxstages=max(self.stages)
