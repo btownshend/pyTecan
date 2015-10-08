@@ -6,7 +6,7 @@ from concentration import Concentration
 
 
 MAXVOLUME=200
-MINLIQUIDDETECTVOLUME=20
+MINLIQUIDDETECTVOLUME=15
 #MINLIQUIDDETECTVOLUME=1000  # Liquid detect may be broken
 #MINMIXTOPVOLUME=50   # Use manual mix if trying to mix more than this volume  (aspirates at ZMax-1.5mm, dispenses at ZMax-5mm)
 MINMIXTOPVOLUME=1e10   # Disabled manual mix -- may be causing bubbles
