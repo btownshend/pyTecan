@@ -404,29 +404,70 @@ class Experiment(object):
         if returnHome:
             self.w.romahome()
 
-    def shake(self,plate,dur=60,speed=1600,accel=1,returnPlate=True):
+    def getspeeds(self,minvol,maxvol):
+        'Get shaker speed range for given well volume'
+        # Recommended speeds (from http://www.qinstruments.com/en/applications/optimization-of-mixing-parameters.html )
+        #  10% fill:  1800-2200, 25%: 1600-2000, 50%: 1400-1800, 75%: 1200-1600
+        # At 1600, 150ul is ok, but 200ul spills out
+        # Based on tests run 10/12/15 on blue plates, max speed at various volumes is:
+        # 200:
+        # 150: 1600 RPM (shaketest2)
+        # 100: 1900 RPM (shaketest3)
+        #   50:            RPM (shaketest4)
+        # Check volumes on plate
+        # Compute max speed based on maximum fill volume
+        fillvols=            [  200,  150,  100,     50,     20,       0]
+        #maxspeeds=[1400,1600,1800,2000,2200,2200]  # From website assuming 200ul max volume wells
+        maxspeeds=  [1400,1600,1900,2000,2200,2200]   # From experimental runs
+        #minspeeds= [1400,1200,1400,1800,1800,1800]  # From website
+        minspeeds=   [x-200 for x in maxspeeds]
+        for i in range(len(fillvols)):
+            if maxvol>=fillvols[i]:
+                if i==0:
+                    print "WARNING: No shaker speed data for volumes > %.0f ul"%fillvols[0]
+                    maxspeed=maxspeeds[0]
+                else:
+                    maxspeed=(maxvol-fillvols[i-1])/(fillvols[i]-fillvols[i-1])*(maxspeeds[i]-maxspeeds[i-1])+maxspeeds[i-1]
+                break
+        for i in range(len(fillvols)):
+            if minvol>=fillvols[i]:
+                if i==0:
+                    minspeed=minspeeds[0]
+                else:
+                    minspeed=(minvol-fillvols[i-1])/(fillvols[i]-fillvols[i-1])*(minspeeds[i]-minspeeds[i-1])+minspeeds[i-1]
+                break
+        return (minspeed,maxspeed)
+    
+    def shake(self,plate,dur=60,speed=None,accel=5,returnPlate=True):
         if self.ptcrunning and plate==Experiment.SAMPLEPLATE:
             self.waitpgm()
 
         # Move the plate to the shaker, run for the given time, and bring plate back
-        # Recommended speeds (from http://www.qinstruments.com/en/applications/optimization-of-mixing-parameters.html )
-        #  10% fill:  1800-2200, 25%: 1600-2000, 50%: 1400-1800, 75%: 1200-1600
-        # At 1600, 150ul is ok, but 200ul spills out
-        # Check volumes on plate
         samps=Sample.getAllOnPlate(plate)
         maxvol=max([x.volume for x in samps])
-        if (maxvol>151 and speed>=1600) or (maxvol>101 and speed>1800) or (maxvol>51 and speed>2000) or (maxvol>21 and speed>2200):
+        minvol=min([x.volume for x in samps if not x.isMixed]+[200])
+        (minspeed,maxspeed)=self.getspeeds(minvol,maxvol)
+
+        if speed==None:
+            speed=maxspeed
+            print "Mixing %s with %.0f (min unmixed) to %.0f (max) ul at %.0f RPM"%(plate.name, minvol, maxvol, speed)
+                    
+        if speed>maxspeed:
             print "WARNING: %s plate contains wells with up to %.2f ul, which may spill at %d RPM: "%(plate.name, maxvol, speed),
             for x in samps:
-                if (x.volume>151 and speed>=1600) or (x.volume>101 and speed>1800) or (x.volume>51 and speed>2000) or (x.volume>21 and speed>2200):
-                    print "%s[%.1f]"%(x.name,x.volume),
+                tmp=self.getspeeds(x.volume,x.volume)
+                if tmp[1]<speed:
+                    print "%s[%.1ful, max=%.0f RPM] "%(x.name,x.volume,tmp[1]),
             print
-        minvol=min([x.volume for x in samps if not x.isMixed]+[200])
-        if (minvol<150 and speed<1400) or (minvol<100 and speed<1600) or (minvol<50 and speed<1800) or (minvol<20 and speed<2200):
+
+        if speed<minspeed:
             print "WARNING: %s plate contains unmixed wells with as little as %.2f ul, which may not be mixed at %d RPM: "%(plate.name, minvol, speed),
             for x in samps:
-                if not x.isMixed and ((x.volume<150 and speed<1400) or (x.volume<100 and speed<1600) or (x.volume<50 and speed<1800) or (x.volume<20 and speed<2200)):
-                    print "%s[%.1f]"%(x.name,x.volume),
+                if x.isMixed:
+                    continue
+                tmp=self.getspeeds(x.volume,x.volume)
+                if speed<tmp[0]:
+                    print "%s[%.1ful, min=%.0f RPM] "%(x.name,x.volume,tmp[0]),
             print
 
         oldloc=plate.curloc
@@ -437,11 +478,11 @@ class Experiment(object):
         self.w.pyrun("BioShake\\bioexec.py shakeOn")
         self.starttimer()
         Sample.mixall(plate.name)
-        Sample.addallhistory("(S%d)"%dur,onlyplate=plate.name)
+        Sample.addallhistory("(S%d@%.0f)"%(dur,speed),onlyplate=plate.name)
         self.waittimer(dur)
         self.w.pyrun("BioShake\\bioexec.py shakeOff")
         self.starttimer()
-        self.waittimer(5)
+        self.waittimer(accel+4)
         self.w.pyrun("BioShake\\bioexec.py setElmUnlockPos")
         if returnPlate:
             self.moveplate(plate,oldloc)
