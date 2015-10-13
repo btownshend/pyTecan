@@ -47,6 +47,8 @@ class Experiment(object):
         self.thermotime=0
         self.BLEACH.mixLC=liquidclass.LCBleachMix
         self.ptcrunning=False
+        self.overrideSanitize=False
+        
         # Access PTC and RIC early to be sure they are working
         self.w.pyrun("PTC\\ptctest.py")
         #        self.w.periodicWash(15,4)
@@ -100,12 +102,13 @@ class Experiment(object):
         self.w.comment("Sanitize (cleanTips=%d)"%self.cleanTips)
         self.w.wash(15,1,2)
         fixedWells=[]
-        for i in range(4):
-            if (fixedTips & (1<<i)) != 0:
-                fixedWells.append(i)
-                self.BLEACH.addhistory("SANITIZE",0,1<<i)
-        self.w.mix(fixedTips,fixedWells,self.BLEACH.mixLC,200,self.BLEACH.plate,nmix,False);
-        self.w.wash(fixedTips,1,deepvol,True)
+        if not self.overrideSanitize:
+            for i in range(4):
+                if (fixedTips & (1<<i)) != 0:
+                    fixedWells.append(i)
+                    self.BLEACH.addhistory("SANITIZE",0,1<<i)
+            self.w.mix(fixedTips,fixedWells,self.BLEACH.mixLC,200,self.BLEACH.plate,nmix,False);
+            self.w.wash(fixedTips,1,deepvol,True)
         self.cleanTips|=fixedTips
         # print "* Sanitize"
         
