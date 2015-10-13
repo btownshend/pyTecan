@@ -156,7 +156,7 @@ classdef RobotSamples < handle
       fprintf('\n');
       for i=1:length(keys)
         qs=obj.qsamps(keys{i});
-        fprintf('%-20.20s:  Dil=%6.0f, Ct=[%s], Conc=[%s] nM\n', qs.name, qs.dilution, sprintf('%4.1f ',qs.ct),sprintf('%6.2f ',qs.conc));
+        fprintf('%-20.20s:  Dil=%6.0f, Ct=[%s], Conc=[%s] nM\n', qs.name, qs.dilution, sprintf('%4.1f ',qs.ct),sprintf('%7.2f ',qs.conc));
       end
 
       % Check for any missed ones
