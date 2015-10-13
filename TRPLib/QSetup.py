@@ -8,10 +8,9 @@ from Experiment.sample import Sample
 from TRPLib.TRP import uniqueTargets, diluteName
 
 class QSetup(object):
-    MAXDILVOL=150.0
     TGTINVOL=4
     
-    def __init__(self,trp,vol=15,maxdil=16,mindilvol=50,debug=False):
+    def __init__(self,trp,vol=15,maxdil=16,mindilvol=50,maxdilvol=100,debug=False):
         'Create a new QPCR setup structure'
         self.volume=vol
         self.samples=[]
@@ -23,6 +22,7 @@ class QSetup(object):
         self.stages=[]
         self.MAXDIL=maxdil
         self.MINDILVOL=mindilvol
+        self.MAXDILVOL=maxdilvol
         self.trp=trp
         self.debug=debug
         
