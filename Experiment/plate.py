@@ -97,8 +97,7 @@ class Plate(object):
         fillvols=            [  200,  150,  100,     50,     20,       0]
         #maxspeeds=[1400,1600,1800,2000,2200,2200]  # From website assuming 200ul max volume wells
         maxspeeds=  [1400,1600,1900,2000,2200,2200]   # From experimental runs
-        #minspeeds= [1400,1200,1400,1800,1800,1800]  # From website
-        minspeeds=   [x-200 for x in maxspeeds]
+
         for i in range(len(fillvols)):
             if maxvol>=fillvols[i]:
                 if i==0:
@@ -107,13 +106,16 @@ class Plate(object):
                 else:
                     maxspeed=(maxvol-fillvols[i-1])/(fillvols[i]-fillvols[i-1])*(maxspeeds[i]-maxspeeds[i-1])+maxspeeds[i-1]
                 break
-        for i in range(len(fillvols)):
-            if minvol>=fillvols[i]:
-                if i==0:
-                    minspeed=minspeeds[0]
-                else:
-                    minspeed=(minvol-fillvols[i-1])/(fillvols[i]-fillvols[i-1])*(minspeeds[i]-minspeeds[i-1])+minspeeds[i-1]
-                break
+
+        # Theoretical minimum mixing speed
+        # From: http://www.qinstruments.com/en/applications/optimization-of-mixing-parameters.html
+        surftension=71.97  	# Surface tension mN/m
+        welldiam=self.r1*2	# mm - use widest part for conservative estimate (smaller region will mix at lower RPM)
+        density=1e-3		    # g/ul
+        d0=2			 				# mixing diameter (mm)
+        minspeed=60*math.sqrt(surftension*welldiam/(4*math.pi*minvol*density*d0))
+        # Units will be sqrt(mN/m * mm / ul*(mg/ul)*mm) = sqrt(mN/(m*mg)) = s^-1 * 60 = min^-1
+        print "mix(%.0f,%.0f) = [%.0f, %.0f]"%(minvol,maxvol,minspeed,maxspeed)
         return (minspeed,maxspeed)
     
     def wellname(self,well):
