@@ -5,7 +5,7 @@ _Plate__allplates=[]
 "An object representing a microplate or other container on the deck"
 class Plate(object):
     "A plate object which includes a name, location, and size"
-    def __init__(self,name, grid, pos, nx=12, ny=8,pierce=False,unusableVolume=5,maxVolume=200,zmax=None,angle=None,r1=None,h1=None,v0=None):
+    def __init__(self,name, grid, pos, nx=12, ny=8,pierce=False,unusableVolume=5,maxVolume=200,zmax=None,angle=None,r1=None,h1=None,v0=None,vectorName=None):
         self.name=name
         self.grid=grid
         self.pos=pos
@@ -27,6 +27,7 @@ class Plate(object):
         self.r1=r1
         self.h1=h1
         self.v0=v0
+        self.vectorName=vectorName		# Name of vector used for RoMa to pickup plate
         __allplates.append(self)
         
     @classmethod

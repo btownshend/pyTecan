@@ -12,11 +12,12 @@ class Experiment(object):
     # Use dimensional data from Robot/Calibration/20150302-LiquidHeights
     REAGENTPLATE=Plate("Reagents",18,1,6,5,False,unusableVolume=20,maxVolume=1700,zmax=569,angle=17.5,r1=4.05,h1=17.71,v0=12.9)
     MAGPLATELOC=Plate("MagPlate",18,2,12,8,False,unusableVolume=9,maxVolume=200,zmax=1459,angle=17.5,r1=2.80,h1=10.04,v0=10.8)   # HSP9601 on magnetic plate  (Use same well dimesnsions as SAMPLE)
-    SAMPLEPLATE=Plate("Samples",4,3,12,8,False,unusableVolume=15,maxVolume=200,zmax=1028,angle=17.5,r1=2.80,h1=10.04,v0=10.8)
+    SAMPLEPLATE=Plate("Samples",4,3,12,8,False,unusableVolume=15,maxVolume=200,zmax=1028,angle=17.5,r1=2.80,h1=10.04,v0=10.8,vectorName="Microplate Landscape")
     SHAKERPLATELOC=Plate("Shaker",9,0,1,1)
     #    READERPLATE=Plate("Reader",4,1,12,8,False,15)
     QPCRPLATE=Plate("qPCR",4,1,12,8,False,unusableVolume=15,maxVolume=200,zmax=984,angle=17.5,r1=2.66,h1=9.37,v0=7.9)
-    DILPLATE=Plate("Dilutions",4,2,12,8,False,unusableVolume=15,maxVolume=200,zmax=1028,angle=17.5,r1=2.84,h1=9.76,v0=11.9)
+#    DILPLATE=Plate("Dilutions",4,2,12,8,False,unusableVolume=15,maxVolume=200,zmax=1028,angle=17.5,r1=2.84,h1=9.76,v0=11.9,vectorName="Microplate Landscape")
+    DILPLATE=Plate("Dilutions-LB",4,2,12,8,False,unusableVolume=15,maxVolume=200,zmax=1028,angle=100,r1=2.92,h1=0.81,v0=6.8,vectorName="Grenier Landscape") # Grenier 651901 Lobind plate
     SSDDILLOC=Plate("SSDDil",3,1,1,4,False,100,100000)
     WATERLOC=Plate("Water",3,2,1,4,False,100,100000)
     BLEACHLOC=Plate("Bleach",3,3,1,4,False,0,100000)
@@ -341,8 +342,6 @@ class Experiment(object):
         #print "*",cmt
         self.w.pyrun("PTC\\ptclid.py OPEN")
         self.moveplate(self.SAMPLEPLATE,"PTC")
-        #self.w.vector("Microplate Landscape",self.SAMPLEPLATE,self.w.SAFETOEND,True,self.w.DONOTMOVE,self.w.CLOSE)
-        #self.w.vector("PTC200",self.PTCPOS,self.w.SAFETOEND,True,self.w.DONOTMOVE,self.w.OPEN)
         self.w.vector("Hotel 1 Lid",self.HOTELPOS,self.w.SAFETOEND,True,self.w.DONOTMOVE,self.w.CLOSE)
         self.w.vector("PTC200lid",self.PTCPOS,self.w.SAFETOEND,True,self.w.DONOTMOVE,self.w.OPEN)
         self.w.romahome()
@@ -359,8 +358,8 @@ class Experiment(object):
             
     def moveplate(self,plate,dest="Home",returnHome=True):
         # move to given destination (one of "Home","Magnet","Shaker","PTC" )
-        if plate.name!="Samples" and plate.name!="Dilutions":
-            print "Only able to move samples or dilutions plates, not ",plate.name
+        if plate!=self.SAMPLEPLATE and plate!=self.DILPLATE:
+            print "Only able to move %s or %s plates, not %s"%(self.SAMPLEPLATE.name,self.DILPLATE.name,plate.name)
             assert(False)
             
         if plate.curloc==dest:
@@ -373,7 +372,7 @@ class Experiment(object):
         cmt="moveplate %s %s"%(plate.name,dest)
         self.w.comment(cmt)
         if plate.curloc=="Home":
-            self.w.vector("Microplate Landscape",plate,self.w.SAFETOEND,True,self.w.DONOTMOVE,self.w.CLOSE)
+                self.w.vector(plate.vectorName,plate,self.w.SAFETOEND,True,self.w.DONOTMOVE,self.w.CLOSE)
         elif plate.curloc=="Magnet":
             self.w.vector("Magplate",self.MAGPLATELOC,self.w.SAFETOEND,True,self.w.DONOTMOVE,self.w.CLOSE)
         elif plate.curloc=="Shaker":
@@ -386,7 +385,7 @@ class Experiment(object):
 
         if dest=="Home":
             plate.movetoloc(dest)
-            self.w.vector("Microplate Landscape",plate,self.w.SAFETOEND,True,self.w.DONOTMOVE,self.w.OPEN)
+            self.w.vector(plate.vectorName,plate,self.w.SAFETOEND,True,self.w.DONOTMOVE,self.w.OPEN)
         elif dest=="Magnet":
             plate.movetoloc(dest,self.MAGPLATELOC)
             self.w.vector("Magplate",self.MAGPLATELOC,self.w.SAFETOEND,True,self.w.DONOTMOVE,self.w.OPEN)
@@ -538,11 +537,9 @@ class Experiment(object):
         self.w.vector("PTC200WigglePos",self.PTCPOS,self.w.ENDTOSAFE,False,self.w.DONOTMOVE,self.w.DONOTMOVE)
 
         self.moveplate(self.SAMPLEPLATE,"Home")
-        #self.w.vector("PTC200",self.PTCPOS,self.w.SAFETOEND,True,self.w.DONOTMOVE,self.w.CLOSE)
-        #self.w.vector("Microplate Landscape",self.SAMPLEPLATE,self.w.SAFETOEND,True,self.w.DONOTMOVE,self.w.OPEN)
         # Verify plate is in place
-        self.w.vector("Microplate Landscape",self.SAMPLEPLATE,self.w.SAFETOEND,False,self.w.DONOTMOVE,self.w.CLOSE)
-        self.w.vector("Microplate Landscape",self.SAMPLEPLATE,self.w.ENDTOSAFE,False,self.w.OPEN,self.w.DONOTMOVE)
+        self.w.vector(self.SAMPLEPLATE.vectorName,self.SAMPLEPLATE,self.w.SAFETOEND,False,self.w.DONOTMOVE,self.w.CLOSE)
+        self.w.vector(self.SAMPLEPLATE.vectorName,self.SAMPLEPLATE,self.w.ENDTOSAFE,False,self.w.OPEN,self.w.DONOTMOVE)
         self.w.romahome()
         self.ptcrunning=False
         #self.w.userprompt("Plate should be back on deck. Press return to continue")
