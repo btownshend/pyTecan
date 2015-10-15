@@ -418,7 +418,7 @@ class Experiment(object):
                 speed=(maxspeed+minspeed)/2
             else:
                 speed=maxspeed
-            print "Mixing %s with %.0f (min unmixed, min RPM=%.0f) to %.0f (max, max RPM=%.f) ul at %.0f RPM"%(plate.name, minvol, minspeed, maxvol, maxspeed, speed)
+            print "Mixing %s at %.0f RPM (min unmixed vol=%.0ful ->  min RPM=%.0f;  max vol=%.0ful -> max RPM=%.f)"%(plate.name, speed, minvol, minspeed, maxvol, maxspeed)
                     
         if speed>maxspeed:
             print "WARNING: %s plate contains wells with up to %.2f ul, which may spill at %d RPM: "%(plate.name, maxvol, speed),

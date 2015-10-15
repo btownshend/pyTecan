@@ -96,7 +96,8 @@ class Plate(object):
         # Compute max speed based on maximum fill volume
         fillvols=            [  200,  150,  100,     50,     20,       0]
         #maxspeeds=[1400,1600,1800,2000,2200,2200]  # From website assuming 200ul max volume wells
-        maxspeeds=  [1400,1600,1900,2000,2200,2200]   # From experimental runs
+        maxspeeds=  [1400,1600,1900,2000,2200,2200]   # From experimental runs using HSP plate
+        
 
         for i in range(len(fillvols)):
             if maxvol>=fillvols[i]:
@@ -109,13 +110,13 @@ class Plate(object):
 
         # Theoretical minimum mixing speed
         # From: http://www.qinstruments.com/en/applications/optimization-of-mixing-parameters.html
-        surftension=71.97  	# Surface tension mN/m
+        surftension=71.97  	# Surface tension mN/m (for water, most other substances are lower, so this is conservative)
         welldiam=self.r1*2	# mm - use widest part for conservative estimate (smaller region will mix at lower RPM)
-        density=1e-3		    # g/ul
-        d0=2			 				# mixing diameter (mm)
+        density=1e-3		    # g/ul (for water)
+        d0=2			 				# mixing diameter (mm) (for BioShake 3000)
         minspeed=60*math.sqrt(surftension*welldiam/(4*math.pi*minvol*density*d0))
         # Units will be sqrt(mN/m * mm / ul*(mg/ul)*mm) = sqrt(mN/(m*mg)) = s^-1 * 60 = min^-1
-        print "mix(%.0f,%.0f) = [%.0f, %.0f]"%(minvol,maxvol,minspeed,maxspeed)
+        #print "mix(%.0f,%.0f) = [%.0f, %.0f]"%(minvol,maxvol,minspeed,maxspeed)
         return (minspeed,maxspeed)
     
     def wellname(self,well):
