@@ -414,8 +414,11 @@ class Experiment(object):
         (minspeed,maxspeed)=plate.getmixspeeds(minvol,maxvol)
 
         if speed==None:
-            speed=maxspeed
-            print "Mixing %s with %.0f (min unmixed) to %.0f (max) ul at %.0f RPM"%(plate.name, minvol, maxvol, speed)
+            if minspeed<maxspeed:
+                speed=(maxspeed+minspeed)/2
+            else:
+                speed=maxspeed
+            print "Mixing %s with %.0f (min unmixed, min RPM=%.0f) to %.0f (max, max RPM=%.f) ul at %.0f RPM"%(plate.name, minvol, minspeed, maxvol, maxspeed, speed)
                     
         if speed>maxspeed:
             print "WARNING: %s plate contains wells with up to %.2f ul, which may spill at %d RPM: "%(plate.name, maxvol, speed),
