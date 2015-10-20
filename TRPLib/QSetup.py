@@ -25,6 +25,7 @@ class QSetup(object):
         self.MAXDILVOL=maxdilvol
         self.trp=trp
         self.debug=debug
+        self.dilutant=Experiment.SSDDIL
         
     def addSamples(self, src, needDil, primers,nreplicates=1,names=None,saveVol=None,saveDil=None,save=True):
         'Add sample(s) to list of qPCRs to do'
@@ -51,7 +52,7 @@ class QSetup(object):
                 t=Sample.lookup(tgt[i])
                 if t==None or t.volume==0:
                     #print "Save ",src[i]
-                    svtmp=self.trp.runQPCRDIL(src=[src[i]],vol=saveVol*saveDil,srcdil=saveDil,tgt=[tgt[i]],dilPlate=True)  
+                    svtmp=self.trp.runQPCRDIL(src=[src[i]],vol=saveVol*saveDil,srcdil=saveDil,tgt=[tgt[i]],dilPlate=True,dilutant=Experiment.WATER)  
                     sv[i]=svtmp[0]
         else:
             saveDil=1
@@ -134,7 +135,7 @@ class QSetup(object):
             self.addSamples(src=src,needDil=needDil/srcDil,primers=primers,nreplicates=nreplicates,save=False)
             dils.append(needDil)
 
-        self.addSamples(src=["SSDDil"],needDil=1,primers=self.allprimers(),nreplicates=nreplicates,save=False)
+        self.addSamples(src=[self.dilutant.name],needDil=1,primers=self.allprimers(),nreplicates=nreplicates,save=False)
 
     def run(self):
         'Run the dilutions and QPCR setup'
@@ -162,7 +163,7 @@ class QSetup(object):
             else:
                 vol=[min(self.MAXDILVOL,max(self.MINDILVOL,x*self.TGTINVOL)) for x in [stageDil[i] for i in inds]]  # Make sure there's enough for  qPCR (6ul each) or next dilution (typicaly 5ul) and leaves 15 at end
                 print "vol=",vol
-            ptmp=self.trp.runQPCRDIL(src=[dilProds[i] for i in inds],vol=vol,srcdil=[stageDil[i] for i in inds],tgt=None,dilPlate=True)  
+            ptmp=self.trp.runQPCRDIL(src=[dilProds[i] for i in inds],vol=vol,srcdil=[stageDil[i] for i in inds],tgt=None,dilPlate=True,dilutant=self.dilutant)  
             for i in range(len(inds)):
                 dilProds[inds[i]]=ptmp[i]
             needDil=[needDil[i]/stageDil[i] for i in range(len(needDil))]
