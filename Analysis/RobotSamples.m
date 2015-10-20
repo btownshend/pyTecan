@@ -106,7 +106,7 @@ classdef RobotSamples < handle
     % Set a particular well to have the name 'root', primer and dilution as given
     %fprintf(' root=%s, primer=%s, dilution=%f\n', root, primer, dilution);
       if ~isKey(obj.qsamps,root)
-        entry=struct('name',root,'dilution',dilution,'ct',{nan(size(obj.primers))},'conc',{nan(size(obj.primers))},'wells',{cell(size(obj.primers))});
+        entry=struct('name',root,'dilution',dilution,'ct',{nan(size(obj.primers))},'conc',{nan(size(obj.primers))},'wells',{cell(size(obj.primers))},'order',[]);
         for j=1:length(obj.primers)
           entry.wells{j}={};
         end
@@ -123,6 +123,8 @@ classdef RobotSamples < handle
         entry.wells{pindex}=well;
         entry.ct(pindex)=obj.q.getct(well);
         entry.conc(pindex)=obj.q.getconc(primer,well,{},{},{},'dilution',entry.dilution)/1000;
+        wellindex=obj.q.parsewells(well);
+        entry.order=min([entry.order,wellindex]);
       end
       obj.qsamps(root)=entry;
     end      
@@ -155,6 +157,10 @@ classdef RobotSamples < handle
       end
       fprintf('\n');
       for i=1:length(keys)
+        ord(i)=obj.qsamps(keys{i}).order;
+      end
+      [~,sortorder]=sort(ord);
+      for i=sortorder
         qs=obj.qsamps(keys{i});
         fprintf('%-20.20s:  Dil=%6.0f, Ct=[%s], Conc=[%s] nM\n', qs.name, qs.dilution, sprintf('%4.1f ',qs.ct),sprintf('%7.2f ',qs.conc));
       end
