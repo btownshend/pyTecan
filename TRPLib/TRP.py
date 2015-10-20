@@ -93,9 +93,9 @@ def diluteName(name,dilution):
     components = name.split('.')
     curdil=1
     replicate=1
-    if len(components[-1])==1:
-        replicate=int(components[-1])
-        components=components[:-1]
+#    if len(components[-1])==1:
+#        replicate=int(components[-1])
+#        components=components[:-1]
         
     if components[-1][0]=='D':
         olddilstr=components[-1][1:]
@@ -690,7 +690,7 @@ class TRP(object):
     ########################
     # qPCR
     ########################
-    def runQPCRDIL(self,src,vol,srcdil,tgt=None,dilPlate=False,pipMix=False):
+    def runQPCRDIL(self,src,vol,srcdil,tgt=None,dilPlate=False,pipMix=False,dilutant=Experiment.SSDDIL):
         if tgt==None:
             tgt=[]
         [src,vol,srcdil]=listify([src,vol,srcdil])
@@ -707,8 +707,8 @@ class TRP(object):
         srcvol=[vol[i]/srcdil[i] for i in range(len(vol))]
         watervol=[vol[i]-srcvol[i] for i in range(len(vol))]
         if len(watervol) > 4 and sum(watervol)>800:
-            print "Could optimize distribution of ",len(watervol)," moves of SSDDIL: watervol=[", ["%.1f"%w for w in watervol],"]"
-        self.e.multitransfer(watervol,self.e.SSDDIL,stgt,(False,False))
+            print "Could optimize distribution of ",len(watervol)," moves of ",dilutant.name,": vol=[", ["%.1f"%w for w in watervol],"]"
+        self.e.multitransfer(watervol,dilutant,stgt,(False,False))
         
         for i in range(len(ssrc)):
             stgt[i].conc=None		# Assume dilutant does not have a concentration of its own
