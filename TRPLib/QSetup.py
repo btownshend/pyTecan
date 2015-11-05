@@ -135,7 +135,7 @@ class QSetup(object):
             self.addSamples(src=src,needDil=needDil/srcDil,primers=primers,nreplicates=nreplicates,save=False)
             dils.append(needDil)
 
-        self.addSamples(src=[self.dilutant.name],needDil=1,primers=self.allprimers(),nreplicates=nreplicates,save=False)
+        self.addSamples(src=[self.dilutant.name],needDil=1,primers=primers,nreplicates=nreplicates,save=False)
 
     def run(self):
         'Run the dilutions and QPCR setup'
