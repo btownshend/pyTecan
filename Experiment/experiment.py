@@ -414,7 +414,7 @@ class Experiment(object):
         samps=Sample.getAllOnPlate(plate)
         maxvol=max([x.volume for x in samps])
         minvol=min([x.volume for x in samps if not x.isMixed]+[200])
-        (minspeed,maxspeed)=plate.getmixspeeds(minvol-10,maxvol+10)	# Assume volumes could be off by 10ul
+        (minspeed,maxspeed)=plate.getmixspeeds(max(10,minvol-10),maxvol+10)	# Assume volumes could be off by 10ul
 
         if speed==None:
             if minspeed<maxspeed:
