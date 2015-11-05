@@ -74,10 +74,15 @@ classdef RobotSamples < handle
         p=obj.primers{i};
         ss=getrelative(obj.samps,args.refname,['MQ',p]);
         water=getrelative(obj.samps,['MQ',p],{'Water'},true);
+        wells={ss.well};
+        concs=args.refconc*args.qpcrdil./[ss.dil];
         if isempty(water)
           fprintf('Missing water control for %s\n', p);
+        else
+          wells{end+1}=water.well;
+          concs(end+1)=0;
         end
-        obj.q.addref(p,{water.well,ss.well},[0*[water.dil],args.refconc*args.qpcrdil./[ss.dil]],'units','pM','strands',args.refstrands);
+        obj.q.addref(p,wells,concs,'units','pM','strands',args.refstrands);
       end
       if args.processWells
         obj.processWells;
