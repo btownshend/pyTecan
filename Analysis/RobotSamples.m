@@ -73,7 +73,7 @@ classdef RobotSamples < handle
       for i=1:length(obj.primers)
         p=obj.primers{i};
         ss=getrelative(obj.samps,args.refname,['MQ',p]);
-        water=getrelative(obj.samps,['MQ',p],{'SSDDil'},true);
+        water=getrelative(obj.samps,['MQ',p],{'Water'},true);
         if isempty(water)
           fprintf('Missing water control for %s\n', p);
         end
