@@ -551,13 +551,19 @@ class TRP(object):
         self.e.shake(stgt[0].plate,returnPlate=False)
         return tgt
 
-    def runRTPgm(self,dur=20):
-        if dur<100:
-            pgm="TRP37-%d"%dur
+    def runRTPgm(self,dur=20,heatInactivate=False):
+        if heatInactivate:
+            hidur=15
+            pgm="RT-%d"%dur
+            self.e.w.pyrun('PTC\\ptcsetpgm.py %s TEMP@37,%d TEMP@95,%d TEMP@25,2'%(pgm,dur*60,hidur*60))
+            self.e.runpgm(pgm,dur+hidur,False,100)		# Volume doesn't matter since it's just an incubation, use 100ul
         else:
-            pgm="T37-%d"%dur
-        self.e.w.pyrun('PTC\\ptcsetpgm.py %s TEMP@37,%d TEMP@25,2'%(pgm,dur*60))
-        self.e.runpgm(pgm,dur,False,100)		# Volume doesn't matter since it's just an incubation, use 100ul
+            if dur<100:
+                pgm="TRP37-%d"%dur
+            else:
+                pgm="T37-%d"%dur
+            self.e.w.pyrun('PTC\\ptcsetpgm.py %s TEMP@37,%d TEMP@25,2'%(pgm,dur*60))
+            self.e.runpgm(pgm,dur,False,100)		# Volume doesn't matter since it's just an incubation, use 100ul
  
     ########################
     # Lig - Ligation
