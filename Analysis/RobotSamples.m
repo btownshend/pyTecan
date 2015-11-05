@@ -55,7 +55,7 @@ classdef RobotSamples < handle
     
     function setupQPCR(obj,varargin)
     % Scan sample data to setup qPCR 
-      defaults=struct('refname','QPCRREF','refconc',50,'refstrands',2,'qpcrdil',2.5,'minct',7);
+      defaults=struct('refname','QPCRREF','refconc',50,'refstrands',2,'qpcrdil',2.5,'minct',7,'processWells',true);
       args=processargs(defaults,varargin);
 
       obj.q=QPCR(obj.opd.ctgrid,'minct',args.minct);
@@ -79,7 +79,9 @@ classdef RobotSamples < handle
         end
         obj.q.addref(p,{water.well,ss.well},[0*[water.dil],args.refconc*args.qpcrdil./[ss.dil]],'units','pM','strands',args.refstrands);
       end
-      obj.processWells;
+      if args.processWells
+        obj.processWells;
+      end
     end
 
     function processWells(obj)
