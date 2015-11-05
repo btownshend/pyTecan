@@ -38,7 +38,8 @@ class Reagents:
     MQT7W=Sample("MQT7X",Experiment.REAGENTPLATE,"E4",15.0/9)
     MStopBeads=Sample("MStpBeads",Experiment.REAGENTPLATE,"A5",3.7)
     QPCRREF=Sample("QPCRREF",Experiment.REAGENTPLATE,"B5",Concentration(50,50,'pM'))
-    all=[MT7,MPosRT,MNegRT,MLigAT7,MLigBT7W,MLigase,Theo,MStopX,MQRef,MQAX,MQBX,PCRAX,PCRBX,MQMX,SSD,MLigAT7W,MQWX,Dynabeads,MQT7W,BeadBuffer,MStopBeads,QPCRREF]
+    MLigBT7=Sample("MLigBT7",Experiment.REAGENTPLATE,None,3)
+    all=[MT7,MPosRT,MNegRT,MLigAT7,MLigBT7W,MLigBT7,MLigase,Theo,MStopX,MQRef,MQAX,MQBX,PCRAX,PCRBX,MQMX,SSD,MLigAT7W,MQWX,Dynabeads,MQT7W,BeadBuffer,MStopBeads,QPCRREF]
     UNUSED=Sample("LeakyA1",Experiment.SAMPLEPLATE,"A1",0)
     UNUSED2=Sample("LeakyH12",Experiment.SAMPLEPLATE,"H12",0)
     
