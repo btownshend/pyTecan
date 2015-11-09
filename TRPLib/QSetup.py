@@ -52,7 +52,7 @@ class QSetup(object):
                 t=Sample.lookup(tgt[i])
                 if t==None or t.volume==0:
                     #print "Save ",src[i]
-                    svtmp=self.trp.runQPCRDIL(src=[src[i]],vol=saveVol*saveDil,srcdil=saveDil,tgt=[tgt[i]],dilPlate=True,dilutant=Experiment.WATER)  
+                    svtmp=self.trp.runQPCRDIL(src=[src[i]],vol=saveVol*saveDil,srcdil=saveDil,tgt=[tgt[i]],dilPlate=True,dilutant=self.dilutant)  
                     sv[i]=svtmp[0]
         else:
             saveDil=1
