@@ -414,15 +414,16 @@ class Experiment(object):
         samps=Sample.getAllOnPlate(plate)
         maxvol=max([x.volume for x in samps])
         minvol=min([x.volume for x in samps if not x.isMixed]+[200])
-        (minspeed,maxspeed)=plate.getmixspeeds(max(10,minvol-10),maxvol+10)	# Assume volumes could be off by 10ul
+        (minspeed,maxspeed)=plate.getmixspeeds(minvol*0.95,maxvol+5)	# Assume volumes could be off 
 
         if speed==None:
             if minspeed<maxspeed:
                 speed=(maxspeed+minspeed)/2
             else:
                 speed=maxspeed
-            print "Mixing %s at %.0f RPM (min unmixed vol=%.0ful ->  min RPM=%.0f;  max vol=%.0ful -> max RPM=%.f)"%(plate.name, speed, minvol, minspeed, maxvol, maxspeed)
-                    
+
+        warned=False
+        
         if speed>maxspeed:
             print "WARNING: %s plate contains wells with up to %.2f ul, which may spill at %d RPM: "%(plate.name, maxvol, speed),
             for x in samps:
@@ -430,7 +431,8 @@ class Experiment(object):
                 if tmp[1]<speed:
                     print "%s[%.1ful, max=%.0f RPM] "%(x.name,x.volume,tmp[1]),
             print
-
+            warned=True
+            
         if speed<minspeed:
             print "WARNING: %s plate contains unmixed wells with as little as %.2f ul, which may not be mixed at %d RPM: "%(plate.name, minvol, speed),
             for x in samps:
@@ -440,6 +442,10 @@ class Experiment(object):
                 if speed<tmp[0]:
                     print "%s[%.1ful, min=%.0f RPM] "%(x.name,x.volume,tmp[0]),
             print
+            warned=True
+
+        if  warned:
+            print "         Mixing %s at %.0f RPM (min unmixed vol=%.0ful ->  min RPM=%.0f;  max vol=%.0ful -> max RPM=%.f)"%(plate.name, speed, minvol, minspeed, maxvol, maxspeed)
 
         oldloc=plate.curloc
         self.moveplate(plate,"Shaker",returnHome=False)
