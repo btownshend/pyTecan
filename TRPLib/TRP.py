@@ -274,7 +274,7 @@ class TRP(object):
         self.e.w.comment("runT7: source=%s"%[str(s) for s in ssrc])
 
         MT7vol=vol*1.0/self.r.MT7.conc.dilutionneeded()
-        sourcevols=[vol*1.0/s.conc.dilutionneeded() for s in ssrc]
+        sourcevols=[vol*1.0/s for s in srcdil]
         theovols=[(vol*1.0/self.r.Theo.conc.dilutionneeded() if t else 0) for t in theo]
         watervols=[vol-theovols[i]-sourcevols[i]-MT7vol for i in range(len(ssrc))]
 
