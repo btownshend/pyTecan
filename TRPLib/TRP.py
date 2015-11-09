@@ -39,7 +39,8 @@ class Reagents:
     MStopBeads=Sample("MStpBeads",Experiment.REAGENTPLATE,"A5",3.7)
     QPCRREF=Sample("QPCRREF",Experiment.REAGENTPLATE,"B5",Concentration(50,50,'pM'))
     MLigBT7=Sample("MLigBT7",Experiment.REAGENTPLATE,None,3)
-    all=[MT7,MPosRT,MNegRT,MLigAT7,MLigBT7W,MLigBT7,MLigase,Theo,MStopX,MQRef,MQAX,MQBX,PCRAX,PCRBX,MQMX,SSD,MLigAT7W,MQWX,Dynabeads,MQT7W,BeadBuffer,MStopBeads,QPCRREF]
+    PCRT7X=Sample("MPCRT7X",Experiment.REAGENTPLATE,None,4.0/3)
+    all=[MT7,MPosRT,MNegRT,MLigAT7,MLigBT7W,MLigBT7,MLigase,Theo,MStopX,MQRef,MQAX,MQBX,PCRAX,PCRBX,MQMX,SSD,MLigAT7W,MQWX,Dynabeads,MQT7W,BeadBuffer,MStopBeads,QPCRREF,PCRT7X]
     UNUSED=Sample("LeakyA1",Experiment.SAMPLEPLATE,"A1",0)
     UNUSED2=Sample("LeakyH12",Experiment.SAMPLEPLATE,"H12",0)
     
@@ -653,7 +654,7 @@ class TRP(object):
         # e.g. trp.runPCR(prefix=["A"],src=["1.RT+"],tgt=["1.PCR"],vol=[50],srcdil=[5])
         [prefix,src,tgt,vol,srcdil,suffix]=listify([prefix,src,tgt,vol,srcdil,suffix])
         if len(tgt)==0:
-            tgt=["%s.P%c%c"%(src[i],prefix[i],suffix[i]) for i in range(len(src))]
+            tgt=["%s.P%s%s"%(src[i],prefix[i],suffix[i]) for i in range(len(src))]
 
         tgt=uniqueTargets(tgt)
         stgt=findsamps(tgt,unique=True)
@@ -674,6 +675,8 @@ class TRP(object):
                self.e.stage('PCRAX',[self.r.PCRAX],[ssrc[i] for i in range(len(ssrc)) if primer[i]=='AX'],[stgt[i] for i in range(len(stgt)) if primer[i]=='AX'],[vol[i] for i in range(len(vol)) if primer[i]=='AX'],destMix=False)
         if any(p=='BX' for p in primer):
                self.e.stage('PCRBX',[self.r.PCRBX],[ssrc[i] for i in range(len(ssrc)) if primer[i]=='BX'],[stgt[i] for i in range(len(stgt)) if primer[i]=='BX'],[vol[i] for i in range(len(vol)) if primer[i]=='BX'],destMix=False)
+        if any(p=='T7X' for p in primer):
+               self.e.stage('PCRT7X',[self.r.PCRT7X],[ssrc[i] for i in range(len(ssrc)) if primer[i]=='T7X'],[stgt[i] for i in range(len(stgt)) if primer[i]=='T7X'],[vol[i] for i in range(len(vol)) if primer[i]=='T7X'],destMix=False)
         pgm="PCR%d"%ncycles
         self.e.shake(stgt[0].plate,returnPlate=False)
         #        self.e.w.pyrun('PTC\\ptcsetpgm.py %s TEMP@95,120 TEMP@95,30 TEMP@55,30 TEMP@72,25 GOTO@2,%d TEMP@72,180 TEMP@16,2'%(pgm,ncycles-1))
