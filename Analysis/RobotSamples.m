@@ -74,6 +74,9 @@ classdef RobotSamples < handle
         p=obj.primers{i};
         ss=getrelative(obj.samps,args.refname,['MQ',p]);
         water=getrelative(obj.samps,['MQ',p],{'Water'},true);
+        if isempty(water)
+          water=getrelative(obj.samps,['MQ',p],{'SSDDil'},true);
+        end
         wells={ss.well};
         concs=args.refconc*args.qpcrdil./[ss.dil];
         if isempty(water)
