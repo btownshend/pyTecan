@@ -120,9 +120,9 @@ def diluteName(name,dilution):
 
 class TRP(object):
            
-    def __init__(self):
+    def __init__(self,totalTime=None):	# Estimate of total run time in seconds
         'Create a new TRP run'
-        self.e=Experiment()
+        self.e=Experiment(totalTime)
         self.r=Reagents()
         self.e.setreagenttemp(6.0)
         self.e.sanitize(3,50)    # Heavy sanitize

@@ -38,8 +38,8 @@ class Experiment(object):
     RPTEXTRA=0   # Extra amount when repeat pipetting
     MAXVOLUME=200  # Maximum volume for pipetting in ul
 
-    def __init__(self):
-        'Create a new experiment with given sample locations for water and self.WASTE'
+    def __init__(self,totalTime=None):
+        'Create a new experiment with given sample locations for water and self.WASTE;  totalTime is expected run time in seconds, if known'
         self.w=WorkList()
         self.w.comment("Generated %s"%(datetime.now().ctime()));
         self.w.userprompt("The following reagent tubes should be present: %s"%Sample.getAllLocOnPlate(self.REAGENTPLATE))
@@ -53,6 +53,7 @@ class Experiment(object):
         self.BLEACH.mixLC=liquidclass.LCBleachMix
         self.ptcrunning=False
         self.overrideSanitize=False
+        self.totalTime=totalTime
         
         # Access PTC and RIC early to be sure they are working
         self.w.pyrun("PTC\\ptctest.py")
@@ -493,6 +494,10 @@ class Experiment(object):
             self.sanitize()   # Sanitize tips before waiting for this to be done
         self.w.comment("Wait for PTC")
         self.thermotime-=self.w.elapsed
+        if self.totalTime!=None:
+            self.w.comment("Estimated elapsed: %d minutes, remaining run time: %d minutes"%((self.thermotime+self.w.elapsed)/60,(self.totalTime-(self.w.elapsed+self.thermotime))/60))
+        else:
+            self.w.comment("Estimated elapsed: %d minutes"%(self.w.elapsed/60))
         self.w.pyrun('PTC\\ptcwait.py')
         self.w.pyrun("PTC\\ptclid.py OPEN")
         #        self.w.pyrun('PTC\\ptcrun.py %s CALC ON'%"COOLDOWN")
