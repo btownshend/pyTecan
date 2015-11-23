@@ -470,7 +470,7 @@ class TRP(object):
             if returnPlate:
                 self.e.moveplate(ssrc[0].plate,"Home")
 
-    def beadSupernatant(self,src,tgt=None,sepTime=None,residualVolume=10,plate=None):
+    def beadSupernatant(self,src,tgt=None,sepTime=None,residualVolume=10,plate=None,reuseDest=False):
         if tgt==None:
             tgt=[]
 
@@ -481,7 +481,7 @@ class TRP(object):
         ssrc=findsamps(src,False)
         if plate==None:
             plate=self.e.SAMPLEPLATE
-        stgt=findsamps(tgt,plate=plate,unique=True)
+        stgt=findsamps(tgt,plate=plate,unique=not reuseDest)
 
         self.e.moveplate(ssrc[0].plate,"Magnet")	# Move to magnet
         self.sepWait(ssrc,sepTime)
