@@ -465,7 +465,7 @@ class TRP(object):
             self.e.shake(ssrc[0].plate,dur=eluteTime,returnPlate=returnPlate)
         else:
             self.e.shake(ssrc[0].plate,dur=30,returnPlate=False)
-            self.e.w.pyrun('PTC\\ptcsetpgm.py elute TEMP@%d,%d TEMP@25,2'%(eluteTime,temp))
+            self.e.w.pyrun('PTC\\ptcsetpgm.py elute TEMP@%d,%d TEMP@25,2'%(temp,eluteTime))
             self.e.runpgm("elute",eluteTime/60,False,elutionVol[0])
             if returnPlate:
                 self.e.moveplate(ssrc[0].plate,"Home")
