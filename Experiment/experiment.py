@@ -362,6 +362,9 @@ class Experiment(object):
             self.waitpgm()
             
     def moveplate(self,plate,dest="Home",returnHome=True):
+        if self.ptcrunning and plate==Experiment.SAMPLEPLATE:
+            self.waitpgm()
+
         # move to given destination (one of "Home","Magnet","Shaker","PTC" )
         if plate!=self.SAMPLEPLATE and plate!=self.DILPLATE:
             print "Only able to move %s or %s plates, not %s"%(self.SAMPLEPLATE.name,self.DILPLATE.name,plate.name)
@@ -520,12 +523,12 @@ class Experiment(object):
         self.w.vector("PTC200Wiggle",self.PTCPOS,self.w.ENDTOSAFE,False,self.w.DONOTMOVE,self.w.OPEN,True)
         self.w.vector("PTC200WigglePos",self.PTCPOS,self.w.ENDTOSAFE,False,self.w.DONOTMOVE,self.w.DONOTMOVE)
 
+        self.ptcrunning=False
         self.moveplate(self.SAMPLEPLATE,"Home")
         # Verify plate is in place
         self.w.vector(self.SAMPLEPLATE.vectorName,self.SAMPLEPLATE,self.w.SAFETOEND,False,self.w.DONOTMOVE,self.w.CLOSE)
         self.w.vector(self.SAMPLEPLATE.vectorName,self.SAMPLEPLATE,self.w.ENDTOSAFE,False,self.w.OPEN,self.w.DONOTMOVE)
         self.w.romahome()
-        self.ptcrunning=False
         #self.w.userprompt("Plate should be back on deck. Press return to continue")
         # Wash tips again to remove any drips that may have formed while waiting for PTC
         self.w.wash(15,1,5,True)
