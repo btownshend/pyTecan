@@ -452,7 +452,7 @@ class TRP(object):
 
         return result
 
-    def beadAddElutant(self,src,elutant="Water",elutionVol=30,eluteTime=60,returnPlate=True):
+    def beadAddElutant(self,src,elutant="Water",elutionVol=30,eluteTime=60,returnPlate=True,temp=None):
         [src,elutionVol,elutant]=listify([src,elutionVol,elutant])
         ssrc=findsamps(src,False)
         selutant=findsamps(elutant,False)
@@ -461,7 +461,14 @@ class TRP(object):
                 print "Warning: elution from beads with %.1f ul < minimum of 30ul"%elutionVol[i]
                 print "  src=",ssrc[i]
             self.e.transfer(elutionVol[i]-ssrc[i].volume,selutant[i],ssrc[i],(False,True))	
-        self.e.shake(ssrc[0].plate,dur=eluteTime,returnPlate=returnPlate)
+        if temp==None:
+            self.e.shake(ssrc[0].plate,dur=eluteTime,returnPlate=returnPlate)
+        else:
+            self.e.shake(ssrc[0].plate,dur=30,returnPlate=False)
+            self.e.w.pyrun('PTC\\ptcsetpgm.py elute TEMP@%d,%d TEMP@25,2'%(eluteTime,temp))
+            self.e.runpgm("elute",eluteTime/60,False,elutionVol[0])
+            if returnPlate:
+                self.e.moveplate(ssrc[0].plate,"Home")
 
     def beadSupernatant(self,src,tgt=None,sepTime=None,residualVolume=10,plate=None):
         if tgt==None:
