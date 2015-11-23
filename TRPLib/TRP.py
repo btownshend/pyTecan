@@ -558,8 +558,8 @@ class TRP(object):
         if any(p for p in pos):
         if any(not p for p in pos):
             self.e.stage('RTNeg',[self.r.MNegRT],[ssrc[i] for i in range(len(ssrc)) if not pos[i]],[stgt[i] for i in range(len(stgt)) if not pos[i]],[vol[i] for i in range(len(vol)) if not pos[i]],destMix=False)
-        self.e.shake(stgt[0].plate,returnPlate=False)
             self.e.stage('RTPos',[rtmaster],[ssrc[i] for i in range(len(ssrc)) if pos[i]],[stgt[i] for i in range(len(stgt)) if pos[i]],[vol[i] for i in range(len(vol)) if pos[i]],destMix=False)
+        self.e.shake(stgt[0].plate,returnPlate=True)
         return tgt
 
     def runRTPgm(self,dur=20,heatInactivate=False):
