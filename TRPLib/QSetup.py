@@ -132,7 +132,7 @@ class QSetup(object):
                     else:
                         src=["%s.D%d"%(ref,srcDil)]
                     break
-            self.addSamples(src=src,needDil=needDil/srcDil,primers=primers,nreplicates=nreplicates,save=False)
+            self.addSamples(src=src,needDil=needDil/srcDil,primers=primers,nreplicates=nreplicates,save=needDil/srcDil>self.MAXDIL)
             dils.append(needDil)
 
         self.addSamples(src=[self.dilutant.name],needDil=1,primers=primers,nreplicates=nreplicates,save=False)
