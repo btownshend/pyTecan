@@ -59,7 +59,17 @@ classdef RobotSamples < handle
       args=processargs(defaults,varargin);
 
       obj.q=QPCR(obj.opd.ctgrid,'minct',args.minct);
-      ss=getrelative(obj.samps,args.refname);
+      obj.addQPCRRef(args.refname);
+      if args.processWells
+        obj.processWells;
+      end
+    end
+    
+    function addQPCRRef(obj,refname,varargin)
+      defaults=struct('refconc',50,'refstrands',2,'qpcrdil',2.5);
+      args=processargs(defaults,varargin);
+
+      ss=getrelative(obj.samps,refname);
       obj.primers={};
       for i=1:length(ss)
         s=ss(i);
@@ -72,7 +82,7 @@ classdef RobotSamples < handle
       obj.primers=unique(obj.primers);
       for i=1:length(obj.primers)
         p=obj.primers{i};
-        ss=getrelative(obj.samps,args.refname,['MQ',p]);
+        ss=getrelative(obj.samps,refname,['MQ',p]);
         water=getrelative(obj.samps,['MQ',p],{'Water'},true);
         if isempty(water)
           water=getrelative(obj.samps,['MQ',p],{'SSDDil'},true);
@@ -86,9 +96,6 @@ classdef RobotSamples < handle
           concs(end+1)=0;
         end
         obj.q.addref(p,wells,concs,'units','pM','strands',args.refstrands);
-      end
-      if args.processWells
-        obj.processWells;
       end
     end
 
