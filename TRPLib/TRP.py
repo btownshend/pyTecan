@@ -10,7 +10,7 @@ maxVolumePerWell=150
 class Reagents:
     MT7=Sample("MT7",Experiment.REAGENTPLATE,"A1",2.5)
     MPosRT=Sample("MPosRT",Experiment.REAGENTPLATE,"B1",2)
-    MNegRT=Sample("MNegRT",Experiment.REAGENTPLATE,None,2)
+   # MNegRT=Sample("MNegRT",Experiment.REAGENTPLATE,None,2)
     MLigAT7=Sample("MLigAT7",Experiment.REAGENTPLATE,"D1",3)	# Conc is relative to annealing time (not to post-ligase)
     MLigBT7W=Sample("MLigBT7W",Experiment.REAGENTPLATE,"E1",3)
     MLigase=Sample("MLigase",Experiment.REAGENTPLATE,"A2",3)
@@ -40,7 +40,7 @@ class Reagents:
     QPCRREF=Sample("QPCRREF",Experiment.REAGENTPLATE,"B5",Concentration(50,50,'pM'))
     MLigBT7=Sample("MLigBT7",Experiment.REAGENTPLATE,None,3)
     PCRT7X=Sample("MPCRT7X",Experiment.REAGENTPLATE,None,4.0/3)
-    all=[MT7,MPosRT,MNegRT,MLigAT7,MLigBT7W,MLigBT7,MLigase,Theo,MStopX,MQRef,MQAX,MQBX,PCRAX,PCRBX,MQMX,SSD,MLigAT7W,MQWX,Dynabeads,MQT7W,BeadBuffer,MStopBeads,QPCRREF,PCRT7X]
+    all=[MT7,MPosRT,MLigAT7,MLigBT7W,MLigBT7,MLigase,Theo,MStopX,MQRef,MQAX,MQBX,PCRAX,PCRBX,MQMX,SSD,MLigAT7W,MQWX,Dynabeads,MQT7W,BeadBuffer,MStopBeads,QPCRREF,PCRT7X]
     UNUSED=Sample("LeakyA1",Experiment.SAMPLEPLATE,"A1",0)
     UNUSED2=Sample("LeakyH12",Experiment.SAMPLEPLATE,"H12",0)
     
@@ -554,11 +554,11 @@ class TRP(object):
             ssrc[i].conc=Concentration(srcdil[i],1)
             
         #    e.stage('MPosRT',[self.r.MOSBuffer,self.r.MOS],[],[self.r.MPosRT],ASPIRATEFACTOR*(self.vol.RT*nRT/2)/2+self.vol.Extra+MULTIEXCESS,2)
-        #    e.stage('MNegRT',[self.r.MOSBuffer],[],[self.r.MNegRT],ASPIRATEFACTOR*(self.vol.RT*negRT)/2+self.vol.Extra+MULTIEXCESS,2)
         if any(p for p in pos):
             self.e.stage('RTPos',[rtmaster],[ssrc[i] for i in range(len(ssrc)) if pos[i]],[stgt[i] for i in range(len(stgt)) if pos[i]],[vol[i] for i in range(len(vol)) if pos[i]],destMix=False)
-        if any(not p for p in pos):
-            self.e.stage('RTNeg',[self.r.MNegRT],[ssrc[i] for i in range(len(ssrc)) if not pos[i]],[stgt[i] for i in range(len(stgt)) if not pos[i]],[vol[i] for i in range(len(vol)) if not pos[i]],destMix=False)
+        #    e.stage('MNegRT',[self.r.MOSBuffer],[],[self.r.MNegRT],ASPIRATEFACTOR*(self.vol.RT*negRT)/2+self.vol.Extra+MULTIEXCESS,2)
+        #if any(not p for p in pos):
+                #self.e.stage('RTNeg',[self.r.MNegRT],[ssrc[i] for i in range(len(ssrc)) if not pos[i]],[stgt[i] for i in range(len(stgt)) if not pos[i]],[vol[i] for i in range(len(vol)) if not pos[i]],destMix=False)
         self.e.shake(stgt[0].plate,returnPlate=True)
         return tgt
 
