@@ -123,7 +123,7 @@ class QSetup(object):
         for i in range(nsteps):
             needDil=mindil*math.pow(dstep,i)
             srcDil=1
-            src=ref
+            src=[ref]
             for j in range(len(dils)):
                 if needDil/dils[j] <= self.MAXDIL:
                     srcDil=dils[j]
