@@ -76,7 +76,7 @@ class Sample(object):
             for t in tiphistory:
                 print >>fd,"%d: %s\n"%(t,tiphistory[t])
             
-    def __init__(self,name,plate,well=None,conc=None,volume=0,hasBeads=False):
+    def __init__(self,name,plate,well=None,conc=None,volume=0,hasBeads=False,extraVol=50):
         if well==None:
             # Find first unused well
             found=False
@@ -138,7 +138,8 @@ class Sample(object):
         self.isMixed=True
         self.initHasBeads=hasBeads
         self.hasBeads=hasBeads		# Setting this to true overrides the manual conditioning
-
+        self.extraVol=extraVol			# Extra volume to provide
+        
     @classmethod
     def clearall(cls):
         'Clear all samples'

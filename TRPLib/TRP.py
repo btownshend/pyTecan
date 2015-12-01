@@ -8,8 +8,8 @@ import math
 maxVolumePerWell=150
 
 class Reagents:
-    MT7=Sample("MT7",Experiment.REAGENTPLATE,"A1",2.5)
-    MPosRT=Sample("MPosRT",Experiment.REAGENTPLATE,"B1",2)
+    MT7=Sample("MT7",Experiment.REAGENTPLATE,"A1",2.5,extraVol=30)
+    MPosRT=Sample("MPosRT",Experiment.REAGENTPLATE,"B1",2,extraVol=30)
    # MNegRT=Sample("MNegRT",Experiment.REAGENTPLATE,None,2)
     MLigAT7=Sample("MLigAT7",Experiment.REAGENTPLATE,"D1",3)	# Conc is relative to annealing time (not to post-ligase)
     MLigBT7W=Sample("MLigBT7W",Experiment.REAGENTPLATE,"E1",3)
