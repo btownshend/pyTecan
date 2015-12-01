@@ -59,6 +59,7 @@ classdef RobotSamples < handle
       args=processargs(defaults,varargin);
 
       obj.q=QPCR(obj.opd.ctgrid,'minct',args.minct);
+      obj.primers={};
       obj.addQPCRRef(args.refname);
       if args.processWells
         obj.processWells;
@@ -70,7 +71,6 @@ classdef RobotSamples < handle
       args=processargs(defaults,varargin);
 
       ss=getrelative(obj.samps,refname);
-      obj.primers={};
       for i=1:length(ss)
         s=ss(i);
         for j=1:length(s.ingredients)
@@ -82,11 +82,19 @@ classdef RobotSamples < handle
       obj.primers=unique(obj.primers);
       for i=1:length(obj.primers)
         p=obj.primers{i};
-        ss=getrelative(obj.samps,refname,['MQ',p]);
+        ss=getrelative(obj.samps,refname,{['MQ',p],'Water'},true);
         water=getrelative(obj.samps,['MQ',p],{'Water'},true);
-        if isempty(water)
+        if isempty(ss)
+          ss=getrelative(obj.samps,refname,{['MQ',p],'SSDDil'},true);
           water=getrelative(obj.samps,['MQ',p],{'SSDDil'},true);
         end
+        % Also include undiluted one if present
+        ss=[ss,getrelative(obj.samps,refname,{['MQ',p]},true)];
+        if isempty(ss)
+          fprintf('No wells found for reference %s with primer %s\n', refname, p);
+          continue;
+        end
+
         wells={ss.well};
         concs=args.refconc*args.qpcrdil./[ss.dil];
         if isempty(water)
@@ -95,6 +103,11 @@ classdef RobotSamples < handle
           wells{end+1}=water.well;
           concs(end+1)=0;
         end
+        fprintf('Added reference %s: ',p);
+        for j=1:length(wells)
+          fprintf(' %s[%s]@%.3fpM ',ss(j).name,wells{j},concs(j));
+        end
+        fprintf('\n');
         obj.q.addref(p,wells,concs,'units','pM','strands',args.refstrands);
       end
     end
