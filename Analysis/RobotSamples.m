@@ -108,12 +108,17 @@ classdef RobotSamples < handle
           continue;
         end
         well=obj.q.parsewells(s.well);
-        if strcmp(s.plate,'qPCR') && isempty(obj.q.primers{well})
+        if strcmp(s.plate,'qPCR') % && isempty(obj.q.primers{well})
           %fprintf('Need to parse %s at well %s (%d)\n', s.name, s.well, well);
           dots=find(s.name=='.');
           primer=s.name(dots(end)+2:end);
-          dilution=str2double(strrep(s.name(dots(end-1)+2:dots(end)-1),'_','.'));
-          root=s.name(1:dots(end-1)-1);
+          if length(dots)>1
+            dilution=str2double(strrep(s.name(dots(end-1)+2:dots(end)-1),'_','.'));
+            root=s.name(1:dots(end-1)-1);
+          else
+            dilution=1;
+            root=s.name(1:dots(end)-1);
+          end
           obj.setwell(root,s.well,primer,dilution);
         end
       end
@@ -123,9 +128,10 @@ classdef RobotSamples < handle
     % Set a particular well to have the name 'root', primer and dilution as given
     %fprintf(' root=%s, primer=%s, dilution=%f\n', root, primer, dilution);
       if ~isKey(obj.qsamps,root)
-        entry=struct('name',root,'dilution',dilution,'ct',{nan(size(obj.primers))},'conc',{nan(size(obj.primers))},'wells',{cell(size(obj.primers))},'order',[]);
+        entry=struct('name',root,'dilution',[],'ct',{nan(size(obj.primers))},'conc',{nan(size(obj.primers))},'wells',{cell(size(obj.primers))},'order',[]);
         for j=1:length(obj.primers)
           entry.wells{j}={};
+          entry.dilution(j)=nan;
         end
       else
         entry=obj.qsamps(root);
@@ -134,12 +140,14 @@ classdef RobotSamples < handle
       if length(pindex)~=1
         fprintf('Unable to find primer %s for assigning sample %s\n', primer, root);
       else
-        if ~isnan(entry.ct(pindex))
-          fprintf('Duplicate well for %s with primer %s (%s) ignored\n', root, primer, well);
+        if ~isnan(entry.ct(pindex)) 
+          fprintf('Duplicate well for %s with primer %s (%s) with dilution %.1f ignored\n', root, primer, well, dilution);
+          return;
         end
         entry.wells{pindex}=well;
         entry.ct(pindex)=obj.q.getct(well);
-        entry.conc(pindex)=obj.q.getconc(primer,well,{},{},{},'dilution',entry.dilution)/1000;
+        entry.dilution(pindex)=dilution;
+        entry.conc(pindex)=obj.q.getconc(primer,well,{},{},{},'dilution',dilution)/1000;
         wellindex=obj.q.parsewells(well);
         entry.order=min([entry.order,wellindex]);
       end
@@ -179,7 +187,12 @@ classdef RobotSamples < handle
       [~,sortorder]=sort(ord);
       for i=sortorder
         qs=obj.qsamps(keys{i});
-        fprintf('%-30.30s:  Dil=%6.0f, Ct=[%s], Conc=[%s] nM\n', qs.name, qs.dilution, sprintf('%4.1f ',qs.ct),sprintf('%7.2f ',qs.conc));
+        if nanstd(qs.dilution)==0
+          dil=nanmean(qs.dilution);
+        else
+          dil=nan;
+        end
+        fprintf('%-30.30s:  Dil=%6.0f, Ct=[%s], Conc=[%s] nM\n', qs.name, dil, sprintf('%4.1f ',qs.ct),sprintf('%7.2f ',qs.conc));
       end
 
       % Check for any missed ones
