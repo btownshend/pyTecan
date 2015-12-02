@@ -11,7 +11,7 @@ classdef RobotSamples < handle
   
   methods
     function obj=RobotSamples(sampfilename,opdfilename,varargin)
-      defaults=struct('thresh',[],'doplot',true,'basecycles',2:8);
+      defaults=struct('thresh',[],'doplot',true,'basecycles',2:8,'fulow',[],'fuhigh',[]);
       args=processargs(defaults,varargin);
       assert(exist(sampfilename,'file')~=0);
       eval(sampfilename);	% This loads all the data into a var called 'samps'
@@ -23,7 +23,7 @@ classdef RobotSamples < handle
       else
         obj.opd=opdread(opdfilename);
       end
-      obj.opd=ctcalc(obj.opd,'thresh',args.thresh,'basecycles',args.basecycles,'doplot',args.doplot);
+      obj.opd=ctcalc(obj.opd,'thresh',args.thresh,'basecycles',args.basecycles,'doplot',args.doplot,'fulow',args.fulow,'fuhigh',args.fuhigh);
     end
 
     function buildsampmap(obj)
