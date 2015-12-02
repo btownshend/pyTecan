@@ -117,6 +117,10 @@ class Experiment(object):
             self.w.wash(fixedTips,1,deepvol,True)
         self.cleanTips|=fixedTips
         # print "* Sanitize"
+        if self.totalTime!=None:
+            self.w.comment("Estimated elapsed: %d minutes, remaining run time: %d minutes"%((self.thermotime+self.w.elapsed)/60,(self.totalTime-(self.w.elapsed+self.thermotime))/60))
+        else:
+            self.w.comment("Estimated elapsed: %d minutes"%((self.thermotime+self.w.elapsed)/60))
         
     def cleantip(self):
         'Get the mask for a clean tip, washing if needed'
@@ -497,10 +501,6 @@ class Experiment(object):
             self.sanitize()   # Sanitize tips before waiting for this to be done
         self.w.comment("Wait for PTC")
         self.thermotime-=self.w.elapsed
-        if self.totalTime!=None:
-            self.w.comment("Estimated elapsed: %d minutes, remaining run time: %d minutes"%((self.thermotime+self.w.elapsed)/60,(self.totalTime-(self.w.elapsed+self.thermotime))/60))
-        else:
-            self.w.comment("Estimated elapsed: %d minutes"%(self.w.elapsed/60))
         self.w.pyrun('PTC\\ptcwait.py')
         self.w.pyrun("PTC\\ptclid.py OPEN")
         #        self.w.pyrun('PTC\\ptcrun.py %s CALC ON'%"COOLDOWN")
