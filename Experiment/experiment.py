@@ -59,6 +59,10 @@ class Experiment(object):
         self.w.pyrun("PTC\\ptctest.py")
         #        self.w.periodicWash(15,4)
         self.w.userprompt("Verify that PTC thermocycler lid pressure is set to '2'.")
+        self.idlePgms=[]
+        
+    def addIdleProgram(self,pgm):
+        self.idlePgms.append(pgm)
         
     def setreagenttemp(self,temp=None):
         if temp==None:
@@ -359,6 +363,7 @@ class Experiment(object):
         assert(hotlidmode=="TRACKING" or hotlidmode=="CONSTANT")
         assert((hotlidmode=="TRACKING" and hotlidtemp>=0 and hotlidtemp<=45) or (hotlidmode=="CONSTANT" and hotlidtemp>30))
         self.w.pyrun('PTC\\ptcrun.py %s CALC %s,%d %d'%(pgm,hotlidmode,hotlidtemp,volume))
+        self.pgmEndTime=duration*60+self.w.elapsed
         self.thermotime+=duration*60+self.w.elapsed   # Add on elapsed time so we can cancel out intervening time in waitpgm()
         self.ptcrunning=True
         Sample.addallhistory("{%s}"%pgm,addToEmpty=False,onlyplate=self.SAMPLEPLATE.name)
@@ -500,7 +505,20 @@ class Experiment(object):
         if sanitize:
             self.sanitize()   # Sanitize tips before waiting for this to be done
         self.w.comment("Wait for PTC")
+        while self.pgmEndTime-self.w.elapsed > 120:
+            # Run any idle programs
+            oldElapsed=self.w.elapsed
+            for ip in self.idlePgms:
+                if self.pgmEndTime-self.w.elapsed > 120:
+                    print "Executing idle program with %.0f seconds"%(self.pgmEndTime-self.w.elapsed)
+                    ip(self.pgmEndTime-self.w.elapsed)
+            if oldElapsed==self.w.elapsed:
+                # Nothing was done
+                break
+            self.w.flushQueue()		# Just in case
+
         self.thermotime-=self.w.elapsed
+        print "Waiting for PTC with %.0f seconds expected to remain\n"%(self.pgmEndTime-self.w.elapsed)
         self.w.pyrun('PTC\\ptcwait.py')
         self.w.pyrun("PTC\\ptclid.py OPEN")
         #        self.w.pyrun('PTC\\ptcrun.py %s CALC ON'%"COOLDOWN")
