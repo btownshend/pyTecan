@@ -125,7 +125,7 @@ classdef RobotSamples < handle
           continue;
         end
         well=obj.q.parsewells(s.well);
-        if strcmp(s.plate,'qPCR') % && isempty(obj.q.primers{well})
+        if strcmp(s.plate,'qPCR') && isempty(obj.q.primers{well})
           %fprintf('Need to parse %s at well %s (%d)\n', s.name, s.well, well);
           dots=find(s.name=='.');
           primer=s.name(dots(end)+2:end);
