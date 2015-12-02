@@ -105,7 +105,11 @@ classdef RobotSamples < handle
         end
         fprintf('Added reference %s: ',p);
         for j=1:length(wells)
-          fprintf(' %s[%s]@%.3fpM ',ss(j).name,wells{j},concs(j));
+          if j<=length(ss)
+            fprintf(' %s[%s]@%.3fpM ',ss(j).name,wells{j},concs(j));
+          else
+            fprintf(' [%s]@%.3fpM ',wells{j},concs(j));
+          end
         end
         fprintf('\n');
         obj.q.addref(p,wells,concs,'units','pM','strands',args.refstrands);
