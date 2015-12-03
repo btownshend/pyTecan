@@ -515,9 +515,9 @@ class TRP(object):
     ########################
     # RT - Reverse Transcription
     ########################
-    def runRT(self,pos,src,vol,srcdil,tgt=None,dur=20):
+    def runRT(self,pos,src,vol,srcdil,tgt=None,dur=20,heatInactivate=False):
         result=self.runRTSetup(pos,src,vol,srcdil,tgt)
-        self.runRTPgm(dur)
+        self.runRTPgm(dur,heatInactivate=heatInactivate)
         return result
     
     def runRTOnBeads(self,src,vol,dur=20):
