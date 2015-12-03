@@ -483,7 +483,7 @@ class Experiment(object):
     	self.w.starttimer()
 
     def waittimer(self,duration):
-        if duration>10:
+        if duration>20:
             # Might as well sanitize while we're waiting
             self.sanitize()
         if duration>0:
