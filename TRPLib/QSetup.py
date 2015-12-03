@@ -178,6 +178,7 @@ class QSetup(object):
         self.idler(100000)
 
         assert(self.jobq.len() == 0)
+        self.trp.e.w.userprompt('Starting qPCR setup',timeout=5)
         for p in self.allprimers():
             # Build list of relevant entries
             ind=[ i for i in range(len(self.dilProds)) if p in self.primers[i]]
