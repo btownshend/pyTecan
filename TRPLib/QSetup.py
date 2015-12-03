@@ -31,6 +31,7 @@ class QSetup(object):
         
     def addSamples(self, src, needDil, primers,nreplicates=1,names=None,saveVol=None,saveDil=None,save=True):
         'Add sample(s) to list of qPCRs to do'
+        #print "addSamples(%s)"%src
         if save:
             # saveVol is total amount (after dilution) to be immediately saved
             if saveDil==None:

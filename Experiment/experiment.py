@@ -507,8 +507,8 @@ class Experiment(object):
             oldElapsed=self.w.elapsed
             for ip in self.idlePgms:
                 if self.pgmEndTime-self.w.elapsed > 120:
-                    print "Executing idle program with %.0f seconds"%(self.pgmEndTime-self.w.elapsed)
-                    ip(self.pgmEndTime-self.w.elapsed)
+                    #print "Executing idle program with %.0f seconds"%(self.pgmEndTime-self.w.elapsed)
+                    ip(self.pgmEndTime-self.w.elapsed-120)
             if oldElapsed==self.w.elapsed:
                 # Nothing was done
                 break
