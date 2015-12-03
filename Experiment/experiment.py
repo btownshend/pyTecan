@@ -49,7 +49,8 @@ class Experiment(object):
         self.cleanTips=0
         # self.sanitize()  # Not needed, TRP does it, also first use of tips will do this
         self.useDiTis=False
-        self.thermotime=0
+        self.thermotime=0		# Time waiting for thermocycler without pipetting
+        self.pipandthermotime=0		# Time while pipetting and thermocycling   (elapsed=time pipetting, whether or not thermocycling also)
         self.BLEACH.mixLC=liquidclass.LCBleachMix
         self.ptcrunning=False
         self.overrideSanitize=False
@@ -96,7 +97,7 @@ class Experiment(object):
         print >>fd,"DiTi usage:",self.w.getDITIcnt()
         print >>fd
 
-        print >>fd,"Run time: %d (pipetting) + %d (thermocycling) = %d minutes\n"%(self.w.elapsed/60.0,self.thermotime/60, (self.w.elapsed+self.thermotime)/60)
+        print >>fd,"Run time: %d (pipetting only) + %d (thermocycling only) + %d (both) = %d minutes\n"%((self.w.elapsed-self.pipandthermotime)/60.0,self.thermotime/60, self.pipandthermotime/60, (self.w.elapsed+self.thermotime)/60)
         Sample.printprep(fd)
         Sample.printallsamples("All Samples:",fd,w=self.w)
         fd.close()
@@ -363,8 +364,8 @@ class Experiment(object):
         assert(hotlidmode=="TRACKING" or hotlidmode=="CONSTANT")
         assert((hotlidmode=="TRACKING" and hotlidtemp>=0 and hotlidtemp<=45) or (hotlidmode=="CONSTANT" and hotlidtemp>30))
         self.w.pyrun('PTC\\ptcrun.py %s CALC %s,%d %d'%(pgm,hotlidmode,hotlidtemp,volume))
+        self.pgmStartTime=self.w.elapsed
         self.pgmEndTime=duration*60+self.w.elapsed
-        self.thermotime+=duration*60+self.w.elapsed   # Add on elapsed time so we can cancel out intervening time in waitpgm()
         self.ptcrunning=True
         Sample.addallhistory("{%s}"%pgm,addToEmpty=False,onlyplate=self.SAMPLEPLATE.name)
         if waitForCompletion:
@@ -517,8 +518,9 @@ class Experiment(object):
                 break
             self.w.flushQueue()		# Just in case
 
-        self.thermotime-=self.w.elapsed
-        print "Waiting for PTC with %.0f seconds expected to remain\n"%(self.pgmEndTime-self.w.elapsed)
+        self.pipandthermotime+=(self.w.elapsed-self.pgmStartTime)
+        self.thermotime+=(self.pgmEndTime-self.w.elapsed)
+        print "Waiting for PTC with %.0f seconds expected to remain"%(self.pgmEndTime-self.w.elapsed)
         self.w.pyrun('PTC\\ptcwait.py')
         self.w.pyrun("PTC\\ptclid.py OPEN")
         #        self.w.pyrun('PTC\\ptcrun.py %s CALC ON'%"COOLDOWN")
