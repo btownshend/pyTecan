@@ -5,7 +5,8 @@ import sys
 import math
 from Experiment.experiment import Experiment
 from Experiment.sample import Sample
-from TRPLib.TRP import uniqueTargets, diluteName
+from Experiment.JobQueue import JobQueue
+from TRPLib.TRP import uniqueTargets, diluteName, findsamps
 
 class QSetup(object):
     TGTINVOL=4
@@ -26,6 +27,7 @@ class QSetup(object):
         self.trp=trp
         self.debug=debug
         self.dilutant=Experiment.SSDDIL
+        self.jobq=JobQueue()
         
     def addSamples(self, src, needDil, primers,nreplicates=1,names=None,saveVol=None,saveDil=None,save=True):
         'Add sample(s) to list of qPCRs to do'
@@ -59,14 +61,33 @@ class QSetup(object):
             sv=src
 
         needDil=needDil/saveDil
-        self.samples=self.samples+sv
-        self.needDil=self.needDil+[needDil]*len(sv)
-        self.primers=self.primers+[primers]*len(sv)
-        self.nreplicates=self.nreplicates+[nreplicates]*len(sv)
-        self.stages=self.stages+[int(math.ceil(math.log(needDil)/math.log(self.MAXDIL)))]*len(sv)
-        self.reuse=self.reuse+[None]*len(sv)
-        if self.debug:
-            print "addSamples(src=",src,", tgt=",sv,", saveDil=%.1f"%saveDil, ", needDil=%.1f"%needDil,", primers=",primers,", nrep=",nreplicates,", stages=",self.stages[-1],")"
+        nstages=int(math.ceil(math.log(needDil)/math.log(self.MAXDIL)))
+        for s in sv:
+            ssrc=findsamps([s],False)
+            j0=self.jobq.addShake(sample=ssrc[0],prereqs=[])
+            prereqs=[j0]
+            intermed=s
+
+            for i in range(nstages):
+                dil=math.pow(needDil,1.0/nstages)
+                #print "stage ",i,", needDil=",needDil,", dil=",dil
+                if i>0:
+                    vol=self.MAXDILVOL
+                else:
+                    vol=min(self.MAXDILVOL,max(self.MINDILVOL,dil*self.TGTINVOL))
+                destName=diluteName(intermed,dil)
+                destList=findsamps([destName],True,self.trp.e.DILPLATE,unique=True)
+                dest=destList[0]
+                ssrc=findsamps([intermed],False)
+                j1=self.jobq.addMultiTransfer(volume=vol*dil/(1+dil),src=self.dilutant,dest=dest,prereqs=[])
+                prereqs.append(j1)
+                j2=self.jobq.addTransfer(volume=vol/dil,src=ssrc[0],dest=dest,prereqs=prereqs)
+                j3=self.jobq.addShake(sample=dest,prereqs=[j2])
+                prereqs=[j3]
+                intermed=dest.name
+            self.dilProds=self.dilProds+[intermed]
+            self.primers=self.primers+[primers]
+            self.nreplicates=self.nreplicates+[nreplicates]
     
     def findReuses(self):
         'Find any prior dilutions that can be reused'
@@ -137,40 +158,26 @@ class QSetup(object):
 
         self.addSamples(src=[self.dilutant.name],needDil=1,primers=primers,nreplicates=nreplicates,save=False)
 
+    def idler(self,t):
+        endTime=self.trp.e.w.elapsed+t
+        if self.debug:
+            print "Idler(%.0f)"%t
+        while self.trp.e.w.elapsed<endTime:
+            j=self.jobq.getJob()
+            if j==None:
+                break
+            self.jobq.execJob(self.trp.e,j)
+        if self.debug:
+            print "Idler done with ",endTime-self.trp.e.w.elapsed," seconds remaining"
+
     def run(self):
         'Run the dilutions and QPCR setup'
-        #print "run()"
-
-        # Find reuses
-        #self.findReuses()   # Not used yet
-
-        # Make dilutions
-        # Store resulting diluted products in self.dilProds
-        dilProds=self.samples
-        needDil=self.needDil
-        for stage in range(4):
-            stageDil=needDil[:]
-            for i in range(len(stageDil)):
-                if stageDil[i]>self.MAXDIL:
-                    nstages=math.ceil(math.log(stageDil[i])/math.log(self.MAXDIL))
-                    stageDil[i]=math.pow(stageDil[i],1/nstages)
-            inds=[i for i in range(len(stageDil)) if stageDil[i]>1.1]
-            if len(inds)==0:
-                break
-            print "Dilution stage ",stage,": ",[round(x,1) for x in stageDil if x>1.1]
-            if stage>0:
-                vol=[self.MAXDILVOL for i in inds]
-            else:
-                vol=[min(self.MAXDILVOL,max(self.MINDILVOL,x*self.TGTINVOL)) for x in [stageDil[i] for i in inds]]  # Make sure there's enough for  qPCR (6ul each) or next dilution (typicaly 5ul) and leaves 15 at end
-                print "vol=",vol
-            ptmp=self.trp.runQPCRDIL(src=[dilProds[i] for i in inds],vol=vol,srcdil=[stageDil[i] for i in inds],tgt=None,dilPlate=True,dilutant=self.dilutant)  
-            for i in range(len(inds)):
-                dilProds[inds[i]]=ptmp[i]
-            needDil=[needDil[i]/stageDil[i] for i in range(len(needDil))]
-        self.dilProds=dilProds
-
         # Setup qPCRs
+        #self.jobq.dump()
+        self.idler(100000)
+
+        assert(self.jobq.len() == 0)
         for p in self.allprimers():
             # Build list of relevant entries
-            ind=[ i for i in range(len(self.samples)) if p in self.primers[i]]
+            ind=[ i for i in range(len(self.dilProds)) if p in self.primers[i]]
             self.trp.runQPCR(src=[self.dilProds[i] for i in ind],vol=self.volume,srcdil=10.0/4,primers=[p],nreplicates=[self.nreplicates[i] for i in ind])
