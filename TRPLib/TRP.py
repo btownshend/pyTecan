@@ -483,6 +483,9 @@ class TRP(object):
             plate=self.e.SAMPLEPLATE
         stgt=findsamps(tgt,plate=plate,unique=not reuseDest)
 
+        if not ssrc[0].isMixed:
+            self.e.shake(ssrc[0].plate,returnPlate=False)
+
         self.e.moveplate(ssrc[0].plate,"Magnet")	# Move to magnet
         self.sepWait(ssrc,sepTime)
 
