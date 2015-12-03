@@ -145,7 +145,7 @@ classdef RobotSamples < handle
     % Set a particular well to have the name 'root', primer and dilution as given
     %fprintf(' root=%s, primer=%s, dilution=%f\n', root, primer, dilution);
       if ~isKey(obj.qsamps,root)
-        entry=struct('name',root,'dilution',[],'ct',{nan(size(obj.primers))},'conc',{nan(size(obj.primers))},'wells',{cell(size(obj.primers))},'order',[]);
+        entry=struct('name',root,'dilution',[],'ct',{-1*ones(size(obj.primers))},'conc',{nan(size(obj.primers))},'wells',{cell(size(obj.primers))},'order',[]);
         for j=1:length(obj.primers)
           entry.wells{j}={};
           entry.dilution(j)=nan;
@@ -157,7 +157,7 @@ classdef RobotSamples < handle
       if length(pindex)~=1
         fprintf('Unable to find primer %s for assigning sample %s\n', primer, root);
       else
-        if ~isnan(entry.ct(pindex)) 
+        if ~isnan(entry.ct(pindex))  && entry.ct(pindex)>0
           fprintf('Duplicate well for %s with primer %s (%s) with dilution %.1f ignored\n', root, primer, well, dilution);
           return;
         end
