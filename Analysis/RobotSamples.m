@@ -210,6 +210,15 @@ classdef RobotSamples < handle
           dil=nan;
         end
         fprintf('%-30.30s:  Dil=%6.0f, Ct=[%s], Conc=[%s] nM\n', qs.name, dil, sprintf('%4.1f ',qs.ct),sprintf('%7.2f ',qs.conc));
+        fprintf('%-30.30s:                 [',' ');
+        for i=1:length(qs.wells)
+          if isempty(qs.wells{i})
+            fprintf('%4s ','');
+          else
+            fprintf('%4s ',qs.wells{i});
+          end
+        end
+        fprintf(']\n');
       end
 
       % Check for any missed ones
