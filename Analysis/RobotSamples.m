@@ -131,7 +131,7 @@ classdef RobotSamples < handle
           %fprintf('Need to parse %s at well %s (%d)\n', s.name, s.well, well);
           dots=find(s.name=='.');
           primer=s.name(dots(end)+2:end);
-          if length(dots)>1
+          if length(dots)>1 && s.name(dots(end-1)+1)=='D'
             dilution=str2double(strrep(s.name(dots(end-1)+2:dots(end)-1),'_','.'));
             root=s.name(1:dots(end-1)-1);
           else
