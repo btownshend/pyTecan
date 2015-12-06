@@ -79,10 +79,12 @@ class QSetup(object):
                 destName=diluteName(intermed,dil)
                 destList=findsamps([destName],True,self.trp.e.DILPLATE,unique=True)
                 dest=destList[0]
+                #print "dest=",dest
                 ssrc=findsamps([intermed],False)
                 j1=self.jobq.addMultiTransfer(volume=vol*dil/(1+dil),src=self.dilutant,dest=dest,prereqs=[])
                 prereqs.append(j1)
-                j2=self.jobq.addTransfer(volume=vol/dil,src=ssrc[0],dest=dest,prereqs=prereqs)
+                j2=self.jobq.addTransfer(volume=vol/(dil+1),src=ssrc[0],dest=dest,prereqs=prereqs)
+                #print "Dilution of %s was %.2f instead of %.2f (error=%.0f%%)"%(dest.name,(dil/(1+dil))/(1/dil),dil,((dil/(1+dil))/(1/dil)/dil-1)*100)
                 j3=self.jobq.addShake(sample=dest,prereqs=[j2])
                 prereqs=[j3]
                 intermed=dest.name
