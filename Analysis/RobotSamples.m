@@ -1,6 +1,7 @@
 % Analyze a robot run 
 classdef RobotSamples < handle
   properties
+    options;
     q;		% QPCR data
     samps;
     opd;
@@ -15,6 +16,7 @@ classdef RobotSamples < handle
       args=processargs(defaults,varargin);
       assert(exist(sampfilename,'file')~=0);
       eval(sampfilename);	% This loads all the data into a var called 'samps'
+      obj.options=args;
       obj.samps=samps;		% Copy to class
       obj.qsamps=containers.Map;
       obj.buildsampmap();
