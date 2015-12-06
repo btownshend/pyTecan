@@ -193,6 +193,44 @@ classdef RobotSamples < handle
       obj.processWells;	% Re-process the wells
     end
     
+    function [w,indices]=wellfind(obj,plate,regex)
+    % Return a cell array of well names for samples matching the regex
+      w={};
+      indices=[];
+      for i=1:length(obj.samps)
+        if ~strcmp(obj.samps(i).plate,plate)
+          continue;
+        end
+        m=regexp(obj.samps(i).name,regex);
+        if ~isempty(m)
+          w{end+1}=obj.samps(i).well;
+          indices(end+1)=i;
+        end
+      end
+    end
+    
+    function plotmelt(obj, regex)
+    % Plot melt curve on the current figure for samples matching regex
+      [w,i]=obj.wellfind('qPCR',regex);
+      if isempty(w)
+        fprintf('plotmelt: No samples match "%s"\n', regex);
+        return;
+      end
+      opdmelt(obj.opd,w);
+      legend({obj.samps(i).name},'Interpreter','None','Location','SouthWest');
+    end
+    
+    function plotopd(obj, regex)
+    % Plot opd curve on the current figure for samples matching regex
+      [w,i]=obj.wellfind('qPCR',regex);
+      if isempty(w)
+        fprintf('plotopd: No samples match "%s"\n', regex);
+        return;
+      end
+      opdcheck(obj.opd,w,'firststage',true,'basecycles',obj.options.basecycles,'thresh',obj.options.thresh);
+      legend({obj.samps(i).name},'Interpreter','None','Location','NorthWest');
+    end
+    
     function printconcs(obj)
       keys=obj.qsamps.keys;
       fprintf('Primers:                                         ');
