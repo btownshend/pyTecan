@@ -6,6 +6,7 @@ import os.path
 from datetime import datetime
 
 ptcrunning=False
+_Experiment__shakerActive = False
 
 class Experiment(object):
     WASHLOC=Plate("Wash",1,2,1,8,False,0)
@@ -464,6 +465,7 @@ class Experiment(object):
 
         oldloc=plate.curloc
         self.moveplate(plate,"Shaker",returnHome=False)
+        __shakerActive=True
         self.w.pyrun("BioShake\\bioexec.py setElmLockPos")
         self.w.pyrun("BioShake\\bioexec.py setShakeTargetSpeed%d"%speed)
         self.w.pyrun("BioShake\\bioexec.py setShakeAcceleration%d"%accel)
@@ -476,9 +478,14 @@ class Experiment(object):
         self.starttimer()
         self.waittimer(accel+4)
         self.w.pyrun("BioShake\\bioexec.py setElmUnlockPos")
+        __shakerActive=False
         if returnPlate:
             self.moveplate(plate,oldloc)
 
+    @staticmethod
+    def shakerIsActive():
+        return __shakerActive
+    
     def starttimer(self):
     	self.w.starttimer()
 
