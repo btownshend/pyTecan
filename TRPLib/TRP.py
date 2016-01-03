@@ -40,7 +40,11 @@ class Reagents:
     QPCRREF=Sample("QPCRREF",Experiment.REAGENTPLATE,"B5",Concentration(50,50,'pM'))
     MLigBT7=Sample("MLigBT7",Experiment.REAGENTPLATE,None,3)
     PCRT7X=Sample("MPCRT7X",Experiment.REAGENTPLATE,None,4.0/3)
-    all=[MT7,MPosRT,MLigAT7,MLigBT7W,MLigBT7,MLigase,Theo,MStopX,MQRef,MQAX,MQBX,PCRAX,PCRBX,MQMX,SSD,MLigAT7W,MQWX,Dynabeads,MQT7W,BeadBuffer,MStopBeads,QPCRREF,PCRT7X]
+    NAOH=Sample("NaOH",Experiment.REAGENTPLATE,"D5",1.0)
+    MLigBT7WBio=Sample("MLigBT7WBio",Experiment.REAGENTPLATE,"E5",3)
+    MLigBT7Bio=Sample("MLigBT7Bio",Experiment.REAGENTPLATE,"A6",3)
+
+    all=[MT7,MPosRT,MLigAT7,MLigBT7W,MLigBT7,MLigase,Theo,MStopX,MQRef,MQAX,MQBX,PCRAX,PCRBX,MQMX,SSD,MLigAT7W,MQWX,Dynabeads,MQT7W,BeadBuffer,MStopBeads,QPCRREF,PCRT7X,NAOH,MLigBT7WBio,MLigBT7Bio]
     UNUSED=Sample("LeakyA1",Experiment.SAMPLEPLATE,"A1",0)
     UNUSED2=Sample("LeakyH12",Experiment.SAMPLEPLATE,"H12",0)
     
