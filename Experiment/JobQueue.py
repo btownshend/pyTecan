@@ -5,6 +5,7 @@ class JobQueue(object):
         self.nextID=1
         self.jobs={}
         self.debug=False
+        self.runningJob=None	# Currently executing job
         
     def len(self):
         return len(self.jobs)
@@ -57,6 +58,10 @@ class JobQueue(object):
     def getJob(self):
         'Return the next job on the queue to execute, removing it from queue'
 
+        if self.runningJob!=None:
+            print "Call of getJob() while a job is running - returning None"
+            return None
+            
         # Remove any shake jobs that are unneeded
         for id,j in self.jobs.items():
             if j['type']=='shake' and len(j['prereqs'])==0 and j['sample'].isMixed and not Experiment.shakerIsActive():
@@ -96,6 +101,7 @@ class JobQueue(object):
 
     def execJob(self,e,id):
         job=self.jobs[id]
+        self.runningJob=job
         if self.debug:
             print "execJob(",id,"): ",
         if job['type']=='shake':
@@ -119,7 +125,8 @@ class JobQueue(object):
         if self.debug:
             print
         self.removeJob(id)
-
+        self.runningJob=None
+        
     def removeJob(self,id):
         for ik,k in self.jobs.iteritems():
             k['prereqs']=k['prereqs'].difference([id])
