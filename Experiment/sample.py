@@ -76,6 +76,14 @@ class Sample(object):
             for t in tiphistory:
                 print >>fd,"%d: %s\n"%(t,tiphistory[t])
             
+    @staticmethod
+    def numSamplesOnPlate(plate):
+        cnt=0
+        for s in __allsamples:
+            if s.plate==plate and len(s.history)>0:
+                cnt+=1
+        return cnt
+        
     def __init__(self,name,plate,well=None,conc=None,volume=0,hasBeads=False,extraVol=50):
         if well==None:
             # Find first unused well
