@@ -487,10 +487,11 @@ class Experiment(object):
         return __shakerActive
     
     def starttimer(self):
+        self.timerStartTime=self.w.elapsed
     	self.w.starttimer()
 
     def waittimer(self,duration):
-        if duration>20:
+        if self.timerStartTime+duration-self.w.elapsed > 20:
             # Might as well sanitize while we're waiting
             self.sanitize()
         if duration>0:
