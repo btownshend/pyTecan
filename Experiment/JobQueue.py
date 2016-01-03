@@ -1,3 +1,5 @@
+from experiment import Experiment
+
 class JobQueue(object):
     def __init__(self):
         self.nextID=1
@@ -57,7 +59,8 @@ class JobQueue(object):
 
         # Remove any shake jobs that are unneeded
         for id,j in self.jobs.items():
-            if j['type']=='shake' and len(j['prereqs'])==0 and j['sample'].isMixed:
+            if j['type']=='shake' and len(j['prereqs'])==0 and j['sample'].isMixed and not Experiment.shakerIsActive():
+                print "Removing unneeded shake job ",id
                 self.removeJob(id)
 
         for id in self.jobs:
@@ -85,7 +88,7 @@ class JobQueue(object):
 
         for id in self.jobs:
             j=self.jobs[id]
-            if j['type']!='shake' or len(j['prereqs'])>0 or not j['sample'].plate.curloc=='Home':
+            if j['type']!='shake' or len(j['prereqs'])>0 or not j['sample'].plate.curloc=='Home' or Experiment.shakerIsActive(): 
                 continue
             return id
         # Nothing to do
