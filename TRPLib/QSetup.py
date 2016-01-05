@@ -156,7 +156,10 @@ class QSetup(object):
                     else:
                         src=["%s.D%d"%(ref,srcDil)]
                     break
-            self.addSamples(src=src,needDil=needDil/srcDil,primers=primers,nreplicates=nreplicates,save=needDil/srcDil>self.MAXDIL)
+            tmp=self.MINDILVOL
+            self.MINDILVOL=75   # Make sure there's enough for resuing dilutions
+            self.addSamples(src=src,needDil=needDil/srcDil,primers=primers,nreplicates=nreplicates,save=needDil/srcDil>self.MAXDIL,saveVol=75)
+            self.MINDILVOL=tmp
             dils.append(needDil)
 
         self.addSamples(src=[self.dilutant.name],needDil=1,primers=primers,nreplicates=nreplicates,save=False)
