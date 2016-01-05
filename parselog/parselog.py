@@ -162,7 +162,7 @@ def gemtip(tipcmd,line2):
     if debug:
         print "XFR ",fullcmd
     # Parse the line
-    parser1=re.compile(r"tip (\d+) : (\S+) +(?:(\d+\.\d+)(.l) +)?(?:\((\d)+x\))? *(\d+), +(\d+) +(.+) +\[(\d+),(\d+)\]")
+    parser1=re.compile(r"tip (\d+) : (\S+) +(?:(\d+\.\d+)(.l) +)?(?:\((\d)+x\))? *(\d+), *(\d+) +(.+) +\[(\d+),(\d+)\]")
     if debug:
         print displaymatch(parser1.match(tipcmd))
     match=parser1.match(tipcmd)
