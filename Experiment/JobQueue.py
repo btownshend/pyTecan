@@ -65,7 +65,7 @@ class JobQueue(object):
         # Remove any shake jobs that are unneeded
         for id,j in self.jobs.items():
             if j['type']=='shake' and len(j['prereqs'])==0 and j['sample'].isMixed and not Experiment.shakerIsActive():
-                print "Removing unneeded shake job ",id
+                #print "Removing unneeded shake job ",id
                 self.removeJob(id)
 
         for id in self.jobs:
