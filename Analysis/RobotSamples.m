@@ -14,18 +14,41 @@ classdef RobotSamples < handle
     function obj=RobotSamples(sampfilename,opdfilename,varargin)
       defaults=struct('thresh',[],'doplot',true,'basecycles',2:8,'fulow',[],'fuhigh',[]);
       args=processargs(defaults,varargin);
-      assert(exist(sampfilename,'file')~=0);
-      eval(sampfilename);	% This loads all the data into a var called 'samps'
+      if ~iscell(sampfilename)
+        sampfilename={sampfilename};
+      end
       obj.options=args;
-      obj.samps=samps;		% Copy to class
+      for i=1:length(sampfilename)
+        assert(exist(sampfilename{i},'file')~=0);
+        eval(sampfilename{i});	% This loads all the data into a var called 'samps'
+        if i==1
+          obj.samps=samps;		% Copy to class
+        else
+          % Update well ID to point to concatenated well
+          for j=1:length(samps)
+            if ~isempty(samps(j).well)
+              samps(j).well=sprintf('%c%d',samps(j).well(1),str2double(samps(j).well(2:end))+12*(i-1));
+            end
+          end
+          obj.samps=[obj.samps,samps];
+        end
+      end
+
       obj.qsamps=containers.Map;
       obj.buildsampmap();
       if nargin<2 || isempty(opdfilename)
-        obj.opd=opdread();
+        obj.opd={opdread()};
+      elseif iscell(opdfilename)
+        obj.opd={};
+        for i=1:length(opdfilename)
+          obj.opd{i}=opdread(opdfilename{i});
+        end
       else
-        obj.opd=opdread(opdfilename);
+        obj.opd={opdread(opdfilename)};
       end
-      obj.opd=ctcalc(obj.opd,'thresh',args.thresh,'basecycles',args.basecycles,'doplot',args.doplot,'fulow',args.fulow,'fuhigh',args.fuhigh);
+      for i=1:length(obj.opd)
+        obj.opd{i}=ctcalc(obj.opd{i},'thresh',args.thresh,'basecycles',args.basecycles,'doplot',args.doplot,'fulow',args.fulow,'fuhigh',args.fuhigh);
+      end
     end
 
     function buildsampmap(obj)
@@ -60,7 +83,11 @@ classdef RobotSamples < handle
       defaults=struct('refname','QPCRREF','refconc',50,'refstrands',2,'qpcrdil',2.5,'minct',7,'processWells',true);
       args=processargs(defaults,varargin);
 
-      obj.q=QPCR(obj.opd.ctgrid,'minct',args.minct);
+      ctgrid=obj.opd{1}.ctgrid;
+      for i=2:length(obj.opd)
+        ctgrid=[ctgrid,obj.opd{i}.ctgrid];
+      end
+      obj.q=QPCR(ctgrid,'minct',args.minct);
       obj.primers={};
       obj.addQPCRRef(args.refname);
       if args.processWells
@@ -216,7 +243,9 @@ classdef RobotSamples < handle
         fprintf('plotmelt: No samples match "%s"\n', regex);
         return;
       end
-      opdmelt(obj.opd,w);
+      for j=1:length(obj.opd)
+        opdmelt(obj.opd{j},w);
+      end
       legend({obj.samps(i).name},'Interpreter','None','Location','SouthWest');
     end
     
@@ -227,7 +256,9 @@ classdef RobotSamples < handle
         fprintf('plotopd: No samples match "%s"\n', regex);
         return;
       end
-      opdcheck(obj.opd,w,'firststage',true,'basecycles',obj.options.basecycles,'thresh',obj.options.thresh);
+      for i=1:length(obj.opd)
+        opdcheck(obj.opd{i},w,'firststage',true,'basecycles',obj.options.basecycles,'thresh',obj.options.thresh);
+      end
       legend({obj.samps(i).name},'Interpreter','None','Location','NorthWest');
     end
     
