@@ -15,6 +15,7 @@ SHOWTIPHISTORY=False
 SHOWINGREDIENTS=False
 MINDEPOSITVOLUME=5.0	# Minimum volume to end up with in a well after dispensing
 MINSIDEDISPENSEVOLUME=10.0  # minimum final volume in well to use side-dispensing.  Side-dispensing with small volumes may result in pulling droplet up sidewall
+EVAPTIME=3600	# Time in seconds after which to give an evaporation warning
 
 _Sample__allsamples = []
 tiphistory={}
@@ -147,6 +148,7 @@ class Sample(object):
         self.initHasBeads=hasBeads
         self.hasBeads=hasBeads		# Setting this to true overrides the manual conditioning
         self.extraVol=extraVol			# Extra volume to provide
+        self.firstdispense = 0					# Last time accessed
         
     @classmethod
     def clearall(cls):
@@ -161,6 +163,7 @@ class Sample(object):
                 s.ingredients={}
             else:
                 s.ingredients={s.name:s.volume}
+            s.firstdispense = 0					# Last time accessed
 
     @classmethod
     def lookup(cls,name):
@@ -197,7 +200,18 @@ class Sample(object):
         if self.conc!=None:
                 self.conc=self.conc.dilute(1.0/factor)
 
+    def evapcheck(self,w,op):
+        'Check if the time between accesses of a well is too long'
+        # Not quite right -- doesn't take into account thermocycler time
+        if self.firstdispense>0 and w.elapsed-self.firstdispense>EVAPTIME and self.plate.name!="Reagents" and op=='aspirate':
+            print "WARNING:  %s (%s.%s, vol=%.1f ul) accessed after %.0f minutes, evaporation may be an issue"%(self.name,str(self.plate),self.plate.wellname(self.well),self.volume, (w.elapsed-self.firstdispense)/60)
+            self.history= self.history + (' [Evap: %d]'%( (w.elapsed-self.firstdispense)/60))
+            self.firstdispense=-1	# Don't mention again
+        if op=='dispense' and self.firstdispense==0:
+            self.firstdispense=w.elapsed
+        
     def aspirate(self,tipMask,w,volume,multi=False):
+        self.evapcheck(w,'aspirate')
         if volume<2 and not multi and self.name!="Water":
             print "WARNING: Inaccurate for < 2ul:  attempting to aspirate %.1f ul from %s"%(volume,self.name)
         if volume>self.volume and self.volume>0:
@@ -249,6 +263,7 @@ class Sample(object):
         w.aspirateNC(tipMask,[self.well],self.airLC,volume,self.plate)
         
     def dispense(self,tipMask,w,volume,src):
+        self.evapcheck(w,'dispense')
         if self.volume+volume < MINDEPOSITVOLUME:
             print "Warning: Dispense of %.1ful into %s results in total of %.1ful which is less than minimum deposit volume of %.1f ul"%(volume,self.name,self.volume+volume,MINDEPOSITVOLUME)
 
