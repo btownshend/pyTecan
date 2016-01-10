@@ -409,7 +409,7 @@ class Sample(object):
             if preaspirateAir:
                 # Aspirate some air to avoid mixing with excess volume aspirated into pipette from source in previous transfer
                 self.aspirateAir(tipMask,w,5)
-            if self.volume-mixvol>=MINLIQUIDDETECTVOLUME:
+            if self.volume>=MINLIQUIDDETECTVOLUME:
                 w.mix(tipMask,well,self.inliquidLC,mixvol,self.plate,nmix)
                 self.history+="(MLD)"
             else:
