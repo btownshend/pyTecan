@@ -165,7 +165,7 @@ class TRP(object):
             print "NO OUTPUT DUE TO ERRORS"
             assert(False)
             
-        print "Wells used:  samples: %d, dilutions: %d, qPCR: %d\n"%(Sample.numSamplesOnPlate(self.e.SAMPLEPLATE),Sample.numSamplesOnPlate(self.e.DILPLATE),Sample.numSamplesOnPlate(self.e.QPCRPLATE));
+        print "Wells used:  samples: %d, dilutions: %d, qPCR: %d\n"%(Sample.numSamplesOnPlate(self.e.SAMPLEPLATE),Sample.numSamplesOnPlate(self.e.DILPLATE),Sample.numSamplesOnPlate(self.e.QPCRPLATE))
         # Save worklist to a file
         #e.saveworklist("trp1.gwl")
         (scriptname,ext)=os.path.splitext(sys.argv[0])
