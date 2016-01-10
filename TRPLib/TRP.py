@@ -432,7 +432,7 @@ class TRP(object):
             else:
                 for i in range(len(ssrc)):
                     ssrc[i].conc=None
-                    self.e.transfer(washVol-ssrc[i].volume,swash[i],ssrc[i],mix=(False,True))	# Add wash
+                    self.e.transfer(washVol-ssrc[i].volume,swash[i],ssrc[i],mix=(False,False))	# Add wash, no need to pipette mix since some heterogenity won't hurt here
                 self.e.shake(ssrc[0].plate,returnPlate=False)
 
             self.e.moveplate(ssrc[0].plate,"Magnet")	# Move to magnet
