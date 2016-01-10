@@ -81,7 +81,10 @@ class Datalog(object):
         sample=self.lastSample[tip]
         if height==-1:
             vol=sample.plate.getliquidvolume((zadd+submerge)/10.0)
-            h=" @[FAIL <%d:<%.1f#%d]"%(zadd+submerge,vol,tip)
+            if vol!=None:
+                h=" @[FAIL <%d:<%.1f#%d]"%(zadd+submerge,vol,tip)
+            else:
+                h=" @[FAIL <%d#%d]"%(zadd+submerge,tip)
         else:
             vol=sample.plate.getliquidvolume((height+submerge-zmax)/10.0)
             if vol==None:
