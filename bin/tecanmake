@@ -12,6 +12,8 @@ python "$FILE.py">"$FILE.log"
 python "$UNOPT.py">"$UNOPT.log"
 cat "$FILE.log"
 echo 'Diffs between optimized and unoptimized versions:'
-diff $FILE.txt $UNOPT.txt
+sed -e 's/ \[Evap: [0-9]*\]//g' $FILE.txt >/tmp/opt.txt
+sed -e 's/ \[Evap: [0-9]*\]//g' $UNOPT.txt >/tmp/unopt.txt
+diff /tmp/unopt.txt /tmp/opt.txt
 #rm -rf $UDIR
 
