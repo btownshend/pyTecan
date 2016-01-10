@@ -62,6 +62,7 @@ class Experiment(object):
         #        self.w.periodicWash(15,4)
         self.w.userprompt("Verify that PTC thermocycler lid pressure is set to '2'.")
         self.idlePgms=[]
+        self.timerStartTime=[None]*8
         
     def addIdleProgram(self,pgm):
         self.idlePgms.append(pgm)
@@ -486,16 +487,16 @@ class Experiment(object):
     def shakerIsActive():
         return __shakerActive
     
-    def starttimer(self):
-        self.timerStartTime=self.w.elapsed
-    	self.w.starttimer()
+    def starttimer(self,timer=1):
+        self.timerStartTime[timer]=self.w.elapsed
+    	self.w.starttimer(timer)
 
-    def waittimer(self,duration):
-        if self.timerStartTime+duration-self.w.elapsed > 20:
+    def waittimer(self,duration,timer=1):
+        if self.timerStartTime[timer]+duration-self.w.elapsed > 20:
             # Might as well sanitize while we're waiting
             self.sanitize()
         if duration>0:
-            self.w.waittimer(duration)
+            self.w.waittimer(duration,timer)
             #Sample.addallhistory("{%ds}"%duration)
 
     def pause(self,duration):
