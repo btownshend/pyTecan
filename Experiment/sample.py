@@ -114,6 +114,9 @@ class Sample(object):
         self.plate=plate
         if well>=plate.nx*plate.ny:
                 print "Overflow of plate %s"%str(plate)
+                for s in __allsamples:
+                    if s.plate==plate:
+                        print s
                 assert(False)
                 
         self.well=well
