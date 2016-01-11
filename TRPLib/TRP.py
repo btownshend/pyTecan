@@ -307,13 +307,17 @@ class TRP(object):
 
         MT7vol=vol*1.0/self.r.MT7.conc.dilutionneeded()
         sourcevols=[vol*1.0/s for s in srcdil]
-        theovols=[(vol*1.0/self.r.Theo.conc.dilutionneeded() if t else 0) for t in theo]
-        watervols=[vol-theovols[i]-sourcevols[i]-MT7vol for i in range(len(ssrc))]
+        if any(theo):
+            theovols=[(vol*1.0/self.r.Theo.conc.dilutionneeded() if t else 0) for t in theo]
+            watervols=[vol-theovols[i]-sourcevols[i]-MT7vol for i in range(len(ssrc))]
+        else:
+            watervols=[vol-sourcevols[i]-MT7vol for i in range(len(ssrc))]
 
         if sum(watervols)>0.01:
             self.e.multitransfer(watervols,self.e.WATER,stgt,(False,False))
         self.e.multitransfer([MT7vol for s in stgt],self.r.MT7,stgt,(False,False))
-        self.e.multitransfer([tv for tv in theovols if tv>0.01],self.r.Theo,[stgt[i] for i in range(len(theovols)) if theovols[i]>0],(False,False),ignoreContents=True)
+        if any(theo):
+            self.e.multitransfer([tv for tv in theovols if tv>0.01],self.r.Theo,[stgt[i] for i in range(len(theovols)) if theovols[i]>0],(False,False),ignoreContents=True)
         for i in range(len(ssrc)):
             self.e.transfer(sourcevols[i],ssrc[i],stgt[i],(True,False))
         self.e.shake(stgt[0].plate,returnPlate=True)
