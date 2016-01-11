@@ -702,7 +702,7 @@ class TRP(object):
     ########################
     # PCR
     ########################
-    def runPCR(self,prefix,src,vol,srcdil,tgt=None,ncycles=20,suffix='S'):
+    def runPCR(self,prefix,src,vol,srcdil,tgt=None,ncycles=20,suffix='S',sepPrimers=True,primerDil=4):
         if tgt==None:
             tgt=[]
         ## PCR
@@ -716,22 +716,61 @@ class TRP(object):
         #print "stgt[0]=",str(stgt[0])
         ssrc=findsamps(src,False)
         
-        # Adjust source dilution
-        for i in range(len(ssrc)):
-            ssrc[i].conc=Concentration(srcdil[i],1)
+        if sepPrimers:
+            sampvols=[vol[i]/srcdil[i] for i in range(len(src))]
+            mm=self.r.MPCR
+            mmvols=[vol[i]/mm.conc.dilutionneeded() for i in range(len(src))]
+            for s in prefix + suffix:
+                if not self.r.isReagent(s):
+                    self.r.addReagent(name=s,conc=primerDil,extraVol=30)
 
-        primer=[prefix[i]+suffix[i] for i in range(len(prefix))]
-        #print "primer=",primer
-        if any(p=='AS' for p in primer):
-               self.e.stage('PCRAS',[self.r.PCRAS],[ssrc[i] for i in range(len(ssrc)) if primer[i]=='AS'],[stgt[i] for i in range(len(stgt)) if primer[i]=='AS'],[vol[i] for i in range(len(vol)) if primer[i]=='AS'],destMix=False)
-        if any(p=='BS' for p in primer):
-               self.e.stage('PCRBS',[self.r.PCRBS],[ssrc[i] for i in range(len(ssrc)) if primer[i]=='BS'],[stgt[i] for i in range(len(stgt)) if primer[i]=='BS'],[vol[i] for i in range(len(vol)) if primer[i]=='BS'],destMix=False)
-        if any(p=='AX' for p in primer):
-               self.e.stage('PCRAX',[self.r.PCRAX],[ssrc[i] for i in range(len(ssrc)) if primer[i]=='AX'],[stgt[i] for i in range(len(stgt)) if primer[i]=='AX'],[vol[i] for i in range(len(vol)) if primer[i]=='AX'],destMix=False)
-        if any(p=='BX' for p in primer):
-               self.e.stage('PCRBX',[self.r.PCRBX],[ssrc[i] for i in range(len(ssrc)) if primer[i]=='BX'],[stgt[i] for i in range(len(stgt)) if primer[i]=='BX'],[vol[i] for i in range(len(vol)) if primer[i]=='BX'],destMix=False)
-        if any(p=='T7X' for p in primer):
-               self.e.stage('PCRT7X',[self.r.PCRT7X],[ssrc[i] for i in range(len(ssrc)) if primer[i]=='T7X'],[stgt[i] for i in range(len(stgt)) if primer[i]=='T7X'],[vol[i] for i in range(len(vol)) if primer[i]=='T7X'],destMix=False)
+            sprefix=[self.r.get(p) for p in prefix]
+            ssuffix=[self.r.get(p) for p in suffix]
+
+            prefixvols=[vol[i]/sprefix[i].conc.dilutionneeded() for i in range(len(src))]
+            suffixvols=[vol[i]/ssuffix[i].conc.dilutionneeded() for i in range(len(src))]
+            watervols=[vol[i]-mmvols[i]-prefixvols[i]-suffixvols[i]-sampvols[i] for i in range(len(src))]
+
+            print "water=",watervols,", mm=",mmvols,", prefix=",prefixvols,", suffix=",suffixvols,", samp=",sampvols
+            self.e.multitransfer(watervols,self.e.WATER,stgt,(False,False))		# Transfer water
+            self.e.multitransfer(mmvols,mm,stgt,(False,False))	 # PCR master mix
+            sprefixset=set(sprefix)
+            ssuffixset=set(ssuffix)
+            if len(sprefixset)<len(ssuffixset):
+                # Distribute sprefix first
+                for p in sprefixset:
+                    self.e.multitransfer([prefixvols[i] for i in range(len(src)) if sprefix[i]==p],p,[stgt[i] for i in range(len(src)) if sprefix[i]==p],(False,False))
+                # Then individually add ssuffix
+                for i in range(len(src)):
+                    self.e.transfer(suffixvols[i],ssuffix[i],stgt[i],(False,False))
+            else:
+                # Distribute ssuffix first
+                for p in ssuffixset:
+                    self.e.multitransfer([suffixvols[i] for i in range(len(src)) if ssuffix[i]==p],p,[stgt[i] for i in range(len(src)) if ssuffix[i]==p],(False,False))
+                # Then individually add sprefix
+                for i in range(len(src)):
+                    self.e.transfer(prefixvols[i],sprefix[i],stgt[i],(False,False))
+            # Now add templates
+            for i in range(len(src)):
+                self.e.transfer(sampvols[i],ssrc[i],stgt[i],(False,False))
+                
+        else:
+            # Adjust source dilution
+            for i in range(len(ssrc)):
+                ssrc[i].conc=Concentration(srcdil[i],1)
+        
+            primer=prefix[i]+suffix[i]
+            #print "primer=",primer
+            if any(p=='AS' for p in primer):
+                self.e.stage('PCRAS',[self.r.PCRAS],[ssrc[i] for i in range(len(ssrc)) if primer[i]=='AS'],[stgt[i] for i in range(len(stgt)) if primer[i]=='AS'],[vol[i] for i in range(len(vol)) if primer[i]=='AS'],destMix=False)
+            if any(p=='BS' for p in primer):
+                self.e.stage('PCRBS',[self.r.PCRBS],[ssrc[i] for i in range(len(ssrc)) if primer[i]=='BS'],[stgt[i] for i in range(len(stgt)) if primer[i]=='BS'],[vol[i] for i in range(len(vol)) if primer[i]=='BS'],destMix=False)
+            if any(p=='AX' for p in primer):
+                self.e.stage('PCRAX',[self.r.PCRAX],[ssrc[i] for i in range(len(ssrc)) if primer[i]=='AX'],[stgt[i] for i in range(len(stgt)) if primer[i]=='AX'],[vol[i] for i in range(len(vol)) if primer[i]=='AX'],destMix=False)
+            if any(p=='BX' for p in primer):
+                self.e.stage('PCRBX',[self.r.PCRBX],[ssrc[i] for i in range(len(ssrc)) if primer[i]=='BX'],[stgt[i] for i in range(len(stgt)) if primer[i]=='BX'],[vol[i] for i in range(len(vol)) if primer[i]=='BX'],destMix=False)
+            if any(p=='T7X' for p in primer):
+                self.e.stage('PCRT7X',[self.r.PCRT7X],[ssrc[i] for i in range(len(ssrc)) if primer[i]=='T7X'],[stgt[i] for i in range(len(stgt)) if primer[i]=='T7X'],[vol[i] for i in range(len(vol)) if primer[i]=='T7X'],destMix=False)
         pgm="PCR%d"%ncycles
         self.e.shake(stgt[0].plate,returnPlate=False)
         #        self.e.w.pyrun('PTC\\ptcsetpgm.py %s TEMP@95,120 TEMP@95,30 TEMP@55,30 TEMP@72,25 GOTO@2,%d TEMP@72,180 TEMP@16,2'%(pgm,ncycles-1))
