@@ -141,6 +141,8 @@ class QSetup(object):
     def addReferences(self,mindil=1,nsteps=6,dstep=4,nreplicates=1,ref="QPCRREF",primers=None):
         'Add all needed references'
         #print "addReferences(mindil=",mindil,", nsteps=",nsteps,", dstep=",dstep,", nrep=", nreplicates, ", ref=",ref,")"
+        # Make sure the ref reagent is loaded
+        self.trp.r.get(ref)
         if primers==None:
             primers=self.allprimers()
         dils=[1]

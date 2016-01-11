@@ -7,46 +7,73 @@ import math
 
 maxVolumePerWell=150
 
+class Reagent:
+    def __init__(self,name,plate=Experiment.REAGENTPLATE,well=None,conc=None,hasBeads=False,extraVol=50):
+        self.sample=None
+        self.name=name
+        self.plate=plate
+        self.preferredWell=well
+        self.conc=conc
+        self.hasBeads=hasBeads
+        self.extraVol=extraVol
+
+    def get(self):
+        if self.sample==None:
+            print "Creating sample ",self.name
+            self.sample=Sample(self.name,self.plate,self.preferredWell,self.conc,hasBeads=self.hasBeads,extraVol=self.extraVol)
+            wellname=self.sample.plate.wellname(self.sample.well)
+            if self.preferredWell != None and self.preferredWell != wellname:
+                print "WARNING: %s moved from preferred well %s to %s\n"%(self.name,self.preferredWell,wellname)
+        return self.sample
+    
+
 class Reagents:
-    MT7=Sample("MT7",Experiment.REAGENTPLATE,"A1",2.5,extraVol=30)
-    MPosRT=Sample("MPosRT",Experiment.REAGENTPLATE,"B1",2,extraVol=30)
-   # MNegRT=Sample("MNegRT",Experiment.REAGENTPLATE,None,2)
-    MLigAT7=Sample("MLigAT7",Experiment.REAGENTPLATE,"D1",3)	# Conc is relative to annealing time (not to post-ligase)
-    MLigBT7W=Sample("MLigBT7W",Experiment.REAGENTPLATE,"E1",3)
-    MLigase=Sample("MLigase",Experiment.REAGENTPLATE,"A2",3)
+    def __getattr__(self,name):
+        return self.get(name)
 
-    Theo=Sample("Theo",Experiment.REAGENTPLATE,"E6",Concentration(25,7.5,'mM'))
-    #EDTA=Sample("EDTA",Experiment.REAGENTPLATE,None,Concentration(50.0,4,'mM'))
-    #BT43=Sample("BT43",Experiment.REAGENTPLATE,None,Concentration(10,0.5,'uM'))
-    #EVA=Sample("EvaGreen",Experiment.REAGENTPLATE,None,2)
-    #BT47=Sample("BT047",Experiment.REAGENTPLATE,None,Concentration(10,0.4,'uM'))
-    #BT29=Sample("BT029",Experiment.REAGENTPLATE,None,Concentration(10,0.4,'uM'))
-    #BT30=Sample("BT030",Experiment.REAGENTPLATE,None,Concentration(10,0.4,'uM'))
-    MStopXBio=Sample("MStopXBio",Experiment.REAGENTPLATE,"B2",2)
-    MStopX=Sample("MStpX",Experiment.REAGENTPLATE,"C2",2)
-    MQRef=Sample("MQREF",Experiment.REAGENTPLATE,"D2",10.0/6)
-    MQAX=Sample("MQAX",Experiment.REAGENTPLATE,"E2",10.0/6)
-    MQBX=Sample("MQBX",Experiment.REAGENTPLATE,"A3",10.0/6)
-    PCRAX=Sample("MPCRAX",Experiment.REAGENTPLATE,"B3",4.0/3)
-    PCRBX=Sample("MPCRBX",Experiment.REAGENTPLATE,"C3",4.0/3)
-    MQMX=Sample("MQMX",Experiment.REAGENTPLATE,"D3",10.0/6)
-    MQWX=Sample("MQWX",Experiment.REAGENTPLATE,"E3",10.0/6)
-    SSD=Sample("SSD",Experiment.REAGENTPLATE,"A4",10.0)
-    MLigAT7W=Sample("MLigAT7W",Experiment.REAGENTPLATE,"B4",3)
-    BeadBuffer=Sample("BeadBuffer",Experiment.REAGENTPLATE,"C4",1)
-    Dynabeads=Sample("Dynabeads",Experiment.REAGENTPLATE,"D4",2,hasBeads=True)
-    MQT7W=Sample("MQT7X",Experiment.REAGENTPLATE,"E4",15.0/9)
-    MStopBeads=Sample("MStpBeads",Experiment.REAGENTPLATE,"A5",3.7)
-    QPCRREF=Sample("QPCRREF",Experiment.REAGENTPLATE,"B5",Concentration(50,50,'pM'))
-    MLigBT7=Sample("MLigBT7",Experiment.REAGENTPLATE,None,3)
-    PCRT7X=Sample("MPCRT7X",Experiment.REAGENTPLATE,None,4.0/3)
-    NAOH=Sample("NaOH",Experiment.REAGENTPLATE,"D5",1.0)
-    MLigBT7WBio=Sample("MLigBT7WBio",Experiment.REAGENTPLATE,"E5",3)
-    MLigBT7Bio=Sample("MLigBT7Bio",Experiment.REAGENTPLATE,"A6",3)
+    def isReagent(self,name):
+        return name in self.all
+    
+    def get(self,name):
+        return self.all[name].get()
+        
+    def addReagent(self,name,plate=Experiment.REAGENTPLATE,well=None,conc=None,hasBeads=False,extraVol=50):
+        self.all[name]=Reagent(name,plate,well,conc,hasBeads,extraVol)
 
-    all=[MT7,MPosRT,MLigAT7,MLigBT7W,MLigBT7,MLigase,Theo,MStopX,MQRef,MQAX,MQBX,PCRAX,PCRBX,MQMX,SSD,MLigAT7W,MQWX,Dynabeads,MQT7W,BeadBuffer,MStopBeads,QPCRREF,PCRT7X,NAOH,MLigBT7WBio,MLigBT7Bio]
-    UNUSED=Sample("LeakyA1",Experiment.SAMPLEPLATE,"A1",0)
-    UNUSED2=Sample("LeakyH12",Experiment.SAMPLEPLATE,"H12",0)
+    def __init__(self):
+        self.all={}
+        self.addReagent("MT7",well="A1",conc=2.5,extraVol=30)
+        self.addReagent("MPosRT",well="B1",conc=2,extraVol=30)
+        self.addReagent("MNegRT",well=None,conc=2)
+        self.addReagent("MLigAT7",well="D1",conc=3)	# Conc is relative to annealing time (not to post-ligase)
+        self.addReagent("MLigBT7W",well="E1",conc=3)
+        self.addReagent("MLigase",well="A2",conc=3)
+
+        self.addReagent("Theo",well=None,conc=Concentration(25,7.5,'mM'))
+        self.addReagent("MStopXBio",well="B2",conc=2)
+        self.addReagent("MStpX",well="C2",conc=2)
+        self.addReagent("MQREF",well="D2",conc=10.0/6)
+        self.addReagent("MQAX",well="E2",conc=10.0/6)
+        self.addReagent("MQBX",well="A3",conc=10.0/6)
+        self.addReagent("MPCRAX",well="B3",conc=4.0/3)
+        self.addReagent("MPCRBX",well="C3",conc=4.0/3)
+        self.addReagent("MQMX",well="D3",conc=10.0/6)
+        self.addReagent("MQWX",well="E3",conc=10.0/6)
+        self.addReagent("SSD",well="A4",conc=10.0)
+        self.addReagent("MLigAT7W",well="B4",conc=3)
+        self.addReagent("BeadBuffer",well="C4",conc=1)
+        self.addReagent("Dynabeads",well="D4",conc=2,hasBeads=True)
+        self.addReagent("MQT7X",well="E4",conc=15.0/9)
+        self.addReagent("MStpBeads",well="A5",conc=3.7)
+        self.addReagent("QPCRREF",well="B5",conc=Concentration(50,50,'pM'))
+        self.addReagent("MLigBT7",well=None,conc=3)
+        self.addReagent("MPCRT7X",well="C5",conc=4.0/3)
+        self.addReagent("NaOH",well="D5",conc=1.0)
+        self.addReagent("MLigBT7WBio",well="E5",conc=3)
+        self.addReagent("MLigBT7Bio",well="A6",conc=3)
+        self.addReagent("MPCR",well=None,conc=4)
+        self.UNUSED=Sample("LeakyA1",Experiment.SAMPLEPLATE,"A1",0)
+        self.UNUSED2=Sample("LeakyH12",Experiment.SAMPLEPLATE,"H12",0)
     
 def listify(x):
     'Convert a list of (lists or scalars) into a list of equal length lists'
@@ -123,11 +150,11 @@ def diluteName(name,dilution):
     return result
 
 class TRP(object):
-           
+    r=Reagents()
+    
     def __init__(self,totalTime=None):	# Estimate of total run time in seconds
         'Create a new TRP run'
         self.e=Experiment(totalTime)
-        self.r=Reagents()
         self.e.setreagenttemp(6.0)
         self.e.sanitize(3,50)    # Heavy sanitize
             
@@ -246,7 +273,7 @@ class TRP(object):
         'Run reaction on beads in given total volume'
         [vol,src,master]=listify([vol,src,master])
         ssrc=findsamps(src,False)
-        smaster=findsamps(master)
+        smaster=[self.r.get(m) for m in master]
         mastervol=[vol[i]*finalx/smaster[i].conc.dilutionneeded() for i in range(len(vol))]
         watervol=[vol[i]-ssrc[i].volume-mastervol[i] for i in range(len(vol))]
         if any([w < -0.01 for w in watervol]):
@@ -314,7 +341,7 @@ class TRP(object):
             stgt[i].conc=Concentration(srcdil[i],1)
 
         ## Stop
-        sstopmaster=findsamps(stopmaster,False)
+        sstopmaster=[self.r.get(s) for s in stopmaster]
         for i in range(len(stgt)):
             stopvol=stgt[i].volume/(sstopmaster[i].conc.dilutionneeded()-1)
             finalvol=stgt[i].volume+stopvol
@@ -347,8 +374,8 @@ class TRP(object):
             
         self.e.moveplate(ssrc[0].plate,"Home")		# Make sure we do this off the magnet
 
-        sbeads=findsamps(beads,False)
-        sbuffer=findsamps(buffer,False)
+        sbeads=[self.r.get(b) for b in beads]
+        sbuffer=[self.r.get(b) for b in buffer]
         # Calculate volumes needed
         beadConc=[sbeads[i].conc.final if beadConc[i]==None else beadConc[i] for i in range(len(sbeads))]
         beadDil=sbeads[i].conc.stock/beadConc[i]
@@ -419,7 +446,13 @@ class TRP(object):
                         self.e.dispose(ssrc[i].volume-residualVolume,ssrc[i])	# Discard supernatant
                 
         # Wash
-        swash=findsamps(wash,False)
+        swash=[]
+        for w in wash:
+            if self.r.isReagent(w):
+                swash.append(self.r.get(w))
+            else:
+                swash=swash+findsamps([w],False)
+
         for washnum in range(numWashes):
             self.e.moveplate(ssrc[0].plate,"Home")
             if keepFinal and washnum==numWashes-1:
@@ -602,7 +635,7 @@ class TRP(object):
         tgt=uniqueTargets(tgt)
         stgt=findsamps(tgt,unique=True)
         ssrc=findsamps(src,False)
-        smaster=findsamps(master,False)
+        smaster=[self.r.get(m) for m in master]
 
         # Need to check since an unused ligation master mix will not have a concentration
         minsrcdil=1/(1-1/smaster[0].conc.dilutionneeded()-1/self.r.MLigase.conc.dilutionneeded())
@@ -776,7 +809,10 @@ class TRP(object):
         # Fill the master mixes
         dil={}
         for p in primers:
-            mq=findsamps(["MQ%s"%p],False)[0]
+            mname="MQ%s"%p
+            if not self.r.isReagent(mname):
+                self.r.addReagent(name=mname,conc=15.0/9.0,extraVol=30)
+            mq=self.r.get(mname)
             t=[a[1] for a in all if a[2]==p]
             v=[a[3]/mq.conc.dilutionneeded() for a in all if a[2]==p]
             self.e.multitransfer(v,mq,t,(False,False))
