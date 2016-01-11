@@ -86,6 +86,15 @@ class Sample(object):
         return cnt
         
     def __init__(self,name,plate,well=None,conc=None,volume=0,hasBeads=False,extraVol=50):
+        if well!=None and well!=-1:
+            if not isinstance(well,int):
+                well=plate.wellnumber(well)
+            for s in __allsamples:
+                if s.well==well and s.plate==plate:
+                    print "Attempt to assign sample %s to plate %s, well %s that already contains %s"%(name,str(plate),plate.wellname(well),s.name)
+                    well=None
+                    break
+            
         if well==None:
             # Find first unused well
             found=False
@@ -97,8 +106,6 @@ class Sample(object):
                         well=well+1
                         found=False
                         break
-        elif not isinstance(well,int):
-            well=plate.wellnumber(well)
         elif well==-1:
             well=None
                     
