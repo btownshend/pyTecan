@@ -488,7 +488,7 @@ class Sample(object):
     def printprep(fd=sys.stdout):
         notes="Reagents to provide:"
         total=0
-        for s in __allsamples:
+        for s in sorted(__allsamples, key=lambda p:p.well):
             if s.conc!=None:
                 c="[%s]"%str(s.conc)
             else:
