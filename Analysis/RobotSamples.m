@@ -279,11 +279,11 @@ classdef RobotSamples < handle
       for i=sortorder
         qs=obj.qsamps(keys{i});
         if nanstd(qs.dilution)==0
-          dil=nanmean(qs.dilution);
+          dil=sprintf('%6.0f',nanmean(qs.dilution));
         else
-          dil=nan;
+          dil=sprintf('[%s]',sprintf('%.0f ',qs.dilution));
         end
-        fprintf('%-30.30s:  Dil=%6.0f, Ct=[%s], Conc=[%s] nM\n', qs.name, dil, sprintf('%4.1f ',qs.ct),sprintf('%7.2f ',qs.conc));
+        fprintf('%-30.30s:  Dil=%s, Ct=[%s], Conc=[%s] nM\n', qs.name, dil, sprintf('%4.1f ',qs.ct),sprintf('%7.2f ',qs.conc));
         fprintf('%-30.30s:                 [',' ');
         for i=1:length(qs.wells)
           if isempty(qs.wells{i})
