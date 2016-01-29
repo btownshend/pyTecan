@@ -565,7 +565,7 @@ class TRP(object):
         self.runRTPgm(dur,heatInactivate=heatInactivate)
         return result
     
-    def runRTOnBeads(self,src,vol,dur=20):
+    def runRTOnBeads(self,src,vol,dur=20,heatInactivate=False):
         'Run RT on beads in given volume'
         ssrc=findsamps(src,False)
 
@@ -574,7 +574,7 @@ class TRP(object):
             ssrc[i].conc=None
 
         self.runRxInPlace(src,vol,"MPosRT",returnPlate=False)
-        self.runRTPgm(dur)
+        self.runRTPgm(dur,heatInactivate=heatInactivate)
         
     def runRTSetup(self,pos,src,vol,srcdil,tgt=None,rtmaster=None):
         assert(pos)	# Negative handling disabled
