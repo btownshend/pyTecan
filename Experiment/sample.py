@@ -247,6 +247,9 @@ class Sample(object):
                 remove=self.volume
                 self.ingredients={}
         else:
+            if self.hasBeads:
+                #print "%s has beads -- mixing before aspirate"%self.name
+                self.mix(tipMask,w)
             w.aspirate(tipMask,well,lc,volume,self.plate)
             # Manual conditioning handled in worklist
             remove=lc.volRemoved(volume,multi=True)

@@ -397,7 +397,7 @@ class TRP(object):
 
         # Transfer the beads
         for i in range(len(ssrc)):
-            self.e.transfer(beadvol[i],sbeads[i],ssrc[i],(i==0,True))	# Mix beads before and after
+            self.e.transfer(beadvol[i],sbeads[i],ssrc[i],(False,True))	# Mix beads after (before mixing handled automatically by sample.py)
 
         self.e.shake(ssrc[0].plate,dur=incTime,returnPlate=False)
 
