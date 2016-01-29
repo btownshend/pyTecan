@@ -92,7 +92,8 @@ class Plate(object):
             if maxvol<=vol and speed>maxspeed:
                 maxspeed=speed
         if maxspeed==0:
-            print "WARNING: No shaker speed data for volume of %.0f ul"%maxvol
+            print "ERROR: No shaker speed data for volume of %.0f ul"%maxvol
+            assert(False)
 
         # Theoretical minimum mixing speed
         # From: http://www.qinstruments.com/en/applications/optimization-of-mixing-parameters.html
