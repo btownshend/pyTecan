@@ -68,7 +68,7 @@ class Sample(object):
                     continue   # Not used
                 if s.plate==p:
                     if w!=None:
-                        print >>fd,s,("%06x"%(w.getHashCode(grid=s.plate.grid,pos=s.plate.pos,well=s.well)&0xffffff))
+                        print >>fd,s,("%06x"%(s.getHash(w)&0xffffff))
                     else:
                         print >>fd,s
             print >>fd
@@ -160,6 +160,26 @@ class Sample(object):
         self.extraVol=extraVol			# Extra volume to provide
         self.firstdispense = 0					# Last time accessed
         
+    def sampleWellPosition(self):
+        'Convert a sample well number to a well position as used by Gemini worklist'
+        if self.well==None:
+            return None
+        elif isinstance(self.well,(long,int)):
+            ival=int(self.well)
+            (col,row)=divmod(ival,self.plate.ny)
+            col=col+1
+            row=row+1
+        else:
+            col=int(self.well[1:])
+            row=ord(self.well[0])-ord('A')+1
+        assert(row>=1 and row<=self.plate.ny and col>=1 and col<=self.plate.nx)
+        wellpos=(row-1)+self.plate.ny*(col-1)
+        #print "sampleWellPosition(%d) -> %d"%(self.well,wellpos)
+        return wellpos
+    
+    def getHash(self,w):
+        return w.getHashCode(grid=self.plate.grid,pos=self.plate.pos-1,well=self.sampleWellPosition())
+    
     @classmethod
     def clearall(cls):
         'Clear all samples'
@@ -274,6 +294,7 @@ class Sample(object):
             print "Warning: Aspiration of %.1ful from %s brings volume down to %.1ful which is less than its unusable volume of %.1f ul"%(remove,self.name,self.volume,self.plate.unusableVolume)
 
         self.addhistory("",-remove,tipMask)
+        #self.addhistory("[%06x]"%(self.getHash(w)&0xffffff),-remove,tipMask)
 
     def aspirateAir(self,tipMask,w,volume):
         'Aspirate air over a well'
@@ -333,6 +354,7 @@ class Sample(object):
             self.hasBeads=True
             self.isMixed=False
         self.volume=self.volume+volume
+        #self.addhistory("%06x %s"%(self.getHash(w)&0xffffff,src.name),volume,tipMask)
         self.addhistory(src.name,volume,tipMask)
         self.addingredients(src,volume)
             
