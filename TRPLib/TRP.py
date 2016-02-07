@@ -72,6 +72,7 @@ class Reagents:
         self.addReagent("MLigBT7WBio",well="E5",conc=3)
         self.addReagent("MLigBT7Bio",well="A6",conc=3)
         self.addReagent("MPCR",well=None,conc=4)
+        self.addReagent("MLigB",well=None,conc=3)
         self.UNUSED=Sample("LeakyA1",Experiment.SAMPLEPLATE,"A1",0)
         self.UNUSED2=Sample("LeakyH12",Experiment.SAMPLEPLATE,"H12",0)
     
