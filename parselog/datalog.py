@@ -19,7 +19,10 @@ def getSample(wellx,welly,rack,grid,pos):
         sample=Sample.lookupByWell(plate,well)
         if sample==None:
             sample=Sample("%s.%d.%d.%d"%(rack,grid,pos,well),plate,well)
-            sample.volume=0
+            if grid==3:
+                sample.volume=20000   # Troughs
+            else:
+                sample.volume=0
         return sample
     
 class LogEntry(object):
