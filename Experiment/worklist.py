@@ -26,7 +26,11 @@ class WorkList(object):
         self.delayEnabled=False
         self.opQueue=[]
         self.hashCodes={}
-        self.tipHash=[crc32("tip1"),crc32("tip2"),crc32("tip3"),crc32("tip4")]
+        #self.tipHash=[crc32("tip1"),crc32("tip2"),crc32("tip3"),crc32("tip4")]
+        # Don't care if different tips are used:
+        self.tipHash=[0,0,0,0]
+        #print "tipHash=[%06x,%06x,%06x,%06x]"%(self.tipHash[0],self.tipHash[1],self.tipHash[2],self.tipHash[3])
+        
     def bin(s):
         return str(s) if s<=1 else bin(s>>1) + str(s&1)
 
@@ -447,6 +451,15 @@ class WorkList(object):
         self.list.append('Wash(%d,%d,%d,%d,%d,%.1f,%d,%.1f,%d,%.1f,%d,%d,%d,%d,%d)'%(tipMask,wasteLoc[0],wasteLoc[1],cleanerLoc[0],cleanerLoc[1],wasteVol,wasteDelay,cleanerVol,cleanerDelay,airgap, airgapSpeed, retractSpeed, fastWash, lowVolume, atFreq))
         #print "Wash %d,%.1fml,%.1fml,deep="%(tipMask,wasteVol,cleanerVol),deepClean
         self.elapsed+=19.12
+        if tipMask&1:
+            self.tipHash[0]=0
+        if tipMask&2:
+            self.tipHash[1]=0
+        if tipMask&4:
+            self.tipHash[2]=0
+        if tipMask&8:
+            self.tipHash[3]=0
+        #print "tipHash=[%06x,%06x,%06x,%06x]"%(self.tipHash[0],self.tipHash[1],self.tipHash[2],self.tipHash[3])
         
     def periodicWash(self,tipMask,period):
         wasteLoc=(1,1)
