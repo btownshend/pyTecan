@@ -79,10 +79,15 @@ class Datalog(object):
         
     def logmeasure(self,tip,height,submerge,zmax,zadd):
         sample=self.lastSample[tip]
+        prevol=sample.volume-sample.lastadd		# Liquid height is measured before next op, whose volume effect has already been added to sample.volume
         if height==-1:
             vol=sample.plate.getliquidvolume((zadd+submerge)/10.0)
             if vol!=None:
-                h=" @[FAIL <%d:<%.1f#%d]"%(zadd+submerge,vol,tip)
+                if prevol<vol:
+                    #h=" @[DEEP <%d:<%.1f#%d]"%(zadd+submerge,vol,tip)
+                    h=""
+                else:
+                    h=" @[FAIL <%d:<%.1f#%d]"%(zadd+submerge,vol,tip)
             else:
                 h=" @[FAIL <%d#%d]"%(zadd+submerge,tip)
         else:
@@ -90,7 +95,6 @@ class Datalog(object):
             if vol==None:
                 h=" @[%d,%d#%d]"%(height-zmax,submerge,tip)
             else:
-                prevol=sample.volume-sample.lastadd		# Liquid height is measured before next op, whose volume effect has already been added to sample.volume
                 if prevol==0:
                     print "Got a liquid height measurement for a well that should be empty -- assuming it was prefilled"
                     sample.volume=vol+sample.lastadd
