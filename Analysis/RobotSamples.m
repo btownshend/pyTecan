@@ -5,9 +5,12 @@ classdef RobotSamples < handle
     q;		% QPCR data
     samps;
     opd;
-    primers;
     sampmap;
     qsamps;
+    templates;
+    stages;
+    stagedilution;
+    wellsProcessed;
   end
   
   methods
@@ -35,6 +38,7 @@ classdef RobotSamples < handle
       end
 
       obj.qsamps=containers.Map;
+      obj.stagedilution=containers.Map;
       obj.buildsampmap();
       if nargin<2 || isempty(opdfilename)
         obj.opd={opdread()};
@@ -49,6 +53,9 @@ classdef RobotSamples < handle
       for i=1:length(obj.opd)
         obj.opd{i}=ctcalc(obj.opd{i},'thresh',args.thresh,'basecycles',args.basecycles,'doplot',args.doplot,'fulow',args.fulow,'fuhigh',args.fuhigh);
       end
+      obj.templates={};
+      obj.stages={};
+      obj.wellsProcessed=false;
     end
 
     function buildsampmap(obj)
@@ -80,7 +87,7 @@ classdef RobotSamples < handle
     
     function setupQPCR(obj,varargin)
     % Scan sample data to setup qPCR 
-      defaults=struct('refname','QPCRREF','refconc',50,'refstrands',2,'qpcrdil',2.5,'minct',7,'processWells',true);
+      defaults=struct('refname','QPCRREF','refconc',50,'refstrands',2,'qpcrdil',2.5,'minct',7,'processWells',false);
       args=processargs(defaults,varargin);
 
       ctgrid=obj.opd{1}.ctgrid;
@@ -88,7 +95,6 @@ classdef RobotSamples < handle
         ctgrid=[ctgrid,obj.opd{i}.ctgrid];
       end
       obj.q=QPCR(ctgrid,'minct',args.minct);
-      obj.primers={};
       obj.addQPCRRef(args.refname);
       if args.processWells
         obj.processWells;
@@ -100,17 +106,18 @@ classdef RobotSamples < handle
       args=processargs(defaults,varargin);
 
       ss=getrelative(obj.samps,refname);
+      primers={};
       for i=1:length(ss)
         s=ss(i);
         for j=1:length(s.ingredients)
           if strncmp(s.ingredients{j},'MQ',2)
-            obj.primers{end+1}=s.ingredients{j}(3:end);
+            primers{end+1}=s.ingredients{j}(3:end);
           end
         end
       end
-      obj.primers=unique(obj.primers);
-      for i=1:length(obj.primers)
-        p=obj.primers{i};
+      primers=unique(primers);
+      for i=1:length(primers)
+        p=primers{i};
         ss=getrelative(obj.samps,refname,{['MQ',p],'Water'},true);
         water=getrelative(obj.samps,['MQ',p],{'Water'},true);
         if isempty(ss)
@@ -148,6 +155,9 @@ classdef RobotSamples < handle
     function processWells(obj)
       % Run through the wells using the 'samps' data figure out their Ct and concentration prior to qPCR dilution
       % Currently only handles single replicates and doesn't track confidence intervals
+      if obj.wellsProcessed
+        error('Wells already processed and processWells() called again');
+      end
       for i=1:length(obj.samps)
         s=obj.samps(i);
         if ~strcmp(s.plate,'qPCR')
@@ -169,23 +179,45 @@ classdef RobotSamples < handle
             root=s.name(1:dots(end)-1);
           end
           obj.setwell(root,s.well,primer,dilution);
-        end
+
+          % Determine templates and stages
+          % Templates are all the unique names up to the first dot
+          % Stages are all the unique suffixes after templates not including any dilution or QPCR suffixes
+          dots=find(root=='.');
+          if length(dots)>=1
+            template=root(1:dots(1)-1);
+            stage=root(dots(1):end);
+          else
+            template=root;
+            stage='';
+          end
+          %fprintf('%s -> %s & %s\n', root, template, stage);
+          obj.templates=union(obj.templates,template,'stable');
+          obj.stages=union(obj.stages,stage,'stable');
+        end        
       end
+      obj.wellsProcessed=true;
     end
   
+    function setstagedilution(obj,stage,dilution)
+    % Set dilution from reference stage (e.g. T7 reaction) to 'stage'
+    % e.g. setstagedilution('.T-.RT',1.1*2);
+      obj.stagedilution(stage)=dilution;
+    end
+    
     function setwell(obj,root,well,primer,dilution)
     % Set a particular well to have the name 'root', primer and dilution as given
     %fprintf(' root=%s, primer=%s, dilution=%f\n', root, primer, dilution);
       if ~isKey(obj.qsamps,root)
-        entry=struct('name',root,'dilution',[],'ct',{-1*ones(size(obj.primers))},'conc',{nan(size(obj.primers))},'wells',{cell(size(obj.primers))},'order',[]);
-        for j=1:length(obj.primers)
+        entry=struct('name',root,'dilution',[],'ct',{-1*ones(size(obj.q.refs.keys))},'conc',{nan(size(obj.q.refs.keys))},'wells',{cell(size(obj.q.refs.keys))},'order',[]);
+        for j=1:length(obj.q.refs.keys)
           entry.wells{j}={};
           entry.dilution(j)=nan;
         end
       else
         entry=obj.qsamps(root);
       end
-      pindex=find(strcmp(primer,obj.primers));
+      pindex=find(strcmp(primer,obj.q.refs.keys));
       if length(pindex)~=1
         fprintf('Unable to find primer %s for assigning sample %s\n', primer, root);
       else
@@ -209,7 +241,6 @@ classdef RobotSamples < handle
       tmp=obj.q.refs(existing);
       tmp.samples=containers.Map;
       obj.q.refs(new)=tmp;
-      obj.primers{end+1}=new;
       % Expand any existing entries
       keys=obj.qsamps.keys;
       for i=1:length(keys)
@@ -241,6 +272,20 @@ classdef RobotSamples < handle
     
     function plotmelt(obj, regex)
     % Plot melt curve on the current figure for samples matching regex
+    % Plot all curves if regex == 'all'
+      if strcmp(regex,'all')
+        % Melt plots
+        for i=1:length(obj.primers())
+          setfig(['melt-',obj.primers(i)]);clf;
+          for j=1:length(obj.templates)
+            subplot(ceil(length(obj.templates)/2),2,j);
+            obj.plotmelt([regexptranslate('escape',obj.templates{j}),'\..*Q',obj.primers(i)]);
+            title([obj.templates{j},' - ',obj.primers(i)]);
+          end
+        end
+        return;
+      end
+
       [w,i]=obj.wellfind('qPCR',regex);
       if isempty(w)
         fprintf('plotmelt: No samples match "%s"\n', regex);
@@ -249,7 +294,8 @@ classdef RobotSamples < handle
       for j=1:length(obj.opd)
         opdmelt(obj.opd{j},w);
       end
-      legend({obj.samps(i).name},'Interpreter','None','Location','SouthWest');
+      h=legend({obj.samps(i).name},'Interpreter','None','Location','SouthWest');
+      set(h,'FontSize',5);
     end
     
     function plotopd(obj, regex)
@@ -265,11 +311,19 @@ classdef RobotSamples < handle
       legend({obj.samps(i).name},'Interpreter','None','Location','NorthWest');
     end
     
+    function p=primers(obj, index)
+      p=obj.q.refs.keys;
+      if nargin>=2
+        p=p{index};
+      end
+    end
+    
     function printconcs(obj)
       keys=obj.qsamps.keys;
       fprintf('Primers:                                         ');
-      for i=1:length(obj.primers)
-        fprintf('%4s ', obj.primers{i});
+      qkeys=obj.q.refs.keys;
+      for i=1:length(qkeys)
+        fprintf('%4s ', qkeys{i});
       end
       fprintf('\n');
       for i=1:length(keys)
@@ -301,8 +355,50 @@ classdef RobotSamples < handle
           fprintf(' Undetermined primer for well %s with Ct=%.1f\n', obj.q.wellnames{i}, obj.q.ctgrid(i));
         end
       end
+
+      % Now summarize by template, stage taking into account stage dilutions
+      fprintf('Scaled back to reference reaction:\n');
+      for j=1:length(obj.stages)
+        note='';
+        if ~isKey(obj.stagedilution,obj.stages{j})
+          note='Not specified, assuming 1.0';
+          obj.stagedilution(obj.stages{j})=1.0;
+        end
+        fprintf(' %20.20s: %5.2f %s\n', obj.stages{j}, obj.stagedilution(obj.stages{j}),note);
+      end
+
+      fprintf('%-40.40s ','');
+      for i=1:length(obj.primers())
+        fprintf('%8s ',obj.primers(i));
+      end
+      fprintf('\n');
+
+      sv=[];
+      for i=1:length(obj.templates)
+        for j=1:length(obj.stages)
+          nm=[obj.templates{i},obj.stages{j}];
+          if isKey(obj.qsamps,nm)
+            scale=obj.stagedilution(obj.stages{j});
+            concs=obj.qsamps(nm).conc*scale;
+            fprintf('%-40.40s %s\n',nm,sprintf('%8.3f ',concs));
+            sv(i,j,:)=concs;
+          end
+        end
+        fprintf('\n');
+      end
+
     end
-  
+
+    function analyze(obj)
+      if ~obj.wellsProcessed
+        obj.processWells();
+      end
+      obj.printconcs();
+      setfig('qpcr');clf;
+      obj.q.plot();
+      obj.plotmelt('all');
+      pdfsavefig('all');
+    end
   end
   
 end
