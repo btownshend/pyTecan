@@ -237,7 +237,7 @@ class WorkList(object):
         'Execute or queue liquid handling operation'
         assert(isinstance(loc,Plate))
 
-        if loc.pos==0:
+        if loc.pos==0 or loc.grid>=25:
             # Attempting to use LiHa in ROMA-Only area
             print "Attempt to %s to/from %s at position (%d,%d), which is in ROMA-only area not accessible to LiHa"%(op,loc.name,loc.grid,loc.pos)
             assert(0)
