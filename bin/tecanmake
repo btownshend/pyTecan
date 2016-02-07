@@ -14,6 +14,9 @@ cat "$FILE.log"
 echo 'Diffs between optimized and unoptimized versions:'
 sed -e 's/ \[Evap: [0-9]*\]//g' $FILE.txt >/tmp/opt.txt
 sed -e 's/ \[Evap: [0-9]*\]//g' $UNOPT.txt >/tmp/unopt.txt
-diff /tmp/unopt.txt /tmp/opt.txt
+#diff /tmp/unopt.txt /tmp/opt.txt 
+dwdiff -C0 -c /tmp/unopt.txt /tmp/opt.txt 
+cp $FILE.log /tmp/opt.log
+cp $UNOPT.log /tmp/unopt.log
 #rm -rf $UDIR
 
