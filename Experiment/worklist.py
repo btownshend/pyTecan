@@ -359,23 +359,22 @@ class WorkList(object):
                 self.SIM(i,op,allvols[i],loc,pos[ptr])
                 ptr+=1
 
-    def getHashCode(self,grid,pos,well):
-        if well==None:
+    def getHashKey(self,grid,pos,well):
+        if well==None or grid==3: 	# Bleach, Water, SSDDil -- each is the same regardless of the source well -- id them as 1,2,3
             key="%d,%d"%(grid,pos)
         else:
             key="%d,%d,%d"%(grid,pos,well)
+        return key
+
+    def getHashCode(self,grid,pos,well):
+        key=self.getHashKey(grid,pos,well)
         if key not in self.hashCodes:
             self.hashCodes[key]=crc32(key)
         return self.hashCodes[key]
     
     def hashUpdate(self,op,tip,grid,pos,well,vol):
-        if well==None:
-            key="%d,%d"%(grid,pos)
-        else:
-            key="%d,%d,%d"%(grid,pos,well)
-        if key not in self.hashCodes:
-            self.hashCodes[key]=crc32(key)
-        old=self.hashCodes[key]
+        key=self.getHashKey(grid,pos,well)
+        old=self.getHashCode(grid,pos,well)
         oldTip=self.tipHash[tip]
         if op=="Dispense":
             self.hashCodes[key]=crc32("%x"%self.tipHash[tip],self.hashCodes[key])
@@ -386,7 +385,8 @@ class WorkList(object):
         else:
             self.tipHash[tip]=self.hashCodes[key]
             self.hashCodes[key]=crc32("-%.1f"%vol,self.hashCodes[key])
-        # print "hashUpdate(%s,%d,%d,%d,%d,%.1f) %06x,%06x -> %06x,%06x"%(op,tip,grid,pos,well,vol,old&0xffffff,oldTip&0xffffff,self.hashCodes[key]&0xffffff,self.tipHash[tip]&0xffffff)
+
+        #print "hashUpdate(%s,%s,%d,%d,%d,%d,%.1f) %06x,%06x -> %06x,%06x"%(key,op,tip,grid,pos,well,vol,old&0xffffff,oldTip&0xffffff,self.hashCodes[key]&0xffffff,self.tipHash[tip]&0xffffff)
             
     def SIM(self,tip,op,vol,loc,pos):
         #print "SIM",tip,op,vol,loc,pos
