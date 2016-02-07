@@ -565,7 +565,7 @@ class TRP(object):
         self.runRTPgm(dur,heatInactivate=heatInactivate)
         return result
     
-    def runRTOnBeads(self,src,vol,dur=20,heatInactivate=False):
+    def runRTInPlace(self,src,vol,dur=20,heatInactivate=False):
         'Run RT on beads in given volume'
         ssrc=findsamps(src,False)
 
@@ -681,7 +681,7 @@ class TRP(object):
             self.e.w.pyrun('PTC\\ptcsetpgm.py %s TEMP@%.0f,900 TEMP@25,30'%(pgm,ligtemp))
             self.e.runpgm(pgm,17,False,vol,hotlidmode="TRACKING",hotlidtemp=10)
 
-    def runLigOnBeads(self,src,vol,ligmaster,anneal=True,ligtemp=25):
+    def runLigInPlace(self,src,vol,ligmaster,anneal=True,ligtemp=25):
         'Run ligation on beads'
         [vol,src]=listify([vol,src])
         annealvol=[v*(1-1/self.r.MLigase.conc.dilutionneeded()) for v in vol]
@@ -778,7 +778,7 @@ class TRP(object):
         self.e.runpgm(pgm,4.80+1.55*ncycles,False,max(vol),hotlidmode="CONSTANT",hotlidtemp=100)
         return tgt
 
-    def runPCROnBeads(self,prefix,src,vol,ncycles,suffix,annealtemp=57,save=None):
+    def runPCRInPlace(self,prefix,src,vol,ncycles,suffix,annealtemp=57,save=None):
         [prefix,src,vol,suffix]=listify([prefix,src,vol,suffix])
 
         primer=["MPCR"+prefix[i]+suffix[i] for i in range(len(prefix))]
