@@ -222,6 +222,10 @@ class Sample(object):
         
     def aspirate(self,tipMask,w,volume,multi=False):
         self.evapcheck(w,'aspirate')
+        if self.plate.curloc=='PTC':
+            print "Aspirate from PTC!, loc=",self.plate.grid,",",self.plate.pos
+            assert(False)
+
         if volume<2 and not multi and self.name!="Water":
             print "WARNING: Inaccurate for < 2ul:  attempting to aspirate %.1f ul from %s"%(volume,self.name)
         if volume>self.volume and self.volume>0:
@@ -277,6 +281,10 @@ class Sample(object):
         
     def dispense(self,tipMask,w,volume,src):
         self.evapcheck(w,'dispense')
+        if self.plate.curloc=='PTC':
+            print "Dispense to PTC!, loc=",self.plate.grid,",",self.plate.pos
+            assert(False)
+            
         if self.volume+volume < MINDEPOSITVOLUME:
             print "Warning: Dispense of %.1ful into %s results in total of %.1ful which is less than minimum deposit volume of %.1f ul"%(volume,self.name,self.volume+volume,MINDEPOSITVOLUME)
 
