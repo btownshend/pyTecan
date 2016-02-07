@@ -59,8 +59,12 @@ class LogEntry(object):
         else:
             print "LogEntry: bad op: ",op
             assert(False)
-        self.sample.volume+=self.sample.lastadd
-             
+        if self.sample.volume+self.sample.lastadd<0 and self.sample.volume!=0:
+            self.sample.history=self.sample.history + ("{Emptied%.2f}"%(self.sample.volume+self.sample.lastadd))
+            self.sample.volume=0
+        else:
+            self.sample.volume+=self.sample.lastadd
+            
     def __str__(self):
         return "%s tip %d, %.2ful, %s"%(self.op,self.tip,self.vol,self.lc)
             
