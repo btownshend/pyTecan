@@ -19,11 +19,13 @@ class Reagent:
 
     def get(self):
         if self.sample==None:
-            print "Creating sample ",self.name
-            self.sample=Sample(self.name,self.plate,self.preferredWell,self.conc,hasBeads=self.hasBeads,extraVol=self.extraVol)
-            wellname=self.sample.plate.wellname(self.sample.well)
-            if self.preferredWell != None and self.preferredWell != wellname:
-                print "WARNING: %s moved from preferred well %s to %s\n"%(self.name,self.preferredWell,wellname)
+            self.sample=Sample.lookup(self.name)
+            if self.sample==None:
+                print "Creating sample ",self.name
+                self.sample=Sample(self.name,self.plate,self.preferredWell,self.conc,hasBeads=self.hasBeads,extraVol=self.extraVol)
+                wellname=self.sample.plate.wellname(self.sample.well)
+                if self.preferredWell != None and self.preferredWell != wellname:
+                    print "WARNING: %s moved from preferred well %s to %s\n"%(self.name,self.preferredWell,wellname)
         return self.sample
     
 
