@@ -270,7 +270,7 @@ classdef RobotSamples < handle
       end
     end
     
-    function plotmelt(obj, regex)
+    function havedata=plotmelt(obj, regex)
     % Plot melt curve on the current figure for samples matching regex
     % Plot all curves if regex == 'all'
       if strcmp(regex,'all')
@@ -279,7 +279,11 @@ classdef RobotSamples < handle
           setfig(['melt-',obj.primers(i)]);clf;
           for j=1:length(obj.templates)
             subplot(ceil(length(obj.templates)/2),2,j);
-            obj.plotmelt([regexptranslate('escape',obj.templates{j}),'\..*Q',obj.primers(i)]);
+            havedata=obj.plotmelt([regexptranslate('escape',obj.templates{j}),'\..*Q',obj.primers(i)]);
+            if ~havedata
+              close;
+              return;
+            end
             title([obj.templates{j},' - ',obj.primers(i)]);
           end
         end
@@ -291,11 +295,17 @@ classdef RobotSamples < handle
         fprintf('plotmelt: No samples match "%s"\n', regex);
         return;
       end
+      havedata=false;
       for j=1:length(obj.opd)
-        opdmelt(obj.opd{j},w);
+        ut=opdmelt(obj.opd{j},w);
+        if length(ut)>1
+          havedata=true;
+        end
       end
-      h=legend({obj.samps(i).name},'Interpreter','None','Location','SouthWest');
-      set(h,'FontSize',5);
+      if havedata
+        h=legend({obj.samps(i).name},'Interpreter','None','Location','SouthWest');
+        set(h,'FontSize',5);
+      end
     end
     
     function plotopd(obj, regex)
@@ -332,7 +342,7 @@ classdef RobotSamples < handle
       [~,sortorder]=sort(ord);
       for i=sortorder
         qs=obj.qsamps(keys{i});
-        if nanstd(qs.dilution)==0
+        if nanstd(qs.dilution)<1e-8
           dil=sprintf('%6.0f',nanmean(qs.dilution));
         else
           dil=sprintf('[%s]',sprintf('%.0f ',qs.dilution));
