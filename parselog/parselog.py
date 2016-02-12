@@ -294,7 +294,7 @@ def fwparse(dev,send,reply,error):
         ldpending=False
     elif ldpending:
         print "**** Parser error:  got op %s without a RPZ while ldpending"%op
-        assert(False)
+        #assert(False)
         ldpending=False
 
         
