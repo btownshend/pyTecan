@@ -671,10 +671,10 @@ class TRP(object):
         self.runLigPgm(max(vol),ligtemp)
         return tgt
         
-    def runLigPgm(self,vol,ligtemp,inactivate=True):
+    def runLigPgm(self,vol,ligtemp,inactivate=True,inacttemp=65):
         if inactivate:
             pgm="LIG15-%.0f"%ligtemp
-            self.e.w.pyrun('PTC\\ptcsetpgm.py %s TEMP@%.0f,900 TEMP@65,600 TEMP@25,30'%(pgm,ligtemp))
+            self.e.w.pyrun('PTC\\ptcsetpgm.py %s TEMP@%.0f,900 TEMP@%.0f,600 TEMP@25,30'%(pgm,ligtemp,inacttemp))
             self.e.runpgm(pgm,27,False,vol,hotlidmode="TRACKING",hotlidtemp=10)
         elif ligtemp==25:
             self.e.w.comment('Ligation at room temp')
