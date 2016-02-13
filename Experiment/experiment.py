@@ -6,37 +6,12 @@ import os.path
 from datetime import datetime
 from plate import Plate
 import reagents
+import decklayout
 
 _Experiment__shakerActive = False
 
 class Experiment(object):
-    WASHLOC=Plate("Wash",1,2,1,8,False,0)
-    # Use dimensional data from Robot/Calibration/20150302-LiquidHeights
-    REAGENTPLATE=Plate("Reagents",18,1,6,5,False,unusableVolume=20,maxVolume=1700,zmax=569,angle=17.5,r1=4.05,h1=17.71,v0=12.9)
-    MAGPLATELOC=Plate("MagPlate",18,2,12,8,False,unusableVolume=9,maxVolume=200,zmax=1459,angle=17.5,r1=2.80,h1=10.04,v0=10.8)   # HSP9601 on magnetic plate  (Use same well dimesnsions as SAMPLE)
-    hspmaxspeeds={200:1400,150:1600,100:1850,50:2000,20:2200};	# From shaketest experiment
-    grenmaxspeeds={150:1750,125:1900,100:1950,75:2200,50:2200};	# From shaketest experiment
-    
-#  SAMPLEPLATE=Plate("Samples",4,3,12,8,False,unusableVolume=15,maxVolume=200,zmax=1028,angle=17.5,r1=2.80,h1=10.04,v0=10.8,vectorName="Microplate Landscape",maxspeeds=hspmaxspeeds);  # HSP96xx
-    SAMPLEPLATE=Plate("Samples",4,3,12,8,False,unusableVolume=15,maxVolume=200,zmax=1028,angle=17.5,r1=2.69,h1=8.94,v0=13.2,vectorName="Microplate Landscape",maxspeeds=hspmaxspeeds);  # EppLoBind
-    SHAKERPLATELOC=Plate("Shaker",9,0,1,1)
-    #    READERPLATE=Plate("Reader",4,1,12,8,False,15)
-    QPCRPLATE=Plate("qPCR",4,1,12,8,False,unusableVolume=15,maxVolume=200,zmax=984,angle=17.5,r1=2.66,h1=9.37,v0=7.9)
-#    DILPLATE=Plate("Dilutions",4,2,12,8,False,unusableVolume=15,maxVolume=200,zmax=1028,angle=17.5,r1=2.84,h1=9.76,v0=11.9,vectorName="Microplate Landscape",maxspeeds=hspmaxspeeds) # HSP96xx
-    DILPLATE=Plate("Dilutions",4,2,12,8,False,unusableVolume=15,maxVolume=200,zmax=1028,angle=17.5,r1=2.69,h1=7.70,v0=17.9,vectorName="Microplate Landscape",maxspeeds=hspmaxspeeds) # EppLoBind
-#    DILPLATE=Plate("Dilutions-LB",4,2,12,8,False,unusableVolume=15,maxVolume=200,zmax=1028,angle=100,r1=2.92,h1=0.81,v0=6.8,vectorName="Grenier Landscape",maxspeeds=grenmaxspeeds) # Grenier 651901 Lobind plate
-    SSDDILLOC=Plate("SSDDil",3,1,1,4,False,100,100000)
-    WATERLOC=Plate("Water",3,2,1,4,False,100,100000)
-    BLEACHLOC=Plate("Bleach",3,3,1,4,False,0,100000)
-    PTCPOS=Plate("PTC",25,1,1,1)
-    HOTELPOS=Plate("Hotel",25,0,1,1)
-    WASTE=Plate("Waste",20,3,1,1)
-    EPPENDORFS=Plate("Eppendorfs",13,1,1,16,False,unusableVolume=30,maxVolume=1500,zmax=1337,angle=17.5,h1=17.56,r1=4.42,v0=29.6)
-    WATER=Sample("Water",WATERLOC,-1,None,50000)
-    SSDDIL=Sample("SSDDil",SSDDILLOC,-1,None,50000)
-    BLEACH=Sample("RNase-Away",BLEACHLOC,-1,None,50000)
     DITIMASK=0   # Which tips are DiTis
-    headerfile=os.path.expanduser("~/Dropbox/Synbio/Robot/pyTecan/header.gem")
 
     RPTEXTRA=0   # Extra amount when repeat pipetting
     MAXVOLUME=200  # Maximum volume for pipetting in ul
@@ -44,8 +19,8 @@ class Experiment(object):
     def __init__(self,totalTime=None):
         'Create a new experiment with given sample locations for water and WASTE;  totalTime is expected run time in seconds, if known'
         worklist.comment("Generated %s"%(datetime.now().ctime()));
-        worklist.userprompt("The following reagent tubes should be present: %s"%Sample.getAllLocOnPlate(self.REAGENTPLATE))
-        worklist.userprompt("The following eppendorf tubes should be present: %s"%Sample.getAllLocOnPlate(self.EPPENDORFS))
+        worklist.userprompt("The following reagent tubes should be present: %s"%Sample.getAllLocOnPlate(decklayout.REAGENTPLATE))
+        worklist.userprompt("The following eppendorf tubes should be present: %s"%Sample.getAllLocOnPlate(decklayout.EPPENDORFS))
         worklist.email(dest='cdsrobot@gmail.com',subject='Run started (Generate: %s)'%(datetime.now().ctime()))
         worklist.email(dest='cdsrobot@gmail.com',subject='Tecan error',onerror=1)
         self.cleanTips=0
@@ -53,7 +28,7 @@ class Experiment(object):
         self.useDiTis=False
         self.thermotime=0		# Time waiting for thermocycler without pipetting
         self.pipandthermotime=0		# Time while pipetting and thermocycling   (elapsed=time pipetting, whether or not thermocycling also)
-        self.BLEACH.mixLC=liquidclass.LCBleachMix
+        decklayout.BLEACH.mixLC=liquidclass.LCBleachMix
         self.ptcrunning=False
         self.overrideSanitize=False
         self.totalTime=totalTime
@@ -82,19 +57,19 @@ class Experiment(object):
 
     def savegem(self,filename):
         worklist.flushQueue()
-        worklist.savegem(self.headerfile,filename)
+        worklist.savegem(decklayout.headerfile,filename)
         
     def savesummary(self,filename):
         # Print amount of samples needed
         fd=open(filename,"w")
         print >>fd,"Deck layout:"
-        print >>fd,self.REAGENTPLATE
-        print >>fd,self.SAMPLEPLATE
-        print >>fd,self.QPCRPLATE
-        print >>fd,self.WATERLOC
-        print >>fd,self.WASTE
-        print >>fd,self.BLEACHLOC
-        print >>fd,self.WASHLOC
+        print >>fd,decklayout.REAGENTPLATE
+        print >>fd,decklayout.SAMPLEPLATE
+        print >>fd,decklayout.QPCRPLATE
+        print >>fd,decklayout.WATERLOC
+        print >>fd,decklayout.WASTE
+        print >>fd,decklayout.BLEACHLOC
+        print >>fd,decklayout.WASHLOC
         
         print >>fd
         print >>fd,"DiTi usage:",worklist.getDITIcnt()
@@ -120,8 +95,8 @@ class Experiment(object):
             for i in range(4):
                 if (fixedTips & (1<<i)) != 0:
                     fixedWells.append(i)
-                    self.BLEACH.addhistory("SANITIZE",0,1<<i)
-            worklist.mix(fixedTips,fixedWells,self.BLEACH.mixLC,200,self.BLEACH.plate,nmix,False);
+                    decklayout.BLEACH.addhistory("SANITIZE",0,1<<i)
+            worklist.mix(fixedTips,fixedWells,decklayout.BLEACH.mixLC,200,decklayout.BLEACH.plate,nmix,False);
             worklist.wash(fixedTips,1,deepvol,True)
         self.cleanTips|=fixedTips
         # print "* Sanitize"
@@ -144,7 +119,7 @@ class Experiment(object):
     def multitransfer(self, volumes, src, dests,mix=(False,False),getDITI=True,dropDITI=True,ignoreContents=False):
         'Multi pipette from src to multiple dest.  mix is (src,dest) mixing'
         #print "multitransfer(",volumes,",",src,",",dests,",",mix,",",getDITI,",",dropDITI,")"
-        if self.ptcrunning and (src.plate==Experiment.SAMPLEPLATE or len([1 for d in dests if d.plate==Experiment.SAMPLEPLATE])>0):
+        if self.ptcrunning and (src.plate==decklayout.SAMPLEPLATE or len([1 for d in dests if d.plate==decklayout.SAMPLEPLATE])>0):
             self.waitpgm()
             
         if isinstance(volumes,(int,long,float)):
@@ -193,14 +168,14 @@ class Experiment(object):
                 if volumes[i]>0.01:
                     dests[i].dispense(tipMask,worklist,volumes[i],src)
             if self.useDiTis and dropDITI:
-                worklist.dropDITI(tipMask&self.DITIMASK,self.WASTE)
+                worklist.dropDITI(tipMask&self.DITIMASK,decklayout.WASTE)
         else:
             for i in range(len(dests)):
                 if volumes[i]>0.01:
                     self.transfer(volumes[i],src,dests[i],(mix[0] and i==0,mix[1]),getDITI,dropDITI)
 
     def transfer(self, volume, src, dest, mix=(False,False), getDITI=True, dropDITI=True):
-        if self.ptcrunning and (src.plate==Experiment.SAMPLEPLATE or dest.plate==Experiment.SAMPLEPLATE)>0:
+        if self.ptcrunning and (src.plate==decklayout.SAMPLEPLATE or dest.plate==decklayout.SAMPLEPLATE)>0:
             self.waitpgm()
         if volume>self.MAXVOLUME:
             destvol=dest.volume
@@ -240,11 +215,11 @@ class Experiment(object):
             dest.mix(tipMask,worklist,True)
 
         if self.useDiTis and dropDITI:
-            worklist.dropDITI(tipMask&self.DITIMASK,self.WASTE)
+            worklist.dropDITI(tipMask&self.DITIMASK,decklayout.WASTE)
 
     # Mix
     def mix(self, src, nmix=4):
-        if self.ptcrunning and src.plate==Experiment.SAMPLEPLATE:
+        if self.ptcrunning and src.plate==decklayout.SAMPLEPLATE:
             self.waitpgm()
 
         cmt="Mix %s"%(src.name)
@@ -255,7 +230,7 @@ class Experiment(object):
 
     def dispose(self, volume, src,  mix=False, getDITI=True, dropDITI=True):
         'Dispose of a given volume by aspirating and not dispensing (will go to waste during next wash)'
-        if self.ptcrunning and src.plate==Experiment.SAMPLEPLATE:
+        if self.ptcrunning and src.plate==decklayout.SAMPLEPLATE:
             self.waitpgm()
         if volume>self.MAXVOLUME:
             reuseTip=False   # Since we need to wash to get rid of it
@@ -287,7 +262,7 @@ class Experiment(object):
         src.aspirate(tipMask,worklist,volume)
 
         if self.useDiTis and dropDITI:
-            worklist.dropDITI(tipMask&self.DITIMASK,self.WASTE)
+            worklist.dropDITI(tipMask&self.DITIMASK,decklayout.WASTE)
 
     def stage(self,stagename,reagents,sources,samples,volume,finalx=1.0,destMix=True,dilutant=None):
         # Add water to sample wells as needed (multi)
@@ -303,7 +278,7 @@ class Experiment(object):
             return
 
         if dilutant==None:
-            dilutant=self.WATER
+            dilutant=decklayout.WATER
             
         worklist.comment("Stage: "+stagename)
         if not isinstance(volume,list):
@@ -342,7 +317,7 @@ class Experiment(object):
 
     def lihahome(self):
         'Move LiHa to left of deck'
-        worklist.moveliha(self.WASHLOC)
+        worklist.moveliha(decklayout.WASHLOC)
         
     def runpgm(self,pgm,duration,waitForCompletion=True,volume=10,hotlidmode="TRACKING",hotlidtemp=1):
         if self.ptcrunning:
@@ -358,9 +333,9 @@ class Experiment(object):
         worklist.comment(cmt)
         #print "*",cmt
         worklist.pyrun("PTC\\ptclid.py OPEN")
-        self.moveplate(self.SAMPLEPLATE,"PTC")
-        worklist.vector("Hotel 1 Lid",self.HOTELPOS,worklist.SAFETOEND,True,worklist.DONOTMOVE,worklist.CLOSE)
-        worklist.vector("PTC200lid",self.PTCPOS,worklist.SAFETOEND,True,worklist.DONOTMOVE,worklist.OPEN)
+        self.moveplate(decklayout.SAMPLEPLATE,"PTC")
+        worklist.vector("Hotel 1 Lid",decklayout.HOTELPOS,worklist.SAFETOEND,True,worklist.DONOTMOVE,worklist.CLOSE)
+        worklist.vector("PTC200lid",decklayout.PTCPOS,worklist.SAFETOEND,True,worklist.DONOTMOVE,worklist.OPEN)
         worklist.romahome()
         worklist.pyrun("PTC\\ptclid.py CLOSE")
         #        pgm="PAUSE30"  # For debugging
@@ -370,17 +345,17 @@ class Experiment(object):
         self.pgmStartTime=worklist.elapsed
         self.pgmEndTime=duration*60+worklist.elapsed
         self.ptcrunning=True
-        Sample.addallhistory("{%s}"%pgm,addToEmpty=False,onlyplate=self.SAMPLEPLATE.name)
+        Sample.addallhistory("{%s}"%pgm,addToEmpty=False,onlyplate=decklayout.SAMPLEPLATE.name)
         if waitForCompletion:
             self.waitpgm()
             
     def moveplate(self,plate,dest="Home",returnHome=True):
-        if self.ptcrunning and plate==Experiment.SAMPLEPLATE:
+        if self.ptcrunning and plate==decklayout.SAMPLEPLATE:
             self.waitpgm()
 
         # move to given destination (one of "Home","Magnet","Shaker","PTC" )
-        if plate!=self.SAMPLEPLATE and plate!=self.DILPLATE:
-            print "Only able to move %s or %s plates, not %s"%(self.SAMPLEPLATE.name,self.DILPLATE.name,plate.name)
+        if plate!=decklayout.SAMPLEPLATE and plate!=decklayout.DILPLATE:
+            print "Only able to move %s or %s plates, not %s"%(decklayout.SAMPLEPLATE.name,decklayout.DILPLATE.name,plate.name)
             assert(False)
             
         if plate.curloc==dest:
@@ -395,11 +370,11 @@ class Experiment(object):
         if plate.curloc=="Home":
                 worklist.vector(plate.vectorName,plate,worklist.SAFETOEND,True,worklist.DONOTMOVE,worklist.CLOSE)
         elif plate.curloc=="Magnet":
-            worklist.vector("Magplate",self.MAGPLATELOC,worklist.SAFETOEND,True,worklist.DONOTMOVE,worklist.CLOSE)
+            worklist.vector("Magplate",decklayout.MAGPLATELOC,worklist.SAFETOEND,True,worklist.DONOTMOVE,worklist.CLOSE)
         elif plate.curloc=="Shaker":
-            worklist.vector("Shaker",self.SHAKERPLATELOC,worklist.SAFETOEND,True,worklist.DONOTMOVE,worklist.CLOSE)
+            worklist.vector("Shaker",decklayout.SHAKERPLATELOC,worklist.SAFETOEND,True,worklist.DONOTMOVE,worklist.CLOSE)
         elif plate.curloc=="PTC":
-            worklist.vector("PTC200",self.PTCPOS,worklist.SAFETOEND,True,worklist.DONOTMOVE,worklist.CLOSE)
+            worklist.vector("PTC200",decklayout.PTCPOS,worklist.SAFETOEND,True,worklist.DONOTMOVE,worklist.CLOSE)
         else:
             print "Plate %s is in unknown location: %s"%(plate.name,plate.curloc)
             assert(False)
@@ -408,14 +383,14 @@ class Experiment(object):
             plate.movetoloc(dest)
             worklist.vector(plate.vectorName,plate,worklist.SAFETOEND,True,worklist.DONOTMOVE,worklist.OPEN)
         elif dest=="Magnet":
-            plate.movetoloc(dest,self.MAGPLATELOC)
-            worklist.vector("Magplate",self.MAGPLATELOC,worklist.SAFETOEND,True,worklist.DONOTMOVE,worklist.OPEN)
+            plate.movetoloc(dest,decklayout.MAGPLATELOC)
+            worklist.vector("Magplate",decklayout.MAGPLATELOC,worklist.SAFETOEND,True,worklist.DONOTMOVE,worklist.OPEN)
         elif dest=="Shaker":
-            plate.movetoloc(dest,self.SHAKERPLATELOC)
-            worklist.vector("Shaker",self.SHAKERPLATELOC,worklist.SAFETOEND,True,worklist.DONOTMOVE,worklist.OPEN)
+            plate.movetoloc(dest,decklayout.SHAKERPLATELOC)
+            worklist.vector("Shaker",decklayout.SHAKERPLATELOC,worklist.SAFETOEND,True,worklist.DONOTMOVE,worklist.OPEN)
         elif dest=="PTC":
-            plate.movetoloc(dest,self.PTCPOS)
-            worklist.vector("PTC200",self.PTCPOS,worklist.SAFETOEND,True,worklist.DONOTMOVE,worklist.OPEN)
+            plate.movetoloc(dest,decklayout.PTCPOS)
+            worklist.vector("PTC200",decklayout.PTCPOS,worklist.SAFETOEND,True,worklist.DONOTMOVE,worklist.OPEN)
         else:
             print "Attempt to move plate %s to unknown location: %s"%(plate.name,dest)
             assert(False)
@@ -425,7 +400,7 @@ class Experiment(object):
             worklist.romahome()
 
     def shake(self,plate,dur=60,speed=None,accel=5,returnPlate=True):
-        if self.ptcrunning and plate==Experiment.SAMPLEPLATE:
+        if self.ptcrunning and plate==decklayout.SAMPLEPLATE:
             self.waitpgm()
 
         # Move the plate to the shaker, run for the given time, and bring plate back
@@ -531,29 +506,29 @@ class Experiment(object):
         worklist.pyrun("PTC\\ptclid.py OPEN")
         #        worklist.pyrun('PTC\\ptcrun.py %s CALC ON'%"COOLDOWN")
         #        worklist.pyrun('PTC\\ptcwait.py')
-        worklist.vector("PTC200lid",self.PTCPOS,worklist.SAFETOEND,True,worklist.DONOTMOVE,worklist.CLOSE)
-        worklist.vector("Hotel 1 Lid",self.HOTELPOS,worklist.SAFETOEND,True,worklist.DONOTMOVE,worklist.OPEN)
+        worklist.vector("PTC200lid",decklayout.PTCPOS,worklist.SAFETOEND,True,worklist.DONOTMOVE,worklist.CLOSE)
+        worklist.vector("Hotel 1 Lid",decklayout.HOTELPOS,worklist.SAFETOEND,True,worklist.DONOTMOVE,worklist.OPEN)
 
-        worklist.vector("PTC200WigglePos",self.PTCPOS,worklist.SAFETOEND,False,worklist.DONOTMOVE,worklist.DONOTMOVE)
-        worklist.vector("PTC200Wiggle",self.PTCPOS,worklist.SAFETOEND,False,worklist.DONOTMOVE,worklist.CLOSE,True)
-        worklist.vector("PTC200Wiggle",self.PTCPOS,worklist.ENDTOSAFE,False,worklist.DONOTMOVE,worklist.OPEN,True)
-        worklist.vector("PTC200WigglePos",self.PTCPOS,worklist.ENDTOSAFE,False,worklist.DONOTMOVE,worklist.DONOTMOVE)
+        worklist.vector("PTC200WigglePos",decklayout.PTCPOS,worklist.SAFETOEND,False,worklist.DONOTMOVE,worklist.DONOTMOVE)
+        worklist.vector("PTC200Wiggle",decklayout.PTCPOS,worklist.SAFETOEND,False,worklist.DONOTMOVE,worklist.CLOSE,True)
+        worklist.vector("PTC200Wiggle",decklayout.PTCPOS,worklist.ENDTOSAFE,False,worklist.DONOTMOVE,worklist.OPEN,True)
+        worklist.vector("PTC200WigglePos",decklayout.PTCPOS,worklist.ENDTOSAFE,False,worklist.DONOTMOVE,worklist.DONOTMOVE)
 
-        worklist.vector("PTC200Wiggle2Pos",self.PTCPOS,worklist.SAFETOEND,False,worklist.DONOTMOVE,worklist.DONOTMOVE)
-        worklist.vector("PTC200Wiggle2",self.PTCPOS,worklist.SAFETOEND,False,worklist.DONOTMOVE,worklist.CLOSE,True)
-        worklist.vector("PTC200Wiggle2",self.PTCPOS,worklist.ENDTOSAFE,False,worklist.DONOTMOVE,worklist.OPEN,True)
-        worklist.vector("PTC200Wiggle2Pos",self.PTCPOS,worklist.ENDTOSAFE,False,worklist.DONOTMOVE,worklist.DONOTMOVE)
+        worklist.vector("PTC200Wiggle2Pos",decklayout.PTCPOS,worklist.SAFETOEND,False,worklist.DONOTMOVE,worklist.DONOTMOVE)
+        worklist.vector("PTC200Wiggle2",decklayout.PTCPOS,worklist.SAFETOEND,False,worklist.DONOTMOVE,worklist.CLOSE,True)
+        worklist.vector("PTC200Wiggle2",decklayout.PTCPOS,worklist.ENDTOSAFE,False,worklist.DONOTMOVE,worklist.OPEN,True)
+        worklist.vector("PTC200Wiggle2Pos",decklayout.PTCPOS,worklist.ENDTOSAFE,False,worklist.DONOTMOVE,worklist.DONOTMOVE)
 
-        worklist.vector("PTC200WigglePos",self.PTCPOS,worklist.SAFETOEND,False,worklist.DONOTMOVE,worklist.DONOTMOVE)
-        worklist.vector("PTC200Wiggle",self.PTCPOS,worklist.SAFETOEND,False,worklist.DONOTMOVE,worklist.CLOSE,True)
-        worklist.vector("PTC200Wiggle",self.PTCPOS,worklist.ENDTOSAFE,False,worklist.DONOTMOVE,worklist.OPEN,True)
-        worklist.vector("PTC200WigglePos",self.PTCPOS,worklist.ENDTOSAFE,False,worklist.DONOTMOVE,worklist.DONOTMOVE)
+        worklist.vector("PTC200WigglePos",decklayout.PTCPOS,worklist.SAFETOEND,False,worklist.DONOTMOVE,worklist.DONOTMOVE)
+        worklist.vector("PTC200Wiggle",decklayout.PTCPOS,worklist.SAFETOEND,False,worklist.DONOTMOVE,worklist.CLOSE,True)
+        worklist.vector("PTC200Wiggle",decklayout.PTCPOS,worklist.ENDTOSAFE,False,worklist.DONOTMOVE,worklist.OPEN,True)
+        worklist.vector("PTC200WigglePos",decklayout.PTCPOS,worklist.ENDTOSAFE,False,worklist.DONOTMOVE,worklist.DONOTMOVE)
 
         self.ptcrunning=False
-        self.moveplate(self.SAMPLEPLATE,"Home")
+        self.moveplate(decklayout.SAMPLEPLATE,"Home")
         # Verify plate is in place
-        worklist.vector(self.SAMPLEPLATE.vectorName,self.SAMPLEPLATE,worklist.SAFETOEND,False,worklist.DONOTMOVE,worklist.CLOSE)
-        worklist.vector(self.SAMPLEPLATE.vectorName,self.SAMPLEPLATE,worklist.ENDTOSAFE,False,worklist.OPEN,worklist.DONOTMOVE)
+        worklist.vector(decklayout.SAMPLEPLATE.vectorName,decklayout.SAMPLEPLATE,worklist.SAFETOEND,False,worklist.DONOTMOVE,worklist.CLOSE)
+        worklist.vector(decklayout.SAMPLEPLATE.vectorName,decklayout.SAMPLEPLATE,worklist.ENDTOSAFE,False,worklist.OPEN,worklist.DONOTMOVE)
         worklist.romahome()
         #worklist.userprompt("Plate should be back on deck. Press return to continue")
         # Wash tips again to remove any drips that may have formed while waiting for PTC

@@ -8,6 +8,7 @@ from Experiment.sample import Sample
 from Experiment.JobQueue import JobQueue
 from TRPLib.TRP import  diluteName
 import Experiment.worklist as worklist
+import Experiment.decklayout as decklayout
 
 class QSetup(object):
     TGTINVOL=4
@@ -27,7 +28,7 @@ class QSetup(object):
         self.MAXDILVOL=maxdilvol
         self.trp=trp
         self.debug=debug
-        self.dilutant=Experiment.SSDDIL
+        self.dilutant=decklayout.SSDDIL
         self.jobq=JobQueue()
         
     def addSamples(self, src, needDil, primers,nreplicates=1,names=None,saveVol=None,saveDil=None,save=True):
@@ -47,9 +48,9 @@ class QSetup(object):
                 saveVol=max(self.MINDILVOL*1.0/saveDil,self.TGTINVOL)
             
             if names==None:
-                tgt=[Sample(diluteName(src[i].name,saveDil),self.trp.e.DILPLATE) for i in range(len(src))]
+                tgt=[Sample(diluteName(src[i].name,saveDil),decklayout.DILPLATE) for i in range(len(src))]
             else:
-                tgt=[Sample(diluteName(names[i],saveDil),self.trp.e.DILPLATE) for i in range(len(src))]
+                tgt=[Sample(diluteName(names[i],saveDil),decklayout.DILPLATE) for i in range(len(src))]
             sv=tgt
             
             for i in range(len(sv)):
@@ -74,7 +75,7 @@ class QSetup(object):
                     vol=self.MAXDILVOL
                 else:
                     vol=min(self.MAXDILVOL,max(self.MINDILVOL,dil*self.TGTINVOL))
-                dest=Sample(diluteName(intermed.name,dil),self.trp.e.DILPLATE)
+                dest=Sample(diluteName(intermed.name,dil),decklayout.DILPLATE)
                 #print "dest=",dest
                 j1=self.jobq.addMultiTransfer(volume=vol*(dil-1)/dil,src=self.dilutant,dest=dest,prereqs=[])
                 prereqs.append(j1)
@@ -117,7 +118,7 @@ class QSetup(object):
                     d=self.needDil[self.reuse[j]]
                 for k in range(stages-1):
                     d=min(d*self.MAXDIL,totalDil)
-                    self.addSamples([self.samples[j]],d,[])	# Add extra intermediate that can be reused
+                    self.addSamples([self.samples[j].name],d,[])	# Add extra intermediate that can be reused
                     if k==0:
                         self.reuse[-1]=self.reuse[j]
                     else:

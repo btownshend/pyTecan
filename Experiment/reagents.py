@@ -1,12 +1,12 @@
 # Reagent - a set of samples that are allocated as they are needed
 import sys
 from Experiment.sample import Sample
-import experiment
+import decklayout
 
 all={}
 
 class Reagent:
-    def __init__(self,name,plate=experiment.Experiment.REAGENTPLATE,well=None,conc=None,hasBeads=False,extraVol=50):
+    def __init__(self,name,plate=decklayout.REAGENTPLATE,well=None,conc=None,hasBeads=False,extraVol=50):
         self.sample=None
         self.name=name
         self.plate=plate
@@ -43,7 +43,7 @@ def get(name):
 def __getattr__(name):
     return get(name)
 
-def add(name,plate=experiment.Experiment.REAGENTPLATE,well=None,conc=None,hasBeads=False,extraVol=50):
+def add(name,plate=decklayout.REAGENTPLATE,well=None,conc=None,hasBeads=False,extraVol=50):
     if name in all:
         print "ERROR: Attempt to add duplicate reagent, ",name
         assert(False)
@@ -56,7 +56,7 @@ def reset():
 def printprep(fd=sys.stdout):
     notes="Reagents to provide:"
     total=0
-    for r in all:
+    for r in all.itervalues():
         s=r.sample
         if s==None:
             continue

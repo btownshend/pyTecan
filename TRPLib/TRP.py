@@ -3,6 +3,7 @@ from Experiment.experiment import Experiment
 from Experiment.experiment import Concentration
 import Experiment.worklist as worklist
 import Experiment.reagents as reagents
+import Experiment.decklayout as decklayout
 
 import os
 import sys
@@ -41,8 +42,8 @@ reagents.add("MLigBT7WBio",well="E5",conc=3)
 reagents.add("MLigBT7Bio",well="A6",conc=3)
 reagents.add("MPCR",well=None,conc=4)
 reagents.add("MLigB",well=None,conc=3)
-UNUSED=Sample("LeakyA1",Experiment.SAMPLEPLATE,"A1",0)
-UNUSED2=Sample("LeakyH12",Experiment.SAMPLEPLATE,"H12",0)
+UNUSED=Sample("LeakyA1",decklayout.SAMPLEPLATE,"A1",0)
+UNUSED2=Sample("LeakyH12",decklayout.SAMPLEPLATE,"H12",0)
     
 def listify(x):
     'Convert a list of (lists or scalars) into a list of equal length lists'
@@ -102,7 +103,7 @@ class TRP(object):
         reagents.reset()
         Sample.clearall()
     
-    def addTemplates(self,names,stockconc,finalconc=None,units="nM",plate=Experiment.EPPENDORFS):
+    def addTemplates(self,names,stockconc,finalconc=None,units="nM",plate=decklayout.EPPENDORFS):
         if finalconc==None:
             print "Warning: final concentration of template not specified, assuming 0.6x (should add to addTemplates() call"
             [names,stockconc]=listify([names,stockconc])
@@ -137,7 +138,7 @@ class TRP(object):
             print "NO OUTPUT DUE TO ERRORS"
             assert(False)
             
-        print "Wells used:  samples: %d, dilutions: %d, qPCR: %d\n"%(Sample.numSamplesOnPlate(self.e.SAMPLEPLATE),Sample.numSamplesOnPlate(self.e.DILPLATE),Sample.numSamplesOnPlate(self.e.QPCRPLATE))
+        print "Wells used:  samples: %d, dilutions: %d, qPCR: %d\n"%(Sample.numSamplesOnPlate(decklayout.SAMPLEPLATE),Sample.numSamplesOnPlate(decklayout.DILPLATE),Sample.numSamplesOnPlate(decklayout.QPCRPLATE))
         # Save worklist to a file
         #e.saveworklist("trp1.gwl")
         (scriptname,ext)=os.path.splitext(sys.argv[0])
@@ -151,12 +152,12 @@ class TRP(object):
     def saveSamps(self,src,vol,dil,tgt=[],dilutant=None,plate=None,mix=(True,True)):
         [src,vol,dil]=listify([src,vol,dil])
         if plate==None:
-            plate=self.e.REAGENTPLATE
+            plate=decklayout.REAGENTPLATE
         if len(tgt)==0:
             tgt=[Sample(diluteName(src[i].name,dil[i]),plate) for i in range(len(src))]
 
         if dilutant==None:
-            dilutant=self.e.WATER
+            dilutant=decklayout.WATER
         self.e.multitransfer([vol[i]*(dil[i]-1) for i in range(len(vol))],dilutant,tgt,(False,False))
         for i in range(len(src)):
             if not src[i].isMixed and src[i].plate.maxspeeds!=None:
@@ -166,12 +167,12 @@ class TRP(object):
             
         return tgt
     
-    def distribute(self,src,dil,vol,wells,tgt=[],dilutant=None,plate=Experiment.SAMPLEPLATE):
+    def distribute(self,src,dil,vol,wells,tgt=[],dilutant=None,plate=decklayout.SAMPLEPLATE):
         if len(tgt)==0:
             tgt=[Sample("%s.dist%d"%(src[0].name,j),src[0].plate) for j in range(wells)]
         
         if dilutant==None:
-            dilutant=self.e.WATER
+            dilutant=decklayout.WATER
         self.e.multitransfer([vol*(dil-1) for i in range(wells)],dilutant,tgt,(False,False))
         if not src[0].isMixed:
             self.e.shake(src[0].plate,returnPlate=True)
@@ -186,7 +187,7 @@ class TRP(object):
         # Dilute in place
         # e.g.: trp.diluteInPlace(tgt=rt1,dil=2)
         [tgt,dil,finalvol]=listify([tgt,dil,finalvol])
-        dilutant=self.e.WATER
+        dilutant=decklayout.WATER
         for i in range(len(tgt)):
             if finalvol[i]!=None and dil[i]==None:
                 self.e.transfer(finalvol[i]-tgt[i].volume,dilutant,tgt[i],mix=(False,False))
@@ -212,7 +213,7 @@ class TRP(object):
             assert(False)
         for i in range(len(src)):
             if  watervol[i]>0:
-                self.e.transfer(watervol[i],self.e.WATER,src[i],(False,False))
+                self.e.transfer(watervol[i],decklayout.WATER,src[i],(False,False))
         for i in range(len(src)):
             self.e.transfer(mastervol[i],smaster[i],src[i],(False,src[i].hasBeads))
         for p in set([s.plate for s in src]):
@@ -227,9 +228,9 @@ class TRP(object):
         if len(tgt)==0:
             for i in range(len(src)):
                 if theo[i]:
-                    tgt.append(Sample("%s.T+"%src[i].name,self.e.SAMPLEPLATE))
+                    tgt.append(Sample("%s.T+"%src[i].name,decklayout.SAMPLEPLATE))
                 else:
-                    tgt.append(Sample("%s.T-"%src[i].name,self.e.SAMPLEPLATE))
+                    tgt.append(Sample("%s.T-"%src[i].name,decklayout.SAMPLEPLATE))
 
         worklist.comment("runT7: source=%s"%[str(s) for s in src])
 
@@ -242,7 +243,7 @@ class TRP(object):
             watervols=[vol-sourcevols[i]-MT7vol for i in range(len(src))]
 
         if sum(watervols)>0.01:
-            self.e.multitransfer(watervols,self.e.WATER,tgt,(False,False))
+            self.e.multitransfer(watervols,decklayout.WATER,tgt,(False,False))
         self.e.multitransfer([MT7vol for s in tgt],reagents.get("MT7"),tgt,(False,False))
         if any(theo):
             self.e.multitransfer([tv for tv in theovols if tv>0.01],reagents.get("Theo"),[tgt[i] for i in range(len(theovols)) if theovols[i]>0],(False,False),ignoreContents=True)
@@ -299,7 +300,7 @@ class TRP(object):
         [src,beads,buffer,beadConc]=listify([src,beads,buffer,beadConc])
 
         for s in src:
-            if s.plate!=self.e.SAMPLEPLATE:
+            if s.plate!=decklayout.SAMPLEPLATE:
                 print "runBeadCleanup: src ",s," is not in sample plate."
                 assert(0)
             s.conc=None		# Can't track concentration of beads
@@ -343,7 +344,7 @@ class TRP(object):
         # If keepWash is true, retain all washes (combined)
         # If keepFinal is true, take a sample of the final wash (diluted by keepDil)
         if wash==None:
-            wash=self.e.WATER
+            wash=decklayout.WATER
         [src,wash]=listify([src,wash])
         # Do all washes while on magnet
         assert(len(set([s.plate for s in src]))==1)	# All on same plate
@@ -351,17 +352,17 @@ class TRP(object):
             if washTgt==None:
                 washTgt=[]
                 for i in range(len(src)):
-                    if s[i].volume-residualVolume+numWashes*(washVol-residualVolume) > self.e.DILPLATE.maxVolume-20:
+                    if s[i].volume-residualVolume+numWashes*(washVol-residualVolume) > decklayout.DILPLATE.maxVolume-20:
                         print "Saving %.1f ul of wash in eppendorfs"%(numWashes*washVol)
-                        washTgt.append(Sample("%s.Wash"%src[i].name,self.e.EPPENDORFS))
+                        washTgt.append(Sample("%s.Wash"%src[i].name,decklayout.EPPENDORFS))
                     else:
-                        washTgt.append(Sample("%s.Wash"%src[i].name,self.e.DILPLATE))
+                        washTgt.append(Sample("%s.Wash"%src[i].name,decklayout.DILPLATE))
 
         if keepFinal:
             if finalTgt==None:
                 finalTgt=[]
                 for i in range(len(src)):
-                    finalTgt.append(Sample("%s.Final"%src[i].name,self.e.DILPLATE))
+                    finalTgt.append(Sample("%s.Final"%src[i].name,decklayout.DILPLATE))
 
         if any([s.volume>residualVolume for s in src]):
             # Separate and remove supernatant
@@ -393,7 +394,7 @@ class TRP(object):
                     src[i].conc=None
                     self.e.transfer(washVol-src[i].volume,swash[i],src[i],mix=(False,True))	# Add wash
                 self.e.shake(src[0].plate,returnPlate=True)
-                self.saveSamps(src=src,tgt=finalTgt,vol=keepVol,dil=keepDil,plate=Experiment.DILPLATE)
+                self.saveSamps(src=src,tgt=finalTgt,vol=keepVol,dil=keepDil,plate=decklayout.DILPLATE)
             else:
                 for i in range(len(src)):
                     src[i].conc=None
@@ -425,7 +426,7 @@ class TRP(object):
     def beadAddElutant(self,src,elutant=None,elutionVol=30,eluteTime=60,returnPlate=True,temp=None):
         [src,elutionVol,elutant]=listify([src,elutionVol,elutant])
         if selutant==None:
-            selutant=self.e.WATER
+            selutant=decklayout.WATER
         for i in range(len(src)):
             if elutionVol[i]<30:
                 print "Warning: elution from beads with %.1f ul < minimum of 30ul"%elutionVol[i]
@@ -445,7 +446,7 @@ class TRP(object):
         if len(tgt)==0:
             for i in range(len(src)):
                 if plate==None:
-                    tgt.append(Sample("%s.SN"%src[i].name,self.e.SAMPLEPLATE))
+                    tgt.append(Sample("%s.SN"%src[i].name,decklayout.SAMPLEPLATE))
 
         if not src[0].isMixed:
             self.e.shake(src[0].plate,returnPlate=False)
@@ -470,7 +471,7 @@ class TRP(object):
                 self.e.dispose(tgt.volume-residualVolume,tgt)
             self.e.moveplate(tgt.plate,"Home")	
             if s.volume<suspendVolume:
-                self.e.transfer(suspendVolume-s.volume,self.e.WATER,s,(False,False))
+                self.e.transfer(suspendVolume-s.volume,decklayout.WATER,s,(False,False))
             vol=s.volume-residualVolume-1
             s.conc=None
             self.e.transfer(vol,s,tgt,mix=(True,True))
@@ -623,7 +624,7 @@ class TRP(object):
             watervols=[vol[i]-mmvols[i]-prefixvols[i]-suffixvols[i]-sampvols[i] for i in range(len(src))]
 
             print "water=",watervols,", mm=",mmvols,", prefix=",prefixvols,", suffix=",suffixvols,", samp=",sampvols
-            self.e.multitransfer(watervols,self.e.WATER,tgt,(False,False))		# Transfer water
+            self.e.multitransfer(watervols,decklayout.WATER,tgt,(False,False))		# Transfer water
             self.e.multitransfer(mmvols,mm,tgt,(False,False))	 # PCR master mix
             sprefixset=set(sprefix)
             ssuffixset=set(ssuffix)
@@ -675,7 +676,7 @@ class TRP(object):
         primer=["MPCR"+prefix[i]+suffix[i] for i in range(len(prefix))]
         self.runRxInPlace(src,vol,primer,returnPlate=(save!=None))
         if save!=None:
-            self.saveSamps(src=src,vol=5,dil=10,tgt=save,plate=self.e.DILPLATE,mix=(False,False),dilutant=self.e.SSDDIL)
+            self.saveSamps(src=src,vol=5,dil=10,tgt=save,plate=decklayout.DILPLATE,mix=(False,False),dilutant=decklayout.SSDDIL)
 
         pgm="PCR%d"%ncycles
         #        worklist.pyrun('PTC\\ptcsetpgm.py %s TEMP@95,120 TEMP@95,30 TEMP@55,30 TEMP@72,25 GOTO@2,%d TEMP@72,180 TEMP@16,2'%(pgm,ncycles-1))
@@ -685,14 +686,14 @@ class TRP(object):
     ########################
     # qPCR
     ########################
-    def runQPCRDIL(self,src,vol,srcdil,tgt=[],dilPlate=False,pipMix=False,dilutant=Experiment.SSDDIL):
+    def runQPCRDIL(self,src,vol,srcdil,tgt=[],dilPlate=False,pipMix=False,dilutant=decklayout.SSDDIL):
         [src,vol,srcdil]=listify([src,vol,srcdil])
         vol=[float(v) for v in vol]
         if len(tgt)==0:
             if dilPlate:
-                tgt=[Sample(diluteName(src[i].name,srcdil[i]),Experiment.DILPLATE) for i in range(len(src))]
+                tgt=[Sample(diluteName(src[i].name,srcdil[i]),decklayout.DILPLATE) for i in range(len(src))]
             else:
-                tgt=[Sample(diluteName(src[i].name,srcdil[i]),Experiment.SAMPLEPLATE) for i in range(len(src))]
+                tgt=[Sample(diluteName(src[i].name,srcdil[i]),decklayout.SAMPLEPLATE) for i in range(len(src))]
 
         srcvol=[vol[i]/srcdil[i] for i in range(len(vol))]
         watervol=[vol[i]-srcvol[i] for i in range(len(vol))]
@@ -731,7 +732,7 @@ class TRP(object):
                         sampname="%s.Q%s"%(src[i],p)
                     else:
                         sampname="%s.Q%s.%d"%(src[i],p,repl+1)
-                    s=Sample(sampname,Experiment.QPCRPLATE)
+                    s=Sample(sampname,decklayout.QPCRPLATE)
                     all=all+[(src[i],s,p,vol[i])]
 
         # Fill the master mixes
