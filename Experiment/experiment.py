@@ -22,7 +22,7 @@ class Experiment(object):
     #    READERPLATE=Plate("Reader",4,1,12,8,False,15)
     QPCRPLATE=Plate("qPCR",4,1,12,8,False,unusableVolume=15,maxVolume=200,zmax=984,angle=17.5,r1=2.66,h1=9.37,v0=7.9)
 #    DILPLATE=Plate("Dilutions",4,2,12,8,False,unusableVolume=15,maxVolume=200,zmax=1028,angle=17.5,r1=2.84,h1=9.76,v0=11.9,vectorName="Microplate Landscape",maxspeeds=hspmaxspeeds) # HSP96xx
-    DILPLATE=Plate("Dilutions",4,2,12,8,False,unusableVolume=15,maxVolume=200,zmax=1028,angle=17.5,r1=2.69,h1=8.94,v0=13.2,vectorName="Microplate Landscape",maxspeeds=hspmaxspeeds) # EppLoBind
+    DILPLATE=Plate("Dilutions",4,2,12,8,False,unusableVolume=15,maxVolume=200,zmax=1028,angle=17.5,r1=2.69,h1=7.70,v0=17.9,vectorName="Microplate Landscape",maxspeeds=hspmaxspeeds) # EppLoBind
 #    DILPLATE=Plate("Dilutions-LB",4,2,12,8,False,unusableVolume=15,maxVolume=200,zmax=1028,angle=100,r1=2.92,h1=0.81,v0=6.8,vectorName="Grenier Landscape",maxspeeds=grenmaxspeeds) # Grenier 651901 Lobind plate
     SSDDILLOC=Plate("SSDDil",3,1,1,4,False,100,100000)
     WATERLOC=Plate("Water",3,2,1,4,False,100,100000)
