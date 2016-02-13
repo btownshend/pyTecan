@@ -1,6 +1,8 @@
 from Experiment.sample import Sample
 from Experiment.experiment import Experiment
 from Experiment.experiment import Concentration
+import Experiment.worklist as worklist
+
 import os
 import sys
 import math
@@ -173,7 +175,7 @@ class TRP(object):
 
     def finish(self):
         self.e.lihahome()
-        self.e.w.userprompt("Process complete. Continue to turn off reagent cooler")
+        worklist.userprompt("Process complete. Continue to turn off reagent cooler")
         self.e.setreagenttemp(None)
 
         #Sample.printallsamples("At completion")
@@ -307,6 +309,7 @@ class TRP(object):
         stgt=findsamps(tgt,unique=True)
         ssrc=findsamps(src,False)
         self.e.w.comment("runT7: source=%s"%[str(s) for s in ssrc])
+        worklist.comment("runT7: source=%s"%[str(s) for s in src])
 
         MT7vol=vol*1.0/self.r.MT7.conc.dilutionneeded()
         sourcevols=[vol*1.0/s for s in srcdil]
@@ -333,7 +336,7 @@ class TRP(object):
             pgm="TRP37-%d"%dur
         else:
             pgm="T37-%d"%dur
-        self.e.w.pyrun('PTC\\ptcsetpgm.py %s TEMP@37,%d TEMP@25,2'%(pgm,dur*60))
+        worklist.pyrun('PTC\\ptcsetpgm.py %s TEMP@37,%d TEMP@25,2'%(pgm,dur*60))
         self.e.runpgm(pgm,dur, False,vol)
 
     def runT7Stop(self,theo,tgt,stopmaster=None,srcdil=2):
@@ -510,7 +513,7 @@ class TRP(object):
             self.e.shake(ssrc[0].plate,dur=eluteTime,returnPlate=returnPlate)
         else:
             self.e.shake(ssrc[0].plate,dur=30,returnPlate=False)
-            self.e.w.pyrun('PTC\\ptcsetpgm.py elute TEMP@%d,%d TEMP@25,2'%(temp,eluteTime))
+            worklist.pyrun('PTC\\ptcsetpgm.py elute TEMP@%d,%d TEMP@25,2'%(temp,eluteTime))
             self.e.runpgm("elute",eluteTime/60,False,elutionVol[0])
             if returnPlate:
                 self.e.moveplate(ssrc[0].plate,"Home")
@@ -614,14 +617,14 @@ class TRP(object):
         if heatInactivate:
             hidur=15
             pgm="RT-%d"%dur
-            self.e.w.pyrun('PTC\\ptcsetpgm.py %s TEMP@37,%d TEMP@95,%d TEMP@25,2'%(pgm,dur*60,hidur*60))
+            worklist.pyrun('PTC\\ptcsetpgm.py %s TEMP@37,%d TEMP@95,%d TEMP@25,2'%(pgm,dur*60,hidur*60))
             self.e.runpgm(pgm,dur+hidur,False,100)		# Volume doesn't matter since it's just an incubation, use 100ul
         else:
             if dur<100:
                 pgm="TRP37-%d"%dur
             else:
                 pgm="T37-%d"%dur
-            self.e.w.pyrun('PTC\\ptcsetpgm.py %s TEMP@37,%d TEMP@25,2'%(pgm,dur*60))
+            worklist.pyrun('PTC\\ptcsetpgm.py %s TEMP@37,%d TEMP@25,2'%(pgm,dur*60))
             self.e.runpgm(pgm,dur,False,100)		# Volume doesn't matter since it's just an incubation, use 100ul
  
     ########################
@@ -674,14 +677,14 @@ class TRP(object):
     def runLigPgm(self,vol,ligtemp,inactivate=True,inacttemp=65):
         if inactivate:
             pgm="LIG15-%.0f"%ligtemp
-            self.e.w.pyrun('PTC\\ptcsetpgm.py %s TEMP@%.0f,900 TEMP@%.0f,600 TEMP@25,30'%(pgm,ligtemp,inacttemp))
+            worklist.pyrun('PTC\\ptcsetpgm.py %s TEMP@%.0f,900 TEMP@%.0f,600 TEMP@25,30'%(pgm,ligtemp,inacttemp))
             self.e.runpgm(pgm,27,False,vol,hotlidmode="TRACKING",hotlidtemp=10)
         elif ligtemp==25:
-            self.e.w.comment('Ligation at room temp')
+            worklist.comment('Ligation at room temp')
             self.e.pause(15*60)
         else:
             pgm="TRP%.0f-15"%ligtemp
-            self.e.w.pyrun('PTC\\ptcsetpgm.py %s TEMP@%.0f,900 TEMP@25,30'%(pgm,ligtemp))
+            worklist.pyrun('PTC\\ptcsetpgm.py %s TEMP@%.0f,900 TEMP@25,30'%(pgm,ligtemp))
             self.e.runpgm(pgm,17,False,vol,hotlidmode="TRACKING",hotlidtemp=10)
 
     def runLigInPlace(self,src,vol,ligmaster,anneal=True,ligtemp=25):
@@ -776,8 +779,8 @@ class TRP(object):
                 self.e.stage('PCRT7X',[self.r.PCRT7X],[ssrc[i] for i in range(len(ssrc)) if primer[i]=='T7X'],[stgt[i] for i in range(len(stgt)) if primer[i]=='T7X'],[vol[i] for i in range(len(vol)) if primer[i]=='T7X'],destMix=False)
         pgm="PCR%d"%ncycles
         self.e.shake(stgt[0].plate,returnPlate=False)
-        #        self.e.w.pyrun('PTC\\ptcsetpgm.py %s TEMP@95,120 TEMP@95,30 TEMP@55,30 TEMP@72,25 GOTO@2,%d TEMP@72,180 TEMP@16,2'%(pgm,ncycles-1))
-        self.e.w.pyrun('PTC\\ptcsetpgm.py %s TEMP@95,120 TEMP@95,10 TEMP@57,10 GOTO@2,%d TEMP@72,120 TEMP@25,2'%(pgm,ncycles-1))
+        #        worklist.pyrun('PTC\\ptcsetpgm.py %s TEMP@95,120 TEMP@95,30 TEMP@55,30 TEMP@72,25 GOTO@2,%d TEMP@72,180 TEMP@16,2'%(pgm,ncycles-1))
+        worklist.pyrun('PTC\\ptcsetpgm.py %s TEMP@95,120 TEMP@95,10 TEMP@57,10 GOTO@2,%d TEMP@72,120 TEMP@25,2'%(pgm,ncycles-1))
         self.e.runpgm(pgm,4.80+1.55*ncycles,False,max(vol),hotlidmode="CONSTANT",hotlidtemp=100)
         return tgt
 
@@ -790,8 +793,8 @@ class TRP(object):
             self.saveSamps(src=src,vol=5,dil=10,tgt=save,plate=self.e.DILPLATE,mix=(False,False),dilutant=self.e.SSDDIL)
 
         pgm="PCR%d"%ncycles
-        #        self.e.w.pyrun('PTC\\ptcsetpgm.py %s TEMP@95,120 TEMP@95,30 TEMP@55,30 TEMP@72,25 GOTO@2,%d TEMP@72,180 TEMP@16,2'%(pgm,ncycles-1))
-        self.e.w.pyrun('PTC\\ptcsetpgm.py %s TEMP@95,120 TEMP@95,10 TEMP@%f,10 GOTO@2,%d TEMP@72,120 TEMP@25,2'%(pgm,annealtemp,ncycles-1))
+        #        worklist.pyrun('PTC\\ptcsetpgm.py %s TEMP@95,120 TEMP@95,30 TEMP@55,30 TEMP@72,25 GOTO@2,%d TEMP@72,180 TEMP@16,2'%(pgm,ncycles-1))
+        worklist.pyrun('PTC\\ptcsetpgm.py %s TEMP@95,120 TEMP@95,10 TEMP@%f,10 GOTO@2,%d TEMP@72,120 TEMP@25,2'%(pgm,annealtemp,ncycles-1))
         self.e.runpgm(pgm,4.80+1.55*ncycles,False,max(vol),hotlidmode="CONSTANT",hotlidtemp=100)
     
     ########################
@@ -834,7 +837,7 @@ class TRP(object):
     def runQPCR(self,src,vol,srcdil,primers=["A","B"],nreplicates=1):
         ## QPCR setup
         # e.g. trp.runQPCR(src=["1.RT-B","1.RT+B","1.RTNeg-B","1.RTNeg+B","2.RT-A","2.RT-B","2.RTNeg+B","2.RTNeg+B"],vol=10,srcdil=100)
-        self.e.w.comment("runQPCR: primers=%s, source=%s"%([p for p in primers],[s for s in src]))
+        worklist.comment("runQPCR: primers=%s, source=%s"%([p for p in primers],[s for s in src]))
         [src,vol,srcdil,nreplicates]=listify([src,vol,srcdil,nreplicates])
         ssrc=findsamps(src,False)
 

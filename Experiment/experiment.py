@@ -1,9 +1,10 @@
-from worklist import *
+import worklist
 from sample import Sample
 from concentration import Concentration
 import liquidclass
 import os.path
 from datetime import datetime
+from plate import Plate
 
 _Experiment__shakerActive = False
 
@@ -40,13 +41,12 @@ class Experiment(object):
     MAXVOLUME=200  # Maximum volume for pipetting in ul
 
     def __init__(self,totalTime=None):
-        'Create a new experiment with given sample locations for water and self.WASTE;  totalTime is expected run time in seconds, if known'
-        self.w=WorkList()
-        self.w.comment("Generated %s"%(datetime.now().ctime()));
-        self.w.userprompt("The following reagent tubes should be present: %s"%Sample.getAllLocOnPlate(self.REAGENTPLATE))
-        self.w.userprompt("The following eppendorf tubes should be present: %s"%Sample.getAllLocOnPlate(self.EPPENDORFS))
-        self.w.email(dest='cdsrobot@gmail.com',subject='Run started (Generate: %s)'%(datetime.now().ctime()))
-        self.w.email(dest='cdsrobot@gmail.com',subject='Tecan error',onerror=1)
+        'Create a new experiment with given sample locations for water and WASTE;  totalTime is expected run time in seconds, if known'
+        worklist.comment("Generated %s"%(datetime.now().ctime()));
+        worklist.userprompt("The following reagent tubes should be present: %s"%Sample.getAllLocOnPlate(self.REAGENTPLATE))
+        worklist.userprompt("The following eppendorf tubes should be present: %s"%Sample.getAllLocOnPlate(self.EPPENDORFS))
+        worklist.email(dest='cdsrobot@gmail.com',subject='Run started (Generate: %s)'%(datetime.now().ctime()))
+        worklist.email(dest='cdsrobot@gmail.com',subject='Tecan error',onerror=1)
         self.cleanTips=0
         # self.sanitize()  # Not needed, TRP does it, also first use of tips will do this
         self.useDiTis=False
@@ -58,9 +58,9 @@ class Experiment(object):
         self.totalTime=totalTime
         
         # Access PTC and RIC early to be sure they are working
-        self.w.pyrun("PTC\\ptctest.py")
-        #        self.w.periodicWash(15,4)
-        self.w.userprompt("Verify that PTC thermocycler lid pressure is set to '2'.")
+        worklist.pyrun("PTC\\ptctest.py")
+        #        worklist.periodicWash(15,4)
+        worklist.userprompt("Verify that PTC thermocycler lid pressure is set to '2'.")
         self.idlePgms=[]
         self.timerStartTime=[None]*8
         
@@ -69,19 +69,19 @@ class Experiment(object):
         
     def setreagenttemp(self,temp=None):
         if temp==None:
-            self.w.pyrun("RIC\\ricset.py IDLE")
+            worklist.pyrun("RIC\\ricset.py IDLE")
         else:
-            self.w.variable("dewpoint",temp,userprompt="Enter dewpoint",minval=0,maxval=20)
-            self.w.variable("rictemp","~dewpoint~+2")
-            self.w.pyrun("RIC\\ricset.py ~rictemp~")
-#            self.w.pyrun("RIC\\ricset.py %s"%temp)
+            worklist.variable("dewpoint",temp,userprompt="Enter dewpoint",minval=0,maxval=20)
+            worklist.variable("rictemp","~dewpoint~+2")
+            worklist.pyrun("RIC\\ricset.py ~rictemp~")
+#            worklist.pyrun("RIC\\ricset.py %s"%temp)
 
     def saveworklist(self,filename):
-        self.w.saveworklist(filename)
+        worklist.saveworklist(filename)
 
     def savegem(self,filename):
-        self.w.flushQueue()
-        self.w.savegem(self.headerfile,filename)
+        worklist.flushQueue()
+        worklist.savegem(self.headerfile,filename)
         
     def savesummary(self,filename):
         # Print amount of samples needed
@@ -96,43 +96,43 @@ class Experiment(object):
         print >>fd,self.WASHLOC
         
         print >>fd
-        print >>fd,"DiTi usage:",self.w.getDITIcnt()
+        print >>fd,"DiTi usage:",worklist.getDITIcnt()
         print >>fd
 
-        print >>fd,"Run time: %d (pipetting only) + %d (thermocycling only) + %d (both) = %d minutes\n"%((self.w.elapsed-self.pipandthermotime)/60.0,self.thermotime/60, self.pipandthermotime/60, (self.w.elapsed+self.thermotime)/60)
+        print >>fd,"Run time: %d (pipetting only) + %d (thermocycling only) + %d (both) = %d minutes\n"%((worklist.elapsed-self.pipandthermotime)/60.0,self.thermotime/60, self.pipandthermotime/60, (worklist.elapsed+self.thermotime)/60)
         Sample.printprep(fd)
-        Sample.printallsamples("All Samples:",fd,w=self.w)
+        Sample.printallsamples("All Samples:",fd,w=worklist)
         fd.close()
         
     def sanitize(self,nmix=1,deepvol=20,force=False):
         'Deep wash including RNase-Away treatment'
         fixedTips=(~self.DITIMASK)&15
-        self.w.flushQueue()
+        worklist.flushQueue()
         if not force and fixedTips==self.cleanTips:
             # print no sanitize needed
-            self.w.comment("Sanitize not needed cleanTips=%d"%self.cleanTips)
+            worklist.comment("Sanitize not needed cleanTips=%d"%self.cleanTips)
             return
-        self.w.comment("Sanitize (cleanTips=%d)"%self.cleanTips)
-        self.w.wash(15,1,2)
+        worklist.comment("Sanitize (cleanTips=%d)"%self.cleanTips)
+        worklist.wash(15,1,2)
         fixedWells=[]
         if not self.overrideSanitize:
             for i in range(4):
                 if (fixedTips & (1<<i)) != 0:
                     fixedWells.append(i)
                     self.BLEACH.addhistory("SANITIZE",0,1<<i)
-            self.w.mix(fixedTips,fixedWells,self.BLEACH.mixLC,200,self.BLEACH.plate,nmix,False);
-            self.w.wash(fixedTips,1,deepvol,True)
+            worklist.mix(fixedTips,fixedWells,self.BLEACH.mixLC,200,self.BLEACH.plate,nmix,False);
+            worklist.wash(fixedTips,1,deepvol,True)
         self.cleanTips|=fixedTips
         # print "* Sanitize"
         if self.totalTime!=None:
-            self.w.comment("Estimated elapsed: %d minutes, remaining run time: %d minutes"%((self.thermotime+self.w.elapsed)/60,(self.totalTime-(self.w.elapsed+self.thermotime))/60))
+            worklist.comment("Estimated elapsed: %d minutes, remaining run time: %d minutes"%((self.thermotime+worklist.elapsed)/60,(self.totalTime-(worklist.elapsed+self.thermotime))/60))
         else:
-            self.w.comment("Estimated elapsed: %d minutes"%((self.thermotime+self.w.elapsed)/60))
+            worklist.comment("Estimated elapsed: %d minutes"%((self.thermotime+worklist.elapsed)/60))
         
     def cleantip(self):
         'Get the mask for a clean tip, washing if needed'
         if self.cleanTips==0:
-            #self.w.wash(self.cleanTips)
+            #worklist.wash(self.cleanTips)
             self.sanitize()
         tipMask=1
         while (self.cleanTips & tipMask)==0:
@@ -177,22 +177,22 @@ class Experiment(object):
                 tipMask=4
                 if  getDITI:
                     ditivol=sum(volumes)+src.inliquidLC.multicond+src.inliquidLC.multiexcess
-                    self.w.getDITI(tipMask&self.DITIMASK,min(self.MAXVOLUME,ditivol),True,True)
+                    worklist.getDITI(tipMask&self.DITIMASK,min(self.MAXVOLUME,ditivol),True,True)
             else:
                 tipMask=self.cleantip()
 
             cmt="Multi-add  %s to samples %s"%(src.name,",".join("%s[%.1f]"%(dests[i].name,volumes[i]) for i in range(len(dests))))
             #print "*",cmt
-            self.w.comment(cmt)
+            worklist.comment(cmt)
 
             if mix[0] and not src.isMixed:
-                src.mix(tipMask,self.w)
-            src.aspirate(tipMask,self.w,sum(volumes),True)
+                src.mix(tipMask,worklist)
+            src.aspirate(tipMask,worklist,sum(volumes),True)
             for i in range(len(dests)):
                 if volumes[i]>0.01:
-                    dests[i].dispense(tipMask,self.w,volumes[i],src)
+                    dests[i].dispense(tipMask,worklist,volumes[i],src)
             if self.useDiTis and dropDITI:
-                self.w.dropDITI(tipMask&self.DITIMASK,self.WASTE)
+                worklist.dropDITI(tipMask&self.DITIMASK,self.WASTE)
         else:
             for i in range(len(dests)):
                 if volumes[i]>0.01:
@@ -225,21 +225,21 @@ class Experiment(object):
         if self.useDiTis:
             tipMask=4
             if getDITI:
-                self.w.getDITI(tipMask&self.DITIMASK,ditivolume)
+                worklist.getDITI(tipMask&self.DITIMASK,ditivolume)
         else:
             tipMask=self.cleantip()
         #print "*",cmt
-        self.w.comment(cmt)
+        worklist.comment(cmt)
 
         if mix[0]:
-            src.mix(tipMask,self.w)
-        src.aspirate(tipMask,self.w,volume)
-        dest.dispense(tipMask,self.w,volume,src)
+            src.mix(tipMask,worklist)
+        src.aspirate(tipMask,worklist,volume)
+        dest.dispense(tipMask,worklist,volume,src)
         if mix[1]:
-            dest.mix(tipMask,self.w,True)
+            dest.mix(tipMask,worklist,True)
 
         if self.useDiTis and dropDITI:
-            self.w.dropDITI(tipMask&self.DITIMASK,self.WASTE)
+            worklist.dropDITI(tipMask&self.DITIMASK,self.WASTE)
 
     # Mix
     def mix(self, src, nmix=4):
@@ -248,9 +248,9 @@ class Experiment(object):
 
         cmt="Mix %s"%(src.name)
         tipMask=self.cleantip()
-        self.w.comment(cmt)
+        worklist.comment(cmt)
         src.isMixed=False	# Force a mix
-        src.mix(tipMask,self.w,False,nmix=nmix)
+        src.mix(tipMask,worklist,False,nmix=nmix)
 
     def dispose(self, volume, src,  mix=False, getDITI=True, dropDITI=True):
         'Dispose of a given volume by aspirating and not dispensing (will go to waste during next wash)'
@@ -275,18 +275,18 @@ class Experiment(object):
         if self.useDiTis:
             tipMask=4
             if getDITI:
-                self.w.getDITI(tipMask&self.DITIMASK,ditivolume)
+                worklist.getDITI(tipMask&self.DITIMASK,ditivolume)
         else:
             tipMask=self.cleantip()
         #print "*",cmt
-        self.w.comment(cmt)
+        worklist.comment(cmt)
 
         if mix and not src.isMixed:
-            src.mix(tipMask,self.w)
-        src.aspirate(tipMask,self.w,volume)
+            src.mix(tipMask,worklist)
+        src.aspirate(tipMask,worklist,volume)
 
         if self.useDiTis and dropDITI:
-            self.w.dropDITI(tipMask&self.DITIMASK,self.WASTE)
+            worklist.dropDITI(tipMask&self.DITIMASK,self.WASTE)
 
     def stage(self,stagename,reagents,sources,samples,volume,finalx=1.0,destMix=True,dilutant=None):
         # Add water to sample wells as needed (multi)
@@ -304,7 +304,7 @@ class Experiment(object):
         if dilutant==None:
             dilutant=self.WATER
             
-        self.w.comment("Stage: "+stagename)
+        worklist.comment("Stage: "+stagename)
         if not isinstance(volume,list):
             volume=[volume for i in range(len(samples))]
         for i in range(len(volume)):
@@ -341,7 +341,7 @@ class Experiment(object):
 
     def lihahome(self):
         'Move LiHa to left of deck'
-        self.w.moveliha(self.WASHLOC)
+        worklist.moveliha(self.WASHLOC)
         
     def runpgm(self,pgm,duration,waitForCompletion=True,volume=10,hotlidmode="TRACKING",hotlidtemp=1):
         if self.ptcrunning:
@@ -351,23 +351,23 @@ class Experiment(object):
             print "ERROR: PTC program name (%s) too long (max is 8 char)"%pgm
             assert(False)
         # move to thermocycler
-        self.w.flushQueue()
+        worklist.flushQueue()
         self.lihahome()
         cmt="run %s"%pgm
-        self.w.comment(cmt)
+        worklist.comment(cmt)
         #print "*",cmt
-        self.w.pyrun("PTC\\ptclid.py OPEN")
+        worklist.pyrun("PTC\\ptclid.py OPEN")
         self.moveplate(self.SAMPLEPLATE,"PTC")
-        self.w.vector("Hotel 1 Lid",self.HOTELPOS,self.w.SAFETOEND,True,self.w.DONOTMOVE,self.w.CLOSE)
-        self.w.vector("PTC200lid",self.PTCPOS,self.w.SAFETOEND,True,self.w.DONOTMOVE,self.w.OPEN)
-        self.w.romahome()
-        self.w.pyrun("PTC\\ptclid.py CLOSE")
+        worklist.vector("Hotel 1 Lid",self.HOTELPOS,worklist.SAFETOEND,True,worklist.DONOTMOVE,worklist.CLOSE)
+        worklist.vector("PTC200lid",self.PTCPOS,worklist.SAFETOEND,True,worklist.DONOTMOVE,worklist.OPEN)
+        worklist.romahome()
+        worklist.pyrun("PTC\\ptclid.py CLOSE")
         #        pgm="PAUSE30"  # For debugging
         assert(hotlidmode=="TRACKING" or hotlidmode=="CONSTANT")
         assert((hotlidmode=="TRACKING" and hotlidtemp>=0 and hotlidtemp<=45) or (hotlidmode=="CONSTANT" and hotlidtemp>30))
-        self.w.pyrun('PTC\\ptcrun.py %s CALC %s,%d %d'%(pgm,hotlidmode,hotlidtemp,volume))
-        self.pgmStartTime=self.w.elapsed
-        self.pgmEndTime=duration*60+self.w.elapsed
+        worklist.pyrun('PTC\\ptcrun.py %s CALC %s,%d %d'%(pgm,hotlidmode,hotlidtemp,volume))
+        self.pgmStartTime=worklist.elapsed
+        self.pgmEndTime=duration*60+worklist.elapsed
         self.ptcrunning=True
         Sample.addallhistory("{%s}"%pgm,addToEmpty=False,onlyplate=self.SAMPLEPLATE.name)
         if waitForCompletion:
@@ -387,41 +387,41 @@ class Experiment(object):
             return
         
         #print "Move plate %s from %s to %s"%(plate.name,plate.curloc,dest)
-        self.w.flushQueue()
+        worklist.flushQueue()
         self.lihahome()
         cmt="moveplate %s %s"%(plate.name,dest)
-        self.w.comment(cmt)
+        worklist.comment(cmt)
         if plate.curloc=="Home":
-                self.w.vector(plate.vectorName,plate,self.w.SAFETOEND,True,self.w.DONOTMOVE,self.w.CLOSE)
+                worklist.vector(plate.vectorName,plate,worklist.SAFETOEND,True,worklist.DONOTMOVE,worklist.CLOSE)
         elif plate.curloc=="Magnet":
-            self.w.vector("Magplate",self.MAGPLATELOC,self.w.SAFETOEND,True,self.w.DONOTMOVE,self.w.CLOSE)
+            worklist.vector("Magplate",self.MAGPLATELOC,worklist.SAFETOEND,True,worklist.DONOTMOVE,worklist.CLOSE)
         elif plate.curloc=="Shaker":
-            self.w.vector("Shaker",self.SHAKERPLATELOC,self.w.SAFETOEND,True,self.w.DONOTMOVE,self.w.CLOSE)
+            worklist.vector("Shaker",self.SHAKERPLATELOC,worklist.SAFETOEND,True,worklist.DONOTMOVE,worklist.CLOSE)
         elif plate.curloc=="PTC":
-            self.w.vector("PTC200",self.PTCPOS,self.w.SAFETOEND,True,self.w.DONOTMOVE,self.w.CLOSE)
+            worklist.vector("PTC200",self.PTCPOS,worklist.SAFETOEND,True,worklist.DONOTMOVE,worklist.CLOSE)
         else:
             print "Plate %s is in unknown location: %s"%(plate.name,plate.curloc)
             assert(False)
 
         if dest=="Home":
             plate.movetoloc(dest)
-            self.w.vector(plate.vectorName,plate,self.w.SAFETOEND,True,self.w.DONOTMOVE,self.w.OPEN)
+            worklist.vector(plate.vectorName,plate,worklist.SAFETOEND,True,worklist.DONOTMOVE,worklist.OPEN)
         elif dest=="Magnet":
             plate.movetoloc(dest,self.MAGPLATELOC)
-            self.w.vector("Magplate",self.MAGPLATELOC,self.w.SAFETOEND,True,self.w.DONOTMOVE,self.w.OPEN)
+            worklist.vector("Magplate",self.MAGPLATELOC,worklist.SAFETOEND,True,worklist.DONOTMOVE,worklist.OPEN)
         elif dest=="Shaker":
             plate.movetoloc(dest,self.SHAKERPLATELOC)
-            self.w.vector("Shaker",self.SHAKERPLATELOC,self.w.SAFETOEND,True,self.w.DONOTMOVE,self.w.OPEN)
+            worklist.vector("Shaker",self.SHAKERPLATELOC,worklist.SAFETOEND,True,worklist.DONOTMOVE,worklist.OPEN)
         elif dest=="PTC":
             plate.movetoloc(dest,self.PTCPOS)
-            self.w.vector("PTC200",self.PTCPOS,self.w.SAFETOEND,True,self.w.DONOTMOVE,self.w.OPEN)
+            worklist.vector("PTC200",self.PTCPOS,worklist.SAFETOEND,True,worklist.DONOTMOVE,worklist.OPEN)
         else:
             print "Attempt to move plate %s to unknown location: %s"%(plate.name,dest)
             assert(False)
 
         Sample.addallhistory("{->%s}"%dest,onlyplate=plate.name)
         if returnHome:
-            self.w.romahome()
+            worklist.romahome()
 
     def shake(self,plate,dur=60,speed=None,accel=5,returnPlate=True):
         if self.ptcrunning and plate==Experiment.SAMPLEPLATE:
@@ -467,18 +467,18 @@ class Experiment(object):
         oldloc=plate.curloc
         self.moveplate(plate,"Shaker",returnHome=False)
         __shakerActive=True
-        self.w.pyrun("BioShake\\bioexec.py setElmLockPos")
-        self.w.pyrun("BioShake\\bioexec.py setShakeTargetSpeed%d"%speed)
-        self.w.pyrun("BioShake\\bioexec.py setShakeAcceleration%d"%accel)
-        self.w.pyrun("BioShake\\bioexec.py shakeOn")
+        worklist.pyrun("BioShake\\bioexec.py setElmLockPos")
+        worklist.pyrun("BioShake\\bioexec.py setShakeTargetSpeed%d"%speed)
+        worklist.pyrun("BioShake\\bioexec.py setShakeAcceleration%d"%accel)
+        worklist.pyrun("BioShake\\bioexec.py shakeOn")
         self.starttimer()
         Sample.mixall(plate.name)
         Sample.addallhistory("(S%d@%.0f)"%(dur,speed),onlyplate=plate.name)
         self.waittimer(dur)
-        self.w.pyrun("BioShake\\bioexec.py shakeOff")
+        worklist.pyrun("BioShake\\bioexec.py shakeOff")
         self.starttimer()
         self.waittimer(accel+4)
-        self.w.pyrun("BioShake\\bioexec.py setElmUnlockPos")
+        worklist.pyrun("BioShake\\bioexec.py setElmUnlockPos")
         __shakerActive=False
         if returnPlate:
             self.moveplate(plate,oldloc)
@@ -488,15 +488,15 @@ class Experiment(object):
         return __shakerActive
     
     def starttimer(self,timer=1):
-        self.timerStartTime[timer]=self.w.elapsed
-    	self.w.starttimer(timer)
+        self.timerStartTime[timer]=worklist.elapsed
+    	worklist.starttimer(timer)
 
     def waittimer(self,duration,timer=1):
-        if self.timerStartTime[timer]+duration-self.w.elapsed > 20:
+        if self.timerStartTime[timer]+duration-worklist.elapsed > 20:
             # Might as well sanitize while we're waiting
             self.sanitize()
         if duration>0:
-            self.w.waittimer(duration,timer)
+            worklist.waittimer(duration,timer)
             #Sample.addallhistory("{%ds}"%duration)
 
     def pause(self,duration):
@@ -510,53 +510,53 @@ class Experiment(object):
         #print "* Wait for PTC to finish"
         if sanitize:
             self.sanitize()   # Sanitize tips before waiting for this to be done
-        self.w.comment("Wait for PTC")
-        while self.pgmEndTime-self.w.elapsed > 120:
+        worklist.comment("Wait for PTC")
+        while self.pgmEndTime-worklist.elapsed > 120:
             # Run any idle programs
-            oldElapsed=self.w.elapsed
+            oldElapsed=worklist.elapsed
             for ip in self.idlePgms:
-                if self.pgmEndTime-self.w.elapsed > 120:
-                    #print "Executing idle program with %.0f seconds"%(self.pgmEndTime-self.w.elapsed)
-                    ip(self.pgmEndTime-self.w.elapsed-120)
-            if oldElapsed==self.w.elapsed:
+                if self.pgmEndTime-worklist.elapsed > 120:
+                    #print "Executing idle program with %.0f seconds"%(self.pgmEndTime-worklist.elapsed)
+                    ip(self.pgmEndTime-worklist.elapsed-120)
+            if oldElapsed==worklist.elapsed:
                 # Nothing was done
                 break
-            self.w.flushQueue()		# Just in case
+            worklist.flushQueue()		# Just in case
 
-        self.pipandthermotime+=(self.w.elapsed-self.pgmStartTime)
-        self.thermotime+=(self.pgmEndTime-self.w.elapsed)
-        print "Waiting for PTC with %.0f seconds expected to remain"%(self.pgmEndTime-self.w.elapsed)
-        self.w.pyrun('PTC\\ptcwait.py')
-        self.w.pyrun("PTC\\ptclid.py OPEN")
-        #        self.w.pyrun('PTC\\ptcrun.py %s CALC ON'%"COOLDOWN")
-        #        self.w.pyrun('PTC\\ptcwait.py')
-        self.w.vector("PTC200lid",self.PTCPOS,self.w.SAFETOEND,True,self.w.DONOTMOVE,self.w.CLOSE)
-        self.w.vector("Hotel 1 Lid",self.HOTELPOS,self.w.SAFETOEND,True,self.w.DONOTMOVE,self.w.OPEN)
+        self.pipandthermotime+=(worklist.elapsed-self.pgmStartTime)
+        self.thermotime+=(self.pgmEndTime-worklist.elapsed)
+        print "Waiting for PTC with %.0f seconds expected to remain"%(self.pgmEndTime-worklist.elapsed)
+        worklist.pyrun('PTC\\ptcwait.py')
+        worklist.pyrun("PTC\\ptclid.py OPEN")
+        #        worklist.pyrun('PTC\\ptcrun.py %s CALC ON'%"COOLDOWN")
+        #        worklist.pyrun('PTC\\ptcwait.py')
+        worklist.vector("PTC200lid",self.PTCPOS,worklist.SAFETOEND,True,worklist.DONOTMOVE,worklist.CLOSE)
+        worklist.vector("Hotel 1 Lid",self.HOTELPOS,worklist.SAFETOEND,True,worklist.DONOTMOVE,worklist.OPEN)
 
-        self.w.vector("PTC200WigglePos",self.PTCPOS,self.w.SAFETOEND,False,self.w.DONOTMOVE,self.w.DONOTMOVE)
-        self.w.vector("PTC200Wiggle",self.PTCPOS,self.w.SAFETOEND,False,self.w.DONOTMOVE,self.w.CLOSE,True)
-        self.w.vector("PTC200Wiggle",self.PTCPOS,self.w.ENDTOSAFE,False,self.w.DONOTMOVE,self.w.OPEN,True)
-        self.w.vector("PTC200WigglePos",self.PTCPOS,self.w.ENDTOSAFE,False,self.w.DONOTMOVE,self.w.DONOTMOVE)
+        worklist.vector("PTC200WigglePos",self.PTCPOS,worklist.SAFETOEND,False,worklist.DONOTMOVE,worklist.DONOTMOVE)
+        worklist.vector("PTC200Wiggle",self.PTCPOS,worklist.SAFETOEND,False,worklist.DONOTMOVE,worklist.CLOSE,True)
+        worklist.vector("PTC200Wiggle",self.PTCPOS,worklist.ENDTOSAFE,False,worklist.DONOTMOVE,worklist.OPEN,True)
+        worklist.vector("PTC200WigglePos",self.PTCPOS,worklist.ENDTOSAFE,False,worklist.DONOTMOVE,worklist.DONOTMOVE)
 
-        self.w.vector("PTC200Wiggle2Pos",self.PTCPOS,self.w.SAFETOEND,False,self.w.DONOTMOVE,self.w.DONOTMOVE)
-        self.w.vector("PTC200Wiggle2",self.PTCPOS,self.w.SAFETOEND,False,self.w.DONOTMOVE,self.w.CLOSE,True)
-        self.w.vector("PTC200Wiggle2",self.PTCPOS,self.w.ENDTOSAFE,False,self.w.DONOTMOVE,self.w.OPEN,True)
-        self.w.vector("PTC200Wiggle2Pos",self.PTCPOS,self.w.ENDTOSAFE,False,self.w.DONOTMOVE,self.w.DONOTMOVE)
+        worklist.vector("PTC200Wiggle2Pos",self.PTCPOS,worklist.SAFETOEND,False,worklist.DONOTMOVE,worklist.DONOTMOVE)
+        worklist.vector("PTC200Wiggle2",self.PTCPOS,worklist.SAFETOEND,False,worklist.DONOTMOVE,worklist.CLOSE,True)
+        worklist.vector("PTC200Wiggle2",self.PTCPOS,worklist.ENDTOSAFE,False,worklist.DONOTMOVE,worklist.OPEN,True)
+        worklist.vector("PTC200Wiggle2Pos",self.PTCPOS,worklist.ENDTOSAFE,False,worklist.DONOTMOVE,worklist.DONOTMOVE)
 
-        self.w.vector("PTC200WigglePos",self.PTCPOS,self.w.SAFETOEND,False,self.w.DONOTMOVE,self.w.DONOTMOVE)
-        self.w.vector("PTC200Wiggle",self.PTCPOS,self.w.SAFETOEND,False,self.w.DONOTMOVE,self.w.CLOSE,True)
-        self.w.vector("PTC200Wiggle",self.PTCPOS,self.w.ENDTOSAFE,False,self.w.DONOTMOVE,self.w.OPEN,True)
-        self.w.vector("PTC200WigglePos",self.PTCPOS,self.w.ENDTOSAFE,False,self.w.DONOTMOVE,self.w.DONOTMOVE)
+        worklist.vector("PTC200WigglePos",self.PTCPOS,worklist.SAFETOEND,False,worklist.DONOTMOVE,worklist.DONOTMOVE)
+        worklist.vector("PTC200Wiggle",self.PTCPOS,worklist.SAFETOEND,False,worklist.DONOTMOVE,worklist.CLOSE,True)
+        worklist.vector("PTC200Wiggle",self.PTCPOS,worklist.ENDTOSAFE,False,worklist.DONOTMOVE,worklist.OPEN,True)
+        worklist.vector("PTC200WigglePos",self.PTCPOS,worklist.ENDTOSAFE,False,worklist.DONOTMOVE,worklist.DONOTMOVE)
 
         self.ptcrunning=False
         self.moveplate(self.SAMPLEPLATE,"Home")
         # Verify plate is in place
-        self.w.vector(self.SAMPLEPLATE.vectorName,self.SAMPLEPLATE,self.w.SAFETOEND,False,self.w.DONOTMOVE,self.w.CLOSE)
-        self.w.vector(self.SAMPLEPLATE.vectorName,self.SAMPLEPLATE,self.w.ENDTOSAFE,False,self.w.OPEN,self.w.DONOTMOVE)
-        self.w.romahome()
-        #self.w.userprompt("Plate should be back on deck. Press return to continue")
+        worklist.vector(self.SAMPLEPLATE.vectorName,self.SAMPLEPLATE,worklist.SAFETOEND,False,worklist.DONOTMOVE,worklist.CLOSE)
+        worklist.vector(self.SAMPLEPLATE.vectorName,self.SAMPLEPLATE,worklist.ENDTOSAFE,False,worklist.OPEN,worklist.DONOTMOVE)
+        worklist.romahome()
+        #worklist.userprompt("Plate should be back on deck. Press return to continue")
         # Wash tips again to remove any drips that may have formed while waiting for PTC
-        self.w.wash(15,1,5,True)
+        worklist.wash(15,1,5,True)
 
 
     def dilute(self,samples,factor):

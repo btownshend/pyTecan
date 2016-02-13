@@ -7,6 +7,7 @@ from Experiment.experiment import Experiment
 from Experiment.sample import Sample
 from Experiment.JobQueue import JobQueue
 from TRPLib.TRP import uniqueTargets, diluteName, findsamps
+import Experiment.worklist as worklist
 
 class QSetup(object):
     TGTINVOL=4
@@ -167,16 +168,16 @@ class QSetup(object):
         self.addSamples(src=[self.dilutant.name],needDil=1,primers=primers,nreplicates=nreplicates,save=False)
 
     def idler(self,t):
-        endTime=self.trp.e.w.elapsed+t
+        endTime=worklist.elapsed+t
         if self.debug:
             print "Idler(%.0f)"%t
-        while self.trp.e.w.elapsed<endTime:
+        while worklist.elapsed<endTime:
             j=self.jobq.getJob()
             if j==None:
                 break
             self.jobq.execJob(self.trp.e,j)
         if self.debug:
-            print "Idler done with ",endTime-self.trp.e.w.elapsed," seconds remaining"
+            print "Idler done with ",endTime-worklist.elapsed," seconds remaining"
 
     def run(self):
         'Run the dilutions and QPCR setup'
@@ -185,7 +186,7 @@ class QSetup(object):
         self.idler(100000)
 
         assert(self.jobq.len() == 0)
-        self.trp.e.w.userprompt('Starting qPCR setup',timeout=5)
+        worklist.userprompt('Starting qPCR setup',timeout=5)
         for p in self.allprimers():
             # Build list of relevant entries
             ind=[ i for i in range(len(self.dilProds)) if p in self.primers[i]]
