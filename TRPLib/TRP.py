@@ -2,12 +2,47 @@ from Experiment.sample import Sample
 from Experiment.experiment import Experiment
 from Experiment.experiment import Concentration
 import Experiment.worklist as worklist
+import Experiment.reagents as reagents
 
 import os
 import sys
 import math
 
 maxVolumePerWell=150
+
+reagents.add("MT7",well="A1",conc=2.5,extraVol=30)
+reagents.add("MPosRT",well="B1",conc=2,extraVol=30)
+reagents.add("MNegRT",well=None,conc=2)
+reagents.add("MLigAT7",well="D1",conc=3)	# Conc is relative to annealing time (not to post-ligase)
+reagents.add("MLigBT7W",well="E1",conc=3)
+reagents.add("MLigase",well="A2",conc=3)
+
+reagents.add("Theo",well=None,conc=Concentration(25,7.5,'mM'))
+reagents.add("MStopXBio",well="B2",conc=2)
+reagents.add("MStpX",well="C2",conc=2)
+reagents.add("MQREF",well="D2",conc=10.0/6)
+reagents.add("MQAX",well="E2",conc=10.0/6)
+reagents.add("MQBX",well="A3",conc=10.0/6)
+reagents.add("MPCRAX",well="B3",conc=4.0/3)
+reagents.add("MPCRBX",well="C3",conc=4.0/3)
+reagents.add("MQMX",well="D3",conc=10.0/6)
+reagents.add("MQWX",well="E3",conc=10.0/6)
+reagents.add("SSD",well="A4",conc=10.0)
+reagents.add("MLigAT7W",well="B4",conc=3)
+reagents.add("BeadBuffer",well="C4",conc=1)
+reagents.add("Dynabeads",well="D4",conc=2,hasBeads=True)
+reagents.add("MQT7X",well="E4",conc=15.0/9)
+reagents.add("MStpBeads",well="A5",conc=3.7)
+reagents.add("QPCRREF",well="B5",conc=Concentration(50,50,'pM'))
+reagents.add("MLigBT7",well=None,conc=3)
+reagents.add("MPCRT7X",well="C5",conc=4.0/3)
+reagents.add("NaOH",well="D5",conc=1.0)
+reagents.add("MLigBT7WBio",well="E5",conc=3)
+reagents.add("MLigBT7Bio",well="A6",conc=3)
+reagents.add("MPCR",well=None,conc=4)
+reagents.add("MLigB",well=None,conc=3)
+UNUSED=Sample("LeakyA1",Experiment.SAMPLEPLATE,"A1",0)
+UNUSED2=Sample("LeakyH12",Experiment.SAMPLEPLATE,"H12",0)
     
 def listify(x):
     'Convert a list of (lists or scalars) into a list of equal length lists'
@@ -54,8 +89,6 @@ def diluteName(name,dilution):
     return result
 
 class TRP(object):
-    r=Reagents()
-    
     def __init__(self,totalTime=None):	# Estimate of total run time in seconds
         'Create a new TRP run'
         self.e=Experiment(totalTime)
@@ -164,7 +197,7 @@ class TRP(object):
     def runRxInPlace(self,src,vol,master,returnPlate=True,finalx=1.0):
         'Run reaction on beads in given total volume'
         [vol,src,master]=listify([vol,src,master])
-        smaster=[self.r.get(m) for m in master]
+        smaster=[reagents.get(m) for m in master]
         mastervol=[vol[i]*finalx/smaster[i].conc.dilutionneeded() for i in range(len(vol))]
         watervol=[vol[i]-src[i].volume-mastervol[i] for i in range(len(vol))]
         if any([w < -0.01 for w in watervol]):
@@ -193,19 +226,19 @@ class TRP(object):
 
         worklist.comment("runT7: source=%s"%[str(s) for s in src])
 
-        MT7vol=vol*1.0/self.r.MT7.conc.dilutionneeded()
+        MT7vol=vol*1.0/reagents.get("MT7").conc.dilutionneeded()
         sourcevols=[vol*1.0/s for s in srcdil]
         if any(theo):
-            theovols=[(vol*1.0/self.r.Theo.conc.dilutionneeded() if t else 0) for t in theo]
+            theovols=[(vol*1.0/reagents.get("Theo").conc.dilutionneeded() if t else 0) for t in theo]
             watervols=[vol-theovols[i]-sourcevols[i]-MT7vol for i in range(len(src))]
         else:
             watervols=[vol-sourcevols[i]-MT7vol for i in range(len(src))]
 
         if sum(watervols)>0.01:
             self.e.multitransfer(watervols,self.e.WATER,tgt,(False,False))
-        self.e.multitransfer([MT7vol for s in tgt],self.r.MT7,tgt,(False,False))
+        self.e.multitransfer([MT7vol for s in tgt],reagents.get("MT7"),tgt,(False,False))
         if any(theo):
-            self.e.multitransfer([tv for tv in theovols if tv>0.01],self.r.Theo,[tgt[i] for i in range(len(theovols)) if theovols[i]>0],(False,False),ignoreContents=True)
+            self.e.multitransfer([tv for tv in theovols if tv>0.01],reagents.get("Theo"),[tgt[i] for i in range(len(theovols)) if theovols[i]>0],(False,False),ignoreContents=True)
         for i in range(len(src)):
             self.e.transfer(sourcevols[i],src[i],tgt[i],(True,False))
         for p in set([t.plate for t in tgt]):
@@ -233,7 +266,7 @@ class TRP(object):
             tgt[i].conc=Concentration(srcdil[i],1)
 
         ## Stop
-        sstopmaster=[self.r.get(s) for s in stopmaster]
+        sstopmaster=[reagents.get(s) for s in stopmaster]
         for i in range(len(tgt)):
             stopvol=tgt[i].volume/(sstopmaster[i].conc.dilutionneeded()-1)
             finalvol=tgt[i].volume+stopvol
@@ -266,8 +299,8 @@ class TRP(object):
             
         self.e.moveplate(src[0].plate,"Home")		# Make sure we do this off the magnet
 
-        sbeads=[self.r.get(b) for b in beads]
-        sbuffer=[self.r.get(b) for b in buffer]
+        sbeads=[reagents.get(b) for b in beads]
+        sbuffer=[reagents.get(b) for b in buffer]
         # Calculate volumes needed
         beadConc=[sbeads[i].conc.final if beadConc[i]==None else beadConc[i] for i in range(len(sbeads))]
         beadDil=sbeads[i].conc.stock/beadConc[i]
@@ -340,8 +373,8 @@ class TRP(object):
         # Wash
         swash=[]
         for w in wash:
-            if self.r.isReagent(w):
-                swash.append(self.r.get(w))
+            if reagents.isReagent(w):
+                swash.append(reagents.get(w))
             else:
                 swash=swash+w
 
@@ -458,7 +491,7 @@ class TRP(object):
         
     def runRTSetup(self,src,vol,srcdil,tgt=[],rtmaster=None):
         if rtmaster==None:
-            rtmaster=self.r.MPosRT
+            rtmaster=reagents.get("MPosRT")
 
         [pos,src,tgt,vol,srcdil]=listify([pos,src,tgt,vol,srcdil])
         if len(tgt)==0:
@@ -492,7 +525,7 @@ class TRP(object):
     ########################
     def runLig(self,prefix=None,src=None,vol=None,srcdil=None,tgt=[],master=None,anneal=True,ligtemp=25):
         if master==None:
-            master=[self.r.get("MLigAN7") if p=='A' else self.r.get("MLigBN7") for p in prefix]
+            master=[reagents.get("MLigAN7") if p=='A' else reagents.get("MLigBN7") for p in prefix]
 
         #Extension
         # e.g: trp.runLig(prefix=["B","B","B","B","B","B","B","B"],src=["1.RT-","1.RT+","1.RTNeg-","1.RTNeg+","2.RT-","2.RT-","2.RTNeg+","2.RTNeg+"],tgt=["1.RT-B","1.RT+B","1.RTNeg-B","1.RTNeg+B","2.RT-A","2.RT-B","2.RTNeg+B","2.RTNeg+B"],vol=[10,10,10,10,10,10,10,10],srcdil=[2,2,2,2,2,2,2,2])
@@ -501,7 +534,7 @@ class TRP(object):
             tgt=[Sample("%s.%s"%(src[i].name,master[i].name),srcs[i].plate) for i in range(len(src))]
 
         # Need to check since an unused ligation master mix will not have a concentration
-        minsrcdil=1/(1-1/master[0].conc.dilutionneeded()-1/self.r.MLigase.conc.dilutionneeded())
+        minsrcdil=1/(1-1/master[0].conc.dilutionneeded()-1/reagents.get("MLigase").conc.dilutionneeded())
         for i in srcdil:
             if i<minsrcdil:
                 print "runLig: srcdil=%.2f, but must be at least %.2f based on concentrations of master mixes"%(i,minsrcdil)
@@ -522,7 +555,7 @@ class TRP(object):
         if anneal:
             self.e.shake(tgt[0].plate,returnPlate=False)
             self.e.runpgm("TRPANN",5,False,max(vol),hotlidmode="CONSTANT",hotlidtemp=100)
-        self.e.stage('Ligation',[self.r.MLigase],[],tgt,vol,destMix=False)
+        self.e.stage('Ligation',[reagents.get("MLigase")],[],tgt,vol,destMix=False)
         self.e.shake(tgt[0].plate,returnPlate=False)
         self.runLigPgm(max(vol),ligtemp)
         return tgt
@@ -543,7 +576,7 @@ class TRP(object):
     def runLigInPlace(self,src,vol,ligmaster,anneal=True,ligtemp=25):
         'Run ligation on beads'
         [vol,src]=listify([vol,src])
-        annealvol=[v*(1-1/self.r.MLigase.conc.dilutionneeded()) for v in vol]
+        annealvol=[v*(1-1/reagents.get("MLigase").conc.dilutionneeded()) for v in vol]
 
         # Adjust source dilution
         for i in range(len(src)):
@@ -569,14 +602,14 @@ class TRP(object):
 
         if sepPrimers:
             sampvols=[vol[i]/srcdil[i] for i in range(len(src))]
-            mm=self.r.MPCR
+            mm=reagents.get("MPCR")
             mmvols=[vol[i]/mm.conc.dilutionneeded() for i in range(len(src))]
             for s in prefix + suffix:
-                if not self.r.isReagent(s):
-                    self.r.addReagent(name=s,conc=primerDil,extraVol=30)
+                if not reagents.isReagent(s):
+                    reagents.add(name=s,conc=primerDil,extraVol=30)
 
-            sprefix=[self.r.get(p) for p in prefix]
-            ssuffix=[self.r.get(p) for p in suffix]
+            sprefix=[reagents.get(p) for p in prefix]
+            ssuffix=[reagents.get(p) for p in suffix]
 
             prefixvols=[vol[i]/sprefix[i].conc.dilutionneeded() for i in range(len(src))]
             suffixvols=[vol[i]/ssuffix[i].conc.dilutionneeded() for i in range(len(src))]
@@ -613,15 +646,15 @@ class TRP(object):
             primer=prefix[i]+suffix[i]
             #print "primer=",primer
             if any(p=='AS' for p in primer):
-                self.e.stage('PCRAS',[self.r.PCRAS],[src[i] for i in range(len(src)) if primer[i]=='AS'],[tgt[i] for i in range(len(tgt)) if primer[i]=='AS'],[vol[i] for i in range(len(vol)) if primer[i]=='AS'],destMix=False)
+                self.e.stage('PCRAS',[reagents.get("PCRAS")],[src[i] for i in range(len(src)) if primer[i]=='AS'],[tgt[i] for i in range(len(tgt)) if primer[i]=='AS'],[vol[i] for i in range(len(vol)) if primer[i]=='AS'],destMix=False)
             if any(p=='BS' for p in primer):
-                self.e.stage('PCRBS',[self.r.PCRBS],[src[i] for i in range(len(src)) if primer[i]=='BS'],[tgt[i] for i in range(len(tgt)) if primer[i]=='BS'],[vol[i] for i in range(len(vol)) if primer[i]=='BS'],destMix=False)
+                self.e.stage('PCRBS',[reagents.get("PCRBS")],[src[i] for i in range(len(src)) if primer[i]=='BS'],[tgt[i] for i in range(len(tgt)) if primer[i]=='BS'],[vol[i] for i in range(len(vol)) if primer[i]=='BS'],destMix=False)
             if any(p=='AX' for p in primer):
-                self.e.stage('PCRAX',[self.r.PCRAX],[src[i] for i in range(len(src)) if primer[i]=='AX'],[tgt[i] for i in range(len(tgt)) if primer[i]=='AX'],[vol[i] for i in range(len(vol)) if primer[i]=='AX'],destMix=False)
+                self.e.stage('PCRAX',[reagents.get("PCRAX")],[src[i] for i in range(len(src)) if primer[i]=='AX'],[tgt[i] for i in range(len(tgt)) if primer[i]=='AX'],[vol[i] for i in range(len(vol)) if primer[i]=='AX'],destMix=False)
             if any(p=='BX' for p in primer):
-                self.e.stage('PCRBX',[self.r.PCRBX],[src[i] for i in range(len(src)) if primer[i]=='BX'],[tgt[i] for i in range(len(tgt)) if primer[i]=='BX'],[vol[i] for i in range(len(vol)) if primer[i]=='BX'],destMix=False)
+                self.e.stage('PCRBX',[reagents.get("PCRBX")],[src[i] for i in range(len(src)) if primer[i]=='BX'],[tgt[i] for i in range(len(tgt)) if primer[i]=='BX'],[vol[i] for i in range(len(vol)) if primer[i]=='BX'],destMix=False)
             if any(p=='T7X' for p in primer):
-                self.e.stage('PCRT7X',[self.r.PCRT7X],[src[i] for i in range(len(src)) if primer[i]=='T7X'],[tgt[i] for i in range(len(tgt)) if primer[i]=='T7X'],[vol[i] for i in range(len(vol)) if primer[i]=='T7X'],destMix=False)
+                self.e.stage('PCRT7X',[reagents.get("PCRT7X")],[src[i] for i in range(len(src)) if primer[i]=='T7X'],[tgt[i] for i in range(len(tgt)) if primer[i]=='T7X'],[vol[i] for i in range(len(vol)) if primer[i]=='T7X'],destMix=False)
         pgm="PCR%d"%ncycles
         self.e.shake(tgt[0].plate,returnPlate=False)
         #        worklist.pyrun('PTC\\ptcsetpgm.py %s TEMP@95,120 TEMP@95,30 TEMP@55,30 TEMP@72,25 GOTO@2,%d TEMP@72,180 TEMP@16,2'%(pgm,ncycles-1))
@@ -698,9 +731,9 @@ class TRP(object):
         dil={}
         for p in primers:
             mname="MQ%s"%p
-            if not self.r.isReagent(mname):
-                self.r.addReagent(name=mname,conc=15.0/9.0,extraVol=30)
-            mq=self.r.get(mname)
+            if not reagents.isReagent(mname):
+                reagents.add(name=mname,conc=15.0/9.0,extraVol=30)
+            mq=reagents.get(mname)
             t=[a[1] for a in all if a[2]==p]
             v=[a[3]/mq.conc.dilutionneeded() for a in all if a[2]==p]
             self.e.multitransfer(v,mq,t,(False,False))
