@@ -5,6 +5,7 @@ import liquidclass
 import os.path
 from datetime import datetime
 from plate import Plate
+import reagents
 
 _Experiment__shakerActive = False
 
@@ -100,7 +101,7 @@ class Experiment(object):
         print >>fd
 
         print >>fd,"Run time: %d (pipetting only) + %d (thermocycling only) + %d (both) = %d minutes\n"%((worklist.elapsed-self.pipandthermotime)/60.0,self.thermotime/60, self.pipandthermotime/60, (worklist.elapsed+self.thermotime)/60)
-        Sample.printprep(fd)
+        reagents.printprep(fd)
         Sample.printallsamples("All Samples:",fd,w=worklist)
         fd.close()
         

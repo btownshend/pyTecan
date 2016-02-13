@@ -133,7 +133,6 @@ class Sample(object):
         else:
                 self.conc=Concentration(conc)
         self.volume=volume
-        self.initvolume=volume
         if volume>0:
             self.ingredients={name:volume}
         else:
@@ -184,24 +183,24 @@ class Sample(object):
     @classmethod
     def clearall(cls):
         'Clear all samples'
-        for s in __allsamples:
-            s.volume=s.initvolume
-            s.history=""
-            s.isMixed=True
-            s.hasBeads=s.initHasBeads
-            if s.volume==0:
-                s.conc=None
-                s.ingredients={}
-            else:
-                s.ingredients={s.name:s.volume}
-            s.firstdispense = 0					# Last time accessed
+        global __allsamples
+        __allsamples=[]		# Clear list of samples
+        # for s in __allsamples:
+        #     s.history=""
+        #     s.isMixed=True
+        #     s.hasBeads=s.initHasBeads
+        #     if s.volume==0:
+        #         s.conc=None
+        #         s.ingredients={}
+        #     else:
+        #         s.ingredients={s.name:s.volume}
+        #     s.firstdispense = 0					# Last time accessed
 
     @classmethod
     def clearplate(cls,plate):
         'Remove all samples from give plate'
         print cls
         global __allsamples
-        print __allsamples
         allnew=[s for s in __allsamples if s.plate!=plate]
         __allsamples=allnew
 
@@ -231,7 +230,7 @@ class Sample(object):
     def getAllLocOnPlate(cls,plate=None):  
         result=""
         for s in __allsamples:
-            if (plate==None or s.plate==plate) and s.volume!=s.initvolume:
+            if (plate==None or s.plate==plate):
                 result+=" %s"%(s.plate.wellname(s.well))
         return result 
 
@@ -526,27 +525,6 @@ class Sample(object):
             s+="%s:%.4g "%(k,self.ingredients[k])
         s+="}"
         return s
-
-    @staticmethod
-    def printprep(fd=sys.stdout):
-        notes="Reagents to provide:"
-        total=0
-        for s in sorted(__allsamples, key=lambda p:p.well):
-            if s.conc!=None:
-                c="[%s]"%str(s.conc)
-            else:
-                c=""   
-            if s.volume==s.initvolume:
-                'Not used'
-                #note="%s%s in %s.%s not consumed"%(s.name,c,str(s.plate),s.plate.wellname(s.well))
-                #notes=notes+"\n"+note
-            elif s.initvolume>0:
-                note="%s%s in %s.%s consume %.1f ul, provide %.1f ul"%(s.name,c,str(s.plate),s.plate.wellname(s.well),s.initvolume-s.volume,s.initvolume)
-                notes=notes+"\n"+note
-            if s.plate.name=="Reagents":
-                total+=round((s.initvolume-s.volume)*10)/10.0
-        print >>fd,notes
-        print >>fd,"Total reagents volume = %.1f ul"%total
 
     @staticmethod
     def savematlab(filename):

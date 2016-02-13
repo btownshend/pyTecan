@@ -89,13 +89,20 @@ def diluteName(name,dilution):
     return result
 
 class TRP(object):
-    def __init__(self,totalTime=None):	# Estimate of total run time in seconds
+    def __init__(self):
         'Create a new TRP run'
-        self.e=Experiment(totalTime)
+        self.e=Experiment()
         self.e.setreagenttemp(6.0)
         self.e.sanitize(3,50)    # Heavy sanitize
             
-    def addTemplates(self,names,stockconc,finalconc=None,units="nM",plate=Experiment.REAGENTPLATE):
+    def reset(self):
+        'Reset this experiment so we can generate it again after adjusting the reagent initial volumes and total time'
+        totalTime=worklist.elapsed+self.e.thermotime
+        self.e=Experiment(totalTime)
+        reagents.reset()
+        Sample.clearall()
+    
+    def addTemplates(self,names,stockconc,finalconc=None,units="nM",plate=Experiment.EPPENDORFS):
         if finalconc==None:
             print "Warning: final concentration of template not specified, assuming 0.6x (should add to addTemplates() call"
             [names,stockconc]=listify([names,stockconc])
@@ -103,7 +110,10 @@ class TRP(object):
         else:
             [names,stockconc,finalconc]=listify([names,stockconc,finalconc])
 
-        tgt=[Sample(names[i],plate,None,Concentration(stockconc[i],finalconc[i],units)) for  i in range(len(names))]
+        tgt=[]
+        for i in range(len(names)):
+            reagents.add(names[i],plate=plate,conc=Concentration(stockconc[i],finalconc[i],units))
+            tgt.append(reagents.get(names[i]))
         return tgt
     
     def finish(self):
@@ -121,9 +131,6 @@ class TRP(object):
                 print "WARNING: Low final volume for ", s
             elif s.volume>s.plate.maxVolume:
                 print "ERROR: Excess final volume  (",s.volume,") for ",s,", maximum is ",s.plate.maxVolume
-                hasError=True
-            elif s.initvolume>s.plate.maxVolume:
-                print "ERROR: Excess initial volume (",s.initvolume,") for ",s,", maximum is ",s.plate.maxVolume
                 hasError=True
                 
         if hasError:
