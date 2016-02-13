@@ -196,6 +196,15 @@ class Sample(object):
             s.firstdispense = 0					# Last time accessed
 
     @classmethod
+    def clearplate(cls,plate):
+        'Remove all samples from give plate'
+        print cls
+        global __allsamples
+        print __allsamples
+        allnew=[s for s in __allsamples if s.plate!=plate]
+        __allsamples=allnew
+
+    @classmethod
     def lookup(cls,name):
         for s in __allsamples:
             if s.name==name:
