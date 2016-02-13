@@ -6,7 +6,7 @@ import math
 from Experiment.experiment import Experiment
 from Experiment.sample import Sample
 from Experiment.JobQueue import JobQueue
-from TRPLib.TRP import uniqueTargets, diluteName, findsamps
+from TRPLib.TRP import  diluteName
 import Experiment.worklist as worklist
 
 class QSetup(object):
@@ -47,17 +47,15 @@ class QSetup(object):
                 saveVol=max(self.MINDILVOL*1.0/saveDil,self.TGTINVOL)
             
             if names==None:
-                tgt=[diluteName(src[i],saveDil) for i in range(len(src))]
+                tgt=[Sample(diluteName(src[i].name,saveDil),self.trp.e.DILPLATE) for i in range(len(src))]
             else:
-                tgt=[diluteName(names[i],saveDil) for i in range(len(src))]
+                tgt=[Sample(diluteName(names[i],saveDil),self.trp.e.DILPLATE) for i in range(len(src))]
             sv=tgt
             
-            for i in range(len(tgt)):
-                t=Sample.lookup(tgt[i])
-                if t==None or t.volume==0:
-                    #print "Save ",src[i]
-                    svtmp=self.trp.runQPCRDIL(src=[src[i]],vol=saveVol*saveDil,srcdil=saveDil,tgt=[tgt[i]],dilPlate=True,dilutant=self.dilutant)  
-                    sv[i]=svtmp[0]
+            for i in range(len(sv)):
+                #print "Save ",src[i]
+                svtmp=self.trp.runQPCRDIL(src=[src[i]],vol=saveVol*saveDil,srcdil=saveDil,tgt=[tgt[i]],dilPlate=True,dilutant=self.dilutant)  
+                sv[i]=svtmp[0]
         else:
             saveDil=1
             sv=src
@@ -65,8 +63,7 @@ class QSetup(object):
         needDil=needDil/saveDil
         nstages=int(math.ceil(math.log(needDil)/math.log(self.MAXDIL)))
         for s in sv:
-            ssrc=findsamps([s],False)
-            j0=self.jobq.addShake(sample=ssrc[0],prereqs=[])
+            j0=self.jobq.addShake(sample=s,prereqs=[])
             prereqs=[j0]
             intermed=s
 
@@ -77,18 +74,15 @@ class QSetup(object):
                     vol=self.MAXDILVOL
                 else:
                     vol=min(self.MAXDILVOL,max(self.MINDILVOL,dil*self.TGTINVOL))
-                destName=diluteName(intermed,dil)
-                destList=findsamps([destName],True,self.trp.e.DILPLATE,unique=True)
-                dest=destList[0]
+                dest=Sample(diluteName(intermed.name,dil),self.trp.e.DILPLATE)
                 #print "dest=",dest
-                ssrc=findsamps([intermed],False)
                 j1=self.jobq.addMultiTransfer(volume=vol*(dil-1)/dil,src=self.dilutant,dest=dest,prereqs=[])
                 prereqs.append(j1)
-                j2=self.jobq.addTransfer(volume=vol/dil,src=ssrc[0],dest=dest,prereqs=prereqs)
+                j2=self.jobq.addTransfer(volume=vol/dil,src=s,dest=dest,prereqs=prereqs)
                 #print "Dilution of %s was %.2f instead of %.2f (error=%.0f%%)"%(dest.name,(dil/(1+dil))/(1/dil),dil,((dil/(1+dil))/(1/dil)/dil-1)*100)
                 j3=self.jobq.addShake(sample=dest,prereqs=[j2])
                 prereqs=[j3]
-                intermed=dest.name
+                intermed=dest
             self.dilProds=self.dilProds+[intermed]
             self.primers=self.primers+[primers]
             self.nreplicates=self.nreplicates+[nreplicates]
