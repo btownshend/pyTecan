@@ -5,7 +5,6 @@ import liquidclass
 import os.path
 from datetime import datetime
 
-ptcrunning=False
 _Experiment__shakerActive = False
 
 class Experiment(object):
