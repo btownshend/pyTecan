@@ -188,9 +188,9 @@ class TRP(object):
 
         if dilutant==None:
             dilutant=self.e.WATER
-            if not ssrc[i].isMixed:
         self.e.multitransfer([vol[i]*(dil[i]-1) for i in range(len(vol))],dilutant,tgt,(False,False))
         for i in range(len(src)):
+            if not src[i].isMixed and src[i].plate.maxspeeds!=None:
                 self.e.shake(src[i].plate,returnPlate=True)
             self.e.transfer(vol[i],src[i],tgt[i],mix)
             tgt[i].conc=Concentration(1.0/dil[i])
