@@ -527,8 +527,7 @@ class TRP(object):
         self.runRxInPlace(src,vol,"MPosRT",returnPlate=False)
         self.runRTPgm(dur,heatInactivate=heatInactivate)
         
-    def runRTSetup(self,pos,src,vol,srcdil,tgt=None,rtmaster=None):
-        assert(pos)	# Negative handling disabled
+    def runRTSetup(self,src,vol,srcdil,tgt=[],rtmaster=None):
         if rtmaster==None:
             rtmaster=self.r.MPosRT
 
@@ -540,11 +539,7 @@ class TRP(object):
         for i in range(len(src)):
             src[i].conc=Concentration(srcdil[i],1)
             
-        #    e.stage('MPosRT',[self.r.MOSBuffer,self.r.MOS],[],[self.r.MPosRT],ASPIRATEFACTOR*(self.vol.RT*nRT/2)/2+self.vol.Extra+MULTIEXCESS,2)
         if any(p for p in pos):
-        #    e.stage('MNegRT',[self.r.MOSBuffer],[],[self.r.MNegRT],ASPIRATEFACTOR*(self.vol.RT*negRT)/2+self.vol.Extra+MULTIEXCESS,2)
-        #if any(not p for p in pos):
-                #self.e.stage('RTNeg',[self.r.MNegRT],[ssrc[i] for i in range(len(ssrc)) if not pos[i]],[stgt[i] for i in range(len(stgt)) if not pos[i]],[vol[i] for i in range(len(vol)) if not pos[i]],destMix=False)
             self.e.stage('RTPos',[rtmaster],[src[i] for i in range(len(src)) if pos[i]],[tgt[i] for i in range(len(tgt)) if pos[i]],[vol[i] for i in range(len(vol)) if pos[i]],destMix=False)
         self.e.shake(tgt[0].plate,returnPlate=True)
         return tgt
