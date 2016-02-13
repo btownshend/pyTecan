@@ -116,6 +116,7 @@ class Sample(object):
                 assert(False)
             if s.name==name:
                 print "Already have a sample called %s"%name
+                print s
                 assert(False)
         self.name=name
         self.plate=plate
