@@ -62,18 +62,17 @@ class Experiment(object):
     def savesummary(self,filename):
         # Print amount of samples needed
         fd=open(filename,"w")
-        print >>fd,"Deck layout:"
-        print >>fd,decklayout.REAGENTPLATE
-        print >>fd,decklayout.SAMPLEPLATE
-        print >>fd,decklayout.QPCRPLATE
-        print >>fd,decklayout.WATERLOC
-        print >>fd,decklayout.WASTE
-        print >>fd,decklayout.BLEACHLOC
-        print >>fd,decklayout.WASHLOC
-        
-        print >>fd
-        print >>fd,"DiTi usage:",worklist.getDITIcnt()
-        print >>fd
+        # print >>fd,"Deck layout:"
+        # print >>fd,decklayout.REAGENTPLATE
+        # print >>fd,decklayout.SAMPLEPLATE
+        # print >>fd,decklayout.QPCRPLATE
+        # print >>fd,decklayout.WATERLOC
+        # print >>fd,decklayout.WASTE
+        # print >>fd,decklayout.BLEACHLOC
+        # print >>fd,decklayout.WASHLOC
+        # print >>fd
+        #print >>fd,"DiTi usage:",worklist.getDITIcnt()
+        #print >>fd
 
         print >>fd,"Run time: %d (pipetting only) + %d (thermocycling only) + %d (both) = %d minutes\n"%((worklist.elapsed-self.pipandthermotime)/60.0,self.thermotime/60, self.pipandthermotime/60, (worklist.elapsed+self.thermotime)/60)
         reagents.printprep(fd)
