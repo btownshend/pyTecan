@@ -506,7 +506,7 @@ class Sample(object):
             beadString=",beads"
         else:
             beadString=""
-        s+=" %-30s"%("(%s.%s,%.2f ul%s)"%(str(self.plate),self.plate.wellname(self.well),self.volume,beadString))
+        s+=" %-30s"%("(%s.%s,%.2f ul%s)"%(self.plate.name,self.plate.wellname(self.well),self.volume,beadString))
         hist=self.history
         trunchistory=True
         if trunchistory and len(hist)>0:
