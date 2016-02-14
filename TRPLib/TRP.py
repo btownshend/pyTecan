@@ -445,7 +445,7 @@ class TRP(object):
             if returnPlate:
                 self.e.moveplate(src[0].plate,"Home")
 
-    def beadSupernatant(self,src,tgt=[],sepTime=None,residualVolume=10,plate=None,reuseDest=False):
+    def beadSupernatant(self,src,tgt=[],sepTime=None,residualVolume=10,plate=None):
         [src,tgt]=listify([src,tgt])
         if len(tgt)==0:
             for i in range(len(src)):
