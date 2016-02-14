@@ -96,13 +96,13 @@ class TRP(object):
     def reset(self):
         'Reset this experiment so we can generate it again after adjusting the reagent initial volumes and total time'
         totalTime=worklist.elapsed+self.e.thermotime
+        print "After reset, elapsed=%d"%worklist.elapsed
         worklist.reset()
         self.e=Experiment(totalTime)
         self.e.setreagenttemp(6.0)
         self.e.sanitize(3,50)    # Heavy sanitize
         reagents.reset()
         Sample.clearall()
-        print "After reset, elapsed=%d"%worklist.elapsed
         
     def addTemplates(self,names,stockconc,finalconc=None,units="nM",plate=decklayout.EPPENDORFS):
         'Add templates as "reagents", return the list of them'
@@ -761,3 +761,11 @@ class TRP(object):
             self.e.transfer(v,s,t,(False,False))
             
         return [a[1] for a in all]
+
+    def run(self,pgm):
+        sys.stdout=open(os.devnull,'w')
+        pgm(self)
+        sys.stdout=sys.__stdout__
+        self.reset()
+        pgm(self)
+        self.finish()
