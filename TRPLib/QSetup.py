@@ -79,7 +79,7 @@ class QSetup(object):
                 #print "dest=",dest
                 j1=self.jobq.addMultiTransfer(volume=vol*(dil-1)/dil,src=self.dilutant,dest=dest,prereqs=[])
                 prereqs.append(j1)
-                j2=self.jobq.addTransfer(volume=vol/dil,src=s,dest=dest,prereqs=prereqs)
+                j2=self.jobq.addTransfer(volume=vol/dil,src=intermed,dest=dest,prereqs=prereqs)
                 #print "Dilution of %s was %.2f instead of %.2f (error=%.0f%%)"%(dest.name,(dil/(1+dil))/(1/dil),dil,((dil/(1+dil))/(1/dil)/dil-1)*100)
                 j3=self.jobq.addShake(sample=dest,prereqs=[j2])
                 prereqs=[j3]
@@ -118,7 +118,7 @@ class QSetup(object):
                     d=self.needDil[self.reuse[j]]
                 for k in range(stages-1):
                     d=min(d*self.MAXDIL,totalDil)
-                    self.addSamples([self.samples[j].name],d,[])	# Add extra intermediate that can be reused
+                    self.addSamples([self.samples[j]],d,[])	# Add extra intermediate that can be reused
                     if k==0:
                         self.reuse[-1]=self.reuse[j]
                     else:
