@@ -74,6 +74,7 @@ class Experiment(object):
         #print >>fd,"DiTi usage:",worklist.getDITIcnt()
         #print >>fd
 
+        print "Run time: %d (pipetting only) + %d (thermocycling only) + %d (both) = %d minutes\n"%((worklist.elapsed-self.pipandthermotime)/60.0,self.thermotime/60, self.pipandthermotime/60, (worklist.elapsed+self.thermotime)/60)
         print >>fd,"Run time: %d (pipetting only) + %d (thermocycling only) + %d (both) = %d minutes\n"%((worklist.elapsed-self.pipandthermotime)/60.0,self.thermotime/60, self.pipandthermotime/60, (worklist.elapsed+self.thermotime)/60)
         reagents.printprep(fd)
         Sample.printallsamples("All Samples:",fd,w=worklist)
