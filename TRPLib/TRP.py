@@ -96,7 +96,7 @@ class TRP(object):
     def reset(self):
         'Reset this experiment so we can generate it again after adjusting the reagent initial volumes and total time'
         totalTime=worklist.elapsed+self.e.thermotime
-        print "After reset, elapsed=%d"%worklist.elapsed
+        #print "After reset, elapsed=%d"%worklist.elapsed
         worklist.reset()
         self.e=Experiment(totalTime)
         self.e.setreagenttemp(6.0)
@@ -139,7 +139,7 @@ class TRP(object):
             print "NO OUTPUT DUE TO ERRORS"
             assert(False)
             
-        print "Wells used:  samples: %d, dilutions: %d, qPCR: %d\n"%(Sample.numSamplesOnPlate(decklayout.SAMPLEPLATE),Sample.numSamplesOnPlate(decklayout.DILPLATE),Sample.numSamplesOnPlate(decklayout.QPCRPLATE))
+        print "Wells used:  samples: %d, dilutions: %d, qPCR: %d"%(Sample.numSamplesOnPlate(decklayout.SAMPLEPLATE),Sample.numSamplesOnPlate(decklayout.DILPLATE),Sample.numSamplesOnPlate(decklayout.QPCRPLATE))
         # Save worklist to a file
         #e.saveworklist("trp1.gwl")
         (scriptname,ext)=os.path.splitext(sys.argv[0])
