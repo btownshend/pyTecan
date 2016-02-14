@@ -505,7 +505,7 @@ class TRP(object):
         if rtmaster==None:
             rtmaster=reagents.get("MPosRT")
 
-        [pos,src,tgt,vol,srcdil]=listify([pos,src,tgt,vol,srcdil])
+        [src,tgt,vol,srcdil]=listify([src,tgt,vol,srcdil])
         if len(tgt)==0:
             tgt=[Sample(s.name+".RT",s.plate) for s in src]
 
@@ -513,8 +513,7 @@ class TRP(object):
         for i in range(len(src)):
             src[i].conc=Concentration(srcdil[i],1)
             
-        if any(p for p in pos):
-            self.e.stage('RTPos',[rtmaster],[src[i] for i in range(len(src)) if pos[i]],[tgt[i] for i in range(len(tgt)) if pos[i]],[vol[i] for i in range(len(vol)) if pos[i]],destMix=False)
+        self.e.stage('RTPos',[rtmaster],[src[i] for i in range(len(src)) ],[tgt[i] for i in range(len(tgt)) ],[vol[i] for i in range(len(vol))],destMix=False)
         self.e.shake(tgt[0].plate,returnPlate=True)
         return tgt
 
