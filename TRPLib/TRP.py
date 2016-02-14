@@ -297,8 +297,13 @@ class TRP(object):
     ########################
     # Beads
     ########################
-    def bindBeads(self,src,beads="Dynabeads",beadConc=None,buffer="BeadBuffer",incTime=60,addBuffer=False):
-        [src,beads,buffer,beadConc]=listify([src,beads,buffer,beadConc])
+    def bindBeads(self,src,beads=[],beadConc=None,bbuffer=[],incTime=60,addBuffer=False):
+        if len(beads)==0:
+            beads=reagents.get("Dynabeads")
+        if len(bbuffer)==0:
+            bbuffer=reagents.get("BeadBuffer")
+            
+        [src,beads,bbuffer,beadConc]=listify([src,beads,bbuffer,beadConc])
 
         for s in src:
             if s.plate!=decklayout.SAMPLEPLATE:
@@ -308,17 +313,15 @@ class TRP(object):
             
         self.e.moveplate(src[0].plate,"Home")		# Make sure we do this off the magnet
 
-        sbeads=[reagents.get(b) for b in beads]
-        sbuffer=[reagents.get(b) for b in buffer]
         # Calculate volumes needed
-        beadConc=[sbeads[i].conc.final if beadConc[i]==None else beadConc[i] for i in range(len(sbeads))]
-        beadDil=sbeads[i].conc.stock/beadConc[i]
+        beadConc=[beads[i].conc.final if beadConc[i]==None else beadConc[i] for i in range(len(beads))]
+        beadDil=beads[i].conc.stock/beadConc[i]
         if addBuffer:
-            totalvol=[s.volume/(1-1.0/beadDil-1.0/sbuffer[i].conc.dilutionneeded()) for s in src]
-            buffervol=[totalvol[i]/sbuffer[i].conc.dilutionneeded() for i in range(len(src))]
+            totalvol=[s.volume/(1-1.0/beadDil-1.0/bbuffer[i].conc.dilutionneeded()) for s in src]
+            buffervol=[totalvol[i]/bbuffer[i].conc.dilutionneeded() for i in range(len(src))]
             # Add binding buffer to bring to 1x (beads will already be in 1x, so don't need to provide for them)
             for i in range(len(src)):
-                self.e.transfer(buffervol[i],sbuffer[i],src[i],(False,False))
+                self.e.transfer(buffervol[i],bbuffer[i],src[i],(False,False))
         else:
             buffervol=[0.0 for i in range(len(src))]
             totalvol=[s.volume/(1-1.0/beadDil) for s in src]
@@ -327,7 +330,7 @@ class TRP(object):
 
         # Transfer the beads
         for i in range(len(src)):
-            self.e.transfer(beadvol[i],sbeads[i],src[i],(False,True))	# Mix beads after (before mixing handled automatically by sample.py)
+            self.e.transfer(beadvol[i],beads[i],src[i],(False,True))	# Mix beads after (before mixing handled automatically by sample.py)
 
         self.e.shake(src[0].plate,dur=incTime,returnPlate=False)
 
@@ -374,8 +377,8 @@ class TRP(object):
             for i in range(len(src)):
                 if src[i].volume > residualVolume:
                     if keepWash:
-                        self.e.transfer(src[i].volume-residualVolume,src[i],sWashTgt[i])	# Keep supernatants
-                        sWashTgt[i].conc=None	# Allow it to be reused
+                        self.e.transfer(src[i].volume-residualVolume,src[i],washTgt[i])	# Keep supernatants
+                        washTgt[i].conc=None	# Allow it to be reused
                     else:
                         self.e.dispose(src[i].volume-residualVolume,src[i])	# Discard supernatant
                 
@@ -408,8 +411,8 @@ class TRP(object):
                 
             for i in range(len(src)):
                 if keepWash:
-                    self.e.transfer(src[i].volume-residualVolume,src[i],sWashTgt[i])	# Remove wash
-                    sWashTgt[i].conc=None	# Allow it to be reused
+                    self.e.transfer(src[i].volume-residualVolume,src[i],washTgt[i])	# Remove wash
+                    washTgt[i].conc=None	# Allow it to be reused
                 else:
                     self.e.dispose(src[i].volume-residualVolume,src[i])	# Remove wash
 
@@ -425,14 +428,14 @@ class TRP(object):
         return result
 
     def beadAddElutant(self,src,elutant=None,elutionVol=30,eluteTime=60,returnPlate=True,temp=None):
+        if elutant==None:
+            elutant=decklayout.WATER
         [src,elutionVol,elutant]=listify([src,elutionVol,elutant])
-        if selutant==None:
-            selutant=decklayout.WATER
         for i in range(len(src)):
             if elutionVol[i]<30:
                 print "Warning: elution from beads with %.1f ul < minimum of 30ul"%elutionVol[i]
                 print "  src=",src[i]
-            self.e.transfer(elutionVol[i]-src[i].volume,selutant[i],src[i],(False,True))	
+            self.e.transfer(elutionVol[i]-src[i].volume,elutant[i],src[i],(False,True))	
         if temp==None:
             self.e.shake(src[0].plate,dur=eluteTime,returnPlate=returnPlate)
         else:
