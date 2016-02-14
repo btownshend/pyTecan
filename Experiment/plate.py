@@ -21,7 +21,7 @@ class Plate(object):
         self.warned=False
         self.curloc="Home"
         self.zmax=zmax
-        if angle==None:
+        if angle is None:
             self.angle=None
         else:
             self.angle=angle*math.pi/180
@@ -29,11 +29,13 @@ class Plate(object):
         self.h1=h1
         self.v0=v0
         self.vectorName=vectorName		# Name of vector used for RoMa to pickup plate
-        self.maxspeeds=maxspeeds;
+        self.maxspeeds=maxspeeds
+        global __allplates
         __allplates.append(self)
 
     @classmethod
-    def lookup(self,grid,pos):
+    def lookup(cls,grid,pos):
+        global __allplates
         for p in __allplates:
             if p.grid==grid and p.pos==pos:
                 return p
@@ -46,37 +48,37 @@ class Plate(object):
             self.pos=self.homepos
             self.unusableVolume=self.homeUnusableVolume
         else:
-            assert(newloc!=None)
+            assert newloc!=None
             self.grid=newloc.grid
             self.pos=newloc.pos
             self.unusableVolume=newloc.unusableVolume
 
     def getliquidheight(self,volume):
         'Get liquid height in mm above ZMax'
-        if self.angle==None:
+        if self.angle is None:
             if not self.warned:
                 print "No liquid height equation for plate %s"%self.name
                 self.warned=True
             return None
 
-        h0=self.h1-self.r1/math.tan(self.angle/2);
-        v1=math.pi/3*(self.h1-h0)*self.r1*self.r1-self.v0;
+        h0=self.h1-self.r1/math.tan(self.angle/2)
+        v1=math.pi/3*(self.h1-h0)*self.r1*self.r1-self.v0
         if volume>=v1:
             height=(volume-v1)/(math.pi*self.r1*self.r1)+self.h1
         elif volume+self.v0<0:
             height=h0
         else:
-             height=((volume+self.v0)*(3/math.pi)*((self.h1-h0)/self.r1)**2)**(1.0/3)+h0
+            height=((volume+self.v0)*(3/math.pi)*((self.h1-h0)/self.r1)**2)**(1.0/3)+h0
             #        print "%s,vol=%.1f, height=%.1f"%(self.name,volume,height)
         return height
 
     def getliquidvolume(self,height):
         'Compute liquid volume given height above zmax in mm'
-        if self.angle==None:
+        if self.angle is None:
             return None
 
-        h0=self.h1-self.r1/math.tan(self.angle/2);
-        v1=math.pi/3*(self.h1-h0)*self.r1*self.r1-self.v0;
+        h0=self.h1-self.r1/math.tan(self.angle/2)
+        v1=math.pi/3*(self.h1-h0)*self.r1*self.r1-self.v0
         if height>self.h1:
             volume=(height-self.h1)*math.pi*self.r1*self.r1+v1
         else:
@@ -94,7 +96,7 @@ class Plate(object):
                 maxspeed=speed
         if maxspeed==0:
             print "ERROR: No shaker speed data for volume of %.0f ul"%maxvol
-            assert(False)
+            assert False
 
         # Theoretical minimum mixing speed
         # From: http://www.qinstruments.com/en/applications/optimization-of-mixing-parameters.html
@@ -108,7 +110,7 @@ class Plate(object):
         return (minspeed,maxspeed)
 
     def wellname(self,well):
-        if well==None:
+        if well is None:
             return "None"
         col=int(well/self.ny)
         row=well-col*self.ny
@@ -120,9 +122,9 @@ class Plate(object):
             if self.wellname(i)==wellname:
                 return i
         print "Illegal well name, %s, for plate %s"%(wellname, self.name)
-        assert(False)
+        assert False
 
     def __str__(self):
-        #return self.name
-    	return "%s(%s,%s)"%(self.name,self.grid,self.pos)
+        return self.name
+        #return "%s(%s,%s)"%(self.name,self.grid,self.pos)
 

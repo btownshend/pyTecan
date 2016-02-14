@@ -1,6 +1,8 @@
+'''Queue of jobs to be executed during idle times'''
 from experiment import Experiment
 
 class JobQueue(object):
+    '''Queue of jobs to be executed during idle times'''
     def __init__(self):
         self.nextID=1
         self.jobs={}
@@ -121,14 +123,14 @@ class JobQueue(object):
                 print "multitransfer(",job['volume'],", ",job['src'].name,",".join([x.name for x in job['dest']]),")",
             e.multitransfer(job['volume'],job['src'],job['dest'])
         else:
-            assert(False)
+            assert False
         if self.debug:
             print
         self.removeJob(id)
         self.runningJob=None
 
     def removeJob(self,id):
-        for ik,k in self.jobs.iteritems():
+        for _,k in self.jobs.iteritems():
             k['prereqs']=k['prereqs'].difference([id])
         self.jobs.pop(id)
         #print "Removed job ",id

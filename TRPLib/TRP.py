@@ -1,6 +1,6 @@
 from Experiment.sample import Sample
 from Experiment.experiment import Experiment
-from Experiment.experiment import Concentration
+from Experiment.concentration import Concentration
 import Experiment.worklist as worklist
 import Experiment.reagents as reagents
 import Experiment.decklayout as decklayout

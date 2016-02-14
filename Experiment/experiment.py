@@ -1,10 +1,8 @@
+from datetime import datetime
+
 import worklist
 from sample import Sample
-from concentration import Concentration
 import liquidclass
-import os.path
-from datetime import datetime
-from plate import Plate
 import reagents
 import decklayout
 
@@ -18,7 +16,7 @@ class Experiment(object):
 
     def __init__(self,totalTime=None):
         'Create a new experiment with given sample locations for water and WASTE;  totalTime is expected run time in seconds, if known'
-        worklist.comment("Generated %s"%(datetime.now().ctime()));
+        worklist.comment("Generated %s"%(datetime.now().ctime()))
         worklist.userprompt("The following reagent tubes should be present: %s"%Sample.getAllLocOnPlate(decklayout.REAGENTPLATE))
         worklist.userprompt("The following eppendorf tubes should be present: %s"%Sample.getAllLocOnPlate(decklayout.EPPENDORFS))
         worklist.email(dest='cdsrobot@gmail.com',subject='Run started (Generate: %s)'%(datetime.now().ctime()))
@@ -32,6 +30,8 @@ class Experiment(object):
         self.ptcrunning=False
         self.overrideSanitize=False
         self.totalTime=totalTime
+        self.pgmStartTime=None
+        self.pgmEndTime=None
 
         # Access PTC and RIC early to be sure they are working
         worklist.pyrun("PTC\\ptctest.py")
@@ -44,7 +44,7 @@ class Experiment(object):
         self.idlePgms.append(pgm)
 
     def setreagenttemp(self,temp=None):
-        if temp==None:
+        if temp is None:
             worklist.pyrun("RIC\\ricset.py IDLE")
         else:
             worklist.variable("dewpoint",temp,userprompt="Enter dewpoint",minval=0,maxval=20)
@@ -96,7 +96,7 @@ class Experiment(object):
                 if (fixedTips & (1<<i)) != 0:
                     fixedWells.append(i)
                     decklayout.BLEACH.addhistory("SANITIZE",0,1<<i)
-            worklist.mix(fixedTips,fixedWells,decklayout.BLEACH.mixLC,200,decklayout.BLEACH.plate,nmix,False);
+            worklist.mix(fixedTips,fixedWells,decklayout.BLEACH.mixLC,200,decklayout.BLEACH.plate,nmix,False)
             worklist.wash(fixedTips,1,deepvol,True)
         self.cleanTips|=fixedTips
         # print "* Sanitize"
@@ -125,7 +125,7 @@ class Experiment(object):
         if isinstance(volumes,(int,long,float)):
             # Same volume for each dest
             volumes=[volumes for i in range(len(dests))]
-        assert(len(volumes)==len(dests))
+        assert len(volumes)==len(dests)
         #        if len([d.volume for d in dests if d.conc!=None])==0:
         if len([dests[i].volume for i in range(0,len(dests)) if dests[i].conc != None and volumes[i]>0.01])==0:
             maxval=0
@@ -133,7 +133,7 @@ class Experiment(object):
             maxval=max([dests[i].volume for i in range(0,len(dests)) if dests[i].conc != None and volumes[i]>0.01])
             #         maxval=max([d.volume for d in dests if d.conc != None])
         #print "volumes=",[d.volume for d in dests],", conc=",[str(d.conc) for d in dests],", maxval=",maxval
-        if mix[1]==False and len(volumes)>1 and ( maxval<.01 or ignoreContents):
+        if not mix[1] and len(volumes)>1 and ( maxval<.01 or ignoreContents):
             if sum(volumes)>self.MAXVOLUME:
                 #print "sum(volumes)=%.1f, MAXVOL=%.1f"%(sum(volumes),self.MAXVOLUME)
                 for i in range(1,len(volumes)):
@@ -163,10 +163,10 @@ class Experiment(object):
 
             if mix[0] and not src.isMixed:
                 src.mix(tipMask,worklist)
-            src.aspirate(tipMask,worklist,sum(volumes),True)
+            src.aspirate(tipMask,sum(volumes),True)
             for i in range(len(dests)):
                 if volumes[i]>0.01:
-                    dests[i].dispense(tipMask,worklist,volumes[i],src)
+                    dests[i].dispense(tipMask,volumes[i],src)
             if self.useDiTis and dropDITI:
                 worklist.dropDITI(tipMask&self.DITIMASK,decklayout.WASTE)
         else:
@@ -209,8 +209,8 @@ class Experiment(object):
 
         if mix[0]:
             src.mix(tipMask,worklist)
-        src.aspirate(tipMask,worklist,volume)
-        dest.dispense(tipMask,worklist,volume,src)
+        src.aspirate(tipMask,volume)
+        dest.dispense(tipMask,volume,src)
         if mix[1]:
             dest.mix(tipMask,worklist,True)
 
@@ -259,7 +259,7 @@ class Experiment(object):
 
         if mix and not src.isMixed:
             src.mix(tipMask,worklist)
-        src.aspirate(tipMask,worklist,volume)
+        src.aspirate(tipMask,volume)
 
         if self.useDiTis and dropDITI:
             worklist.dropDITI(tipMask&self.DITIMASK,decklayout.WASTE)
@@ -277,14 +277,14 @@ class Experiment(object):
             print "No samples\n"
             return
 
-        if dilutant==None:
+        if dilutant is None:
             dilutant=decklayout.WATER
 
         worklist.comment("Stage: "+stagename)
         if not isinstance(volume,list):
             volume=[volume for i in range(len(samples))]
         for i in range(len(volume)):
-            assert(volume[i]>0)
+            assert volume[i]>0
             volume[i]=float(volume[i])
 
         reagentvols=[1.0/x.conc.dilutionneeded()*finalx for x in reagents]
@@ -299,9 +299,9 @@ class Experiment(object):
         if min(watervols)<-0.01:
             print "Error: Ingredients add up to more than desired volume by %.1f ul"%(-min(watervols))
             for s in samples:
-                if (s.volume>0):
+                if s.volume>0:
                     print "Note: %s already contains %.1f ul\n"%(s.name,s.volume)
-            assert(False)
+            assert False
 
         if sum(watervols)>0.01:
             self.multitransfer(watervols,dilutant,samples,(False,destMix and (len(reagents)+len(sources)==0)))
@@ -310,7 +310,7 @@ class Experiment(object):
             self.multitransfer([reagentvols[i]*v for v in volume],reagents[i],samples,(True,destMix and (len(sources)==0 and i==len(reagents)-1)))
 
         if len(sources)>0:
-            assert(len(sources)<=len(samples))
+            assert len(sources)<=len(samples)
             for i in range(len(sources)):
                 self.transfer(sourcevols[i],sources[i],samples[i],(True,destMix))
 
@@ -322,10 +322,10 @@ class Experiment(object):
     def runpgm(self,pgm,duration,waitForCompletion=True,volume=10,hotlidmode="TRACKING",hotlidtemp=1):
         if self.ptcrunning:
             print "ERROR: Attempt to start a progam on PTC when it is already running"
-            assert(False)
+            assert False
         if len(pgm)>8:
             print "ERROR: PTC program name (%s) too long (max is 8 char)"%pgm
-            assert(False)
+            assert False
         # move to thermocycler
         worklist.flushQueue()
         self.lihahome()
@@ -339,8 +339,8 @@ class Experiment(object):
         worklist.romahome()
         worklist.pyrun("PTC\\ptclid.py CLOSE")
         #        pgm="PAUSE30"  # For debugging
-        assert(hotlidmode=="TRACKING" or hotlidmode=="CONSTANT")
-        assert((hotlidmode=="TRACKING" and hotlidtemp>=0 and hotlidtemp<=45) or (hotlidmode=="CONSTANT" and hotlidtemp>30))
+        assert hotlidmode=="TRACKING" or hotlidmode=="CONSTANT"
+        assert (hotlidmode=="TRACKING" and hotlidtemp>=0 and hotlidtemp<=45) or (hotlidmode=="CONSTANT" and hotlidtemp>30)
         worklist.pyrun('PTC\\ptcrun.py %s CALC %s,%d %d'%(pgm,hotlidmode,hotlidtemp,volume))
         self.pgmStartTime=worklist.elapsed
         self.pgmEndTime=duration*60+worklist.elapsed
@@ -356,7 +356,7 @@ class Experiment(object):
         # move to given destination (one of "Home","Magnet","Shaker","PTC" )
         if plate!=decklayout.SAMPLEPLATE and plate!=decklayout.DILPLATE:
             print "Only able to move %s or %s plates, not %s"%(decklayout.SAMPLEPLATE.name,decklayout.DILPLATE.name,plate.name)
-            assert(False)
+            assert False
 
         if plate.curloc==dest:
             #print "Plate %s is already at %s"%(plate.name,dest)
@@ -368,7 +368,7 @@ class Experiment(object):
         cmt="moveplate %s %s"%(plate.name,dest)
         worklist.comment(cmt)
         if plate.curloc=="Home":
-                worklist.vector(plate.vectorName,plate,worklist.SAFETOEND,True,worklist.DONOTMOVE,worklist.CLOSE)
+            worklist.vector(plate.vectorName,plate,worklist.SAFETOEND,True,worklist.DONOTMOVE,worklist.CLOSE)
         elif plate.curloc=="Magnet":
             worklist.vector("Magplate",decklayout.MAGPLATELOC,worklist.SAFETOEND,True,worklist.DONOTMOVE,worklist.CLOSE)
         elif plate.curloc=="Shaker":
@@ -377,7 +377,7 @@ class Experiment(object):
             worklist.vector("PTC200",decklayout.PTCPOS,worklist.SAFETOEND,True,worklist.DONOTMOVE,worklist.CLOSE)
         else:
             print "Plate %s is in unknown location: %s"%(plate.name,plate.curloc)
-            assert(False)
+            assert False
 
         if dest=="Home":
             plate.movetoloc(dest)
@@ -393,7 +393,7 @@ class Experiment(object):
             worklist.vector("PTC200",decklayout.PTCPOS,worklist.SAFETOEND,True,worklist.DONOTMOVE,worklist.OPEN)
         else:
             print "Attempt to move plate %s to unknown location: %s"%(plate.name,dest)
-            assert(False)
+            assert False
 
         Sample.addallhistory("{->%s}"%dest,onlyplate=plate.name)
         if returnHome:
@@ -409,7 +409,7 @@ class Experiment(object):
         minvol=min([x.volume for x in samps if not x.isMixed]+[200])
         (minspeed,maxspeed)=plate.getmixspeeds(minvol*0.95,maxvol+5)	# Assume volumes could be off
 
-        if speed==None:
+        if speed is None:
             if minspeed<maxspeed:
                 speed=(maxspeed+minspeed)/2
             else:
@@ -442,6 +442,7 @@ class Experiment(object):
 
         oldloc=plate.curloc
         self.moveplate(plate,"Shaker",returnHome=False)
+        global __shakerActive
         __shakerActive=True
         worklist.pyrun("BioShake\\bioexec.py setElmLockPos")
         worklist.pyrun("BioShake\\bioexec.py setShakeTargetSpeed%d"%speed)
@@ -465,7 +466,7 @@ class Experiment(object):
 
     def starttimer(self,timer=1):
         self.timerStartTime[timer]=worklist.elapsed
-    	worklist.starttimer(timer)
+        worklist.starttimer(timer)
 
     def waittimer(self,duration,timer=1):
         if self.timerStartTime[timer]+duration-worklist.elapsed > 20:
@@ -537,7 +538,7 @@ class Experiment(object):
 
     def dilute(self,samples,factor):
         if isinstance(factor,list):
-            assert(len(samples)==len(factor))
+            assert len(samples)==len(factor)
             for i in range(len(samples)):
                 samples[i].dilute(factor[i])
         else:

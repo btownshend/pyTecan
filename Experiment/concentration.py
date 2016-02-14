@@ -18,9 +18,9 @@ class Concentration(object):
         return "%.3g%s"%(conc,units)
 
     def __str__(self):
-        if self.stock==None:
+        if self.stock is None:
             return "None"
-        elif self.final==None or (self.final==1.0 and self.units=='x'):
+        elif self.final is None or (self.final==1.0 and self.units=='x'):
             if self.stock==0  or self.stock >=0.1:
                 return self.conctostr(self.stock,self.units)
             else:
@@ -29,7 +29,7 @@ class Concentration(object):
             return self.conctostr(self.stock,self.units)+"->"+self.conctostr(self.final,self.units)
 
     def dilute(self,factor):
-        if self.stock==None:
+        if self.stock is None:
             return Concentration(None,None,'x')
         else:
             return Concentration(self.stock/factor,self.final,self.units)

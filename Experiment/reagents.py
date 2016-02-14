@@ -3,9 +3,9 @@ import sys
 from Experiment.sample import Sample
 import decklayout
 
-all={}
+__allReagents={}
 
-class Reagent:
+class Reagent(object):
     def __init__(self,name,plate=decklayout.REAGENTPLATE,well=None,conc=None,hasBeads=False,extraVol=50):
         self.sample=None
         self.name=name
@@ -17,7 +17,7 @@ class Reagent:
         self.initVol=0
 
     def get(self):
-        if self.sample==None:
+        if self.sample is None:
             #print "Creating sample for reagent %s with %.1f ul"%(self.name,self.initVol)
             self.sample=Sample(self.name,self.plate,self.preferredWell,self.conc,hasBeads=self.hasBeads,volume=self.initVol)
             wellname=self.sample.plate.wellname(self.sample.well)
@@ -35,32 +35,32 @@ class Reagent:
             self.sample=None
 
 def isReagent(name):
-    return name in all
+    return name in __allReagents
 
 def get(name):
-    return all[name].get()
+    return __allReagents[name].get()
 
 def __getattr__(name):
     return get(name)
 
 def add(name,plate=decklayout.REAGENTPLATE,well=None,conc=None,hasBeads=False,extraVol=50):
-    if name in all:
+    if name in __allReagents:
         print "ERROR: Attempt to add duplicate reagent, ",name
-        assert(False)
-    all[name]=Reagent(name,plate,well,conc,hasBeads,extraVol)
-    return all[name]
+        assert False
+    __allReagents[name]=Reagent(name,plate,well,conc,hasBeads,extraVol)
+    return __allReagents[name]
 
 def reset():
-    for r in all:
-        all[r].reset()
+    for r in __allReagents:
+        __allReagents[r].reset()
 
 def printprep(fd=sys.stdout):
-    for p in sorted(set([r.plate for r in all.itervalues()])):
+    for p in sorted(set([r.plate for r in __allReagents.itervalues()])):
         print >>fd,"\nPlate %s:"%p.name
         total=0
-        for r in sorted(all.itervalues(),key=lambda p:p.sample.well if p.sample!=None else None):
+        for r in sorted(__allReagents.itervalues(),key=lambda p:p.sample.well if p.sample!=None else None):
             s=r.sample
-            if s==None:
+            if s is None:
                 continue
             if s.plate!=p:
                 continue
@@ -69,9 +69,10 @@ def printprep(fd=sys.stdout):
             else:
                 c=""
             if s.volume==r.initVol:
-                'Not used'
+                # Not used
                 #note="%s%s in %s.%s not consumed"%(s.name,c,str(s.plate),s.plate.wellname(s.well))
                 #notes=notes+"\n"+note
+                pass
             elif r.initVol>0:
                 print >>fd,"%s%s in %s.%s consume %.1f ul, provide %.1f ul"%(s.name,c,s.plate.name,s.plate.wellname(s.well),r.initVol-s.volume,r.initVol)
             total+=round((r.initVol-s.volume)*10)/10.0

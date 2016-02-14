@@ -60,7 +60,7 @@ class Sample(object):
     @staticmethod
     def printallsamples(txt="",fd=sys.stdout,w=None):
         print >>fd,"\n%s by plate:"%txt
-        plates=set([s.plate for s in __allsamples]);
+        plates=set([s.plate for s in __allsamples])
         for p in sorted(plates, key=lambda p:p.name.upper()):
             print >>fd,"Samples in plate: ",p
             for s in __allsamples:
@@ -68,7 +68,7 @@ class Sample(object):
                     continue   # Not used
                 if s.plate==p:
                     if w!=None:
-                        print >>fd,s,("%06x"%(s.getHash(w)&0xffffff))
+                        print >>fd,s,("%06x"%(s.getHash()&0xffffff))
                     else:
                         print >>fd,s
             print >>fd
@@ -97,7 +97,7 @@ class Sample(object):
                     well=None
                     break
 
-        if well==None:
+        if well is None:
             # Find first unused well
             found=False
             for well in plate.wells:
@@ -116,25 +116,25 @@ class Sample(object):
             if s.plate==plate and s.well==well:
                 print "Attempt to assign sample %s to plate %s, well %s that already contains %s"%(name,str(plate),plate.wellname(well),s.name)
 #                print "Aliasing %s as %s"%(s.name,name)
-                assert(False)
+                assert False
             if s.name==name:
                 print "Already have a sample called %s"%name
                 print s
-                assert(False)
+                assert False
         self.name=name
         self.plate=plate
         if well>=plate.nx*plate.ny:
-                print "Overflow of plate %s"%str(plate)
-                for s in __allsamples:
-                    if s.plate==plate:
-                        print s
-                assert(False)
+            print "Overflow of plate %s"%str(plate)
+            for s in __allsamples:
+                if s.plate==plate:
+                    print s
+            assert False
 
         self.well=well
-        if isinstance(conc,Concentration) or conc==None:
-                self.conc=conc
+        if isinstance(conc,Concentration) or conc is None:
+            self.conc=conc
         else:
-                self.conc=Concentration(conc)
+            self.conc=Concentration(conc)
         self.volume=volume
         if volume>0:
             self.ingredients={name:volume}
@@ -165,7 +165,7 @@ class Sample(object):
 
     def sampleWellPosition(self):
         'Convert a sample well number to a well position as used by Gemini worklist'
-        if self.well==None:
+        if self.well is None:
             return None
         elif isinstance(self.well,(long,int)):
             ival=int(self.well)
@@ -175,12 +175,12 @@ class Sample(object):
         else:
             col=int(self.well[1:])
             row=ord(self.well[0])-ord('A')+1
-        assert(row>=1 and row<=self.plate.ny and col>=1 and col<=self.plate.nx)
+        assert row>=1 and row<=self.plate.ny and col>=1 and col<=self.plate.nx
         wellpos=(row-1)+self.plate.ny*(col-1)
         #print "sampleWellPosition(%d) -> %d"%(self.well,wellpos)
         return wellpos
 
-    def getHash(self,w):
+    def getHash(self):
         return worklist.getHashCode(grid=self.plate.grid,pos=self.plate.pos-1,well=self.sampleWellPosition())
 
     @classmethod
@@ -225,7 +225,7 @@ class Sample(object):
     def getAllOnPlate(cls,plate=None):
         result=[]
         for s in __allsamples:
-            if plate==None or s.plate==plate:
+            if plate is None or s.plate==plate:
                 result.append(s)
         return result
 
@@ -233,16 +233,16 @@ class Sample(object):
     def getAllLocOnPlate(cls,plate=None):
         result=""
         for s in __allsamples:
-            if (plate==None or s.plate==plate):
+            if plate is None or s.plate==plate:
                 result+=" %s"%(s.plate.wellname(s.well))
         return result
 
     def dilute(self,factor):
         'Dilute sample -- just increases its recorded concentration'
         if self.conc!=None:
-                self.conc=self.conc.dilute(1.0/factor)
+            self.conc=self.conc.dilute(1.0/factor)
 
-    def evapcheck(self,w,op):
+    def evapcheck(self,op):
         'Check if the time between accesses of a well is too long'
         # Not quite right -- doesn't take into account thermocycler time
         if self.firstdispense>0 and worklist.elapsed-self.firstdispense>EVAPTIME and self.plate.name!="Reagents" and op=='aspirate':
@@ -252,11 +252,11 @@ class Sample(object):
         if op=='dispense' and self.firstdispense==0:
             self.firstdispense=worklist.elapsed
 
-    def aspirate(self,tipMask,w,volume,multi=False):
-        self.evapcheck(w,'aspirate')
+    def aspirate(self,tipMask,volume,multi=False):
+        self.evapcheck('aspirate')
         if self.plate.curloc=='PTC':
             print "Aspirate from PTC!, loc=",self.plate.grid,",",self.plate.pos
-            assert(False)
+            assert False
 
         if volume<2 and not multi and self.name!="Water":
             print "WARNING: Inaccurate for < 2ul:  attempting to aspirate %.1f ul from %s"%(volume,self.name)
@@ -265,13 +265,13 @@ class Sample(object):
         if not self.isMixed:
             print "WARNING: Aspirate %.1f ul from unmixed sample %s. "%(volume,self.name)
 
-        if self.well==None:
-                well=[]
-                for i in range(4):
-                        if (tipMask & (1<<i)) != 0:
-                            well.append(i)
+        if self.well is None:
+            well=[]
+            for i in range(4):
+                if (tipMask & (1<<i)) != 0:
+                    well.append(i)
         else:
-                well=[self.well]
+            well=[self.well]
 
         lc=self.chooseLC(volume)
         if self.hasBeads and self.plate.curloc=="Magnet":
@@ -285,7 +285,7 @@ class Sample(object):
         else:
             if self.hasBeads:
                 #print "%s has beads -- mixing before aspirate"%self.name
-                self.mix(tipMask,w)
+                self.mix(tipMask)
             worklist.aspirate(tipMask,well,lc,volume,self.plate)
             # Manual conditioning handled in worklist
             remove=lc.volRemoved(volume,multi=True)
@@ -308,23 +308,23 @@ class Sample(object):
         self.addhistory("",-remove,tipMask)
         #self.addhistory("[%06x]"%(self.getHash(w)&0xffffff),-remove,tipMask)
 
-    def aspirateAir(self,tipMask,w,volume):
+    def aspirateAir(self,tipMask,volume):
         'Aspirate air over a well'
         worklist.aspirateNC(tipMask,[self.well],self.airLC,volume,self.plate)
 
-    def dispense(self,tipMask,w,volume,src):
-        self.evapcheck(w,'dispense')
+    def dispense(self,tipMask,volume,src):
+        self.evapcheck('dispense')
         if self.plate.curloc=='PTC':
             print "Dispense to PTC!, loc=",self.plate.grid,",",self.plate.pos
-            assert(False)
+            assert False
 
         if self.volume+volume < MINDEPOSITVOLUME:
             print "Warning: Dispense of %.1ful into %s results in total of %.1ful which is less than minimum deposit volume of %.1f ul"%(volume,self.name,self.volume+volume,MINDEPOSITVOLUME)
 
         #well=[self.well if self.well!=None else 2**(tipMask-1)-1 ]
         well=[self.well if self.well!=None else int(math.log(tipMask,2)) ]
-        if self.well==None:
-            print "Warning: Dispense with well==None, not sure what right logic is..., using well=%d"%well[0]
+        if self.well is None:
+            print "Warning: Dispense with well is None, not sure what right logic is..., using well=%d"%well[0]
 
         if self.volume+volume > self.plate.maxVolume:
             print "Warning: Dispense of %.1ful into %s results in total of %.1ful which is more than the maximum volume of %.1f ul"%(volume,self.name,self.volume+volume,self.plate.maxVolume)
@@ -339,22 +339,22 @@ class Sample(object):
             worklist.dispense(tipMask,well,self.bottomLC,volume,self.plate)
 
         # Assume we're diluting the contents
-        if self.conc==None and src.conc==None:
+        if self.conc is None and src.conc is None:
             pass
-        elif src.conc==None or volume==0:
+        elif src.conc is None or volume==0:
             if self.volume==0:
                 self.conc=None
             else:
                 self.conc=self.conc.dilute((self.volume+volume)/self.volume)
-        elif self.conc==None or self.volume==0:
+        elif self.conc is None or self.volume==0:
             self.conc=src.conc.dilute((self.volume+volume)/volume)
         else:
             # Both have concentrations, they should match
             c1=self.conc.dilute((self.volume+volume)/self.volume)
             c2=src.conc.dilute((self.volume+volume)/volume)
-            if ( abs(c1.stock/c1.final-c2.stock/c2.final)>.01 ):
+            if abs(c1.stock/c1.final-c2.stock/c2.final)>.01:
                 print "Warning: Dispense of %.1ful of %s@%.2fx into %.1ful of %s@%.2fx does not equalize concentrations"%(volume,src.name,src.conc.dilutionneeded(),self.volume,self.name,self.conc.dilutionneeded())
-                #assert(abs(c1.stock/c1.final-c2.stock/c2.final)<.01)
+                #assert abs(c1.stock/c1.final-c2.stock/c2.final)<.01
                 self.conc=None
             else:
                 self.conc=Concentration(c1.stock/c1.final,1.0,'x')  # Since there are multiple ingredients express concentration as x
@@ -373,18 +373,18 @@ class Sample(object):
     def addhistory(self,name,vol,tip):
         if vol>=0:
             if SHOWTIPS:
-                    str="%s[%.1f#%d]"%(name,vol,tip)
+                str="%s[%.1f#%d]"%(name,vol,tip)
             else:
-                    str="%s[%.1f]"%(name,vol)
+                str="%s[%.1f]"%(name,vol)
             if len(self.history)>0:
                 self.history=self.history+" +"+str
             else:
                 self.history=str
         elif vol<0:
             if SHOWTIPS:
-                    str="%s[%.1f#%d]"%(name,-vol,tip)
+                str="%s[%.1f#%d]"%(name,-vol,tip)
             else:
-                    str="%s[%.1f]"%(name,-vol)
+                str="%s[%.1f]"%(name,-vol)
             if len(self.history)>0:
                 self.history=self.history+" -"+str
             else:
@@ -407,7 +407,7 @@ class Sample(object):
     def addallhistory(msg,addToEmpty=False,onlyplate=None,onlybeads=False):
         'Add history entry to all samples (such as # during thermocycling)'
         for s in __allsamples:
-            if (onlyplate==None or onlyplate==s.plate.name) and (not onlybeads or s.hasBeads):
+            if (onlyplate is None or onlyplate==s.plate.name) and (not onlybeads or s.hasBeads):
                 if len(s.history)>0:
                     s.history+=" "+msg
                 elif addToEmpty:
@@ -443,7 +443,7 @@ class Sample(object):
             return self.bottomLC
 
         # Mix, return true if actually did a mix, false otherwise
-    def mix(self,tipMask,w,preaspirateAir=False,nmix=4):
+    def mix(self,tipMask,preaspirateAir=False,nmix=4):
         if self.isMixed and not self.hasBeads:
             #print "Sample %s is already mixed"%self.name
             return False
@@ -463,13 +463,13 @@ class Sample(object):
         else:
             if preaspirateAir:
                 # Aspirate some air to avoid mixing with excess volume aspirated into pipette from source in previous transfer
-                self.aspirateAir(tipMask,w,5)
+                self.aspirateAir(tipMask,5)
             if self.volume>=MINLIQUIDDETECTVOLUME:
                 worklist.mix(tipMask,well,self.inliquidLC,mixvol,self.plate,nmix)
                 self.history+="(MLD)"
             else:
                 height=self.plate.getliquidheight(self.volume)
-                if height==None:
+                if height is None:
                     worklist.mix(tipMask,well,self.mixLC,mixvol,self.plate,nmix)
                     self.history+="(MB*)"
                 else:
@@ -485,7 +485,7 @@ class Sample(object):
                         worklist.mix(tipMask,well,self.mixLC,mixvol,self.plate,nmix)
                         self.history+="(MB)"
                     else:
-                        for i in range(nmix):
+                        for _ in range(nmix):
                             worklist.aspirateNC(tipMask,well,mixLC,mixvol,self.plate)
                             worklist.dispense(tipMask,well,mixLC,mixvol,self.plate)
                         self.history+="(M@%d)"%(mixheight)
@@ -514,12 +514,12 @@ class Sample(object):
             wds=hist.strip().split(' ')
             for i in range(len(wds)-1,-1,-1):
                 if wds[i][0]!='(' and wds[i][0]!='{':
+                    hist=' '.join(wds[:i+1])
                     break
-            hist=' '.join(wds[:i+1])
 
         s+=" %s"%hist
         if SHOWINGREDIENTS:
-                s+=self.ingredientstr()
+            s+=self.ingredientstr()
         return s
 
     def ingredientstr(self):

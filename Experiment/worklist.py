@@ -1,9 +1,10 @@
 "Module for generating a worklist from a set of commands"
 import math
 import string
-from plate import Plate
 import shutil
 from zlib import crc32
+
+from plate import Plate
 
 DITI200=0
 DITI10=2
@@ -15,7 +16,7 @@ ENDTOSAFE=1
 
 lnum=0
 debug=False
-list=[]
+wlist=[]
 volumes={}
 diticnt=[0,0,0,0]   # Indexed by DiTi Type
 elapsed=0   # Elapsed time in seconds
@@ -26,9 +27,10 @@ hashCodes={}
 # Don't care if different tips are used:
 tipHash=[0,0,0,0]
 #print "tipHash=[%06x,%06x,%06x,%06x]"%(tipHash[0],tipHash[1],tipHash[2],tipHash[3])
+timerstart=None
 
 def reset():
-    global elapsed, hashCodes, lnum,volumes,opQueue, hashCodes,tipHash,list
+    global elapsed, hashCodes, lnum,volumes,opQueue, hashCodes,tipHash,wlist
     elapsed=0
     hashCodes={}
     lnum=0
@@ -36,7 +38,7 @@ def reset():
     opQueue=[]
     hashCodes={}
     tipHash=[0,0,0,0]
-    list=[]
+    wlist=[]
 
 def bin(s):
     return str(s) if s<=1 else bin(s>>1) + str(s&1)
@@ -53,7 +55,7 @@ def setOptimization(onoff):
 def wellSelection(nx,ny,pos):
     'Build a well selection string'
     s="%02x%02x"%(nx,ny)
-    vals=[ 0 for x in range(7*((nx*ny+6)/7)) ]
+    vals=[0] * (7*((nx*ny+6)/7))
     for i in pos:
         vals[i]=1
     bitCounter=0
@@ -71,7 +73,7 @@ def wellSelection(nx,ny,pos):
     return s
 
 def getline():
-    return len(list)+1
+    return len(wlist)+1
 
 def moveliha( loc):
     'Move LiHa to specified location'
@@ -80,7 +82,7 @@ def moveliha( loc):
     tipMask=15
     speed=10   # 0.1-400 (mm/s)
     #comment('*MoveLiha to '+str(loc))
-    list.append( 'MoveLiha(%d,%d,%d,1,"0104?",0,4,0,%.1f,0)'%(tipMask,loc.grid,loc.pos-1,speed))
+    wlist.append( 'MoveLiha(%d,%d,%d,1,"0104?",0,4,0,%.1f,0)'%(tipMask,loc.grid,loc.pos-1,speed))
     elapsed+=1.08
 
 def optimizeQueue():
@@ -246,16 +248,16 @@ def mix(tipMask,wells, liquidClass, volume, loc, cycles=3, allowDelay=True):
 
 def aspirateDispense(op,tipMask,wells, liquidClass, volume, loc, cycles=None,allowDelay=True):
     'Execute or queue liquid handling operation'
-    assert(isinstance(loc,Plate))
+    assert isinstance(loc,Plate)
     global elapsed
 
     if loc.pos==0 or loc.grid>=25:
         # Attempting to use LiHa in ROMA-Only area
         print "Attempt to %s to/from %s at position (%d,%d), which is in ROMA-only area not accessible to LiHa"%(op,loc.name,loc.grid,loc.pos)
-        assert(0)
+        assert 0
 
     if type(volume)!=type([]):
-        volume=[volume for w in wells]
+        volume=[volume]*len(wells)
 
     if delayEnabled and allowDelay:
         opQueue.append([op,tipMask,wells,liquidClass,volume,loc,cycles])
@@ -292,7 +294,7 @@ def aspirateDispense(op,tipMask,wells, liquidClass, volume, loc, cycles=None,all
                 volumes[loc][well]=volumes[loc][well]+vincr
 
     spacing=1
-    pos=[0 for x in range(len(wells))]
+    pos=[0] * len(wells)
     prevcol=None
     for i in range(len(wells)):
         well=wells[i]
@@ -304,10 +306,10 @@ def aspirateDispense(op,tipMask,wells, liquidClass, volume, loc, cycles=None,all
         else:
             col=int(well[1:])
             row=ord(well[0])-ord('A')+1
-        assert(row>=1 and row<=loc.ny and col>=1 and col<=loc.nx)
+        assert row>=1 and row<=loc.ny and col>=1 and col<=loc.nx
         pos[i]=(row-1)+loc.ny*(col-1)
         if i>0:
-            assert(col==prevcol)
+            assert col==prevcol
         prevcol=col
 
     span=pos[len(pos)-1]-pos[0]
@@ -315,7 +317,7 @@ def aspirateDispense(op,tipMask,wells, liquidClass, volume, loc, cycles=None,all
         spacing=1
     else:
         spacing=2
-    allvols=[0 for x in range(12)]
+    allvols=[0]*12
     tip=0
     tipTmp=tipMask
     for i in range(len(wells)):
@@ -330,7 +332,7 @@ def aspirateDispense(op,tipMask,wells, liquidClass, volume, loc, cycles=None,all
 
     if tipTmp!=0:
         print "Number of tips (mask=%d) != number of wells (%d)"%(tipMask, len(wells))
-        assert(0)
+        assert 0
 
     if debug:
         print "allvols=",allvols
@@ -358,14 +360,14 @@ def aspirateDispense(op,tipMask,wells, liquidClass, volume, loc, cycles=None,all
             volstr="%s,%.2f"%(volstr,allvols[i])
 
     if op=="Mix":
-        list.append( '%s(%d,"%s",%s,%d,%d,%d,"%s",%d,0)'%(op,tipMask,liquidClass,volstr,loc.grid,loc.pos-1,spacing,ws,cycles))
+        wlist.append( '%s(%d,"%s",%s,%d,%d,%d,"%s",%d,0)'%(op,tipMask,liquidClass,volstr,loc.grid,loc.pos-1,spacing,ws,cycles))
     elif op=="AspirateNC":
-        list.append( '%s(%d,"%s",%s,%d,%d,%d,"%s",0)'%("Aspirate",tipMask,liquidClass,volstr,loc.grid,loc.pos-1,spacing,ws))
+        wlist.append( '%s(%d,"%s",%s,%d,%d,%d,"%s",0)'%("Aspirate",tipMask,liquidClass,volstr,loc.grid,loc.pos-1,spacing,ws))
     else:
-        list.append( '%s(%d,"%s",%s,%d,%d,%d,"%s",0)'%(op,tipMask,liquidClass,volstr,loc.grid,loc.pos-1,spacing,ws))
+        wlist.append( '%s(%d,"%s",%s,%d,%d,%d,"%s",0)'%(op,tipMask,liquidClass,volstr,loc.grid,loc.pos-1,spacing,ws))
     if op=="Aspirate":
         # Return conditioning volume
-         list.append( '%s(%d,"%s",%s,%d,%d,%d,"%s",0)'%("Dispense",tipMask,liquidClass,condvol,loc.grid,loc.pos-1,spacing,ws))
+        wlist.append( '%s(%d,"%s",%s,%d,%d,%d,"%s",0)'%("Dispense",tipMask,liquidClass,condvol,loc.grid,loc.pos-1,spacing,ws))
     ptr=0
     for i in range(len(allvols)):
         if allvols[i]>0:
@@ -373,7 +375,7 @@ def aspirateDispense(op,tipMask,wells, liquidClass, volume, loc, cycles=None,all
             ptr+=1
 
 def getHashKey(grid,pos,well):
-    if well==None or grid==3: 	# Bleach, Water, SSDDil -- each is the same regardless of the source well -- id them as 1,2,3
+    if well is None or grid==3: 	# Bleach, Water, SSDDil -- each is the same regardless of the source well -- id them as 1,2,3
         key="%d,%d"%(grid,pos)
     else:
         key="%d,%d,%d"%(grid,pos,well)
@@ -388,16 +390,16 @@ def getHashCode(grid,pos,well):
 def hashUpdate(op,tip,grid,pos,well,vol):
     key=getHashKey(grid,pos,well)
     old=getHashCode(grid,pos,well)
-    oldTip=tipHash[tip]
+    #oldTip=tipHash[tip]
     if op=="Dispense":
-        hashCodes[key]=crc32("%x"%tipHash[tip],hashCodes[key])
+        hashCodes[key]=crc32("%x"%tipHash[tip],old)
         hashCodes[key]=crc32("+%.1f"%vol,hashCodes[key])
     elif op=="Mix":
-        hashCodes[key]=crc32("M%.1f"%vol,hashCodes[key])
+        hashCodes[key]=crc32("M%.1f"%vol,old)
         tipHash[tip]=crc32("Mix",tipHash[tip])
     else:
-        tipHash[tip]=hashCodes[key]
-        hashCodes[key]=crc32("-%.1f"%vol,hashCodes[key])
+        tipHash[tip]=old
+        hashCodes[key]=crc32("-%.1f"%vol,old)
 
     #print "hashUpdate(%s,%s,%d,%d,%d,%d,%.1f) %06x,%06x -> %06x,%06x"%(key,op,tip,grid,pos,well,vol,old&0xffffff,oldTip&0xffffff,hashCodes[key]&0xffffff,tipHash[tip]&0xffffff)
 
@@ -406,33 +408,33 @@ def SIM(tip,op,vol,loc,pos):
     pass
 
 # Get DITI
-def getDITI( tipMask, volume, retry=True,multi=False):
+def getDITI( tipMask, volume, retry=True):
     global elapsed
     flushQueue()
     MAXVOL10=10
     MAXVOL200=200
 
-    assert(tipMask>=1 and tipMask<=15)
-    assert(volume>0 and volume<=MAXVOL200)
+    assert tipMask>=1 and tipMask<=15
+    assert volume>0 and volume<=MAXVOL200
     if retry:
         options=1
     else:
         options=0
     if volume<=MAXVOL10:
-        type=DITI10
+        tiptype=DITI10
     else:
-        type=DITI200
+        tiptype=DITI200
 
-    list.append('GetDITI(%d,%d,%d)'%(tipMask,type,options))
+    wlist.append('GetDITI(%d,%d,%d)'%(tipMask,tiptype,options))
     elapsed+=2
     if tipMask&1:
-        diticnt[type]+=1
+        diticnt[tiptype]+=1
     if tipMask&2:
-        diticnt[type]+=1
+        diticnt[tiptype]+=1
     if tipMask&4:
-        diticnt[type]+=1
+        diticnt[tiptype]+=1
     if tipMask&8:
-        diticnt[type]+=1
+        diticnt[tiptype]+=1
 
 def getDITIcnt():
     return "10ul: %d, 200ul: %d"%(diticnt[DITI10],diticnt[DITI200])
@@ -441,10 +443,10 @@ def dropDITI( tipMask, loc, airgap=10, airgapSpeed=70):
     'Drop DITI, airgap is in ul, speed in ul/sec'
     global elapsed
     flushQueue()
-    assert(tipMask>=1 and tipMask<=15)
-    assert(airgap>=0 and airgap<=100)
-    assert(airgapSpeed>=1 and airgapSpeed<1000)
-    list.append('DropDITI(%d,%d,%d,%f,%d)'%(tipMask,loc.grid,loc.pos-1,airgap,airgapSpeed))
+    assert tipMask>=1 and tipMask<=15
+    assert airgap>=0 and airgap<=100
+    assert airgapSpeed>=1 and airgapSpeed<1000
+    wlist.append('DropDITI(%d,%d,%d,%f,%d)'%(tipMask,loc.grid,loc.pos-1,airgap,airgapSpeed))
     elapsed+=2
 
 def wash( tipMask,wasteVol=1,cleanerVol=2,deepClean=False):
@@ -465,7 +467,7 @@ def wash( tipMask,wasteVol=1,cleanerVol=2,deepClean=False):
     fastWash=1
     lowVolume=0
     atFreq=1000  # Hz, For Active tip
-    list.append('Wash(%d,%d,%d,%d,%d,%.1f,%d,%.1f,%d,%.1f,%d,%d,%d,%d,%d)'%(tipMask,wasteLoc[0],wasteLoc[1],cleanerLoc[0],cleanerLoc[1],wasteVol,wasteDelay,cleanerVol,cleanerDelay,airgap, airgapSpeed, retractSpeed, fastWash, lowVolume, atFreq))
+    wlist.append('Wash(%d,%d,%d,%d,%d,%.1f,%d,%.1f,%d,%.1f,%d,%d,%d,%d,%d)'%(tipMask,wasteLoc[0],wasteLoc[1],cleanerLoc[0],cleanerLoc[1],wasteVol,wasteDelay,cleanerVol,cleanerDelay,airgap, airgapSpeed, retractSpeed, fastWash, lowVolume, atFreq))
     #print "Wash %d,%.1fml,%.1fml,deep="%(tipMask,wasteVol,cleanerVol),deepClean
     elapsed+=19.12
     if tipMask&1:
@@ -491,7 +493,7 @@ def periodicWash(tipMask,period):
     fastWash=1
     lowVolume=0
     atFreq=1000  # Hz, For Active tip
-    list.append('Periodic_Wash(%d,%d,%d,%d,%d,%.1f,%d,%.1f,%d,%.1f,%d,%d,%d,%d,%d,%d)'%(tipMask,wasteLoc[0],wasteLoc[1],cleanerLoc[0],cleanerLoc[1],wasteVol,wasteDelay,cleanerVol,cleanerDelay,airgap, airgapSpeed, retractSpeed, fastWash, lowVolume, period, atFreq))
+    wlist.append('Periodic_Wash(%d,%d,%d,%d,%d,%.1f,%d,%.1f,%d,%.1f,%d,%d,%d,%d,%d,%d)'%(tipMask,wasteLoc[0],wasteLoc[1],cleanerLoc[0],cleanerLoc[1],wasteVol,wasteDelay,cleanerVol,cleanerDelay,airgap, airgapSpeed, retractSpeed, fastWash, lowVolume, period, atFreq))
 
 def vector( vector,loc, direction, andBack, initialAction, finalAction, slow=False):
     'Move ROMA.  Gripper actions=0 (open), 1 (close), 2 (do not move).'
@@ -505,17 +507,17 @@ def vector( vector,loc, direction, andBack, initialAction, finalAction, slow=Fal
         andBack=1
     else:
         andBack=0
-    list.append('Vector("%s",%d,%d,%d,%d,%d,%d,%d,0)'%(vector,loc.grid,loc.pos,direction,andBack,initialAction, finalAction, speed))
+    wlist.append('Vector("%s",%d,%d,%d,%d,%d,%d,%d,0)'%(vector,loc.grid,loc.pos,direction,andBack,initialAction, finalAction, speed))
     elapsed+=5.15
 
 def romahome():
     #comment("*ROMA Home")
     global elapsed
-    list.append('ROMA(2,0,0,0,0,0,60,0,0)')
+    wlist.append('ROMA(2,0,0,0,0,0,60,0,0)')
     elapsed+=2.88
 
 def email(dest,subject,body='',profile='cdsrobot',onerror=0,attachscreen=1):
-    list.append('Notification(%d,"%s","%s","%s","%s",%d)'%(attachscreen,profile,dest,subject,body,onerror))
+    wlist.append('Notification(%d,"%s","%s","%s","%s",%d)'%(attachscreen,profile,dest,subject,body,onerror))
 
 def condition(varname,cond,value,dest):
     'Conditional - jump to given label (comment) if (variable cond value) is true'
@@ -530,24 +532,24 @@ def condition(varname,cond,value,dest):
         condval=3
     else:
         print "Bad condition '%s' to condition()"%cond
-        assert(0)
-    list.append('If("%s",%d,"%s","%s")'%(varname,condval,value,dest))
+        assert 0
+    wlist.append('If("%s",%d,"%s","%s")'%(varname,condval,value,dest))
 
 def comment( text,prepend=False):
     if len(text) > 200:
         text=text[0:197]+"..."
     if prepend:
-        list.insert(0,'Comment("%s")'%text)
+        wlist.insert(0,'Comment("%s")'%text)
     else:
-        list.append('Comment("%s")'%text)
+        wlist.append('Comment("%s")'%text)
 
 def starttimer(timer=1):
     global elapsed, timerstart
     flushQueue()
     if timer<1 or timer>100:
         print "starttimer: Bad timer (%d); must be between 1 and 100"%timer
-        assert(0)
-    list.append('StartTimer("%d")'%timer)
+        assert 0
+    wlist.append('StartTimer("%d")'%timer)
     timerstart=elapsed
 
 def waittimer(duration,timer=1):
@@ -555,11 +557,11 @@ def waittimer(duration,timer=1):
     flushQueue()
     if timer<1 or timer>100:
         print "waittimer: Bad timer (%d); must be between 1 and 100"%timer
-        assert(0)
+        assert 0
     if duration<.02 or duration >86400:
         print "waittimer: Bad duration (%f); must be between 0.02 and 86400 seconds"%duration
-        assert(0)
-    list.append('WaitTimer("%d","%f")'%(timer,duration))
+        assert 0
+    wlist.append('WaitTimer("%d","%f")'%(timer,duration))
     elapsed=max(elapsed,timerstart+duration)	# Assume the elapsed time is the timer length
 
 def userprompt( text,timeout=-1,prepend=False):
@@ -567,9 +569,9 @@ def userprompt( text,timeout=-1,prepend=False):
     flushQueue()
     cmd='UserPrompt("%s",0,%d)'%(text,timeout)
     if prepend:
-        list.insert(0,cmd)
+        wlist.insert(0,cmd)
     else:
-        list.append(cmd)
+        wlist.append(cmd)
     if timeout>0:
         elapsed+=timeout
 
@@ -579,10 +581,10 @@ def variable(varname,default,userprompt=None,minval=None,maxval=None):
     else:
         limitrange=0
 
-    if userprompt==None:
-        list.append('Variable(%s,"%s",0," ",0,0.0,0.0)'%(varname,default))
+    if userprompt is None:
+        wlist.append('Variable(%s,"%s",0," ",0,0.0,0.0)'%(varname,default))
     else:
-        list.append('Variable(%s,"%s",1,"%s",%d,%f,%f)'%(varname,default,userprompt,limitrange,minval,maxval))
+        wlist.append('Variable(%s,"%s",1,"%s",%d,%f,%f)'%(varname,default,userprompt,limitrange,minval,maxval))
 
 def execute( command, wait=True, resultvar=None):
     'Execute an external command'
@@ -595,14 +597,14 @@ def execute( command, wait=True, resultvar=None):
         flags=flags | 4
     else:
         resultvar=""
-    list.append('Execute("%s",%d,"%s")'%(command,flags,resultvar))
+    wlist.append('Execute("%s",%d,"%s")'%(command,flags,resultvar))
     elapsed+=2.06   # Just overhead time, not actually time that command itself takes
 
 def pyrun( cmd):
     global lnum
     label='L%d'%lnum
     lnum=lnum+1
-    execute("C:\Python27\python.exe C:\cygwin\Home\Admin\%s"%cmd,resultvar="ecode")
+    execute(r"C:\Python27\python.exe C:\cygwin\Home\Admin\%s"%cmd,resultvar="ecode")
     condition("ecode","==","0",label)
     msg='Python command %s failed with ecode=~ecode~'%cmd
     email(dest='cdsrobot@gmail.com',subject=msg)
@@ -612,8 +614,8 @@ def pyrun( cmd):
 def dump():
     'Dump current worklist'
     flushQueue()
-    for i in range(len(list)):
-        print list[i]
+    for i in range(len(wlist)):
+        print wlist[i]
 
 def dumpvols():
     'Dump final volumes'
@@ -625,8 +627,8 @@ def saveworklist(filename):
     'Save worklist in a file in format that Gemini can load as a worklist'
     flushQueue()
     fd=open(filename,'w')
-    for i in range(len(list)):
-        print >>fd, "B;%s"%string.replace(str(list[i]),'\n','\f\a')
+    for i in range(len(wlist)):
+        print >>fd, "B;%s"%string.replace(str(wlist[i]),'\n','\f\a')
     fd.close()
 
 def savegem(headerfile,filename):
@@ -634,13 +636,13 @@ def savegem(headerfile,filename):
     flushQueue()
     shutil.copy(headerfile,filename)
     fd=open(filename,'a')
-    for i in range(len(list)):
-        print >>fd, "%s"%string.replace(str(list[i]),'\n','\f\a')
+    for i in range(len(wlist)):
+        print >>fd, "%s"%string.replace(str(wlist[i]),'\n','\f\a')
     fd.close()
     # Also save another copy with line numbers, indent in a readable form in filename.gemtxt
     fd=open(filename+'txt','w')
-    for i in range(len(list)):
-        s=str(list[i])
+    for i in range(len(wlist)):
+        s=str(wlist[i])
         if s.startswith('Comment'):
             s=s[9:-2]
             if s.startswith('*'):
