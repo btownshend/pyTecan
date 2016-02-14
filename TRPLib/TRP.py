@@ -726,7 +726,7 @@ class TRP(object):
         [src,vol,srcdil,nreplicates]=listify([src,vol,srcdil,nreplicates])
 
         # Build a list of sets to be run
-        all=[]
+        torun=[]
         for repl in range(max(nreplicates)):
             for p in primers:
                 for i in range(len(src)):
@@ -737,7 +737,7 @@ class TRP(object):
                     else:
                         sampname="%s.Q%s.%d"%(src[i].name,p,repl+1)
                     s=Sample(sampname,decklayout.QPCRPLATE)
-                    all=all+[(src[i],s,p,vol[i])]
+                    torun=torun+[(src[i],s,p,vol[i])]
 
         # Fill the master mixes
         dil={}
@@ -746,14 +746,14 @@ class TRP(object):
             if not reagents.isReagent(mname):
                 reagents.add(name=mname,conc=15.0/9.0,extraVol=30)
             mq=reagents.get(mname)
-            t=[a[1] for a in all if a[2]==p]
-            v=[a[3]/mq.conc.dilutionneeded() for a in all if a[2]==p]
+            t=[a[1] for a in torun if a[2]==p]
+            v=[a[3]/mq.conc.dilutionneeded() for a in torun if a[2]==p]
             self.e.multitransfer(v,mq,t,(False,False))
             dil[p]=1.0/(1-1/mq.conc.dilutionneeded())
             
         # Add the samples
         self.e.sanitize()		# In case we are aligned
-        for a in all:
+        for a in torun:
             s=a[0]
             t=a[1]
             p=a[2]
@@ -763,7 +763,7 @@ class TRP(object):
                 self.e.shake(s.plate,returnPlate=True)
             self.e.transfer(v,s,t,(False,False))
             
-        return [a[1] for a in all]
+        return [a[1] for a in torun]
 
     def run(self,pgm):
         sys.stdout=open(os.devnull,'w')
