@@ -764,10 +764,18 @@ class TRP(object):
             
         return [a[1] for a in torun]
 
-    def run(self,pgm):
+    def setup(self):
+        'Setup for experiment -- run once.  Usually overridden by actual experiment'
+        worklist.setOptimization(True)
+
+    def pgm(self):
+        'Actual robot code generation -- may be run multiple times to establish initial volumes.  Overridden by actual experiment'
+
+    def run(self):
+        self.setup()
         sys.stdout=open(os.devnull,'w')
-        pgm(self)
+        self.pgm()
         sys.stdout=sys.__stdout__
         self.reset()
-        pgm(self)
+        self.pgm()
         self.finish()
