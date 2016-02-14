@@ -32,17 +32,17 @@ class Experiment(object):
         self.ptcrunning=False
         self.overrideSanitize=False
         self.totalTime=totalTime
-        
+
         # Access PTC and RIC early to be sure they are working
         worklist.pyrun("PTC\\ptctest.py")
         #        worklist.periodicWash(15,4)
         worklist.userprompt("Verify that PTC thermocycler lid pressure is set to '2'.")
         self.idlePgms=[]
         self.timerStartTime=[None]*8
-        
+
     def addIdleProgram(self,pgm):
         self.idlePgms.append(pgm)
-        
+
     def setreagenttemp(self,temp=None):
         if temp==None:
             worklist.pyrun("RIC\\ricset.py IDLE")
@@ -58,7 +58,7 @@ class Experiment(object):
     def savegem(self,filename):
         worklist.flushQueue()
         worklist.savegem(decklayout.headerfile,filename)
-        
+
     def savesummary(self,filename):
         # Print amount of samples needed
         fd=open(filename,"w")
@@ -79,7 +79,7 @@ class Experiment(object):
         reagents.printprep(fd)
         Sample.printallsamples("All Samples:",fd,w=worklist)
         fd.close()
-        
+
     def sanitize(self,nmix=1,deepvol=20,force=False):
         'Deep wash including RNase-Away treatment'
         fixedTips=(~self.DITIMASK)&15
@@ -104,7 +104,7 @@ class Experiment(object):
             worklist.comment("Estimated elapsed: %d minutes, remaining run time: %d minutes"%((self.thermotime+worklist.elapsed)/60,(self.totalTime-(worklist.elapsed+self.thermotime))/60))
         else:
             worklist.comment("Estimated elapsed: %d minutes"%((self.thermotime+worklist.elapsed)/60))
-        
+
     def cleantip(self):
         'Get the mask for a clean tip, washing if needed'
         if self.cleanTips==0:
@@ -115,13 +115,13 @@ class Experiment(object):
             tipMask<<=1
         self.cleanTips&=~tipMask
         return tipMask
-            
+
     def multitransfer(self, volumes, src, dests,mix=(False,False),getDITI=True,dropDITI=True,ignoreContents=False):
         'Multi pipette from src to multiple dest.  mix is (src,dest) mixing'
         #print "multitransfer(",volumes,",",src,",",dests,",",mix,",",getDITI,",",dropDITI,")"
         if self.ptcrunning and (src.plate==decklayout.SAMPLEPLATE or len([1 for d in dests if d.plate==decklayout.SAMPLEPLATE])>0):
             self.waitpgm()
-            
+
         if isinstance(volumes,(int,long,float)):
             # Same volume for each dest
             volumes=[volumes for i in range(len(dests))]
@@ -148,7 +148,7 @@ class Experiment(object):
                         self.multitransfer(volumes[0:i],src,dests[0:i],mix,getDITI,not reuseTip)
                         self.multitransfer(volumes[i:],src,dests[i:],(False,mix[1]),not reuseTip,dropDITI)
                         return
-                    
+
             if self.useDiTis:
                 tipMask=4
                 if  getDITI:
@@ -188,7 +188,7 @@ class Experiment(object):
             self.transfer(self.MAXVOLUME,src,dest,mix,getDITI,False)
             self.transfer(volume-self.MAXVOLUME,src,dest,(mix[0] and not reuseTip,mix[1]),False,dropDITI)
             return
-        
+
         cmt="Add %.1f ul of %s to %s"%(volume, src.name, dest.name)
         ditivolume=volume+src.inliquidLC.singletag
         if mix[0] and not src.isMixed:
@@ -242,7 +242,7 @@ class Experiment(object):
             self.dispose(self.MAXVOLUME,src,mix,getDITI,dropDITI)
             self.dispose(volume-self.MAXVOLUME,src,False,getDITI,dropDITI)
             return
-        
+
         cmt="Remove and dispose of %.1f ul from %s"%(volume, src.name)
         ditivolume=volume+src.inliquidLC.singletag
         if mix and not src.isMixed:
@@ -279,14 +279,14 @@ class Experiment(object):
 
         if dilutant==None:
             dilutant=decklayout.WATER
-            
+
         worklist.comment("Stage: "+stagename)
         if not isinstance(volume,list):
             volume=[volume for i in range(len(samples))]
         for i in range(len(volume)):
             assert(volume[i]>0)
             volume[i]=float(volume[i])
-            
+
         reagentvols=[1.0/x.conc.dilutionneeded()*finalx for x in reagents]
         if len(sources)>0:
             sourcevols=[volume[i]*1.0/sources[i].conc.dilutionneeded()*finalx for i in range(len(sources))]
@@ -318,7 +318,7 @@ class Experiment(object):
     def lihahome(self):
         'Move LiHa to left of deck'
         worklist.moveliha(decklayout.WASHLOC)
-        
+
     def runpgm(self,pgm,duration,waitForCompletion=True,volume=10,hotlidmode="TRACKING",hotlidtemp=1):
         if self.ptcrunning:
             print "ERROR: Attempt to start a progam on PTC when it is already running"
@@ -348,7 +348,7 @@ class Experiment(object):
         Sample.addallhistory("{%s}"%pgm,addToEmpty=False,onlyplate=decklayout.SAMPLEPLATE.name)
         if waitForCompletion:
             self.waitpgm()
-            
+
     def moveplate(self,plate,dest="Home",returnHome=True):
         if self.ptcrunning and plate==decklayout.SAMPLEPLATE:
             self.waitpgm()
@@ -357,11 +357,11 @@ class Experiment(object):
         if plate!=decklayout.SAMPLEPLATE and plate!=decklayout.DILPLATE:
             print "Only able to move %s or %s plates, not %s"%(decklayout.SAMPLEPLATE.name,decklayout.DILPLATE.name,plate.name)
             assert(False)
-            
+
         if plate.curloc==dest:
             #print "Plate %s is already at %s"%(plate.name,dest)
             return
-        
+
         #print "Move plate %s from %s to %s"%(plate.name,plate.curloc,dest)
         worklist.flushQueue()
         self.lihahome()
@@ -407,7 +407,7 @@ class Experiment(object):
         samps=Sample.getAllOnPlate(plate)
         maxvol=max([x.volume for x in samps])
         minvol=min([x.volume for x in samps if not x.isMixed]+[200])
-        (minspeed,maxspeed)=plate.getmixspeeds(minvol*0.95,maxvol+5)	# Assume volumes could be off 
+        (minspeed,maxspeed)=plate.getmixspeeds(minvol*0.95,maxvol+5)	# Assume volumes could be off
 
         if speed==None:
             if minspeed<maxspeed:
@@ -416,7 +416,7 @@ class Experiment(object):
                 speed=maxspeed
 
         warned=False
-        
+
         if speed>maxspeed:
             print "WARNING: %s plate contains wells with up to %.2f ul, which may spill at %d RPM: "%(plate.name, maxvol, speed),
             for x in samps:
@@ -425,7 +425,7 @@ class Experiment(object):
                     print "%s[%.1ful, max=%.0f RPM] "%(x.name,x.volume,tmp[1]),
             print
             warned=True
-            
+
         if speed<minspeed:
             print "WARNING: %s plate contains unmixed wells with as little as %.2f ul, which may not be mixed at %d RPM: "%(plate.name, minvol, speed),
             for x in samps:
@@ -462,7 +462,7 @@ class Experiment(object):
     @staticmethod
     def shakerIsActive():
         return __shakerActive
-    
+
     def starttimer(self,timer=1):
         self.timerStartTime[timer]=worklist.elapsed
     	worklist.starttimer(timer)
@@ -479,7 +479,7 @@ class Experiment(object):
         self.starttimer()
         self.waittimer(duration)
         Sample.addallhistory("(%ds)"%duration)
-        
+
     def waitpgm(self, sanitize=True):
         if not self.ptcrunning:
             return

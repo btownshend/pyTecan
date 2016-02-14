@@ -37,7 +37,7 @@ def reset():
     hashCodes={}
     tipHash=[0,0,0,0]
     list=[]
-    
+
 def bin(s):
     return str(s) if s<=1 else bin(s>>1) + str(s&1)
 
@@ -248,7 +248,7 @@ def aspirateDispense(op,tipMask,wells, liquidClass, volume, loc, cycles=None,all
     'Execute or queue liquid handling operation'
     assert(isinstance(loc,Plate))
     global elapsed
-    
+
     if loc.pos==0 or loc.grid>=25:
         # Attempting to use LiHa in ROMA-Only area
         print "Attempt to %s to/from %s at position (%d,%d), which is in ROMA-only area not accessible to LiHa"%(op,loc.name,loc.grid,loc.pos)

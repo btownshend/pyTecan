@@ -12,7 +12,7 @@ class LC(object):
         self.multitag=multitag
         self.wetvolume=wetvolume
         self.ldetect=ldetect
-        
+
     def __str__(self):
         #        return "%s(%d,%d,%d)"%(self.name,self.singletag,self.multicond,self.multiexcess)
         return self.name
@@ -23,7 +23,7 @@ class LC(object):
             return vol+self.multiexcess+self.wetvolume
         else:
             return vol+self.wetvolume
-        
+
 LCWaterBottom=LC("Water-Bottom",singlelag=1,multiexcess=1)
 LCWaterPierce=LC("Water-Pierce",singlelag=1,multiexcess=1)
 LCWaterBottomSide=LC("Water-BottomSide",singlelag=1,multiexcess=1)

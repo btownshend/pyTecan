@@ -30,7 +30,7 @@ tiphistory={}
 # Water-InLiquid
 # Detect simultaneously and twice with all tips, cond good, det 60mm/s, double 4mm/s
 # Fixed Aspirate (single): 20ul/s, 200ms, STAG=20,LAG=1,TAG=0,EXC=0,COND=0, liquid detect +3.5mm center with tracking, retract to liquid level-5mm  20mm/s
-# Fixed Aspirate (multi): 20ul/s, 200ms, STAG=20,LAG=0,TAG=0,EXC=2 (to waste),COND=0 
+# Fixed Aspirate (multi): 20ul/s, 200ms, STAG=20,LAG=0,TAG=0,EXC=2 (to waste),COND=0
 # Fixed Dispense (single): 100ul/s, 100ul/s, 500ms, no TAG after each dispense, no LD, liquid detect +1mm center with tracking, retract to liquid level-5mm  20 mm/s
 # Fixed Dispense (multi): 100ul/s, 100ul/s, 500ms(WAS 0), no TAG after each dispense
 # Water-Mix
@@ -39,7 +39,7 @@ tiphistory={}
 # Fixed Dispense (single): 225ul/s, 225ul/s, 500ms, no TAG after each dispense, no LD, z-max -5mm, no touch, retract to z=dispense 20 mm/s
 # Fixed Dispense (multi): 225ul/s, 225ul/s, 500ms, no TAG after each dispense
 
-#Water-BottomSide 
+#Water-BottomSide
 # Same as water-Bottom, but dispense with tip at right side
 # Fixed Aspirate (single): 20ul/s, 200ms, STAG=20,LAG=1 (WAS 0),TAG=0,EXC=0,COND=0, zmax-1.5mm , retract to z-start  20mm/s
 # Fixed Aspirate (multi): 20ul/s, 200ms, STAG=20,LAG=0,TAG=0,EXC=1 (to waste),COND=0
@@ -76,7 +76,7 @@ class Sample(object):
             print >>fd,"\nTip history:\n"
             for t in tiphistory:
                 print >>fd,"%d: %s\n"%(t,tiphistory[t])
-            
+
     @staticmethod
     def numSamplesOnPlate(plate):
         cnt=0
@@ -84,7 +84,7 @@ class Sample(object):
             if s.plate==plate and len(s.history)>0:
                 cnt+=1
         return cnt
-        
+
     def __init__(self,name,plate,well=None,conc=None,volume=0,hasBeads=False,extraVol=50):
         if well!=None and well!=-1:
             if not isinstance(well,int):
@@ -96,7 +96,7 @@ class Sample(object):
                     print "Attempt to assign sample %s to plate %s, well %s that already contains %s"%(name,str(plate),plate.wellname(well),s.name)
                     well=None
                     break
-            
+
         if well==None:
             # Find first unused well
             found=False
@@ -111,7 +111,7 @@ class Sample(object):
                     break
         elif well==-1:
             well=None
-                    
+
         for s in __allsamples:
             if s.plate==plate and s.well==well:
                 print "Attempt to assign sample %s to plate %s, well %s that already contains %s"%(name,str(plate),plate.wellname(well),s.name)
@@ -129,7 +129,7 @@ class Sample(object):
                     if s.plate==plate:
                         print s
                 assert(False)
-                
+
         self.well=well
         if isinstance(conc,Concentration) or conc==None:
                 self.conc=conc
@@ -140,7 +140,7 @@ class Sample(object):
             self.ingredients={name:volume}
         else:
             self.ingredients={}
-            
+
         if plate.pierce:
             self.bottomLC=liquidclass.LCWaterPierce
             self.bottomSideLC=self.bottomLC  # Can't use side with piercing
@@ -153,7 +153,7 @@ class Sample(object):
         self.beadsLC=liquidclass.LCWaterBottomBeads
         self.mixLC=liquidclass.LCMixSlow
         self.airLC=liquidclass.LCAir
-        # Same as bottom for now 
+        # Same as bottom for now
         self.emptyLC=self.bottomLC
         self.history=""
         __allsamples.append(self)
@@ -162,7 +162,7 @@ class Sample(object):
         self.hasBeads=hasBeads		# Setting this to true overrides the manual conditioning
         self.extraVol=extraVol			# Extra volume to provide
         self.firstdispense = 0					# Last time accessed
-        
+
     def sampleWellPosition(self):
         'Convert a sample well number to a well position as used by Gemini worklist'
         if self.well==None:
@@ -179,10 +179,10 @@ class Sample(object):
         wellpos=(row-1)+self.plate.ny*(col-1)
         #print "sampleWellPosition(%d) -> %d"%(self.well,wellpos)
         return wellpos
-    
+
     def getHash(self,w):
         return worklist.getHashCode(grid=self.plate.grid,pos=self.plate.pos-1,well=self.sampleWellPosition())
-    
+
     @classmethod
     def clearall(cls):
         'Clear all samples'
@@ -213,29 +213,29 @@ class Sample(object):
             if s.name==name:
                 return s
         return None
-    
+
     @classmethod
     def lookupByWell(cls,plate,well):
         for s in __allsamples:
             if s.plate==plate and s.well==well:
                 return s
         return None
-    
+
     @classmethod
-    def getAllOnPlate(cls,plate=None):  
+    def getAllOnPlate(cls,plate=None):
         result=[]
         for s in __allsamples:
             if plate==None or s.plate==plate:
-                result.append(s)  
-        return result 
-                 
+                result.append(s)
+        return result
+
     @classmethod
-    def getAllLocOnPlate(cls,plate=None):  
+    def getAllLocOnPlate(cls,plate=None):
         result=""
         for s in __allsamples:
             if (plate==None or s.plate==plate):
                 result+=" %s"%(s.plate.wellname(s.well))
-        return result 
+        return result
 
     def dilute(self,factor):
         'Dilute sample -- just increases its recorded concentration'
@@ -251,7 +251,7 @@ class Sample(object):
             self.firstdispense=-1	# Don't mention again
         if op=='dispense' and self.firstdispense==0:
             self.firstdispense=worklist.elapsed
-        
+
     def aspirate(self,tipMask,w,volume,multi=False):
         self.evapcheck(w,'aspirate')
         if self.plate.curloc=='PTC':
@@ -272,7 +272,7 @@ class Sample(object):
                             well.append(i)
         else:
                 well=[self.well]
-        
+
         lc=self.chooseLC(volume)
         if self.hasBeads and self.plate.curloc=="Magnet":
             # With beads don't do any manual conditioning and don't remove extra (since we usually want to control exact amounts left behind, if any)
@@ -311,13 +311,13 @@ class Sample(object):
     def aspirateAir(self,tipMask,w,volume):
         'Aspirate air over a well'
         worklist.aspirateNC(tipMask,[self.well],self.airLC,volume,self.plate)
-        
+
     def dispense(self,tipMask,w,volume,src):
         self.evapcheck(w,'dispense')
         if self.plate.curloc=='PTC':
             print "Dispense to PTC!, loc=",self.plate.grid,",",self.plate.pos
             assert(False)
-            
+
         if self.volume+volume < MINDEPOSITVOLUME:
             print "Warning: Dispense of %.1ful into %s results in total of %.1ful which is less than minimum deposit volume of %.1f ul"%(volume,self.name,self.volume+volume,MINDEPOSITVOLUME)
 
@@ -328,7 +328,7 @@ class Sample(object):
 
         if self.volume+volume > self.plate.maxVolume:
             print "Warning: Dispense of %.1ful into %s results in total of %.1ful which is more than the maximum volume of %.1f ul"%(volume,self.name,self.volume+volume,self.plate.maxVolume)
-            
+
         if self.hasBeads and self.plate.curloc=="Magnet":
             worklist.dispense(tipMask,well,self.beadsLC,volume,self.plate)
         elif self.volume>=MINLIQUIDDETECTVOLUME:
@@ -369,7 +369,7 @@ class Sample(object):
         #self.addhistory("%06x %s"%(self.getHash(w)&0xffffff,src.name),volume,tipMask)
         self.addhistory(src.name,volume,tipMask)
         self.addingredients(src,volume)
-            
+
     def addhistory(self,name,vol,tip):
         if vol>=0:
             if SHOWTIPS:
@@ -412,14 +412,14 @@ class Sample(object):
                     s.history+=" "+msg
                 elif addToEmpty:
                     s.history=msg
-            
+
     @staticmethod
     def mixall(plate):
         'Mark all on given plate as mixed'
         for s in __allsamples:
             if plate==s.plate.name and s.volume>0:
                 s.isMixed=True
-                
+
     def addingredients(self,src,vol):
         'Update ingredients by adding ingredients from src'
         for k in src.ingredients:
@@ -431,7 +431,7 @@ class Sample(object):
                     self.ingredients[k]+=addition
                 else:
                     self.ingredients[k]=addition
-            
+
     def chooseLC(self,aspirateVolume=0):
         if self.volume-aspirateVolume>=MINLIQUIDDETECTVOLUME:
             return self.inliquidLC
@@ -441,7 +441,7 @@ class Sample(object):
             return self.beadsLC
         else:
             return self.bottomLC
-        
+
         # Mix, return true if actually did a mix, false otherwise
     def mix(self,tipMask,w,preaspirateAir=False,nmix=4):
         if self.isMixed and not self.hasBeads:
@@ -495,7 +495,7 @@ class Sample(object):
             tiphistory[tipMask]+=" %s-Mix[%d]"%(self.name,mixvol)
             self.isMixed=True
             return True
-            
+
     def __str__(self):
         s="%-32s "%(self.name)
         if self.conc!=None:
@@ -543,6 +543,6 @@ class Sample(object):
                 else:
                     ing=ing+",'%s'"%k
                     ingvol=ingvol+",%g"%s.ingredients[k]
-            
+
             print >>fd,"samps=[samps,struct('name','%s','plate','%s','well','%s','concentration','%s','history','%s','ingredients',{{%s}},'volumes',[%s])];"%(s.name,s.plate,s.plate.wellname(s.well),str(s.conc),s.history,ing,ingvol)
         fd.close()

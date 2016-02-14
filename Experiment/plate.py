@@ -31,14 +31,14 @@ class Plate(object):
         self.vectorName=vectorName		# Name of vector used for RoMa to pickup plate
         self.maxspeeds=maxspeeds;
         __allplates.append(self)
-        
+
     @classmethod
     def lookup(self,grid,pos):
         for p in __allplates:
             if p.grid==grid and p.pos==pos:
                 return p
         return None
-               
+
     def movetoloc(self,dest,newloc=None):
         self.curloc=dest
         if  dest=="Home":
@@ -50,7 +50,7 @@ class Plate(object):
             self.grid=newloc.grid
             self.pos=newloc.pos
             self.unusableVolume=newloc.unusableVolume
-            
+
     def getliquidheight(self,volume):
         'Get liquid height in mm above ZMax'
         if self.angle==None:
@@ -74,7 +74,7 @@ class Plate(object):
         'Compute liquid volume given height above zmax in mm'
         if self.angle==None:
             return None
-        
+
         h0=self.h1-self.r1/math.tan(self.angle/2);
         v1=math.pi/3*(self.h1-h0)*self.r1*self.r1-self.v0;
         if height>self.h1:
@@ -83,7 +83,7 @@ class Plate(object):
             volume=(height-h0)**3*math.pi/3*(self.r1/(self.h1-h0))**2-self.v0
         #print "h0=",h0,", v1=",v1,", h=",height,", vol=",volume,", h=",self.getliquidheight(volume)
         return volume
-    
+
     def getmixspeeds(self,minvol,maxvol):
         'Get shaker speed range for given well volume'
         maxspeed=0
@@ -106,7 +106,7 @@ class Plate(object):
         # Units will be sqrt(mN/m * mm / ul*(mg/ul)*mm) = sqrt(mN/(m*mg)) = s^-1 * 60 = min^-1
         #print "mix(%.0f,%.0f) = [%.0f, %.0f]"%(minvol,maxvol,minspeed,maxspeed)
         return (minspeed,maxspeed)
-    
+
     def wellname(self,well):
         if well==None:
             return "None"
@@ -121,8 +121,8 @@ class Plate(object):
                 return i
         print "Illegal well name, %s, for plate %s"%(wellname, self.name)
         assert(False)
-    
+
     def __str__(self):
         #return self.name
     	return "%s(%s,%s)"%(self.name,self.grid,self.pos)
-        
+

@@ -6,15 +6,15 @@ class JobQueue(object):
         self.jobs={}
         self.debug=False
         self.runningJob=None	# Currently executing job
-        
+
     def len(self):
         return len(self.jobs)
-    
+
     def getID(self):
         id=self.nextID
         self.nextID+=1
         return id
-    
+
     def findPriors(self,sample,known):
         'Return any prior job entries that affect sample'
         priors=[]
@@ -36,32 +36,32 @@ class JobQueue(object):
         priors=self.findPriors(src,prereqs)
         self.jobs[id]={'type':'transfer','volume':volume,'src':src,'dest':dest,'prereqs':set(prereqs).union(priors)}
         return id
-    
+
     def addMultiTransfer(self,volume,src,dest,prereqs=[]):
         'Add a transfer operation to the queue, return the ID of the job (for use in prereqs)'
         id=self.getID()
         priors=self.findPriors(src,prereqs)
         self.jobs[id]={'type':'multitransfer','volume':volume,'src':src,'dest':dest,'prereqs':set(prereqs).union(priors)}
         return id
-    
+
     def addShake(self,sample,prereqs=[]):
         id=self.getID()
         priors=self.findPriors(sample,prereqs)
         self.jobs[id]={'type':'shake','sample':sample,'prereqs':set(prereqs).union(priors)}
         return id
-    
+
     def dump(self):
         'Dump queue'
         for id,j in self.jobs.iteritems():
             print id,j
-            
+
     def getJob(self):
         'Return the next job on the queue to execute, removing it from queue'
 
         if self.runningJob!=None:
             print "Call of getJob() while a job is running - returning None"
             return None
-            
+
         # Remove any shake jobs that are unneeded
         for id,j in self.jobs.items():
             if j['type']=='shake' and len(j['prereqs'])==0 and j['sample'].isMixed and not Experiment.shakerIsActive():
@@ -93,7 +93,7 @@ class JobQueue(object):
 
         for id in self.jobs:
             j=self.jobs[id]
-            if j['type']!='shake' or len(j['prereqs'])>0 or not j['sample'].plate.curloc=='Home' or Experiment.shakerIsActive(): 
+            if j['type']!='shake' or len(j['prereqs'])>0 or not j['sample'].plate.curloc=='Home' or Experiment.shakerIsActive():
                 continue
             return id
         # Nothing to do
@@ -126,10 +126,10 @@ class JobQueue(object):
             print
         self.removeJob(id)
         self.runningJob=None
-        
+
     def removeJob(self,id):
         for ik,k in self.jobs.iteritems():
             k['prereqs']=k['prereqs'].difference([id])
         self.jobs.pop(id)
         #print "Removed job ",id
-            
+

@@ -15,7 +15,7 @@ class Reagent:
         self.hasBeads=hasBeads
         self.extraVol=extraVol
         self.initVol=0
-        
+
     def get(self):
         if self.sample==None:
             #print "Creating sample for reagent %s with %.1f ul"%(self.name,self.initVol)
@@ -67,7 +67,7 @@ def printprep(fd=sys.stdout):
             if s.conc!=None:
                 c="[%s]"%str(s.conc)
             else:
-                c=""   
+                c=""
             if s.volume==r.initVol:
                 'Not used'
                 #note="%s%s in %s.%s not consumed"%(s.name,c,str(s.plate),s.plate.wellname(s.well))
