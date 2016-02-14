@@ -48,6 +48,7 @@ def add(name,plate=decklayout.REAGENTPLATE,well=None,conc=None,hasBeads=False,ex
         print "ERROR: Attempt to add duplicate reagent, ",name
         assert(False)
     all[name]=Reagent(name,plate,well,conc,hasBeads,extraVol)
+    return all[name]
 
 def reset():
     for r in all:

@@ -101,6 +101,7 @@ class TRP(object):
         Sample.clearall()
     
     def addTemplates(self,names,stockconc,finalconc=None,units="nM",plate=decklayout.EPPENDORFS):
+        'Add templates as "reagents", return the list of them'
         if finalconc==None:
             print "Warning: final concentration of template not specified, assuming 0.6x (should add to addTemplates() call"
             [names,stockconc]=listify([names,stockconc])
@@ -108,11 +109,10 @@ class TRP(object):
         else:
             [names,stockconc,finalconc]=listify([names,stockconc,finalconc])
 
-        tgt=[]
+        r=[]
         for i in range(len(names)):
-            reagents.add(names[i],plate=plate,conc=Concentration(stockconc[i],finalconc[i],units))
-            tgt.append(reagents.get(names[i]))
-        return tgt
+            r.append(reagents.add(names[i],plate=plate,conc=Concentration(stockconc[i],finalconc[i],units)))
+        return r
     
     def finish(self):
         self.e.lihahome()
