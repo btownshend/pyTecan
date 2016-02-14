@@ -96,10 +96,14 @@ class TRP(object):
     def reset(self):
         'Reset this experiment so we can generate it again after adjusting the reagent initial volumes and total time'
         totalTime=worklist.elapsed+self.e.thermotime
+        worklist.reset()
         self.e=Experiment(totalTime)
+        self.e.setreagenttemp(6.0)
+        self.e.sanitize(3,50)    # Heavy sanitize
         reagents.reset()
         Sample.clearall()
-    
+        print "After reset, elapsed=%d"%worklist.elapsed
+        
     def addTemplates(self,names,stockconc,finalconc=None,units="nM",plate=decklayout.EPPENDORFS):
         'Add templates as "reagents", return the list of them'
         if finalconc==None:
@@ -715,7 +719,7 @@ class TRP(object):
     def runQPCR(self,src,vol,srcdil,primers=["A","B"],nreplicates=1):
         ## QPCR setup
         # e.g. trp.runQPCR(src=["1.RT-B","1.RT+B","1.RTNeg-B","1.RTNeg+B","2.RT-A","2.RT-B","2.RTNeg+B","2.RTNeg+B"],vol=10,srcdil=100)
-        worklist.comment("runQPCR: primers=%s, source=%s"%([p for p in primers],[s for s in src]))
+        worklist.comment("runQPCR: primers=%s, source=%s"%([p for p in primers],[s.name for s in src]))
         [src,vol,srcdil,nreplicates]=listify([src,vol,srcdil,nreplicates])
 
         # Build a list of sets to be run
