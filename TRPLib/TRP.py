@@ -170,7 +170,7 @@ class TRP(object):
     
     def distribute(self,src,dil,vol,wells,tgt=[],dilutant=None,plate=decklayout.SAMPLEPLATE):
         if len(tgt)==0:
-            tgt=[Sample("%s.dist%d"%(src[0].name,j),src[0].plate) for j in range(wells)]
+            tgt=[Sample("%s.dist%d"%(src[0].name,j),plate) for j in range(wells)]
         
         if dilutant==None:
             dilutant=decklayout.WATER
