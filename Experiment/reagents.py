@@ -18,7 +18,7 @@ class Reagent:
         
     def get(self):
         if self.sample==None:
-            print "Creating sample for reagent %s with %.1f ul"%(self.name,self.initVol)
+            #print "Creating sample for reagent %s with %.1f ul"%(self.name,self.initVol)
             self.sample=Sample(self.name,self.plate,self.preferredWell,self.conc,hasBeads=self.hasBeads,volume=self.initVol)
             wellname=self.sample.plate.wellname(self.sample.well)
             if self.preferredWell != None and self.preferredWell != wellname:
@@ -30,7 +30,7 @@ class Reagent:
         if self.sample!=None:
             adj=self.extraVol-self.sample.volume
             if adj>0:
-                print "Adjusting initVol of %s to %.1f"%(self.name,self.initVol+adj)
+                #print "Adjusting initVol of %s to %.1f"%(self.name,self.initVol+adj)
                 self.initVol+=adj
             self.sample=None
 
