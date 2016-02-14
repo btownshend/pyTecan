@@ -17,7 +17,6 @@ reagents.add("MNegRT",well=None,conc=2)
 reagents.add("MLigAT7",well="D1",conc=3)	# Conc is relative to annealing time (not to post-ligase)
 reagents.add("MLigBT7W",well="E1",conc=3)
 reagents.add("MLigase",well="A2",conc=3)
-
 reagents.add("Theo",well=None,conc=Concentration(25,7.5,'mM'))
 reagents.add("MStopXBio",well="B2",conc=2)
 reagents.add("MStpX",well="C2",conc=2)
@@ -42,8 +41,6 @@ reagents.add("MLigBT7WBio",well="E5",conc=3)
 reagents.add("MLigBT7Bio",well="A6",conc=3)
 reagents.add("MPCR",well=None,conc=4)
 reagents.add("MLigB",well=None,conc=3)
-UNUSED=Sample("LeakyA1",decklayout.SAMPLEPLATE,"A1",0)
-UNUSED2=Sample("LeakyH12",decklayout.SAMPLEPLATE,"H12",0)
     
 def listify(x):
     'Convert a list of (lists or scalars) into a list of equal length lists'
@@ -729,9 +726,9 @@ class TRP(object):
                     if nreplicates[i]<=repl:
                         continue
                     if repl==0:
-                        sampname="%s.Q%s"%(src[i],p)
+                        sampname="%s.Q%s"%(src[i].name,p)
                     else:
-                        sampname="%s.Q%s.%d"%(src[i],p,repl+1)
+                        sampname="%s.Q%s.%d"%(src[i].name,p,repl+1)
                     s=Sample(sampname,decklayout.QPCRPLATE)
                     all=all+[(src[i],s,p,vol[i])]
 

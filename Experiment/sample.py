@@ -89,6 +89,8 @@ class Sample(object):
         if well!=None and well!=-1:
             if not isinstance(well,int):
                 well=plate.wellnumber(well)
+            if well not in plate.wells:
+                print "Attempt to assign sample %s to well %d (%s) which is not legal on plate %s"%(name,well,plate.wellname(well),plate.name)
             for s in __allsamples:
                 if s.well==well and s.plate==plate:
                     print "Attempt to assign sample %s to plate %s, well %s that already contains %s"%(name,str(plate),plate.wellname(well),s.name)
@@ -98,14 +100,15 @@ class Sample(object):
         if well==None:
             # Find first unused well
             found=False
-            well=0
-            while not found:
+            for well in plate.wells:
                 found=True
                 for s in __allsamples:
                     if s.plate==plate and s.well==well:
                         well=well+1
                         found=False
                         break
+                if found:
+                    break
         elif well==-1:
             well=None
                     

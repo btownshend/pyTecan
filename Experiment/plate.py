@@ -15,6 +15,7 @@ class Plate(object):
         self.homeUnusableVolume=unusableVolume
         self.nx=nx
         self.ny=ny
+        self.wells=[i*ny+j for i in range(nx) for j in range(ny) ]		# List of wells, can be modified to skip particular wells
         self.pierce=pierce
         self.maxVolume=maxVolume
         self.warned=False
