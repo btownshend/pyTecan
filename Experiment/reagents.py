@@ -55,29 +55,27 @@ def reset():
         all[r].reset()
 
 def printprep(fd=sys.stdout):
-    notes="Reagents to provide:"
-    total=0
-    for r in all.itervalues():
-        s=r.sample
-        if s==None:
-            continue
-        if s.conc!=None:
-            c="[%s]"%str(s.conc)
-        else:
-            c=""   
-        if s.volume==r.initVol:
-            'Not used'
-            #note="%s%s in %s.%s not consumed"%(s.name,c,str(s.plate),s.plate.wellname(s.well))
-            #notes=notes+"\n"+note
-        elif r.initVol>0:
-            note="%s%s in %s.%s consume %.1f ul, provide %.1f ul"%(s.name,c,str(s.plate),s.plate.wellname(s.well),r.initVol-s.volume,r.initVol)
-            notes=notes+"\n"+note
-        if s.plate.name=="Reagents":
+    for p in sorted(set([r.plate for r in all.itervalues()])):
+        print >>fd,"\nPlate %s:"%p.name
+        total=0
+        for r in sorted(all.itervalues(),key=lambda p:p.sample.well if p.sample!=None else None):
+            s=r.sample
+            if s==None:
+                continue
+            if s.plate!=p:
+                continue
+            if s.conc!=None:
+                c="[%s]"%str(s.conc)
+            else:
+                c=""   
+            if s.volume==r.initVol:
+                'Not used'
+                #note="%s%s in %s.%s not consumed"%(s.name,c,str(s.plate),s.plate.wellname(s.well))
+                #notes=notes+"\n"+note
+            elif r.initVol>0:
+                print >>fd,"%s%s in %s.%s consume %.1f ul, provide %.1f ul"%(s.name,c,s.plate.name,s.plate.wellname(s.well),r.initVol-s.volume,r.initVol)
             total+=round((r.initVol-s.volume)*10)/10.0
-        if r.initVol>s.plate.maxVolume:
-            print "ERROR: Excess initial volume (",r.initVol,") for ",s,", maximum is ",s.plate.maxVolume
-
-    print >>fd,notes
-    print >>fd,"Total reagents volume = %.1f ul"%total
-
+            if r.initVol>s.plate.maxVolume:
+                print "ERROR: Excess initial volume (",r.initVol,") for ",s,", maximum is ",s.plate.maxVolume
+        print >>fd,"Total %s volume = %.1f ul"%(p.name,total)
 
