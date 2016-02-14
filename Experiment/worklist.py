@@ -293,6 +293,7 @@ def aspirateDispense(op,tipMask,wells, liquidClass, volume, loc, cycles=None,all
 
     spacing=1
     pos=[0 for x in range(len(wells))]
+    prevcol=None
     for i in range(len(wells)):
         well=wells[i]
         if isinstance(well,(long,int)):

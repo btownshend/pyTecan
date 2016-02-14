@@ -143,7 +143,7 @@ class Sample(object):
             
         if plate.pierce:
             self.bottomLC=liquidclass.LCWaterPierce
-            self.bottomSideLC=bottomLC  # Can't use side with piercing
+            self.bottomSideLC=self.bottomLC  # Can't use side with piercing
             self.inliquidLC=self.bottomLC  # Can't use liquid detection when piercing
         else:
             self.bottomLC=liquidclass.LCWaterBottom
