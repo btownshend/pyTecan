@@ -542,7 +542,7 @@ class TRP(object):
         # e.g: trp.runLig(prefix=["B","B","B","B","B","B","B","B"],src=["1.RT-","1.RT+","1.RTNeg-","1.RTNeg+","2.RT-","2.RT-","2.RTNeg+","2.RTNeg+"],tgt=["1.RT-B","1.RT+B","1.RTNeg-B","1.RTNeg+B","2.RT-A","2.RT-B","2.RTNeg+B","2.RTNeg+B"],vol=[10,10,10,10,10,10,10,10],srcdil=[2,2,2,2,2,2,2,2])
         [src,tgt,vol,srcdil,master]=listify([src,tgt,vol,srcdil,master])
         if len(tgt)==0:
-            tgt=[Sample("%s.%s"%(src[i].name,master[i].name),srcs[i].plate) for i in range(len(src))]
+            tgt=[Sample("%s.%s"%(src[i].name,master[i].name),src[i].plate) for i in range(len(src))]
 
         # Need to check since an unused ligation master mix will not have a concentration
         minsrcdil=1/(1-1/master[0].conc.dilutionneeded()-1/reagents.get("MLigase").conc.dilutionneeded())
