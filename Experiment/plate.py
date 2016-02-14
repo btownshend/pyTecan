@@ -123,6 +123,6 @@ class Plate(object):
         assert(False)
     
     def __str__(self):
-        return self.name
-    #return "%s(%s,%s)"%(self.name,self.grid,self.pos)
+        #return self.name
+    	return "%s(%s,%s)"%(self.name,self.grid,self.pos)
         
