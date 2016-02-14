@@ -27,10 +27,22 @@ hashCodes={}
 tipHash=[0,0,0,0]
 #print "tipHash=[%06x,%06x,%06x,%06x]"%(tipHash[0],tipHash[1],tipHash[2],tipHash[3])
 
+def reset():
+    global elapsed, hashCodes, lnum,volumes,opQueue, hashCodes,tipHash,list
+    elapsed=0
+    hashCodes={}
+    lnum=0
+    volumes={}
+    opQueue=[]
+    hashCodes={}
+    tipHash=[0,0,0,0]
+    list=[]
+    
 def bin(s):
     return str(s) if s<=1 else bin(s>>1) + str(s&1)
 
 def setOptimization(onoff):
+    global delayEnabled
     if onoff:
         comment("*Optimization on")
     else:
@@ -73,6 +85,7 @@ def moveliha( loc):
 
 def optimizeQueue():
     'Optimize operations in queue'
+    global opQueue
     optimizeDebug=False
 
     if optimizeDebug:
@@ -208,6 +221,7 @@ def optimizeQueue():
             print "POST-OPT %s:  %s:\tTip %d, Loc (%d,%d) Wells %s"%(d[7],d[0],d[1],d[5].grid,d[5].pos,str(d[2]))
 
 def flushQueue():
+    global delayEnable,opQueue
     if not delayEnabled or len(opQueue)==0:
         return
     #comment('*Flush queue')
