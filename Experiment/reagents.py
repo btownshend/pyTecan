@@ -16,7 +16,7 @@ class Reagent(object):
         self.extraVol=extraVol
         self.initVol=0
 
-    def get(self):
+    def getsample(self):
         if self.sample is None:
             #print "Creating sample for reagent %s with %.1f ul"%(self.name,self.initVol)
             self.sample=Sample(self.name,self.plate,self.preferredWell,self.conc,hasBeads=self.hasBeads,volume=self.initVol)
@@ -37,8 +37,8 @@ class Reagent(object):
 def isReagent(name):
     return name in __allReagents
 
-def get(name):
-    return __allReagents[name].get()
+def getsample(name):
+    return __allReagents[name].getsample()
 
 def __getattr__(name):
     return get(name)
