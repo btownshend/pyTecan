@@ -89,11 +89,12 @@ class Plate(object):
     def getmixspeeds(self,minvol,maxvol):
         'Get shaker speed range for given well volume'
         maxspeed=0
-        # Use the highest speed for which this volume or more is known to not spill
-        for vol,speed in self.maxspeeds.iteritems():
-            # print "maxvol=%f,vol=%f,speed=%f,maxspeed=%f"%(maxvol,vol,speed,maxspeed)
-            if maxvol<=vol and speed>maxspeed:
-                maxspeed=speed
+        if self.maxspeeds is not None:
+            # Use the highest speed for which this volume or more is known to not spill
+            for vol,speed in self.maxspeeds.iteritems():
+                # print "maxvol=%f,vol=%f,speed=%f,maxspeed=%f"%(maxvol,vol,speed,maxspeed)
+                if maxvol<=vol and speed>maxspeed:
+                    maxspeed=speed
         if maxspeed==0:
             print "ERROR: No shaker speed data for volume of %.0f ul"%maxvol
             assert False
