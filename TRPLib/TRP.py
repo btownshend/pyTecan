@@ -383,12 +383,6 @@ class TRP(object):
                         self.e.dispose(src[i].volume-residualVolume,src[i])	# Discard supernatant
                 
         # Wash
-        swash=[]
-        for w in wash:
-            if reagents.isReagent(w):
-                swash.append(reagents.get(w))
-            else:
-                swash=swash+w
 
         for washnum in range(numWashes):
             self.e.moveplate(src[0].plate,"Home")
@@ -396,13 +390,13 @@ class TRP(object):
                 'Retain sample of final'
                 for i in range(len(src)):
                     src[i].conc=None
-                    self.e.transfer(washVol-src[i].volume,swash[i],src[i],mix=(False,True))	# Add wash
+                    self.e.transfer(washVol-src[i].volume,wash[i],src[i],mix=(False,True))	# Add wash
                 self.e.shake(src[0].plate,returnPlate=True)
                 self.saveSamps(src=src,tgt=finalTgt,vol=keepVol,dil=keepDil,plate=decklayout.DILPLATE)
             else:
                 for i in range(len(src)):
                     src[i].conc=None
-                    self.e.transfer(washVol-src[i].volume,swash[i],src[i],mix=(False,False))	# Add wash, no need to pipette mix since some heterogenity won't hurt here
+                    self.e.transfer(washVol-src[i].volume,wash[i],src[i],mix=(False,False))	# Add wash, no need to pipette mix since some heterogenity won't hurt here
                 self.e.shake(src[0].plate,returnPlate=False)
 
             self.e.moveplate(src[0].plate,"Magnet")	# Move to magnet
