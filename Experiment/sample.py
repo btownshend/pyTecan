@@ -327,7 +327,8 @@ class Sample(object):
             print "Warning: Dispense with well is None, not sure what right logic is..., using well=%d"%well[0]
 
         if self.volume+volume > self.plate.maxVolume:
-            print "Warning: Dispense of %.1ful into %s results in total of %.1ful which is more than the maximum volume of %.1f ul"%(volume,self.name,self.volume+volume,self.plate.maxVolume)
+            print "ERROR: Dispense of %.1ful into %s results in total of %.1ful which is more than the maximum volume of %.1f ul"%(volume,self.name,self.volume+volume,self.plate.maxVolume)
+            assert False
 
         if self.hasBeads and self.plate.curloc=="Magnet":
             worklist.dispense(tipMask,well,self.beadsLC,volume,self.plate)
