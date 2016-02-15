@@ -765,11 +765,17 @@ class TRP(object):
     def pgm(self):
         'Actual robot code generation -- may be run multiple times to establish initial volumes.  Overridden by actual experiment'
 
-    def run(self):
+    def run(self,debug=False):
         self.setup()
-        sys.stdout=open(os.devnull,'w')
+        if debug:
+            print '------ Preliminary run to set volume -----'
+        else:
+            sys.stdout=open(os.devnull,'w')
         self.pgm()
-        sys.stdout=sys.__stdout__
+        if debug:
+            print '------ Main run -----'
+        else:
+            sys.stdout=sys.__stdout__
         self.reset()
         self.pgm()
         self.finish()
