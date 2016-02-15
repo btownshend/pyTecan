@@ -40,6 +40,9 @@ def isReagent(name):
 def getsample(name):
     return __allReagents[name].getsample()
 
+def lookup(name):
+    return __allReagents[name]
+
 def __getattr__(name):
     return get(name)
 
