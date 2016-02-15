@@ -499,7 +499,7 @@ class TRP(object):
         if rtmaster is None:
             rtmaster=reagents.getsample("MPosRT")
         if tgt is None:
-            tgt=[Sample(s.name+".RT",decklayout.SAMPLEPLATE) for s in src]
+            tgt=[Sample(s.name+".RT+",decklayout.SAMPLEPLATE) for s in src]
 
         [src,tgt,vol,srcdil]=listify([src,tgt,vol,srcdil])
 
@@ -533,7 +533,6 @@ class TRP(object):
             master=[reagents.getsample("MLigAN7") if p=='A' else reagents.getsample("MLigBN7") for p in prefix]
 
         #Extension
-        # e.g: trp.runLig(prefix=["B","B","B","B","B","B","B","B"],src=["1.RT-","1.RT+","1.RTNeg-","1.RTNeg+","2.RT-","2.RT-","2.RTNeg+","2.RTNeg+"],tgt=["1.RT-B","1.RT+B","1.RTNeg-B","1.RTNeg+B","2.RT-A","2.RT-B","2.RTNeg+B","2.RTNeg+B"],vol=[10,10,10,10,10,10,10,10],srcdil=[2,2,2,2,2,2,2,2])
         [src,tgt,vol,srcdil,master]=listify([src,tgt,vol,srcdil,master])
         if tgt is None:
             tgt=[Sample("%s.%s"%(src[i].name,master[i].name),decklayout.SAMPLEPLATE) for i in range(len(src))]
@@ -600,7 +599,6 @@ class TRP(object):
     ########################
     def runPCR(self,prefix,src,vol,srcdil,tgt=None,ncycles=20,suffix='S',sepPrimers=True,primerDil=4):
         ## PCR
-        # e.g. trp.runPCR(prefix=["A"],src=["1.RT+"],tgt=["1.PCR"],vol=[50],srcdil=[5])
         [prefix,src,tgt,vol,srcdil,suffix]=listify([prefix,src,tgt,vol,srcdil,suffix])
         if tgt is None:
             tgt=[Sample("%s.P%s%s"%(src[i].name,prefix[i],suffix[i]),src[i].plate) for i in range(len(src))]
@@ -714,7 +712,6 @@ class TRP(object):
         
     def runQPCR(self,src,vol,srcdil,primers=["A","B"],nreplicates=1):
         ## QPCR setup
-        # e.g. trp.runQPCR(src=["1.RT-B","1.RT+B","1.RTNeg-B","1.RTNeg+B","2.RT-A","2.RT-B","2.RTNeg+B","2.RTNeg+B"],vol=10,srcdil=100)
         worklist.comment("runQPCR: primers=%s, source=%s"%([p for p in primers],[s.name for s in src]))
         [src,vol,srcdil,nreplicates]=listify([src,vol,srcdil,nreplicates])
 
