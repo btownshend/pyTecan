@@ -7,8 +7,7 @@ from Experiment.experiment import Experiment
 from Experiment.sample import Sample
 from Experiment.JobQueue import JobQueue
 from TRPLib.TRP import  diluteName
-import Experiment.worklist as worklist
-import Experiment.decklayout as decklayout
+from Experiment import worklist, reagents, decklayout
 
 class QSetup(object):
     TGTINVOL=4
@@ -134,11 +133,12 @@ class QSetup(object):
     def allprimers(self):
         return set([p for sublist in self.primers for p in sublist])
 
-    def addReferences(self,mindil=1,nsteps=6,dstep=4,nreplicates=1,ref="QPCRREF",primers=None):
+    def addReferences(self,mindil=1,nsteps=6,dstep=4,nreplicates=1,ref=None,primers=None):
         'Add all needed references'
         #print "addReferences(mindil=",mindil,", nsteps=",nsteps,", dstep=",dstep,", nrep=", nreplicates, ", ref=",ref,")"
         # Make sure the ref reagent is loaded
-        self.trp.r.get(ref)
+        if ref is None:
+            ref=reagents.getsample("QPCRREF")
         if primers==None:
             primers=self.allprimers()
         dils=[1]
@@ -152,7 +152,10 @@ class QSetup(object):
                     if srcDil==1:
                         src=[ref]
                     else:
-                        src=["%s.D%d"%(ref,srcDil)]
+                        srcname="%s.D%d"%(ref.name,srcDil)
+                        src=[Sample.lookup(srcname)]
+                        if src[0]==None:
+                            src=[Sample(srcname,decklayout.DILPLATE)]
                     break
             tmp=self.MINDILVOL
             self.MINDILVOL=75   # Make sure there's enough for resuing dilutions
@@ -160,7 +163,7 @@ class QSetup(object):
             self.MINDILVOL=tmp
             dils.append(needDil)
 
-        self.addSamples(src=[self.dilutant.name],needDil=1,primers=primers,nreplicates=nreplicates,save=False)
+        self.addSamples(src=[self.dilutant],needDil=1,primers=primers,nreplicates=nreplicates,save=False)
 
     def idler(self,t):
         endTime=worklist.elapsed+t
