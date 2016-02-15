@@ -150,7 +150,7 @@ class TRP(object):
     ########################
     # Save samples to another well
     ########################
-    def saveSamps(self,src,vol,dil,tgt=[],dilutant=None,plate=None,mix=(True,True)):
+    def saveSamps(self,src,vol,dil,tgt=None,dilutant=None,plate=None,mix=(True,True)):
         [src,vol,dil]=listify([src,vol,dil])
         if plate is None:
             plate=decklayout.REAGENTPLATE
@@ -168,7 +168,7 @@ class TRP(object):
             
         return tgt
     
-    def distribute(self,src,dil,vol,wells,tgt=[],dilutant=None,plate=decklayout.SAMPLEPLATE):
+    def distribute(self,src,dil,vol,wells,tgt=None,dilutant=None,plate=decklayout.SAMPLEPLATE):
         if tgt is None:
             tgt=[Sample("%s.dist%d"%(src[0].name,j),plate) for j in range(wells)]
         
@@ -287,7 +287,7 @@ class TRP(object):
 
         return tgt
     
-    def runT7(self,theo,src,vol,srcdil,tgt=[],dur=15,stopmaster=None):
+    def runT7(self,theo,src,vol,srcdil,tgt=None,dur=15,stopmaster=None):
         [theo,src,tgt,srcdil,stopmaster]=listify([theo,src,tgt,srcdil,stopmaster])
         tgt=self.runT7Setup(theo,src,vol,srcdil,tgt)
         self.runT7Pgm(vol,dur)
@@ -297,10 +297,10 @@ class TRP(object):
     ########################
     # Beads
     ########################
-    def bindBeads(self,src,beads=[],beadConc=None,bbuffer=[],incTime=60,addBuffer=False):
-        if len(beads)==0:
-        if len(bbuffer)==0:
+    def bindBeads(self,src,beads=None,beadConc=None,bbuffer=None,incTime=60,addBuffer=False):
+        if beads is None:
             beads=reagents.getsample("Dynabeads")
+        if bbuffer is None:
             bbuffer=reagents.getsample("BeadBuffer")
             
         [src,beads,bbuffer,beadConc]=listify([src,beads,bbuffer,beadConc])
@@ -501,13 +501,13 @@ class TRP(object):
         self.runRxInPlace(src,vol,"MPosRT",returnPlate=False)
         self.runRTPgm(dur,heatInactivate=heatInactivate)
         
-    def runRTSetup(self,src,vol,srcdil,tgt=[],rtmaster=None):
-        if rtmaster==None:
+    def runRTSetup(self,src,vol,srcdil,tgt=None,rtmaster=None):
+        if rtmaster is None:
             rtmaster=reagents.getsample("MPosRT")
+        if tgt is None:
+            tgt=[Sample(s.name+".RT",decklayout.SAMPLEPLATE) for s in src]
 
         [src,tgt,vol,srcdil]=listify([src,tgt,vol,srcdil])
-        if len(tgt)==0:
-            tgt=[Sample(s.name+".RT",s.plate) for s in src]
 
         # Adjust source dilution
         for i in range(len(src)):
@@ -534,15 +534,15 @@ class TRP(object):
     ########################
     # Lig - Ligation
     ########################
-    def runLig(self,prefix=None,src=None,vol=None,srcdil=None,tgt=[],master=None,anneal=True,ligtemp=25):
+    def runLig(self,prefix=None,src=None,vol=None,srcdil=None,tgt=None,master=None,anneal=True,ligtemp=25):
         if master is None:
             master=[reagents.getsample("MLigAN7") if p=='A' else reagents.getsample("MLigBN7") for p in prefix]
 
         #Extension
         # e.g: trp.runLig(prefix=["B","B","B","B","B","B","B","B"],src=["1.RT-","1.RT+","1.RTNeg-","1.RTNeg+","2.RT-","2.RT-","2.RTNeg+","2.RTNeg+"],tgt=["1.RT-B","1.RT+B","1.RTNeg-B","1.RTNeg+B","2.RT-A","2.RT-B","2.RTNeg+B","2.RTNeg+B"],vol=[10,10,10,10,10,10,10,10],srcdil=[2,2,2,2,2,2,2,2])
         [src,tgt,vol,srcdil,master]=listify([src,tgt,vol,srcdil,master])
-        if len(tgt)==0:
             tgt=[Sample("%s.%s"%(src[i].name,master[i].name),src[i].plate) for i in range(len(src))]
+        if tgt is None:
 
         # Need to check since an unused ligation master mix will not have a concentration
         minsrcdil=1/(1-1/master[0].conc.dilutionneeded()-1/reagents.getsample("MLigase").conc.dilutionneeded())
@@ -604,11 +604,11 @@ class TRP(object):
     ########################
     # PCR
     ########################
-    def runPCR(self,prefix,src,vol,srcdil,tgt=[],ncycles=20,suffix='S',sepPrimers=True,primerDil=4):
+    def runPCR(self,prefix,src,vol,srcdil,tgt=None,ncycles=20,suffix='S',sepPrimers=True,primerDil=4):
         ## PCR
         # e.g. trp.runPCR(prefix=["A"],src=["1.RT+"],tgt=["1.PCR"],vol=[50],srcdil=[5])
         [prefix,src,tgt,vol,srcdil,suffix]=listify([prefix,src,tgt,vol,srcdil,suffix])
-        if len(tgt)==0:
+        if tgt is None:
             tgt=[Sample("%s.P%s%s"%(src[i].name,prefix[i],suffix[i]),src[i].plate) for i in range(len(src))]
 
         if sepPrimers:
@@ -689,10 +689,10 @@ class TRP(object):
     ########################
     # qPCR
     ########################
-    def runQPCRDIL(self,src,vol,srcdil,tgt=[],dilPlate=False,pipMix=False,dilutant=decklayout.SSDDIL):
+    def runQPCRDIL(self,src,vol,srcdil,tgt=None,dilPlate=False,pipMix=False,dilutant=decklayout.SSDDIL):
         [src,vol,srcdil]=listify([src,vol,srcdil])
         vol=[float(v) for v in vol]
-        if len(tgt)==0:
+        if tgt is None:
             if dilPlate:
                 tgt=[Sample(diluteName(src[i].name,srcdil[i]),decklayout.DILPLATE) for i in range(len(src))]
             else:
