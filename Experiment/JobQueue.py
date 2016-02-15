@@ -107,13 +107,16 @@ class JobQueue(object):
         if self.debug:
             print "execJob(",id,"): ",
         if job['type']=='shake':
-            if not job['sample'].isMixed:
+            if job['sample'].isMixed:
+                if self.debug:
+                    print "no need to shake ",job['sample'].plate," because ",job['sample'].name," is already mixed.",
+            elif job['sample'].plate.maxspeeds is None:
+                if self.debug:
+                    print "Not shaking ",job['sample'].plate," because it is not compatible with shaker.",
+            else:
                 if self.debug:
                     print "shaking ",job['sample'].plate," because ",job['sample'].name," is not mixed.",
                 e.shake(job['sample'].plate)
-            else:
-                if self.debug:
-                    print "no need to shake ",job['sample'].plate," because ",job['sample'].name," is already mixed.",
         elif  job['type']=='transfer':
             if self.debug:
                 print " transfer(",job['volume'],", ",job['src'].name,",",job['dest'].name,")",
