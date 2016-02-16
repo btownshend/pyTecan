@@ -39,6 +39,7 @@ reagents.add("MLigBT7WBio",well="E5",conc=3)
 reagents.add("MLigBT7Bio",well="A6",conc=3)
 reagents.add("MPCR",well=None,conc=4)
 reagents.add("MLigB",well=None,conc=3)
+reagents.add("MUser",well=None,conc=2)
     
 def listify(x):
     'Convert a list of (lists or scalars) into a list of equal length lists'
@@ -592,6 +593,28 @@ class TRP(object):
         ## Add ligase
         self.runRxInPlace(src,vol,"MLigase",returnPlate=False)
         self.runLigPgm(max(vol),ligtemp,inactivate=False)	# Do not heat inactivate since it may denature the beads
+
+    ########################
+    # USER - USER enzyme digestion
+    ########################
+    def runUser(self,src=None,vol=None,srcdil=2,tgt=None,userTime=15):
+        if tgt is None:
+            tgt=[Sample("%s.User"%(src[i].name),decklayout.SAMPLEPLATE) for i in range(len(src))]
+
+        [src,tgt,vol,srcdil]=listify([src,tgt,vol,srcdil])
+
+        # Adjust source dilution
+        for i in range(len(src)):
+            src[i].conc=Concentration(srcdil[i],1)
+
+        print "src=",src
+        self.e.stage('User',[reagents.getsample("MUser")],src,tgt,vol,destMix=False)
+        self.e.shake(tgt[0].plate,returnPlate=False)
+        pgm="USER"
+        worklist.pyrun('PTC\\ptcsetpgm.py %s TEMP@37,%.0f TEMP@25,30'%(pgm,userTime*60))
+        self.e.runpgm(pgm,userTime+2,False,max(vol),hotlidmode="TRACKING",hotlidtemp=10)
+        return tgt
+        
 
     ########################
     # PCR
