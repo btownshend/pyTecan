@@ -28,9 +28,13 @@ WASTE=Plate("Waste",20,3,1,1)
 EPPENDORFS=Plate("Eppendorfs",13,1,1,16,False,unusableVolume=30,maxVolume=1500,zmax=1337,angle=17.5,h1=17.56,r1=4.42,v0=29.6)
 
 ############ Well-known samples  #############
-WATER=Sample("Water",WATERLOC,-1,None,50000)
-SSDDIL=Sample("SSDDil",SSDDILLOC,-1,None,50000)
-BLEACH=Sample("RNase-Away",BLEACHLOC,-1,None,50000)
+def initWellKnownSamples():
+    global WATER, SSDDIL, BLEACH
+    WATER=Sample("Water",WATERLOC,-1,None,50000)
+    SSDDIL=Sample("SSDDil",SSDDILLOC,-1,None,50000)
+    BLEACH=Sample("RNase-Away",BLEACHLOC,-1,None,50000)
+
+initWellKnownSamples()
 
 ############ Header file containing matching deck layout  #############
 headerfile=os.path.expanduser("~/Dropbox/Synbio/Robot/pyTecan/header.gem")

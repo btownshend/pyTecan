@@ -103,6 +103,7 @@ class TRP(object):
         self.e.sanitize(3,50)    # Heavy sanitize
         reagents.reset()
         Sample.clearall()
+        decklayout.initWellKnownSamples()
         
     def addTemplates(self,names,stockconc,finalconc=None,units="nM",plate=decklayout.EPPENDORFS):
         'Add templates as "reagents", return the list of them'
