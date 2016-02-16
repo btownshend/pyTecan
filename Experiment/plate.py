@@ -107,6 +107,7 @@ class Plate(object):
 
     def getevaprate(self,volume,vel=0):
         'Get rate of evaporation of well in ul/min with given volume at specified self.dewpoint'
+        EVAPFUDGE=0.69		# Fudge factor -- makes computed evaporation match up with observed
         area=self.getliquidarea(volume)
         x=self.mixingratio(self.dewpoint)
         xs=self.mixingratio(self.liquidTemp)
@@ -116,7 +117,7 @@ class Plate(object):
         theta=25+19*vel
         evaprate=theta*area/1000/1000*(xs-x)*1e6
         #print "Air temp=%.1fC, DP=%.1fC, x=%.3f, xs=%.3f, vol=%.1f ul, area=%.0f mm^2, evaprate=%.3f ul/h"%(self.liquidTemp,self.dewpoint,x,xs,volume,area,evaprate)
-        return evaprate
+        return evaprate*EVAPFUDGE
     
     def getliquidvolume(self,height):
         'Compute liquid volume given height above zmax in mm'
