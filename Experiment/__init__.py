@@ -1,1 +1,1 @@
-__all__=["experiment","conentration","liquidclass","plate","sample","worklist"]
+__all__=["experiment","concentration","liquidclass","plate","sample","worklist"]

@@ -1,20 +1,22 @@
+'''Queue of jobs to be executed during idle times'''
 from experiment import Experiment
 
 class JobQueue(object):
+    '''Queue of jobs to be executed during idle times'''
     def __init__(self):
         self.nextID=1
         self.jobs={}
         self.debug=False
         self.runningJob=None	# Currently executing job
-        
+
     def len(self):
         return len(self.jobs)
-    
+
     def getID(self):
         id=self.nextID
         self.nextID+=1
         return id
-    
+
     def findPriors(self,sample,known):
         'Return any prior job entries that affect sample'
         priors=[]
@@ -36,32 +38,32 @@ class JobQueue(object):
         priors=self.findPriors(src,prereqs)
         self.jobs[id]={'type':'transfer','volume':volume,'src':src,'dest':dest,'prereqs':set(prereqs).union(priors)}
         return id
-    
+
     def addMultiTransfer(self,volume,src,dest,prereqs=[]):
         'Add a transfer operation to the queue, return the ID of the job (for use in prereqs)'
         id=self.getID()
         priors=self.findPriors(src,prereqs)
         self.jobs[id]={'type':'multitransfer','volume':volume,'src':src,'dest':dest,'prereqs':set(prereqs).union(priors)}
         return id
-    
+
     def addShake(self,sample,prereqs=[]):
         id=self.getID()
         priors=self.findPriors(sample,prereqs)
         self.jobs[id]={'type':'shake','sample':sample,'prereqs':set(prereqs).union(priors)}
         return id
-    
+
     def dump(self):
         'Dump queue'
         for id,j in self.jobs.iteritems():
             print id,j
-            
+
     def getJob(self):
         'Return the next job on the queue to execute, removing it from queue'
 
         if self.runningJob!=None:
             print "Call of getJob() while a job is running - returning None"
             return None
-            
+
         # Remove any shake jobs that are unneeded
         for id,j in self.jobs.items():
             if j['type']=='shake' and len(j['prereqs'])==0 and j['sample'].isMixed and not Experiment.shakerIsActive():
@@ -93,7 +95,7 @@ class JobQueue(object):
 
         for id in self.jobs:
             j=self.jobs[id]
-            if j['type']!='shake' or len(j['prereqs'])>0 or not j['sample'].plate.curloc=='Home' or Experiment.shakerIsActive(): 
+            if j['type']!='shake' or len(j['prereqs'])>0 or not j['sample'].plate.curloc=='Home' or Experiment.shakerIsActive():
                 continue
             return id
         # Nothing to do
@@ -105,13 +107,16 @@ class JobQueue(object):
         if self.debug:
             print "execJob(",id,"): ",
         if job['type']=='shake':
-            if not job['sample'].isMixed:
+            if job['sample'].isMixed:
+                if self.debug:
+                    print "no need to shake ",job['sample'].plate," because ",job['sample'].name," is already mixed.",
+            elif job['sample'].plate.maxspeeds is None:
+                if self.debug:
+                    print "Not shaking ",job['sample'].plate," because it is not compatible with shaker.",
+            else:
                 if self.debug:
                     print "shaking ",job['sample'].plate," because ",job['sample'].name," is not mixed.",
                 e.shake(job['sample'].plate)
-            else:
-                if self.debug:
-                    print "no need to shake ",job['sample'].plate," because ",job['sample'].name," is already mixed.",
         elif  job['type']=='transfer':
             if self.debug:
                 print " transfer(",job['volume'],", ",job['src'].name,",",job['dest'].name,")",
@@ -121,15 +126,15 @@ class JobQueue(object):
                 print "multitransfer(",job['volume'],", ",job['src'].name,",".join([x.name for x in job['dest']]),")",
             e.multitransfer(job['volume'],job['src'],job['dest'])
         else:
-            assert(False)
+            assert False
         if self.debug:
             print
         self.removeJob(id)
         self.runningJob=None
-        
+
     def removeJob(self,id):
-        for ik,k in self.jobs.iteritems():
+        for _,k in self.jobs.iteritems():
             k['prereqs']=k['prereqs'].difference([id])
         self.jobs.pop(id)
         #print "Removed job ",id
-            
+

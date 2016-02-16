@@ -1,9 +1,9 @@
 import sys
 import math
 import liquidclass
-from worklist import WorkList
+import worklist
 from concentration import Concentration
-
+import clock
 
 MAXVOLUME=200
 MINLIQUIDDETECTVOLUME=15
@@ -15,7 +15,6 @@ SHOWTIPHISTORY=False
 SHOWINGREDIENTS=False
 MINDEPOSITVOLUME=5.0	# Minimum volume to end up with in a well after dispensing
 MINSIDEDISPENSEVOLUME=10.0  # minimum final volume in well to use side-dispensing.  Side-dispensing with small volumes may result in pulling droplet up sidewall
-EVAPTIME=3600	# Time in seconds after which to give an evaporation warning
 
 _Sample__allsamples = []
 tiphistory={}
@@ -30,7 +29,7 @@ tiphistory={}
 # Water-InLiquid
 # Detect simultaneously and twice with all tips, cond good, det 60mm/s, double 4mm/s
 # Fixed Aspirate (single): 20ul/s, 200ms, STAG=20,LAG=1,TAG=0,EXC=0,COND=0, liquid detect +3.5mm center with tracking, retract to liquid level-5mm  20mm/s
-# Fixed Aspirate (multi): 20ul/s, 200ms, STAG=20,LAG=0,TAG=0,EXC=2 (to waste),COND=0 
+# Fixed Aspirate (multi): 20ul/s, 200ms, STAG=20,LAG=0,TAG=0,EXC=2 (to waste),COND=0
 # Fixed Dispense (single): 100ul/s, 100ul/s, 500ms, no TAG after each dispense, no LD, liquid detect +1mm center with tracking, retract to liquid level-5mm  20 mm/s
 # Fixed Dispense (multi): 100ul/s, 100ul/s, 500ms(WAS 0), no TAG after each dispense
 # Water-Mix
@@ -39,7 +38,7 @@ tiphistory={}
 # Fixed Dispense (single): 225ul/s, 225ul/s, 500ms, no TAG after each dispense, no LD, z-max -5mm, no touch, retract to z=dispense 20 mm/s
 # Fixed Dispense (multi): 225ul/s, 225ul/s, 500ms, no TAG after each dispense
 
-#Water-BottomSide 
+#Water-BottomSide
 # Same as water-Bottom, but dispense with tip at right side
 # Fixed Aspirate (single): 20ul/s, 200ms, STAG=20,LAG=1 (WAS 0),TAG=0,EXC=0,COND=0, zmax-1.5mm , retract to z-start  20mm/s
 # Fixed Aspirate (multi): 20ul/s, 200ms, STAG=20,LAG=0,TAG=0,EXC=1 (to waste),COND=0
@@ -60,7 +59,7 @@ class Sample(object):
     @staticmethod
     def printallsamples(txt="",fd=sys.stdout,w=None):
         print >>fd,"\n%s by plate:"%txt
-        plates=set([s.plate for s in __allsamples]);
+        plates=set([s.plate for s in __allsamples])
         for p in sorted(plates, key=lambda p:p.name.upper()):
             print >>fd,"Samples in plate: ",p
             for s in __allsamples:
@@ -68,7 +67,7 @@ class Sample(object):
                     continue   # Not used
                 if s.plate==p:
                     if w!=None:
-                        print >>fd,s,("%06x"%(s.getHash(w)&0xffffff))
+                        print >>fd,s,("%06x"%(s.getHash()&0xffffff))
                     else:
                         print >>fd,s
             print >>fd
@@ -76,7 +75,7 @@ class Sample(object):
             print >>fd,"\nTip history:\n"
             for t in tiphistory:
                 print >>fd,"%d: %s\n"%(t,tiphistory[t])
-            
+
     @staticmethod
     def numSamplesOnPlate(plate):
         cnt=0
@@ -84,63 +83,66 @@ class Sample(object):
             if s.plate==plate and len(s.history)>0:
                 cnt+=1
         return cnt
-        
+
     def __init__(self,name,plate,well=None,conc=None,volume=0,hasBeads=False,extraVol=50):
         if well!=None and well!=-1:
             if not isinstance(well,int):
                 well=plate.wellnumber(well)
+            if well not in plate.wells:
+                print "Attempt to assign sample %s to well %d (%s) which is not legal on plate %s"%(name,well,plate.wellname(well),plate.name)
             for s in __allsamples:
                 if s.well==well and s.plate==plate:
                     print "Attempt to assign sample %s to plate %s, well %s that already contains %s"%(name,str(plate),plate.wellname(well),s.name)
                     well=None
                     break
-            
-        if well==None:
+
+        if well is None:
             # Find first unused well
             found=False
-            well=0
-            while not found:
+            for well in plate.wells:
                 found=True
                 for s in __allsamples:
                     if s.plate==plate and s.well==well:
                         well=well+1
                         found=False
                         break
+                if found:
+                    break
         elif well==-1:
             well=None
-                    
+
         for s in __allsamples:
             if s.plate==plate and s.well==well:
                 print "Attempt to assign sample %s to plate %s, well %s that already contains %s"%(name,str(plate),plate.wellname(well),s.name)
 #                print "Aliasing %s as %s"%(s.name,name)
-                assert(False)
+                assert False
             if s.name==name:
                 print "Already have a sample called %s"%name
-                assert(False)
+                print s
+                assert False
         self.name=name
         self.plate=plate
         if well>=plate.nx*plate.ny:
-                print "Overflow of plate %s"%str(plate)
-                for s in __allsamples:
-                    if s.plate==plate:
-                        print s
-                assert(False)
-                
+            print "Overflow of plate %s"%str(plate)
+            for s in __allsamples:
+                if s.plate==plate:
+                    print s
+            assert False
+
         self.well=well
-        if isinstance(conc,Concentration) or conc==None:
-                self.conc=conc
+        if isinstance(conc,Concentration) or conc is None:
+            self.conc=conc
         else:
-                self.conc=Concentration(conc)
+            self.conc=Concentration(conc)
         self.volume=volume
-        self.initvolume=volume
         if volume>0:
             self.ingredients={name:volume}
         else:
             self.ingredients={}
-            
+
         if plate.pierce:
             self.bottomLC=liquidclass.LCWaterPierce
-            self.bottomSideLC=bottomLC  # Can't use side with piercing
+            self.bottomSideLC=self.bottomLC  # Can't use side with piercing
             self.inliquidLC=self.bottomLC  # Can't use liquid detection when piercing
         else:
             self.bottomLC=liquidclass.LCWaterBottom
@@ -150,7 +152,7 @@ class Sample(object):
         self.beadsLC=liquidclass.LCWaterBottomBeads
         self.mixLC=liquidclass.LCMixSlow
         self.airLC=liquidclass.LCAir
-        # Same as bottom for now 
+        # Same as bottom for now
         self.emptyLC=self.bottomLC
         self.history=""
         __allsamples.append(self)
@@ -158,11 +160,15 @@ class Sample(object):
         self.initHasBeads=hasBeads
         self.hasBeads=hasBeads		# Setting this to true overrides the manual conditioning
         self.extraVol=extraVol			# Extra volume to provide
-        self.firstdispense = 0					# Last time accessed
-        
+        self.evap=0   # Amount that has evaporated
+        if self.plate.name=="Samples":
+            self.lastevapupdate=clock.pipetting
+        else:
+            self.lastevapupdate=clock.elapsed()
+
     def sampleWellPosition(self):
         'Convert a sample well number to a well position as used by Gemini worklist'
-        if self.well==None:
+        if self.well is None:
             return None
         elif isinstance(self.well,(long,int)):
             ival=int(self.well)
@@ -172,28 +178,37 @@ class Sample(object):
         else:
             col=int(self.well[1:])
             row=ord(self.well[0])-ord('A')+1
-        assert(row>=1 and row<=self.plate.ny and col>=1 and col<=self.plate.nx)
+        assert row>=1 and row<=self.plate.ny and col>=1 and col<=self.plate.nx
         wellpos=(row-1)+self.plate.ny*(col-1)
         #print "sampleWellPosition(%d) -> %d"%(self.well,wellpos)
         return wellpos
-    
-    def getHash(self,w):
-        return w.getHashCode(grid=self.plate.grid,pos=self.plate.pos-1,well=self.sampleWellPosition())
-    
+
+    def getHash(self):
+        return worklist.getHashCode(grid=self.plate.grid,pos=self.plate.pos-1,well=self.sampleWellPosition())
+
     @classmethod
     def clearall(cls):
         'Clear all samples'
-        for s in __allsamples:
-            s.volume=s.initvolume
-            s.history=""
-            s.isMixed=True
-            s.hasBeads=s.initHasBeads
-            if s.volume==0:
-                s.conc=None
-                s.ingredients={}
-            else:
-                s.ingredients={s.name:s.volume}
-            s.firstdispense = 0					# Last time accessed
+        global __allsamples
+        __allsamples=[]		# Clear list of samples
+        # for s in __allsamples:
+        #     s.history=""
+        #     s.isMixed=True
+        #     s.hasBeads=s.initHasBeads
+        #     if s.volume==0:
+        #         s.conc=None
+        #         s.ingredients={}
+        #     else:
+        #         s.ingredients={s.name:s.volume}
+        #     s.firstdispense = 0					# Last time accessed
+
+    @classmethod
+    def clearplate(cls,plate):
+        'Remove all samples from give plate'
+        print cls
+        global __allsamples
+        allnew=[s for s in __allsamples if s.plate!=plate]
+        __allsamples=allnew
 
     @classmethod
     def lookup(cls,name):
@@ -201,50 +216,59 @@ class Sample(object):
             if s.name==name:
                 return s
         return None
-    
+
     @classmethod
     def lookupByWell(cls,plate,well):
         for s in __allsamples:
             if s.plate==plate and s.well==well:
                 return s
         return None
-    
+
     @classmethod
-    def getAllOnPlate(cls,plate=None):  
+    def getAllOnPlate(cls,plate=None):
         result=[]
         for s in __allsamples:
-            if plate==None or s.plate==plate:
-                result.append(s)  
-        return result 
-                 
+            if plate is None or s.plate==plate:
+                result.append(s)
+        return result
+
     @classmethod
-    def getAllLocOnPlate(cls,plate=None):  
+    def getAllLocOnPlate(cls,plate=None):
         result=""
         for s in __allsamples:
-            if (plate==None or s.plate==plate) and s.volume!=s.initvolume:
+            if plate is None or s.plate==plate:
                 result+=" %s"%(s.plate.wellname(s.well))
-        return result 
+        return result
 
     def dilute(self,factor):
         'Dilute sample -- just increases its recorded concentration'
         if self.conc!=None:
-                self.conc=self.conc.dilute(1.0/factor)
+            self.conc=self.conc.dilute(1.0/factor)
 
-    def evapcheck(self,w,op):
-        'Check if the time between accesses of a well is too long'
-        # Not quite right -- doesn't take into account thermocycler time
-        if self.firstdispense>0 and w.elapsed-self.firstdispense>EVAPTIME and self.plate.name!="Reagents" and op=='aspirate':
-            print "WARNING:  %s (%s.%s, vol=%.1f ul) accessed after %.0f minutes, evaporation may be an issue"%(self.name,str(self.plate),self.plate.wellname(self.well),self.volume, (w.elapsed-self.firstdispense)/60)
-            self.history= self.history + (' [Evap: %d]'%( (w.elapsed-self.firstdispense)/60))
-            self.firstdispense=-1	# Don't mention again
-        if op=='dispense' and self.firstdispense==0:
-            self.firstdispense=w.elapsed
+    def evapcheck(self,op,thresh=0.10):
+        'Update amount of evaporation and check for issues'
+        if self.plate.name=="Samples":
+            dt=clock.pipetting-self.lastevapupdate	# Assume no evaporation while in PTC
+        else:
+            dt=clock.elapsed()-self.lastevapupdate
+        if dt<0:
+            print  "***ERROR*** -- clock went backwards: elapsed=",clock.elapsed(),", lastevapupdate=",self.lastevapupdate,", dt=",dt
+            assert False
+    
+        for i in range(10):   # Break it into smaller steps since volume affects rate
+            evaprate=self.plate.getevaprate(self.volume-self.evap)
+            self.evap+=evaprate*dt/3600/10
+        if op=='aspirate' and self.evap>thresh*self.volume and self.evap>2.0 and self.volume>0:
+            pctevap=self.evap/self.volume*100
+            print "WARNING:  %s (%s.%s, vol=%.1f ul) may have %.1f ul of evaporation (%.0f%%)"%(self.name,str(self.plate),self.plate.wellname(self.well),self.volume,self.evap,pctevap)
+            self.history= self.history + (' [Evap: %0.1f ul]'%(self.evap))
+        self.lastevapupdate+=dt
         
-    def aspirate(self,tipMask,w,volume,multi=False):
-        self.evapcheck(w,'aspirate')
+    def aspirate(self,tipMask,volume,multi=False):
+        self.evapcheck('aspirate')
         if self.plate.curloc=='PTC':
             print "Aspirate from PTC!, loc=",self.plate.grid,",",self.plate.pos
-            assert(False)
+            assert False
 
         if volume<2 and not multi and self.name!="Water":
             print "WARNING: Inaccurate for < 2ul:  attempting to aspirate %.1f ul from %s"%(volume,self.name)
@@ -253,18 +277,18 @@ class Sample(object):
         if not self.isMixed:
             print "WARNING: Aspirate %.1f ul from unmixed sample %s. "%(volume,self.name)
 
-        if self.well==None:
-                well=[]
-                for i in range(4):
-                        if (tipMask & (1<<i)) != 0:
-                            well.append(i)
+        if self.well is None:
+            well=[]
+            for i in range(4):
+                if (tipMask & (1<<i)) != 0:
+                    well.append(i)
         else:
-                well=[self.well]
-        
+            well=[self.well]
+
         lc=self.chooseLC(volume)
         if self.hasBeads and self.plate.curloc=="Magnet":
             # With beads don't do any manual conditioning and don't remove extra (since we usually want to control exact amounts left behind, if any)
-            w.aspirateNC(tipMask,well,lc,volume,self.plate)
+            worklist.aspirateNC(tipMask,well,lc,volume,self.plate)
             remove=lc.volRemoved(volume,multi=False)
             if self.volume==volume:
                 # Removing all, ignore excess remove
@@ -273,8 +297,8 @@ class Sample(object):
         else:
             if self.hasBeads:
                 #print "%s has beads -- mixing before aspirate"%self.name
-                self.mix(tipMask,w)
-            w.aspirate(tipMask,well,lc,volume,self.plate)
+                self.mix(tipMask)
+            worklist.aspirate(tipMask,well,lc,volume,self.plate)
             # Manual conditioning handled in worklist
             remove=lc.volRemoved(volume,multi=True)
 
@@ -296,53 +320,54 @@ class Sample(object):
         self.addhistory("",-remove,tipMask)
         #self.addhistory("[%06x]"%(self.getHash(w)&0xffffff),-remove,tipMask)
 
-    def aspirateAir(self,tipMask,w,volume):
+    def aspirateAir(self,tipMask,volume):
         'Aspirate air over a well'
-        w.aspirateNC(tipMask,[self.well],self.airLC,volume,self.plate)
-        
-    def dispense(self,tipMask,w,volume,src):
-        self.evapcheck(w,'dispense')
+        worklist.aspirateNC(tipMask,[self.well],self.airLC,volume,self.plate)
+
+    def dispense(self,tipMask,volume,src):
+        self.evapcheck('dispense')
         if self.plate.curloc=='PTC':
             print "Dispense to PTC!, loc=",self.plate.grid,",",self.plate.pos
-            assert(False)
-            
+            assert False
+
         if self.volume+volume < MINDEPOSITVOLUME:
             print "Warning: Dispense of %.1ful into %s results in total of %.1ful which is less than minimum deposit volume of %.1f ul"%(volume,self.name,self.volume+volume,MINDEPOSITVOLUME)
 
         #well=[self.well if self.well!=None else 2**(tipMask-1)-1 ]
         well=[self.well if self.well!=None else int(math.log(tipMask,2)) ]
-        if self.well==None:
-            print "Warning: Dispense with well==None, not sure what right logic is..., using well=%d"%well[0]
+        if self.well is None:
+            print "Warning: Dispense with well is None, not sure what right logic is..., using well=%d"%well[0]
 
         if self.volume+volume > self.plate.maxVolume:
-            print "Warning: Dispense of %.1ful into %s results in total of %.1ful which is more than the maximum volume of %.1f ul"%(volume,self.name,self.volume+volume,self.plate.maxVolume)
-            
+            print "ERROR: Dispense of %.1ful into %s results in total of %.1ful which is more than the maximum volume of %.1f ul"%(volume,self.name,self.volume+volume,self.plate.maxVolume)
+            assert False
+
         if self.hasBeads and self.plate.curloc=="Magnet":
-            w.dispense(tipMask,well,self.beadsLC,volume,self.plate)
+            worklist.dispense(tipMask,well,self.beadsLC,volume,self.plate)
         elif self.volume>=MINLIQUIDDETECTVOLUME:
-            w.dispense(tipMask,well,self.inliquidLC,volume,self.plate)
+            worklist.dispense(tipMask,well,self.inliquidLC,volume,self.plate)
         elif self.volume+volume>=MINSIDEDISPENSEVOLUME:
-            w.dispense(tipMask,well,self.bottomSideLC,volume,self.plate)
+            worklist.dispense(tipMask,well,self.bottomSideLC,volume,self.plate)
         else:
-            w.dispense(tipMask,well,self.bottomLC,volume,self.plate)
+            worklist.dispense(tipMask,well,self.bottomLC,volume,self.plate)
 
         # Assume we're diluting the contents
-        if self.conc==None and src.conc==None:
+        if self.conc is None and src.conc is None:
             pass
-        elif src.conc==None or volume==0:
+        elif src.conc is None or volume==0:
             if self.volume==0:
                 self.conc=None
             else:
                 self.conc=self.conc.dilute((self.volume+volume)/self.volume)
-        elif self.conc==None or self.volume==0:
+        elif self.conc is None or self.volume==0:
             self.conc=src.conc.dilute((self.volume+volume)/volume)
         else:
             # Both have concentrations, they should match
             c1=self.conc.dilute((self.volume+volume)/self.volume)
             c2=src.conc.dilute((self.volume+volume)/volume)
-            if ( abs(c1.stock/c1.final-c2.stock/c2.final)>.01 ):
+            if abs(c1.stock/c1.final-c2.stock/c2.final)>.01:
                 print "Warning: Dispense of %.1ful of %s@%.2fx into %.1ful of %s@%.2fx does not equalize concentrations"%(volume,src.name,src.conc.dilutionneeded(),self.volume,self.name,self.conc.dilutionneeded())
-                #assert(abs(c1.stock/c1.final-c2.stock/c2.final)<.01)
+                #assert abs(c1.stock/c1.final-c2.stock/c2.final)<.01
                 self.conc=None
             else:
                 self.conc=Concentration(c1.stock/c1.final,1.0,'x')  # Since there are multiple ingredients express concentration as x
@@ -357,22 +382,22 @@ class Sample(object):
         #self.addhistory("%06x %s"%(self.getHash(w)&0xffffff,src.name),volume,tipMask)
         self.addhistory(src.name,volume,tipMask)
         self.addingredients(src,volume)
-            
+
     def addhistory(self,name,vol,tip):
         if vol>=0:
             if SHOWTIPS:
-                    str="%s[%.1f#%d]"%(name,vol,tip)
+                str="%s[%.1f#%d]"%(name,vol,tip)
             else:
-                    str="%s[%.1f]"%(name,vol)
+                str="%s[%.1f]"%(name,vol)
             if len(self.history)>0:
                 self.history=self.history+" +"+str
             else:
                 self.history=str
         elif vol<0:
             if SHOWTIPS:
-                    str="%s[%.1f#%d]"%(name,-vol,tip)
+                str="%s[%.1f#%d]"%(name,-vol,tip)
             else:
-                    str="%s[%.1f]"%(name,-vol)
+                str="%s[%.1f]"%(name,-vol)
             if len(self.history)>0:
                 self.history=self.history+" -"+str
             else:
@@ -395,19 +420,19 @@ class Sample(object):
     def addallhistory(msg,addToEmpty=False,onlyplate=None,onlybeads=False):
         'Add history entry to all samples (such as # during thermocycling)'
         for s in __allsamples:
-            if (onlyplate==None or onlyplate==s.plate.name) and (not onlybeads or s.hasBeads):
+            if (onlyplate is None or onlyplate==s.plate.name) and (not onlybeads or s.hasBeads):
                 if len(s.history)>0:
                     s.history+=" "+msg
                 elif addToEmpty:
                     s.history=msg
-            
+
     @staticmethod
     def mixall(plate):
         'Mark all on given plate as mixed'
         for s in __allsamples:
             if plate==s.plate.name and s.volume>0:
                 s.isMixed=True
-                
+
     def addingredients(self,src,vol):
         'Update ingredients by adding ingredients from src'
         for k in src.ingredients:
@@ -419,7 +444,7 @@ class Sample(object):
                     self.ingredients[k]+=addition
                 else:
                     self.ingredients[k]=addition
-            
+
     def chooseLC(self,aspirateVolume=0):
         if self.volume-aspirateVolume>=MINLIQUIDDETECTVOLUME:
             return self.inliquidLC
@@ -429,9 +454,9 @@ class Sample(object):
             return self.beadsLC
         else:
             return self.bottomLC
-        
+
         # Mix, return true if actually did a mix, false otherwise
-    def mix(self,tipMask,w,preaspirateAir=False,nmix=4):
+    def mix(self,tipMask,preaspirateAir=False,nmix=4):
         if self.isMixed and not self.hasBeads:
             #print "Sample %s is already mixed"%self.name
             return False
@@ -451,14 +476,14 @@ class Sample(object):
         else:
             if preaspirateAir:
                 # Aspirate some air to avoid mixing with excess volume aspirated into pipette from source in previous transfer
-                self.aspirateAir(tipMask,w,5)
+                self.aspirateAir(tipMask,5)
             if self.volume>=MINLIQUIDDETECTVOLUME:
-                w.mix(tipMask,well,self.inliquidLC,mixvol,self.plate,nmix)
+                worklist.mix(tipMask,well,self.inliquidLC,mixvol,self.plate,nmix)
                 self.history+="(MLD)"
             else:
                 height=self.plate.getliquidheight(self.volume)
-                if height==None:
-                    w.mix(tipMask,well,self.mixLC,mixvol,self.plate,nmix)
+                if height is None:
+                    worklist.mix(tipMask,well,self.mixLC,mixvol,self.plate,nmix)
                     self.history+="(MB*)"
                 else:
                     mixheight=math.floor(height-1)			# At least 1mm below liquid height
@@ -468,22 +493,22 @@ class Sample(object):
 #                    print 'Vol=%.1f ul, height=%.1f mm, mix=%d, blow=%d'%(self.volume,height,mixheight,blowheight)
                     mixLC=liquidclass.LCMix[mixheight]
                     blowoutLC=liquidclass.LCBlowout[blowheight]
-                    w.aspirateNC(tipMask,well,self.airLC,(blowvol+0.1),self.plate)
+                    worklist.aspirateNC(tipMask,well,self.airLC,(blowvol+0.1),self.plate)
                     if self.volume<30:
-                        w.mix(tipMask,well,self.mixLC,mixvol,self.plate,nmix)
+                        worklist.mix(tipMask,well,self.mixLC,mixvol,self.plate,nmix)
                         self.history+="(MB)"
                     else:
-                        for i in range(nmix):
-                            w.aspirateNC(tipMask,well,mixLC,mixvol,self.plate)
-                            w.dispense(tipMask,well,mixLC,mixvol,self.plate)
+                        for _ in range(nmix):
+                            worklist.aspirateNC(tipMask,well,mixLC,mixvol,self.plate)
+                            worklist.dispense(tipMask,well,mixLC,mixvol,self.plate)
                         self.history+="(M@%d)"%(mixheight)
-                    w.dispense(tipMask,well,blowoutLC,blowvol,self.plate)
-                    w.dispense(tipMask,well,liquidclass.LCDip,0.1,self.plate)
+                    worklist.dispense(tipMask,well,blowoutLC,blowvol,self.plate)
+                    worklist.dispense(tipMask,well,liquidclass.LCDip,0.1,self.plate)
 
             tiphistory[tipMask]+=" %s-Mix[%d]"%(self.name,mixvol)
             self.isMixed=True
             return True
-            
+
     def __str__(self):
         s="%-32s "%(self.name)
         if self.conc!=None:
@@ -494,7 +519,11 @@ class Sample(object):
             beadString=",beads"
         else:
             beadString=""
-        s+=" %-30s"%("(%s.%s,%.2f ul%s)"%(str(self.plate),self.plate.wellname(self.well),self.volume,beadString))
+        if self.evap>0.05*self.volume:
+            evapString=" -%.1f ul"%self.evap
+        else:
+            evapString=""
+        s+=" %-30s"%("(%s.%s,%.2f ul%s%s)"%(self.plate.name,self.plate.wellname(self.well),self.volume,evapString,beadString))
         hist=self.history
         trunchistory=True
         if trunchistory and len(hist)>0:
@@ -502,12 +531,12 @@ class Sample(object):
             wds=hist.strip().split(' ')
             for i in range(len(wds)-1,-1,-1):
                 if wds[i][0]!='(' and wds[i][0]!='{':
+                    hist=' '.join(wds[:i+1])
                     break
-            hist=' '.join(wds[:i+1])
 
         s+=" %s"%hist
         if SHOWINGREDIENTS:
-                s+=self.ingredientstr()
+            s+=self.ingredientstr()
         return s
 
     def ingredientstr(self):
@@ -516,27 +545,6 @@ class Sample(object):
             s+="%s:%.4g "%(k,self.ingredients[k])
         s+="}"
         return s
-
-    @staticmethod
-    def printprep(fd=sys.stdout):
-        notes="Reagents to provide:"
-        total=0
-        for s in sorted(__allsamples, key=lambda p:p.well):
-            if s.conc!=None:
-                c="[%s]"%str(s.conc)
-            else:
-                c=""   
-            if s.volume==s.initvolume:
-                'Not used'
-                #note="%s%s in %s.%s not consumed"%(s.name,c,str(s.plate),s.plate.wellname(s.well))
-                #notes=notes+"\n"+note
-            elif s.initvolume>0:
-                note="%s%s in %s.%s consume %.1f ul, provide %.1f ul"%(s.name,c,str(s.plate),s.plate.wellname(s.well),s.initvolume-s.volume,s.initvolume)
-                notes=notes+"\n"+note
-            if s.plate.name=="Reagents":
-                total+=round((s.initvolume-s.volume)*10)/10.0
-        print >>fd,notes
-        print >>fd,"Total reagents volume = %.1f ul"%total
 
     @staticmethod
     def savematlab(filename):
@@ -552,6 +560,6 @@ class Sample(object):
                 else:
                     ing=ing+",'%s'"%k
                     ingvol=ingvol+",%g"%s.ingredients[k]
-            
+
             print >>fd,"samps=[samps,struct('name','%s','plate','%s','well','%s','concentration','%s','history','%s','ingredients',{{%s}},'volumes',[%s])];"%(s.name,s.plate,s.plate.wellname(s.well),str(s.conc),s.history,ing,ingvol)
         fd.close()
