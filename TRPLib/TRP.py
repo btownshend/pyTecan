@@ -607,7 +607,6 @@ class TRP(object):
         for i in range(len(src)):
             src[i].conc=Concentration(srcdil[i],1)
 
-        print "src=",src
         self.e.stage('User',[reagents.getsample("MUser")],src,tgt,vol,destMix=False)
         self.e.shake(tgt[0].plate,returnPlate=False)
         pgm="USER"
