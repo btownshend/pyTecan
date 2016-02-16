@@ -3,7 +3,7 @@ import math
 import liquidclass
 import worklist
 from concentration import Concentration
-
+import clock
 
 MAXVOLUME=200
 MINLIQUIDDETECTVOLUME=15
@@ -15,7 +15,6 @@ SHOWTIPHISTORY=False
 SHOWINGREDIENTS=False
 MINDEPOSITVOLUME=5.0	# Minimum volume to end up with in a well after dispensing
 MINSIDEDISPENSEVOLUME=10.0  # minimum final volume in well to use side-dispensing.  Side-dispensing with small volumes may result in pulling droplet up sidewall
-EVAPTIME=3600	# Time in seconds after which to give an evaporation warning
 
 _Sample__allsamples = []
 tiphistory={}
@@ -161,7 +160,8 @@ class Sample(object):
         self.initHasBeads=hasBeads
         self.hasBeads=hasBeads		# Setting this to true overrides the manual conditioning
         self.extraVol=extraVol			# Extra volume to provide
-        self.firstdispense = 0					# Last time accessed
+        self.evap=0   # Amount that has evaporated
+        self.lastevapupdate=clock.elapsed()
 
     def sampleWellPosition(self):
         'Convert a sample well number to a well position as used by Gemini worklist'
@@ -242,16 +242,25 @@ class Sample(object):
         if self.conc!=None:
             self.conc=self.conc.dilute(1.0/factor)
 
-    def evapcheck(self,op):
-        'Check if the time between accesses of a well is too long'
-        # Not quite right -- doesn't take into account thermocycler time
-        if self.firstdispense>0 and worklist.elapsed-self.firstdispense>EVAPTIME and self.plate.name!="Reagents" and op=='aspirate':
-            print "WARNING:  %s (%s.%s, vol=%.1f ul) accessed after %.0f minutes, evaporation may be an issue"%(self.name,str(self.plate),self.plate.wellname(self.well),self.volume, (worklist.elapsed-self.firstdispense)/60)
-            self.history= self.history + (' [Evap: %d]'%( (worklist.elapsed-self.firstdispense)/60))
-            self.firstdispense=-1	# Don't mention again
-        if op=='dispense' and self.firstdispense==0:
-            self.firstdispense=worklist.elapsed
-
+    def evapcheck(self,op,thresh=0.20):
+        'Update amount of evaporation and check for issues'
+        if self.plate.name=="Samples":
+            dt=clock.pipetting-self.lastevapupdate
+        else:
+            dt=clock.elapsed()-self.lastevapupdate
+        if dt>0:
+            evaprate=self.plate.getevaprate(self.volume-self.evap)
+            self.evap+=evaprate*dt/3600
+            if op=='aspirate' and self.evap>thresh*self.volume and self.evap>2.0:
+                if self.volume>0:
+                    pctevap=self.evap/self.volume*100
+                else:
+                    pctevap=0
+                print "WARNING:  %s (%s.%s, vol=%.1f ul) may have %.1f ul of evaporation (%.0f%%)"%(self.name,str(self.plate),self.plate.wellname(self.well),self.volume,self.evap,pctevap)
+                self.history= self.history + (' [Evap: %0.1f ul]'%(self.evap))
+        return
+        self.lastevapupdate+=dt
+        
     def aspirate(self,tipMask,volume,multi=False):
         self.evapcheck('aspirate')
         if self.plate.curloc=='PTC':
@@ -507,7 +516,11 @@ class Sample(object):
             beadString=",beads"
         else:
             beadString=""
-        s+=" %-30s"%("(%s.%s,%.2f ul%s)"%(self.plate.name,self.plate.wellname(self.well),self.volume,beadString))
+        if self.evap>0.1*self.volume:
+            evapString=" -%.1f ul"%self.evap
+        else:
+            evapString=""
+        s+=" %-30s"%("(%s.%s,%.2f ul%s%s)"%(self.plate.name,self.plate.wellname(self.well),self.volume,evapString,beadString))
         hist=self.history
         trunchistory=True
         if trunchistory and len(hist)>0:

@@ -761,7 +761,16 @@ class TRP(object):
     def pgm(self):
         'Actual robot code generation -- may be run multiple times to establish initial volumes.  Overridden by actual experiment'
 
-    def run(self,debug=False):
+    def run(self,dewpoint=10,debug=False):
+        print "Estimating evaporation for dew point of %.1f C"%dewpoint
+        decklayout.SAMPLEPLATE.dewpoint=dewpoint
+        decklayout.DILPLATE.dewpoint=dewpoint
+        decklayout.REAGENTPLATE.dewpoint=dewpoint
+        decklayout.REAGENTPLATE.liquidTemp=dewpoint+2
+        decklayout.EPPENDORFS.dewpoint=dewpoint
+        decklayout.WATERLOC.dewpoint=dewpoint
+        decklayout.SSDDILLOC.dewpoint=dewpoint
+        decklayout.QPCRPLATE.dewpoint=dewpoint
         self.setup()
         if debug:
             print '------ Preliminary run to set volume -----'

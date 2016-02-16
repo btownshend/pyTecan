@@ -5,7 +5,7 @@ _Plate__allplates=[]
 "An object representing a microplate or other container on the deck"
 class Plate(object):
     "A plate object which includes a name, location, and size"
-    def __init__(self,name, grid, pos, nx=12, ny=8,pierce=False,unusableVolume=5,maxVolume=200,zmax=None,angle=None,r1=None,h1=None,v0=None,vectorName=None,maxspeeds=None):
+    def __init__(self,name, grid, pos, nx=12, ny=8,pierce=False,unusableVolume=5,maxVolume=200,zmax=None,angle=None,r1=None,h1=None,v0=None,vectorName=None,maxspeeds=None,dewpoint=None,liquidTemp=22.7):
         self.name=name
         self.grid=grid
         self.pos=pos
@@ -30,6 +30,8 @@ class Plate(object):
         self.v0=v0
         self.vectorName=vectorName		# Name of vector used for RoMa to pickup plate
         self.maxspeeds=maxspeeds
+        self.dewpoint=dewpoint
+        self.liquidTemp=liquidTemp
         global __allplates
         __allplates.append(self)
 
@@ -72,6 +74,50 @@ class Plate(object):
             #        print "%s,vol=%.1f, height=%.1f"%(self.name,volume,height)
         return height
 
+    def getliquidarea(self,volume):
+        'Get surface area of liquid in mm^2 when filled to given volume'
+        if self.angle is None:
+            if not self.warned:
+                print "No liquid height equation for plate %s"%self.name
+                self.warned=True
+            return None
+
+        h0=self.h1-self.r1/math.tan(self.angle/2)
+        v1=math.pi/3*(self.h1-h0)*self.r1*self.r1-self.v0
+        if volume>=v1:
+            radius=self.r1
+        elif volume+self.v0<0:
+            radius=0
+        else:
+            height=((volume+self.v0)*(3/math.pi)*((self.h1-h0)/self.r1)**2)**(1.0/3)+h0
+            radius=(height-h0)/(self.h1-h0)*self.r1
+        area=math.pi*radius*radius
+        #print "%s,vol=%.1f, radius=%.1f, area=%.1f"%(self.name,volume,radius,area)
+        return area
+
+    def mixingratio(self,dewpoint):
+        B=0.6219907  # kg/kg
+        Tn=240.7263
+        m=7.591386
+        A=6.116441
+        Pw=A*10.0**(m*dewpoint/(Tn+dewpoint))
+        Ptot=1013   # Atmospheric pressure
+        mr=B*Pw/(Ptot-Pw)
+        return mr
+
+    def getevaprate(self,volume,vel=0):
+        'Get rate of evaporation of well in ul/min with given volume at specified self.dewpoint'
+        area=self.getliquidarea(volume)
+        x=self.mixingratio(self.dewpoint)
+        xs=self.mixingratio(self.liquidTemp)
+        #print "vol=",volume,", area=",area
+        if area==None:
+            return 0
+        theta=25+19*vel
+        evaprate=theta*area/1000/1000*(xs-x)*1e6
+        #print "Air temp=%.1fC, DP=%.1fC, x=%.3f, xs=%.3f, vol=%.1f ul, area=%.0f mm^2, evaprate=%.3f ul/h"%(self.liquidTemp,self.dewpoint,x,xs,volume,area,evaprate)
+        return evaprate
+    
     def getliquidvolume(self,height):
         'Compute liquid volume given height above zmax in mm'
         if self.angle is None:
