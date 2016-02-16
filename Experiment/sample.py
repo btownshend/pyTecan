@@ -161,7 +161,10 @@ class Sample(object):
         self.hasBeads=hasBeads		# Setting this to true overrides the manual conditioning
         self.extraVol=extraVol			# Extra volume to provide
         self.evap=0   # Amount that has evaporated
-        self.lastevapupdate=clock.elapsed()
+        if self.plate.name=="Samples":
+            self.lastevapupdate=clock.pipetting
+        else:
+            self.lastevapupdate=clock.elapsed()
 
     def sampleWellPosition(self):
         'Convert a sample well number to a well position as used by Gemini worklist'
@@ -242,23 +245,23 @@ class Sample(object):
         if self.conc!=None:
             self.conc=self.conc.dilute(1.0/factor)
 
-    def evapcheck(self,op,thresh=0.20):
+    def evapcheck(self,op,thresh=0.10):
         'Update amount of evaporation and check for issues'
         if self.plate.name=="Samples":
-            dt=clock.pipetting-self.lastevapupdate
+            dt=clock.pipetting-self.lastevapupdate	# Assume no evaporation while in PTC
         else:
             dt=clock.elapsed()-self.lastevapupdate
-        if dt>0:
+        if dt<0:
+            print  "***ERROR*** -- clock went backwards: elapsed=",clock.elapsed(),", lastevapupdate=",self.lastevapupdate,", dt=",dt
+            assert False
+    
+        for i in range(10):   # Break it into smaller steps since volume affects rate
             evaprate=self.plate.getevaprate(self.volume-self.evap)
-            self.evap+=evaprate*dt/3600
-            if op=='aspirate' and self.evap>thresh*self.volume and self.evap>2.0:
-                if self.volume>0:
-                    pctevap=self.evap/self.volume*100
-                else:
-                    pctevap=0
-                print "WARNING:  %s (%s.%s, vol=%.1f ul) may have %.1f ul of evaporation (%.0f%%)"%(self.name,str(self.plate),self.plate.wellname(self.well),self.volume,self.evap,pctevap)
-                self.history= self.history + (' [Evap: %0.1f ul]'%(self.evap))
-        return
+            self.evap+=evaprate*dt/3600/10
+        if op=='aspirate' and self.evap>thresh*self.volume and self.evap>2.0 and self.volume>0:
+            pctevap=self.evap/self.volume*100
+            print "WARNING:  %s (%s.%s, vol=%.1f ul) may have %.1f ul of evaporation (%.0f%%)"%(self.name,str(self.plate),self.plate.wellname(self.well),self.volume,self.evap,pctevap)
+            self.history= self.history + (' [Evap: %0.1f ul]'%(self.evap))
         self.lastevapupdate+=dt
         
     def aspirate(self,tipMask,volume,multi=False):
@@ -516,7 +519,7 @@ class Sample(object):
             beadString=",beads"
         else:
             beadString=""
-        if self.evap>0.1*self.volume:
+        if self.evap>0.05*self.volume:
             evapString=" -%.1f ul"%self.evap
         else:
             evapString=""
