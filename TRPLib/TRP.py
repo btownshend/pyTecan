@@ -39,7 +39,7 @@ reagents.add("MLigBT7WBio",well="E5",conc=3)
 reagents.add("MLigBT7Bio",well="A6",conc=3)
 reagents.add("MPCR",well=None,conc=4)
 reagents.add("MLigB",well=None,conc=3)
-reagents.add("MUser",well=None,conc=2)
+reagents.add("MUser",well="D1",conc=2)
     
 def listify(x):
     'Convert a list of (lists or scalars) into a list of equal length lists'
