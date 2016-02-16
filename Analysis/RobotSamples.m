@@ -11,6 +11,8 @@ classdef RobotSamples < handle
     stages;
     stagedilution;
     wellsProcessed;
+    loop1len;	% Dict that maps templates names to the length of loop1
+    loop2len;
   end
   
   methods
@@ -39,6 +41,8 @@ classdef RobotSamples < handle
 
       obj.qsamps=containers.Map;
       obj.stagedilution=containers.Map;
+      obj.loop1len=containers.Map;
+      obj.loop2len=containers.Map;
       obj.buildsampmap();
       if nargin<2 || isempty(opdfilename)
         obj.opd={opdread()};
@@ -205,6 +209,12 @@ classdef RobotSamples < handle
       obj.stagedilution(stage)=dilution;
     end
     
+    function setlooplengths(obj,template,loop1,loop2)
+    % Set loop sizes for use in computing length of qPCR products
+      obj.loop1len(template)=loop1;
+      obj.loop2len(template)=loop2;
+    end
+    
     function setwell(obj,root,well,primer,dilution)
     % Set a particular well to have the name 'root', primer and dilution as given
     %fprintf(' root=%s, primer=%s, dilution=%f\n', root, primer, dilution);
@@ -228,13 +238,33 @@ classdef RobotSamples < handle
         entry.wells{pindex}=well;
         entry.ct(pindex)=obj.q.getct(well);
         entry.dilution(pindex)=dilution;
-        entry.conc(pindex)=obj.q.getconc(primer,well,{},{},{},'dilution',dilution)/1000;
+        entry.conc(pindex)=obj.q.getconc(primer,well,{},{},{},'dilution',dilution);
         wellindex=obj.q.parsewells(well);
         entry.order=min([entry.order,wellindex]);
       end
       obj.qsamps(root)=entry;
     end      
 
+    function len=getlength(obj,template,primer)
+    % See if we have the length
+      len=nan;
+      if obj.loop1len.isKey(template) && obj.loop2len.isKey(template)
+        loop1len=obj.loop1len(template);
+        loop2len=obj.loop2len(template);
+        if strcmp(primer,'MX')
+          len=17+loop2len+29;
+        elseif strcmp(primer,'WX')
+          len=11+6+loop1len+6+17+loop2len+29;
+        elseif strcmp(primer,'BX')
+          len=21+6+loop1len+6+17+loop2len+29;
+        elseif strcmp(primer,'T7X')
+          len=24+11+6+loop1len+6+17+loop2len+29;
+        else
+          fprintf('Not implemented: length of sequence with %s primers\n', primer);
+        end
+      end
+    end
+    
     function copyprimer(obj,existing,new)
     % Copy data for existing primer 'existing' to 'new'
       fprintf('Using reference for primer %s as a surrogate for %s\n', existing, new);
@@ -347,7 +377,7 @@ classdef RobotSamples < handle
         else
           dil=sprintf('[%s]',sprintf('%.0f ',qs.dilution));
         end
-        fprintf('%-30.30s:  Dil=%s, Ct=[%s], Conc=[%s] nM\n', qs.name, dil, sprintf('%4.1f ',qs.ct),sprintf('%7.2f ',qs.conc));
+        fprintf('%-30.30s:  Dil=%s, Ct=[%s], Conc=[%s] %s\n', qs.name, dil, sprintf('%4.1f ',qs.ct),sprintf('%7.2f ',qs.conc),obj.q.refs(qkeys{1}).units);
         fprintf('%-30.30s:                 [',' ');
         for i=1:length(qs.wells)
           if isempty(qs.wells{i})
@@ -377,20 +407,34 @@ classdef RobotSamples < handle
         fprintf(' %20.20s: %5.2f %s\n', obj.stages{j}, obj.stagedilution(obj.stages{j}),note);
       end
 
-      fprintf('%-40.40s ','');
-      for i=1:length(obj.primers())
-        fprintf('%8s ',obj.primers(i));
-      end
-      fprintf('\n');
 
       sv=[];
       for i=1:length(obj.templates)
+        fprintf('%-40.40s ','');
+        for j=1:length(obj.primers())
+          fprintf('%8s ',obj.primers(j));
+        end
+        fprintf('\n');
+        fprintf('%-40.40s ','');
+        for j=1:length(obj.primers())
+          fprintf('%8d ',obj.getlength(obj.templates{i},obj.primers(j)));
+        end
+        fprintf('\n');
         for j=1:length(obj.stages)
           nm=[obj.templates{i},obj.stages{j}];
           if isKey(obj.qsamps,nm)
             scale=obj.stagedilution(obj.stages{j});
             concs=obj.qsamps(nm).conc*scale;
-            fprintf('%-40.40s %s\n',nm,sprintf('%8.3f ',concs));
+            concsnm=nan*concs;	% Conc in nM
+            for k=1:length(obj.primers())
+              mw=607.4*obj.getlength(obj.templates{i},obj.primers{k})+157.9;
+              concsnm(k)=concs(k)/1000/mw*1e9;
+            end
+            if all(isfinite(concsnm)==isfinite(concs))
+              fprintf('%-40.40s %s nM\n',nm,sprintf('%8.3f ',concs));
+            else
+              fprintf('%-40.40s %s ng/ul\n',nm,sprintf('%8.3f ',concs));
+            end
             sv(i,j,:)=concs;
           end
         end
