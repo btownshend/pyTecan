@@ -1,9 +1,7 @@
 from Experiment.sample import Sample
 from Experiment.experiment import Experiment
 from Experiment.concentration import Concentration
-import Experiment.worklist as worklist
-import Experiment.reagents as reagents
-import Experiment.decklayout as decklayout
+from Experiment import worklist, reagents, decklayout, clock
 
 import os
 import sys
@@ -95,10 +93,11 @@ class TRP(object):
             
     def reset(self):
         'Reset this experiment so we can generate it again after adjusting the reagent initial volumes and total time'
-        totalTime=worklist.elapsed+self.e.thermotime
-        #print "After reset, elapsed=%d"%worklist.elapsed
+        totalTime=clock.elapsed()
+        clock.reset(totalTime)
+        #print "After reset, elapsed=%d"%clock.elapsed()
         worklist.reset()
-        self.e=Experiment(totalTime)
+        self.e=Experiment()
         self.e.setreagenttemp(6.0)
         self.e.sanitize(3,50)    # Heavy sanitize
         reagents.reset()

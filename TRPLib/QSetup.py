@@ -7,7 +7,7 @@ from Experiment.experiment import Experiment
 from Experiment.sample import Sample
 from Experiment.JobQueue import JobQueue
 from TRPLib.TRP import  diluteName
-from Experiment import worklist, reagents, decklayout
+from Experiment import worklist, reagents, decklayout,clock
 
 class QSetup(object):
     TGTINVOL=4
@@ -166,16 +166,16 @@ class QSetup(object):
         self.addSamples(src=[self.dilutant],needDil=1,primers=primers,nreplicates=nreplicates,save=False)
 
     def idler(self,t):
-        endTime=worklist.elapsed+t
+        endTime=clock.elapsed()+t
         if self.debug:
             print "Idler(%.0f)"%t
-        while worklist.elapsed<endTime:
+        while clock.elapsed()<endTime:
             j=self.jobq.getJob()
             if j==None:
                 break
             self.jobq.execJob(self.trp.e,j)
         if self.debug:
-            print "Idler done with ",endTime-worklist.elapsed," seconds remaining"
+            print "Idler done with ",endTime-clock.elapsed()," seconds remaining"
 
     def run(self):
         'Run the dilutions and QPCR setup'

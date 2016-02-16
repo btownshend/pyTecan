@@ -5,6 +5,7 @@ import shutil
 from zlib import crc32
 
 from plate import Plate
+import clock
 
 DITI200=0
 DITI10=2
@@ -19,7 +20,6 @@ debug=False
 wlist=[]
 volumes={}
 diticnt=[0,0,0,0]   # Indexed by DiTi Type
-elapsed=0   # Elapsed time in seconds
 delayEnabled=False
 opQueue=[]
 hashCodes={}
@@ -30,8 +30,7 @@ tipHash=[0,0,0,0]
 timerstart=None
 
 def reset():
-    global elapsed, hashCodes, lnum,volumes,opQueue, hashCodes,tipHash,wlist
-    elapsed=0
+    global hashCodes, lnum,volumes,opQueue, hashCodes,tipHash,wlist
     hashCodes={}
     lnum=0
     volumes={}
@@ -77,13 +76,12 @@ def getline():
 
 def moveliha( loc):
     'Move LiHa to specified location'
-    global elapsed
     flushQueue()
     tipMask=15
     speed=10   # 0.1-400 (mm/s)
     #comment('*MoveLiha to '+str(loc))
     wlist.append( 'MoveLiha(%d,%d,%d,1,"0104?",0,4,0,%.1f,0)'%(tipMask,loc.grid,loc.pos-1,speed))
-    elapsed+=1.08
+    clock.pipetting+=1.08
 
 def optimizeQueue():
     'Optimize operations in queue'
@@ -249,7 +247,6 @@ def mix(tipMask,wells, liquidClass, volume, loc, cycles=3, allowDelay=True):
 def aspirateDispense(op,tipMask,wells, liquidClass, volume, loc, cycles=None,allowDelay=True):
     'Execute or queue liquid handling operation'
     assert isinstance(loc,Plate)
-    global elapsed
 
     if loc.pos==0 or loc.grid>=25:
         # Attempting to use LiHa in ROMA-Only area
@@ -265,13 +262,13 @@ def aspirateDispense(op,tipMask,wells, liquidClass, volume, loc, cycles=None,all
         return
 
     if op=='Mix':
-        elapsed+=11.49
+        clock.pipetting+=11.49
     elif op=='Dispense':
-        elapsed+=3.23
+        clock.pipetting+=3.23
     elif op=='Aspirate':
-        elapsed+=5.51+3.23   # Extra for conditioning volume
+        clock.pipetting+=5.51+3.23   # Extra for conditioning volume
     elif op=='AspirateNC':
-        elapsed+=5.51
+        clock.pipetting+=5.51
 
     comment("*%s tip=%d well=%s.%s vol=%s lc=%s"%(op,tipMask,str(loc),str(wells),str(volume),str(liquidClass)))
     # Update volumes
@@ -409,7 +406,6 @@ def SIM(tip,op,vol,loc,pos):
 
 # Get DITI
 def getDITI( tipMask, volume, retry=True):
-    global elapsed
     flushQueue()
     MAXVOL10=10
     MAXVOL200=200
@@ -426,7 +422,7 @@ def getDITI( tipMask, volume, retry=True):
         tiptype=DITI200
 
     wlist.append('GetDITI(%d,%d,%d)'%(tipMask,tiptype,options))
-    elapsed+=2
+    clock.pipetting+=2
     if tipMask&1:
         diticnt[tiptype]+=1
     if tipMask&2:
@@ -441,17 +437,15 @@ def getDITIcnt():
 
 def dropDITI( tipMask, loc, airgap=10, airgapSpeed=70):
     'Drop DITI, airgap is in ul, speed in ul/sec'
-    global elapsed
     flushQueue()
     assert tipMask>=1 and tipMask<=15
     assert airgap>=0 and airgap<=100
     assert airgapSpeed>=1 and airgapSpeed<1000
     wlist.append('DropDITI(%d,%d,%d,%f,%d)'%(tipMask,loc.grid,loc.pos-1,airgap,airgapSpeed))
-    elapsed+=2
+    clock.pipetting+=2
 
 def wash( tipMask,wasteVol=1,cleanerVol=2,deepClean=False):
     'Wash tips'
-    global elapsed
     flushQueue()
     #comment("*Wash with tips=%d, wasteVol=%d, cleanerVol=%d, deep=%s"%(tipMask,wasteVol,cleanerVol,"Y" if deepClean else "N"))
     wasteLoc=(1,1)
@@ -469,7 +463,7 @@ def wash( tipMask,wasteVol=1,cleanerVol=2,deepClean=False):
     atFreq=1000  # Hz, For Active tip
     wlist.append('Wash(%d,%d,%d,%d,%d,%.1f,%d,%.1f,%d,%.1f,%d,%d,%d,%d,%d)'%(tipMask,wasteLoc[0],wasteLoc[1],cleanerLoc[0],cleanerLoc[1],wasteVol,wasteDelay,cleanerVol,cleanerDelay,airgap, airgapSpeed, retractSpeed, fastWash, lowVolume, atFreq))
     #print "Wash %d,%.1fml,%.1fml,deep="%(tipMask,wasteVol,cleanerVol),deepClean
-    elapsed+=19.12
+    clock.pipetting+=19.12
     if tipMask&1:
         tipHash[0]=0
     if tipMask&2:
@@ -498,7 +492,6 @@ def periodicWash(tipMask,period):
 def vector( vector,loc, direction, andBack, initialAction, finalAction, slow=False):
     'Move ROMA.  Gripper actions=0 (open), 1 (close), 2 (do not move).'
     #comment("*ROMA Vector %s"%vector)
-    global elapsed
     if slow:
         speed=1
     else:
@@ -508,13 +501,12 @@ def vector( vector,loc, direction, andBack, initialAction, finalAction, slow=Fal
     else:
         andBack=0
     wlist.append('Vector("%s",%d,%d,%d,%d,%d,%d,%d,0)'%(vector,loc.grid,loc.pos,direction,andBack,initialAction, finalAction, speed))
-    elapsed+=5.15
+    clock.pipetting+=5.15
 
 def romahome():
     #comment("*ROMA Home")
-    global elapsed
     wlist.append('ROMA(2,0,0,0,0,0,60,0,0)')
-    elapsed+=2.88
+    clock.pipetting+=2.88
 
 def email(dest,subject,body='',profile='cdsrobot',onerror=0,attachscreen=1):
     wlist.append('Notification(%d,"%s","%s","%s","%s",%d)'%(attachscreen,profile,dest,subject,body,onerror))
@@ -544,16 +536,15 @@ def comment( text,prepend=False):
         wlist.append('Comment("%s")'%text)
 
 def starttimer(timer=1):
-    global elapsed, timerstart
+    global timerstart
     flushQueue()
     if timer<1 or timer>100:
         print "starttimer: Bad timer (%d); must be between 1 and 100"%timer
         assert 0
     wlist.append('StartTimer("%d")'%timer)
-    timerstart=elapsed
+    timerstart=clock.pipetting
 
 def waittimer(duration,timer=1):
-    global elapsed
     flushQueue()
     if timer<1 or timer>100:
         print "waittimer: Bad timer (%d); must be between 1 and 100"%timer
@@ -562,10 +553,9 @@ def waittimer(duration,timer=1):
         print "waittimer: Bad duration (%f); must be between 0.02 and 86400 seconds"%duration
         assert 0
     wlist.append('WaitTimer("%d","%f")'%(timer,duration))
-    elapsed=max(elapsed,timerstart+duration)	# Assume the elapsed time is the timer length
+    clock.pipetting=max(clock.pipetting,timerstart+duration)	# Assume the clock.pipetting time is the timer length
 
 def userprompt( text,timeout=-1,prepend=False):
-    global elapsed
     flushQueue()
     cmd='UserPrompt("%s",0,%d)'%(text,timeout)
     if prepend:
@@ -573,7 +563,7 @@ def userprompt( text,timeout=-1,prepend=False):
     else:
         wlist.append(cmd)
     if timeout>0:
-        elapsed+=timeout
+        clock.pipetting+=timeout
 
 def variable(varname,default,userprompt=None,minval=None,maxval=None):
     if minval!=None or maxval!=None:
@@ -588,7 +578,6 @@ def variable(varname,default,userprompt=None,minval=None,maxval=None):
 
 def execute( command, wait=True, resultvar=None):
     'Execute an external command'
-    global elapsed
     flushQueue()
     flags=0
     if wait:
@@ -598,7 +587,7 @@ def execute( command, wait=True, resultvar=None):
     else:
         resultvar=""
     wlist.append('Execute("%s",%d,"%s")'%(command,flags,resultvar))
-    elapsed+=2.06   # Just overhead time, not actually time that command itself takes
+    clock.pipetting+=2.06   # Just overhead time, not actually time that command itself takes
 
 def pyrun( cmd):
     global lnum

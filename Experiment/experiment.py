@@ -5,6 +5,7 @@ from sample import Sample
 import liquidclass
 import reagents
 import decklayout
+import clock
 
 _Experiment__shakerActive = False
 
@@ -14,7 +15,7 @@ class Experiment(object):
     RPTEXTRA=0   # Extra amount when repeat pipetting
     MAXVOLUME=200  # Maximum volume for pipetting in ul
 
-    def __init__(self,totalTime=None):
+    def __init__(self):
         'Create a new experiment with given sample locations for water and WASTE;  totalTime is expected run time in seconds, if known'
         worklist.comment("Generated %s"%(datetime.now().ctime()))
         worklist.userprompt("The following reagent tubes should be present: %s"%Sample.getAllLocOnPlate(decklayout.REAGENTPLATE))
@@ -24,12 +25,9 @@ class Experiment(object):
         self.cleanTips=0
         # self.sanitize()  # Not needed, TRP does it, also first use of tips will do this
         self.useDiTis=False
-        self.thermotime=0		# Time waiting for thermocycler without pipetting
-        self.pipandthermotime=0		# Time while pipetting and thermocycling   (elapsed=time pipetting, whether or not thermocycling also)
         decklayout.BLEACH.mixLC=liquidclass.LCBleachMix
         self.ptcrunning=False
         self.overrideSanitize=False
-        self.totalTime=totalTime
         self.pgmStartTime=None
         self.pgmEndTime=None
 
@@ -74,8 +72,9 @@ class Experiment(object):
         #print >>fd,"DiTi usage:",worklist.getDITIcnt()
         #print >>fd
 
-        print "Run time: %d (pipetting only) + %d (thermocycling only) + %d (both) = %d minutes\n"%((worklist.elapsed-self.pipandthermotime)/60.0,self.thermotime/60, self.pipandthermotime/60, (worklist.elapsed+self.thermotime)/60)
-        print >>fd,"Run time: %d (pipetting only) + %d (thermocycling only) + %d (both) = %d minutes\n"%((worklist.elapsed-self.pipandthermotime)/60.0,self.thermotime/60, self.pipandthermotime/60, (worklist.elapsed+self.thermotime)/60)
+        rtime="Run time: %d (pipetting only) + %d (thermocycling only) + %d (both) = %d minutes\n"%(clock.pipetting/60.0,clock.thermotime/60, clock.pipandthermotime/60, clock.elapsed()/60)
+        print rtime
+        print >>fd,rtime
         reagents.printprep(fd)
         Sample.printallsamples("All Samples:",fd,w=worklist)
         fd.close()
@@ -100,11 +99,8 @@ class Experiment(object):
             worklist.wash(fixedTips,1,deepvol,True)
         self.cleanTips|=fixedTips
         # print "* Sanitize"
-        if self.totalTime!=None:
-            worklist.comment("Estimated elapsed: %d minutes, remaining run time: %d minutes"%((self.thermotime+worklist.elapsed)/60,(self.totalTime-(worklist.elapsed+self.thermotime))/60))
-        else:
-            worklist.comment("Estimated elapsed: %d minutes"%((self.thermotime+worklist.elapsed)/60))
-
+        worklist.comment(clock.statusString())
+        
     def cleantip(self):
         'Get the mask for a clean tip, washing if needed'
         if self.cleanTips==0:
@@ -342,8 +338,8 @@ class Experiment(object):
         assert hotlidmode=="TRACKING" or hotlidmode=="CONSTANT"
         assert (hotlidmode=="TRACKING" and hotlidtemp>=0 and hotlidtemp<=45) or (hotlidmode=="CONSTANT" and hotlidtemp>30)
         worklist.pyrun('PTC\\ptcrun.py %s CALC %s,%d %d'%(pgm,hotlidmode,hotlidtemp,volume))
-        self.pgmStartTime=worklist.elapsed
-        self.pgmEndTime=duration*60+worklist.elapsed
+        self.pgmStartTime=clock.pipetting
+        self.pgmEndTime=duration*60+clock.pipetting
         self.ptcrunning=True
         Sample.addallhistory("{%s}"%pgm,addToEmpty=False,onlyplate=decklayout.SAMPLEPLATE.name)
         if waitForCompletion:
@@ -465,11 +461,11 @@ class Experiment(object):
         return __shakerActive
 
     def starttimer(self,timer=1):
-        self.timerStartTime[timer]=worklist.elapsed
+        self.timerStartTime[timer]=clock.pipetting
         worklist.starttimer(timer)
 
     def waittimer(self,duration,timer=1):
-        if self.timerStartTime[timer]+duration-worklist.elapsed > 20:
+        if self.timerStartTime[timer]+duration-clock.pipetting > 20:
             # Might as well sanitize while we're waiting
             self.sanitize()
         if duration>0:
@@ -488,21 +484,23 @@ class Experiment(object):
         if sanitize:
             self.sanitize()   # Sanitize tips before waiting for this to be done
         worklist.comment("Wait for PTC")
-        while self.pgmEndTime-worklist.elapsed > 120:
+        while self.pgmEndTime-clock.pipetting > 120:
             # Run any idle programs
-            oldElapsed=worklist.elapsed
+            oldElapsed=clock.pipetting
             for ip in self.idlePgms:
-                if self.pgmEndTime-worklist.elapsed > 120:
-                    #print "Executing idle program with %.0f seconds"%(self.pgmEndTime-worklist.elapsed)
-                    ip(self.pgmEndTime-worklist.elapsed-120)
-            if oldElapsed==worklist.elapsed:
+                if self.pgmEndTime-clock.pipetting > 120:
+                    #print "Executing idle program with %.0f seconds"%(self.pgmEndTime-clock.pipetting)
+                    ip(self.pgmEndTime-clock.pipetting-120)
+            if oldElapsed==clock.pipetting:
                 # Nothing was done
                 break
             worklist.flushQueue()		# Just in case
 
-        self.pipandthermotime+=(worklist.elapsed-self.pgmStartTime)
-        self.thermotime+=(self.pgmEndTime-worklist.elapsed)
-        print "Waiting for PTC with %.0f seconds expected to remain"%(self.pgmEndTime-worklist.elapsed)
+        clock.pipandthermotime+=(clock.pipetting-self.pgmStartTime)
+        clock.thermotime+=(self.pgmEndTime-clock.pipetting)
+        clock.pipetting=self.pgmStartTime
+
+        print "Waiting for PTC with %.0f seconds expected to remain"%(self.pgmEndTime-clock.pipetting)
         worklist.pyrun('PTC\\ptcwait.py')
         worklist.pyrun("PTC\\ptclid.py OPEN")
         #        worklist.pyrun('PTC\\ptcrun.py %s CALC ON'%"COOLDOWN")
