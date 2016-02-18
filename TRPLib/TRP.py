@@ -439,12 +439,14 @@ class TRP(object):
             if returnPlate:
                 self.e.moveplate(src[0].plate,"Home")
 
-    def beadSupernatant(self,src,tgt=[],sepTime=None,residualVolume=10,plate=None):
-        [src,tgt]=listify([src,tgt])
-        if len(tgt)==0:
+    def beadSupernatant(self,src,tgt=None,sepTime=None,residualVolume=10,plate=None):
+        if plate is None:
+            plate=decklayout.SAMPLEPLATE
+        if tgt is None:
+            tgt=[]
             for i in range(len(src)):
-                if plate is None:
-                    tgt.append(Sample("%s.SN"%src[i].name,decklayout.SAMPLEPLATE))
+                tgt.append(Sample("%s.SN"%src[i].name,plate))
+        [src,tgt]=listify([src,tgt])
 
         if not src[0].isMixed:
             self.e.shake(src[0].plate,returnPlate=False)
