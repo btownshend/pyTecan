@@ -184,8 +184,13 @@ class QSetup(object):
         # Setup qPCRs
         #self.jobq.dump()
         self.idler(100000)
-
-        assert(self.jobq.len() == 0)
+        self.trp.e.waitpgm()
+        self.idler(100000)
+        
+        if self.jobq.len()>0:
+            print "Blocked jobs remain on queue:"
+            self.jobq.dump()
+            assert False
         worklist.userprompt('Starting qPCR setup',timeout=5)
         for p in self.allprimers():
             # Build list of relevant entries
