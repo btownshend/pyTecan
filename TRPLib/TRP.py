@@ -6,6 +6,7 @@ from Experiment import worklist, reagents, decklayout, clock
 import os
 import sys
 import math
+import argparse
 
 maxVolumePerWell=150
 
@@ -825,23 +826,28 @@ class TRP(object):
     def pgm(self):
         'Actual robot code generation -- may be run multiple times to establish initial volumes.  Overridden by actual experiment'
 
-    def run(self,dewpoint=10,debug=False):
-        print "Estimating evaporation for dew point of %.1f C"%dewpoint
-        decklayout.SAMPLEPLATE.dewpoint=dewpoint
-        decklayout.DILPLATE.dewpoint=dewpoint
-        decklayout.REAGENTPLATE.dewpoint=dewpoint
-        decklayout.REAGENTPLATE.liquidTemp=dewpoint+2
-        decklayout.EPPENDORFS.dewpoint=dewpoint
-        decklayout.WATERLOC.dewpoint=dewpoint
-        decklayout.SSDDILLOC.dewpoint=dewpoint
-        decklayout.QPCRPLATE.dewpoint=dewpoint
+    def run(self):
+        parser=argparse.ArgumentParser(description="TRP")
+        parser.add_argument('-v','--verbose',help='Enable verbose output',default=False,action="store_true")
+        parser.add_argument('-D','--dewpoint',type=float,help='Dew point',default=10.0)
+        args=parser.parse_args()
+        
+        print "Estimating evaporation for dew point of %.1f C"%args.dewpoint
+        decklayout.SAMPLEPLATE.dewpoint=args.dewpoint
+        decklayout.DILPLATE.dewpoint=args.dewpoint
+        decklayout.REAGENTPLATE.dewpoint=args.dewpoint
+        decklayout.REAGENTPLATE.liquidTemp=args.dewpoint+2
+        decklayout.EPPENDORFS.dewpoint=args.dewpoint
+        decklayout.WATERLOC.dewpoint=args.dewpoint
+        decklayout.SSDDILLOC.dewpoint=args.dewpoint
+        decklayout.QPCRPLATE.dewpoint=args.dewpoint
         self.setup()
-        if debug:
+        if args.verbose:
             print '------ Preliminary run to set volume -----'
         else:
             sys.stdout=open(os.devnull,'w')
         self.pgm()
-        if debug:
+        if args.verbose:
             print '------ Main run -----'
         else:
             sys.stdout=sys.__stdout__
