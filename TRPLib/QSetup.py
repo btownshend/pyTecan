@@ -37,7 +37,7 @@ class QSetup(object):
             src=[src]
         if save:
             # saveVol is total amount (after dilution) to be immediately saved
-            if saveDil==None:
+            if saveDil is None:
                 saveDil=min(needDil,self.MAXDIL)
                 if needDil/saveDil>1 and needDil/saveDil<2:
                     saveDil=math.sqrt(needDil)
@@ -45,10 +45,10 @@ class QSetup(object):
                 print "addSamples: saveDil=",saveDil, ", but needDil is only ", needDil
                 saveDil=needDil
     
-            if saveVol==None:
+            if saveVol is None:
                 saveVol=max(self.MINDILVOL*1.0/saveDil,self.TGTINVOL)
             
-            if names==None:
+            if names is None:
                 tgt=[Sample(diluteName(src[i].name,saveDil),decklayout.DILPLATE) for i in range(len(src))]
             else:
                 tgt=[Sample(diluteName(names[i],saveDil),decklayout.DILPLATE) for i in range(len(src))]
@@ -141,7 +141,7 @@ class QSetup(object):
         # Make sure the ref reagent is loaded
         if ref is None:
             ref=reagents.getsample("QPCRREF")
-        if primers==None:
+        if primers is None:
             primers=self.allprimers()
         dils=[1]
         for i in range(nsteps):
@@ -156,7 +156,7 @@ class QSetup(object):
                     else:
                         srcname="%s.D%d"%(ref.name,srcDil)
                         src=[Sample.lookup(srcname)]
-                        if src[0]==None:
+                        if src[0] is None:
                             src=[Sample(srcname,decklayout.DILPLATE)]
                     break
             tmp=self.MINDILVOL
@@ -173,7 +173,7 @@ class QSetup(object):
             print "Idler(%.0f)"%t
         while clock.elapsed()<endTime:
             j=self.jobq.getJob()
-            if j==None:
+            if j is None:
                 break
             self.jobq.execJob(self.trp.e,j)
         if self.debug:
