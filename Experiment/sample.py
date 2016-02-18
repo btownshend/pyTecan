@@ -245,16 +245,17 @@ class Sample(object):
         if self.conc!=None:
             self.conc=self.conc.dilute(1.0/factor)
 
-    def evapcheck(self,op,thresh=0.10):
+    def evapcheck(self,op,thresh=0.20):
         'Update amount of evaporation and check for issues'
         if self.plate.name=="Samples":
             dt=clock.pipetting-self.lastevapupdate	# Assume no evaporation while in PTC
         else:
             dt=clock.elapsed()-self.lastevapupdate
-        if dt<0:
+        if dt<-0.1:
             print  "***ERROR*** -- clock went backwards: elapsed=",clock.elapsed(),", lastevapupdate=",self.lastevapupdate,", dt=",dt
             assert False
-    
+        if dt<=0.1:
+            return
         for i in range(10):   # Break it into smaller steps since volume affects rate
             evaprate=self.plate.getevaprate(self.volume-self.evap)
             self.evap+=evaprate*dt/3600/10
