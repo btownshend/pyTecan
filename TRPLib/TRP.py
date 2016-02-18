@@ -597,24 +597,51 @@ class TRP(object):
         self.runLigPgm(max(vol),ligtemp,inactivate=False)	# Do not heat inactivate since it may denature the beads
 
     ########################
-    # USER - USER enzyme digestion
+    # Incubation - run a single temp incubation followed by inactivation
     ########################
-    def runUser(self,src=None,vol=None,srcdil=2,tgt=None,userTime=15):
-        if tgt is None:
-            tgt=[Sample("%s.User"%(src[i].name),decklayout.SAMPLEPLATE) for i in range(len(src))]
+    def runIncubation(self,src=None,vol=None,srcdil=None,tgt=None,enzymes=None,incTemp=37,incTime=15,hiTemp=None,hiTime=0,inPlace=False):
+        if len(enzymes)!=1:
+            print "ERROR: runIncubation only supports a single master mix"
+            assert False
+        if inPlace:
+            if tgt is not None:
+                print "ERROR: tgt specified for in-place incubation"
+                assert False
+        elif tgt is None:
+            tgt=[Sample("%s.%s"%(src[i].name,enzymes[0].name),decklayout.SAMPLEPLATE) for i in range(len(src))]
 
+        if srcdil==None:
+            # Minimum dilution (no water)
+            srcdil=1/(1-sum([1/e.conc.dilutionneeded() for e in enzymes]))
+
+        if vol is None and inPlace:
+            vol=[s.volume*srcdil for s in src]
+            
         [src,tgt,vol,srcdil]=listify([src,tgt,vol,srcdil])
 
         # Adjust source dilution
         for i in range(len(src)):
             src[i].conc=Concentration(srcdil[i],1)
 
-        self.e.stage('User',[reagents.getsample("MUser")],src,tgt,vol,destMix=False)
-        self.e.shake(tgt[0].plate,returnPlate=False)
-        pgm="USER"
-        worklist.pyrun('PTC\\ptcsetpgm.py %s TEMP@37,%.0f TEMP@25,30'%(pgm,userTime*60))
-        self.e.runpgm(pgm,userTime+2,False,max(vol),hotlidmode="TRACKING",hotlidtemp=10)
+        if inPlace:
+            self.runRxInPlace(src,vol,enzymes[0],returnPlate=False)
+        else:
+            self.e.stage('User',enzymes,src,tgt,vol,destMix=False)
+            self.e.shake(tgt[0].plate,returnPlate=False)
+
+        if hiTemp is None:
+            worklist.pyrun('PTC\\ptcsetpgm.py INC TEMP@%.0f,%.0f TEMP@25,30'%(incTemp,incTime*60))
+        else:
+            assert(hiTime>0)
+            worklist.pyrun('PTC\\ptcsetpgm.py INC TEMP@%.0f,%.0f TEMP@%.0f,%.0f TEMP@25,30'%(incTemp,incTime*60,hiTemp,hiTime*60))
+        self.e.runpgm("INC",incTime+hiTime+2,False,max(vol),hotlidmode="TRACKING",hotlidtemp=10)
         return tgt
+
+    ########################
+    # USER - USER enzyme digestion
+    ########################
+    def runUser(self,src=None,vol=None,srcdil=None,tgt=None,incTime=15,inPlace=False):
+        return self.runIncubation(src=src,vol=vol,srcdil=srcdil,tgt=tgt,incTemp=37,incTime=incTime,enzymes=[reagents.getsample("MUser")],inPlace=inPlace)
         
 
     ########################
