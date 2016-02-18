@@ -39,7 +39,7 @@ reagents.add("MLigBT7WBio",well="E5",conc=3)
 reagents.add("MLigBT7Bio",well="A6",conc=3)
 reagents.add("MPCR",well=None,conc=4)
 reagents.add("MLigB",well=None,conc=3)
-reagents.add("MUser",well="D1",conc=2)
+reagents.add("MUser",well="D1",conc=2,extraVol=30)
 reagents.add("MKlenow",well="C1",conc=2,extraVol=30)
     
 def listify(x):
