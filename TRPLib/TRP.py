@@ -40,6 +40,7 @@ reagents.add("MLigBT7Bio",well="A6",conc=3)
 reagents.add("MPCR",well=None,conc=4)
 reagents.add("MLigB",well=None,conc=3)
 reagents.add("MUser",well="D1",conc=2)
+reagents.add("MKlenow",well="C1",conc=2,extraVol=30)
     
 def listify(x):
     'Convert a list of (lists or scalars) into a list of equal length lists'
@@ -643,6 +644,18 @@ class TRP(object):
     def runUser(self,src=None,vol=None,srcdil=None,tgt=None,incTime=15,inPlace=False):
         return self.runIncubation(src=src,vol=vol,srcdil=srcdil,tgt=tgt,incTemp=37,incTime=incTime,enzymes=[reagents.getsample("MUser")],inPlace=inPlace)
         
+    ########################
+    # Klenow extension
+    ########################
+    def runKlenow(self,src=None,vol=None,srcdil=None,tgt=None,incTime=15,hiTime=20,inPlace=False):
+        assert(inPlace or vol is not None)
+        return self.runIncubation(src=src,vol=vol,srcdil=srcdil,tgt=tgt,incTemp=37,incTime=incTime,hiTemp=75,hiTime=hiTime,enzymes=[reagents.getsample("MKlenow")],inPlace=inPlace)
+
+    ########################
+    # DNase digestion
+    ########################
+    def runDNase(self,src=None,vol=None,srcdil=None,tgt=None,incTime=15,hiTime=10,inPlace=False):
+        return self.runIncubation(src=src,vol=vol,srcdil=srcdil,tgt=tgt,incTemp=37,incTime=incTime,hiTemp=75,hiTime=hiTime,enzymes=[reagents.getsample("MDNase")],inPlace=inPlace)
 
     ########################
     # PCR
