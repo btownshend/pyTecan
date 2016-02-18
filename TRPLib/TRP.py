@@ -207,8 +207,7 @@ class TRP(object):
     def runRxInPlace(self,src,vol,master,returnPlate=True,finalx=1.0):
         'Run reaction on beads in given total volume'
         [vol,src,master]=listify([vol,src,master])
-        smaster=[reagents.getsample(m) for m in master]
-        mastervol=[vol[i]*finalx/smaster[i].conc.dilutionneeded() for i in range(len(vol))]
+        mastervol=[vol[i]*finalx/master[i].conc.dilutionneeded() for i in range(len(vol))]
         watervol=[vol[i]-src[i].volume-mastervol[i] for i in range(len(vol))]
         if any([w < -0.01 for w in watervol]):
             print "runRxInPlace: negative amount of water needed: ",w
@@ -217,7 +216,7 @@ class TRP(object):
             if  watervol[i]>0:
                 self.e.transfer(watervol[i],decklayout.WATER,src[i],(False,False))
         for i in range(len(src)):
-            self.e.transfer(mastervol[i],smaster[i],src[i],(False,src[i].hasBeads))
+            self.e.transfer(mastervol[i],master[i],src[i],(False,src[i].hasBeads))
         for p in set([s.plate for s in src]):
             if p.maxspeeds is not None:
                 self.e.shake(p,returnPlate=returnPlate)
@@ -493,7 +492,7 @@ class TRP(object):
         for i in range(len(src)):
             src[i].conc=None
 
-        self.runRxInPlace(src,vol,"MPosRT",returnPlate=False)
+        self.runRxInPlace(src,vol,reagents.getsample("MPosRT"),returnPlate=False)
         self.runRTPgm(dur,heatInactivate=heatInactivate)
         
     def runRTSetup(self,src,vol,srcdil,tgt=None,rtmaster=None):
@@ -587,12 +586,12 @@ class TRP(object):
         for i in range(len(src)):
             src[i].conc=None
 
-        self.runRxInPlace(src,annealvol,ligmaster,returnPlate=not anneal,finalx=1.5)
+        self.runRxInPlace(src,annealvol,reagents.getsample(ligmaster),returnPlate=not anneal,finalx=1.5)
         if anneal:
             self.e.runpgm("TRPANN",5,False,max([s.volume for s in src]),hotlidmode="CONSTANT",hotlidtemp=100)
 
         ## Add ligase
-        self.runRxInPlace(src,vol,"MLigase",returnPlate=False)
+        self.runRxInPlace(src,vol,reagents.getsample("MLigase"),returnPlate=False)
         self.runLigPgm(max(vol),ligtemp,inactivate=False)	# Do not heat inactivate since it may denature the beads
 
     ########################
@@ -690,7 +689,7 @@ class TRP(object):
     def runPCRInPlace(self,prefix,src,vol,ncycles,suffix,annealtemp=57,save=None):
         [prefix,src,vol,suffix]=listify([prefix,src,vol,suffix])
 
-        primer=["MPCR"+prefix[i]+suffix[i] for i in range(len(prefix))]
+        primer=[reagents.getsample("MPCR"+prefix[i]+suffix[i]) for i in range(len(prefix))]
         self.runRxInPlace(src,vol,primer,returnPlate=(save is not None))
         if save is not None:
             self.saveSamps(src=src,vol=5,dil=10,tgt=save,plate=decklayout.DILPLATE,mix=(False,False),dilutant=decklayout.SSDDIL)
