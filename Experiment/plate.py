@@ -107,6 +107,7 @@ class Plate(object):
 
     def getevaprate(self,volume,vel=0):
         'Get rate of evaporation of well in ul/min with given volume at specified self.dewpoint'
+        assert volume>=0
         EVAPFUDGE=0.69		# Fudge factor -- makes computed evaporation match up with observed
         area=self.getliquidarea(volume)
         x=self.mixingratio(self.dewpoint)

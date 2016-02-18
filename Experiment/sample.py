@@ -257,7 +257,7 @@ class Sample(object):
         if dt<=0.1:
             return
         for i in range(10):   # Break it into smaller steps since volume affects rate
-            evaprate=self.plate.getevaprate(self.volume-self.evap)
+            evaprate=self.plate.getevaprate(max(0,self.volume-self.evap))
             self.evap+=evaprate*dt/3600/10
         if op=='aspirate' and self.evap>thresh*self.volume and self.evap>2.0 and self.volume>0:
             pctevap=self.evap/self.volume*100
@@ -520,7 +520,7 @@ class Sample(object):
             beadString=",beads"
         else:
             beadString=""
-        if self.evap>0.05*self.volume:
+        if self.evap>0.05*self.volume and self.evap>1.0:
             evapString=" -%.1f ul"%self.evap
         else:
             evapString=""
