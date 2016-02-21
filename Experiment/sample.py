@@ -265,6 +265,28 @@ class Sample(object):
             self.history= self.history + (' [Evap: %0.1f ul]'%(self.evap))
         self.lastevapupdate+=dt
         
+    def amountToRemove(self,tgtVolume):
+        'Calculate amount of volume to remove from sample to hit tgtVolume'
+        self.evapcheck('check')
+        volume=self.volume-tgtVolume	# Run through with nominal volume
+        removed=0
+        nloop=0
+        while abs(self.volume-removed-tgtVolume)>0.1 and nloop<5:
+            if nloop>0:
+                volume=self.volume-removed-tgtVolume+volume
+            lc=self.chooseLC(volume)
+            if self.hasBeads and self.plate.curloc=="Magnet":
+                # With beads don't do any manual conditioning and don't remove extra (since we usually want to control exact amounts left behind, if any)
+                removed=lc.volRemoved(volume,multi=False)
+            else:
+                removed=lc.volRemoved(volume,multi=True)
+                if self.hasBeads:
+                    removed=removed+MIXLOSS
+                    print "MIXLOSS"
+            print "Removing %.1f from %.1f leaves %.1f (tgt=%.1f)"%(volume,self.volume,self.volume-removed,tgtVolume)
+            nloop+=1
+        return volume
+        
     def aspirate(self,tipMask,volume,multi=False):
         self.evapcheck('aspirate')
         if self.plate.curloc=='PTC':
