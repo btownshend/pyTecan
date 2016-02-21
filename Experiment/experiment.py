@@ -500,7 +500,7 @@ class Experiment(object):
         clock.thermotime+=(self.pgmEndTime-clock.pipetting)
         clock.pipetting=self.pgmStartTime
 
-        print "Waiting for PTC with %.0f seconds expected to remain"%(self.pgmEndTime-clock.pipetting)
+        #print "Waiting for PTC with %.0f seconds expected to remain"%(self.pgmEndTime-clock.pipetting)
         worklist.pyrun('PTC\\ptcwait.py')
         worklist.pyrun("PTC\\ptclid.py OPEN")
         #        worklist.pyrun('PTC\\ptcrun.py %s CALC ON'%"COOLDOWN")

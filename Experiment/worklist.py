@@ -235,6 +235,7 @@ def aspirate(tipMask,wells, liquidClass, volume, loc):
     aspirateDispense('Aspirate',tipMask,wells, liquidClass, volume, loc)
 
 # aspirate without manual conditioning
+# NOTE: This results in using single instead of multi pipetting and is thus affected by the diluter calibration in Gemini
 def aspirateNC(tipMask,wells, liquidClass, volume, loc):
     aspirateDispense('AspirateNC',tipMask,wells, liquidClass, volume, loc)
 
