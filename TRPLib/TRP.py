@@ -226,14 +226,15 @@ class TRP(object):
     ########################
     # T7 - Transcription
     ########################
-    def runT7Setup(self,theo,src,vol,srcdil,tgt):
+    def runT7Setup(self,theo,src,vol,srcdil,tgt=None):
         [theo,src,tgt,srcdil]=listify([theo,src,tgt,srcdil])
-        if len(tgt)==0:
-            for i in range(len(src)):
+        for i in range(len(src)):
+            if tgt[i] is None:
                 if theo[i]:
-                    tgt.append(Sample("%s.T+"%src[i].name,decklayout.SAMPLEPLATE))
+                    tgt[i]=Sample("%s.T+"%src[i].name,decklayout.SAMPLEPLATE)
                 else:
-                    tgt.append(Sample("%s.T-"%src[i].name,decklayout.SAMPLEPLATE))
+                    tgt[i]=Sample("%s.T-"%src[i].name,decklayout.SAMPLEPLATE)
+
 
         worklist.comment("runT7: source=%s"%[str(s) for s in src])
 
