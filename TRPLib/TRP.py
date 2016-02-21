@@ -379,11 +379,12 @@ class TRP(object):
             # Remove the supernatant
             for i in range(len(src)):
                 if src[i].volume > residualVolume:
+                    amt=src[i].amountToRemove(residualVolume)
                     if keepWash:
-                        self.e.transfer(src[i].volume-residualVolume,src[i],washTgt[i])	# Keep supernatants
+                        self.e.transfer(amt,src[i],washTgt[i])	# Keep supernatants
                         washTgt[i].conc=None	# Allow it to be reused
                     else:
-                        self.e.dispose(src[i].volume-residualVolume,src[i])	# Discard supernatant
+                        self.e.dispose(amt,src[i])	# Discard supernatant
                 
         # Wash
 
@@ -407,11 +408,12 @@ class TRP(object):
             self.sepWait(src,sepTime)
                 
             for i in range(len(src)):
+                amt=src[i].amountToRemove(residualVolume)
                 if keepWash:
-                    self.e.transfer(src[i].volume-residualVolume,src[i],washTgt[i])	# Remove wash
+                    self.e.transfer(amt,src[i],washTgt[i])	# Remove wash
                     washTgt[i].conc=None	# Allow it to be reused
                 else:
-                    self.e.dispose(src[i].volume-residualVolume,src[i])	# Remove wash
+                    self.e.dispose(amt,src[i])	# Remove wash
 
         self.e.moveplate(src[0].plate,"Home")
 
@@ -458,7 +460,7 @@ class TRP(object):
         self.sepWait(src,sepTime)
 
         for i in range(len(src)):
-            self.e.transfer(src[i].volume-residualVolume,src[i],tgt[i])	# Transfer elution to new tube
+            self.e.transfer(src[i].amountToRemove(residualVolume),src[i],tgt[i])	# Transfer elution to new tube
 
         self.e.moveplate(src[0].plate,"Home")
         return tgt
@@ -471,7 +473,7 @@ class TRP(object):
             if tgt.volume>residualVolume:
                 self.e.moveplate(tgt.plate,"Magnet")	# Move to magnet
                 self.sepWait([tgt],sepTime)
-                self.e.dispose(tgt.volume-residualVolume,tgt)
+                self.e.dispose(tgt.amountToRemove(residualVolume),tgt)
             self.e.moveplate(tgt.plate,"Home")	
             if s.volume<suspendVolume:
                 self.e.transfer(suspendVolume-s.volume,decklayout.WATER,s,(False,False))
