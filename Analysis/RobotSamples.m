@@ -311,8 +311,7 @@ classdef RobotSamples < handle
             subplot(ceil(length(obj.templates)/2),2,j);
             havedata=obj.plotmelt([regexptranslate('escape',obj.templates{j}),'\..*Q',obj.primers(i)]);
             if ~havedata
-              close;
-              return;
+              continue;
             end
             title([obj.templates{j},' - ',obj.primers(i)]);
           end
@@ -321,11 +320,11 @@ classdef RobotSamples < handle
       end
 
       [w,i]=obj.wellfind('qPCR',regex);
+      havedata=false;
       if isempty(w)
         fprintf('plotmelt: No samples match "%s"\n', regex);
         return;
       end
-      havedata=false;
       for j=1:length(obj.opd)
         ut=opdmelt(obj.opd{j},w);
         if length(ut)>1
