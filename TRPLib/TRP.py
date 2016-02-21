@@ -630,6 +630,7 @@ class TRP(object):
 
         if inPlace:
             self.runRxInPlace(src,vol,enzymes[0],returnPlate=False)
+            tgt=src
         else:
             self.e.stage('User',enzymes,src,tgt,vol,destMix=False)
             self.e.shake(tgt[0].plate,returnPlate=False)
