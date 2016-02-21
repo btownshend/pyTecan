@@ -15,6 +15,7 @@ SHOWTIPHISTORY=False
 SHOWINGREDIENTS=False
 MINDEPOSITVOLUME=5.0	# Minimum volume to end up with in a well after dispensing
 MINSIDEDISPENSEVOLUME=10.0  # minimum final volume in well to use side-dispensing.  Side-dispensing with small volumes may result in pulling droplet up sidewall
+MIXLOSS=1.5		# Amount of sample lost during mixes
 
 _Sample__allsamples = []
 tiphistory={}
@@ -461,6 +462,7 @@ class Sample(object):
             #print "Sample %s is already mixed"%self.name
             return False
         blowvol=20
+        mstr=""
         extraspace=blowvol+0.1
         if preaspirateAir:
             extraspace+=5
@@ -484,7 +486,7 @@ class Sample(object):
                 height=self.plate.getliquidheight(self.volume)
                 if height is None:
                     worklist.mix(tipMask,well,self.mixLC,mixvol,self.plate,nmix)
-                    self.history+="(MB*)"
+                    mstr="(MB)"
                 else:
                     mixheight=math.floor(height-1)			# At least 1mm below liquid height
                     if mixheight<2:
@@ -496,16 +498,17 @@ class Sample(object):
                     worklist.aspirateNC(tipMask,well,self.airLC,(blowvol+0.1),self.plate)
                     if self.volume<30:
                         worklist.mix(tipMask,well,self.mixLC,mixvol,self.plate,nmix)
-                        self.history+="(MB)"
+                        mstr="(MB)"
                     else:
                         for _ in range(nmix):
                             worklist.aspirateNC(tipMask,well,mixLC,mixvol,self.plate)
                             worklist.dispense(tipMask,well,mixLC,mixvol,self.plate)
-                        self.history+="(M@%d)"%(mixheight)
+                        mstr="(M@%d)"%(mixheight)
                     worklist.dispense(tipMask,well,blowoutLC,blowvol,self.plate)
                     worklist.dispense(tipMask,well,liquidclass.LCDip,0.1,self.plate)
 
-            tiphistory[tipMask]+=" %s-Mix[%d]"%(self.name,mixvol)
+            self.volume-=MIXLOSS
+            self.addhistory(mstr,-MIXLOSS,tipMask)
             self.isMixed=True
             return True
 
