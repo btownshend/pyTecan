@@ -174,10 +174,10 @@ class TRP(object):
         
         if dilutant is None:
             dilutant=decklayout.WATER
-        self.e.multitransfer([vol*(dil-1) for i in range(wells)],dilutant,tgt,(False,False))
         if not src[0].isMixed:
             self.e.shake(src[0].plate,returnPlate=True)
-        self.e.multitransfer([vol for i in range(wells)],src[0],tgt,(False,False))
+        self.e.multitransfer([vol*(dil-1) for i in range(wells)],dilutant,tgt)
+        self.e.multitransfer([vol for i in range(wells)],src[0],tgt)
         return tgt
 
 
@@ -215,7 +215,7 @@ class TRP(object):
             if  watervol[i]>0:
                 self.e.transfer(watervol[i],decklayout.WATER,src[i],(False,False))
         for i in range(len(src)):
-            self.e.transfer(mastervol[i],master[i],src[i],(False,src[i].hasBeads))
+            self.e.transfer(mastervol[i],master[i],src[i],(True,src[i].hasBeads))
         self.e.shakeSamples(src,returnPlate=returnPlate)
 
     ########################
@@ -242,12 +242,12 @@ class TRP(object):
             watervols=[vol-sourcevols[i]-MT7vol for i in range(len(src))]
 
         if sum(watervols)>0.01:
-            self.e.multitransfer(watervols,decklayout.WATER,tgt,(False,False))
-        self.e.multitransfer([MT7vol for s in tgt],reagents.getsample("MT7"),tgt,(False,False))
+            self.e.multitransfer(watervols,decklayout.WATER,tgt)
+        self.e.multitransfer([MT7vol for s in tgt],reagents.getsample("MT7"),tgt)
         if any(theo):
-            self.e.multitransfer([tv for tv in theovols if tv>0.01],reagents.getsample("Theo"),[tgt[i] for i in range(len(theovols)) if theovols[i]>0],(False,False),ignoreContents=True)
+            self.e.multitransfer([tv for tv in theovols if tv>0.01],reagents.getsample("Theo"),[tgt[i] for i in range(len(theovols)) if theovols[i]>0],ignoreContents=True)
         for i in range(len(src)):
-            self.e.transfer(sourcevols[i],src[i],tgt[i],(True,False))
+            self.e.transfer(sourcevols[i],src[i],tgt[i])
         self.e.shakeSamples(tgt,returnPlate=True)
         for t in tgt:
             t.ingredients['BIND']=1e-20*sum(t.ingredients.values())
@@ -275,7 +275,7 @@ class TRP(object):
         for i in range(len(tgt)):
             stopvol=tgt[i].volume/(sstopmaster[i].conc.dilutionneeded()-1)
             finalvol=tgt[i].volume+stopvol
-            self.e.transfer(finalvol-tgt[i].volume,sstopmaster[i],tgt[i],(False,False))
+            self.e.transfer(finalvol-tgt[i].volume,sstopmaster[i],tgt[i])
             
         self.e.shakeSamples(tgt,returnPlate=True)
 
@@ -315,7 +315,7 @@ class TRP(object):
             buffervol=[totalvol[i]/bbuffer[i].conc.dilutionneeded() for i in range(len(src))]
             # Add binding buffer to bring to 1x (beads will already be in 1x, so don't need to provide for them)
             for i in range(len(src)):
-                self.e.transfer(buffervol[i],bbuffer[i],src[i],(False,False))
+                self.e.transfer(buffervol[i],bbuffer[i],src[i])
         else:
             buffervol=[0.0 for i in range(len(src))]
             totalvol=[s.volume/(1-1.0/beadDil) for s in src]
@@ -324,7 +324,7 @@ class TRP(object):
 
         # Transfer the beads
         for i in range(len(src)):
-            self.e.transfer(beadvol[i],beads[i],src[i],(False,True))	# Mix beads after (before mixing handled automatically by sample.py)
+            self.e.transfer(beadvol[i],beads[i],src[i],(True,True))	# Mix beads after (before mixing handled automatically by sample.py)
 
         self.e.shake(src[0].plate,dur=incTime,returnPlate=False)
 
@@ -448,7 +448,7 @@ class TRP(object):
         self.sepWait(src,sepTime)
 
         for i in range(len(src)):
-            self.e.transfer(src[i].amountToRemove(residualVolume),src[i],tgt[i])	# Transfer elution to new tube
+            self.e.transfer(src[i].amountToRemove(residualVolume),src[i],tgt[i],(False,False))	# Transfer elution to new tube
 
         self.e.moveplate(src[0].plate,"Home")
         return tgt
@@ -727,7 +727,7 @@ class TRP(object):
         primer=[reagents.getsample("MPCR"+prefix[i]+suffix[i]) for i in range(len(prefix))]
         self.runRxInPlace(src,vol,primer,returnPlate=(save is not None))
         if save is not None:
-            self.saveSamps(src=src,vol=5,dil=10,tgt=save,plate=decklayout.DILPLATE,mix=(False,False),dilutant=decklayout.SSDDIL)
+            self.saveSamps(src=src,vol=5,dil=10,tgt=save,plate=decklayout.DILPLATE,dilutant=decklayout.SSDDIL)
 
         pgm="PCR%d"%ncycles
         #        worklist.pyrun('PTC\\ptcsetpgm.py %s TEMP@95,120 TEMP@95,30 TEMP@55,30 TEMP@72,25 GOTO@2,%d TEMP@72,180 TEMP@16,2'%(pgm,ncycles-1))
@@ -805,7 +805,7 @@ class TRP(object):
             p=a[2]
             v=a[3]/dil[p]
             t.conc=None		# Concentration of master mix is irrelevant now
-            self.e.transfer(v,s,t,(False,False))
+            self.e.transfer(v,s,t)
             
         return [a[1] for a in torun]
 

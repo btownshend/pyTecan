@@ -112,8 +112,8 @@ class Experiment(object):
         self.cleanTips&=~tipMask
         return tipMask
 
-    def multitransfer(self, volumes, src, dests,mix=(False,False),getDITI=True,dropDITI=True,ignoreContents=False):
-        'Multi pipette from src to multiple dest.  mix is (src,dest) mixing'
+    def multitransfer(self, volumes, src, dests,mix=(True,False),getDITI=True,dropDITI=True,ignoreContents=False):
+        'Multi pipette from src to multiple dest.  mix is (src,dest) mixing -- only mix src if needed though'
         #print "multitransfer(",volumes,",",src,",",dests,",",mix,",",getDITI,",",dropDITI,")"
         if self.ptcrunning and (src.plate==decklayout.SAMPLEPLATE or len([1 for d in dests if d.plate==decklayout.SAMPLEPLATE])>0):
             self.waitpgm()
@@ -170,7 +170,7 @@ class Experiment(object):
                 if volumes[i]>0.01:
                     self.transfer(volumes[i],src,dests[i],(mix[0] and i==0,mix[1]),getDITI,dropDITI)
 
-    def transfer(self, volume, src, dest, mix=(False,False), getDITI=True, dropDITI=True):
+    def transfer(self, volume, src, dest, mix=(True,False), getDITI=True, dropDITI=True):
         if self.ptcrunning and (src.plate==decklayout.SAMPLEPLATE or dest.plate==decklayout.SAMPLEPLATE)>0:
             self.waitpgm()
         if volume>self.MAXVOLUME:
@@ -203,7 +203,7 @@ class Experiment(object):
         #print "*",cmt
         worklist.comment(cmt)
 
-        if mix[0]:
+        if mix[0] and not src.isMixed():
             src.mix(tipMask)
         src.aspirate(tipMask,volume)
         dest.dispense(tipMask,volume,src)
