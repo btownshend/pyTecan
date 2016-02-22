@@ -66,7 +66,7 @@ class JobQueue(object):
 
         # Remove any shake jobs that are unneeded
         for id,j in self.jobs.items():
-            if j['type']=='shake' and len(j['prereqs'])==0 and j['sample'].isMixed and not Experiment.shakerIsActive():
+            if j['type']=='shake' and len(j['prereqs'])==0 and j['sample'].isMixed() and not Experiment.shakerIsActive():
                 #print "Removing unneeded shake job ",id
                 self.removeJob(id)
 
@@ -107,7 +107,7 @@ class JobQueue(object):
         if self.debug:
             print "execJob(",id,"): ",
         if job['type']=='shake':
-            if job['sample'].isMixed:
+            if job['sample'].isMixed():
                 if self.debug:
                     print "no need to shake ",job['sample'].plate," because ",job['sample'].name," is already mixed.",
             elif job['sample'].plate.maxspeeds is None:

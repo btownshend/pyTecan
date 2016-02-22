@@ -156,7 +156,10 @@ class Sample(object):
         self.emptyLC=self.bottomLC
         self.history=""
         __allsamples.append(self)
-        self.isMixed=True
+        if hasBeads:
+            self.lastMixed=None
+        else:
+            self.lastMixed=clock.elapsed()
         self.initHasBeads=hasBeads
         self.hasBeads=hasBeads		# Setting this to true overrides the manual conditioning
         self.extraVol=extraVol			# Extra volume to provide
@@ -166,6 +169,15 @@ class Sample(object):
         else:
             self.lastevapupdate=clock.elapsed()
 
+    def isMixed(self):
+        'Check if sample is currently mixed'
+        if self.lastMixed is None:
+            return False
+        elif not self.hasBeads:
+            return True
+        else:
+            return clock.elapsed()-self.lastMixed < BEADSETTLINGTIME
+        
     def sampleWellPosition(self):
         'Convert a sample well number to a well position as used by Gemini worklist'
         if self.well is None:
@@ -193,7 +205,7 @@ class Sample(object):
         __allsamples=[]		# Clear list of samples
         # for s in __allsamples:
         #     s.history=""
-        #     s.isMixed=True
+        #     s.lastMixed=None
         #     s.hasBeads=s.initHasBeads
         #     if s.volume==0:
         #         s.conc=None
@@ -396,11 +408,13 @@ class Sample(object):
                 self.conc=Concentration(c1.stock/c1.final,1.0,'x')  # Since there are multiple ingredients express concentration as x
 
          # Set to not mixed after second ingredient added
-        self.isMixed=self.volume==0
+        if self.volume>0:
+            self.lastMixed=None
+
         if src.hasBeads and src.plate.curloc!="Magnet":
             #print "Set %s to have beads since %s does\n"%(self.name,src.name)
             self.hasBeads=True
-            self.isMixed=False
+
         self.volume=self.volume+volume
         #self.addhistory("%06x %s"%(self.getHash(w)&0xffffff,src.name),volume,tipMask)
         self.addhistory(src.name,volume,tipMask)
@@ -454,7 +468,7 @@ class Sample(object):
         'Mark all on given plate as mixed'
         for s in __allsamples:
             if plate==s.plate.name and s.volume>0:
-                s.isMixed=True
+                s.lastMixed=clock.elapsed()
 
     def addingredients(self,src,vol):
         'Update ingredients by adding ingredients from src'
@@ -531,7 +545,7 @@ class Sample(object):
 
             self.volume-=MIXLOSS
             self.addhistory(mstr,-MIXLOSS,tipMask)
-            self.isMixed=True
+            self.lastMixed=clock.elapsed()
             return True
 
     def __str__(self):

@@ -157,7 +157,7 @@ class Experiment(object):
             #print "*",cmt
             worklist.comment(cmt)
 
-            if mix[0] and not src.isMixed:
+            if mix[0] and not src.isMixed():
                 src.mix(tipMask)
             src.aspirate(tipMask,sum(volumes),True)
             for i in range(len(dests)):
@@ -187,10 +187,10 @@ class Experiment(object):
 
         cmt="Add %.1f ul of %s to %s"%(volume, src.name, dest.name)
         ditivolume=volume+src.inliquidLC.singletag
-        if mix[0] and not src.isMixed:
+        if mix[0] and not src.isMixed():
             cmt=cmt+" with src mix"
             ditivolume=max(ditivolume,src.volume)
-        if mix[1] and dest.volume>0 and not src.isMixed:
+        if mix[1] and dest.volume>0 and not src.isMixed():
             cmt=cmt+" with dest mix"
             ditivolume=max(ditivolume,volume+dest.volume)
             #            print "Mix volume=%.1f ul"%(ditivolume)
@@ -221,7 +221,7 @@ class Experiment(object):
         cmt="Mix %s"%(src.name)
         tipMask=self.cleantip()
         worklist.comment(cmt)
-        src.isMixed=False	# Force a mix
+        src.lastMixed=None	# Force a mix
         src.mix(tipMask,False,nmix=nmix)
 
     def dispose(self, volume, src,  mix=False, getDITI=True, dropDITI=True):
@@ -241,7 +241,7 @@ class Experiment(object):
 
         cmt="Remove and dispose of %.1f ul from %s"%(volume, src.name)
         ditivolume=volume+src.inliquidLC.singletag
-        if mix and not src.isMixed:
+        if mix and not src.isMixed():
             cmt=cmt+" with src mix"
             ditivolume=max(ditivolume,src.volume)
         if self.useDiTis:
@@ -253,7 +253,7 @@ class Experiment(object):
         #print "*",cmt
         worklist.comment(cmt)
 
-        if mix and not src.isMixed:
+        if mix and not src.isMixed():
             src.mix(tipMask)
         src.aspirate(tipMask,volume)
 
@@ -425,7 +425,7 @@ class Experiment(object):
         if speed<minspeed:
             print "WARNING: %s plate contains unmixed wells with as little as %.2f ul, which may not be mixed at %d RPM: "%(plate.name, minvol, speed),
             for x in samps:
-                if x.isMixed:
+                if x.isMixed():
                     continue
                 tmp=plate.getmixspeeds(x.volume,x.volume)
                 if speed<tmp[0]:

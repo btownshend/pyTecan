@@ -200,7 +200,7 @@ class TRP(object):
             else:
                 print "diluteInPlace: cannot specify both dil and finalvol"
                 assert(False)
-        #print "after dilute, tgt[0]=",str(tgt[0]),",mixed=",tgt[0].isMixed
+        #print "after dilute, tgt[0]=",str(tgt[0]),",mixed=",tgt[0].isMixed()
         return tgt   #  The name of the samples are unchanged -- the predilution names
 
     ########################
@@ -772,7 +772,7 @@ class TRP(object):
             if i<len(src)-3 and tgt[i].well+1==tgt[i+1].well and tgt[i].well+2==tgt[i+2].well and tgt[i].well+3==tgt[i+3].well and tgt[i].well%4==0 and self.e.cleanTips!=15:
                 #print "Aligning tips"
                 self.e.sanitize()
-            self.e.transfer(srcvol[i],src[i],tgt[i],(not src[i].isMixed,pipMix))
+            self.e.transfer(srcvol[i],src[i],tgt[i],(not src[i].isMixed(),pipMix))
             if tgt[i].conc != None:
                 tgt[i].conc.final=None	# Final conc are meaningless now
             
