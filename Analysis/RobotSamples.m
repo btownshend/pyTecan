@@ -266,13 +266,13 @@ classdef RobotSamples < handle
       if obj.loop1len.isKey(template) && obj.loop2len.isKey(template)
         loop1len=obj.loop1len(template);
         loop2len=obj.loop2len(template);
-        if strcmp(primer,'MX')
+        if strncmp(primer,'MX',2)
           len=17+loop2len+29;
-        elseif strcmp(primer,'WX')
+        elseif strncmp(primer,'WX',2)
           len=11+6+loop1len+6+17+loop2len+29;
-        elseif strcmp(primer,'BX')
+        elseif strncmp(primer,'BX',2)
           len=21+6+loop1len+6+17+loop2len+29;
-        elseif strcmp(primer,'T7X')
+        elseif strncmp(primer,'T7X',3)
           len=24+11+6+loop1len+6+17+loop2len+29;
         else
           fprintf('Not implemented: length of sequence with %s primers\n', primer);
