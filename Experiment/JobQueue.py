@@ -113,6 +113,9 @@ class JobQueue(object):
             elif job['sample'].plate.maxspeeds is None:
                 if self.debug:
                     print "Not shaking ",job['sample'].plate," because it is not compatible with shaker.",
+            elif job['sample'].hasBeads:
+                if self.debug:
+                    print "Not shaking ",job['sample'].name," because it has beads"
             else:
                 if self.debug:
                     print "shaking ",job['sample'].plate," because ",job['sample'].name," is not mixed.",
@@ -120,7 +123,7 @@ class JobQueue(object):
         elif  job['type']=='transfer':
             if self.debug:
                 print " transfer(",job['volume'],", ",job['src'].name,",",job['dest'].name,")",
-            e.transfer(job['volume'],job['src'],job['dest'])
+            e.transfer(job['volume'],job['src'],job['dest'],(job['src'].hasBeads,False))
         elif  job['type']=='multitransfer':
             if self.debug:
                 print "multitransfer(",job['volume'],", ",job['src'].name,",".join([x.name for x in job['dest']]),")",
