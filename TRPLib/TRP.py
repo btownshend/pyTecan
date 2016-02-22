@@ -160,9 +160,8 @@ class TRP(object):
         if dilutant is None:
             dilutant=decklayout.WATER
         self.e.multitransfer([vol[i]*(dil[i]-1) for i in range(len(vol))],dilutant,tgt,(False,False))
+        self.e.shakeSamples(src,returnPlate=True)
         for i in range(len(src)):
-            if not src[i].isMixed and src[i].plate.maxspeeds is not None:
-                self.e.shake(src[i].plate,returnPlate=True)
             self.e.transfer(vol[i],src[i],tgt[i],mix)
             tgt[i].conc=Concentration(1.0/dil[i])
             
