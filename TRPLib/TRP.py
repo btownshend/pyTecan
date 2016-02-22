@@ -174,8 +174,6 @@ class TRP(object):
         
         if dilutant is None:
             dilutant=decklayout.WATER
-        if not src[0].isMixed:
-            self.e.shake(src[0].plate,returnPlate=True)
         self.e.multitransfer([vol*(dil-1) for i in range(wells)],dilutant,tgt)
         self.e.multitransfer([vol for i in range(wells)],src[0],tgt)
         return tgt
