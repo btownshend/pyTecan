@@ -309,7 +309,7 @@ class Sample(object):
             print "WARNING: Inaccurate for < 2ul:  attempting to aspirate %.1f ul from %s"%(volume,self.name)
         if volume>self.volume and self.volume>0:
             print "ERROR:Attempt to aspirate %.1f ul from %s that contains only %.1f ul"%(volume, self.name, self.volume)
-        if not self.isMixed:
+        if not self.isMixed() and self.plate.curloc!="Magnet":
             print "WARNING: Aspirate %.1f ul from unmixed sample %s. "%(volume,self.name)
 
         if self.well is None:
