@@ -444,9 +444,6 @@ class TRP(object):
                 tgt.append(Sample("%s.SN"%src[i].name,plate))
         [src,tgt]=listify([src,tgt])
 
-        if not src[0].isMixed:
-            self.e.shake(src[0].plate,returnPlate=False)
-
         self.e.moveplate(src[0].plate,"Magnet")	# Move to magnet
         self.sepWait(src,sepTime)
 
