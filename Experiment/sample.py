@@ -492,9 +492,11 @@ class Sample(object):
 
         # Mix, return true if actually did a mix, false otherwise
     def mix(self,tipMask,preaspirateAir=False,nmix=4):
-        if self.isMixed and not self.hasBeads:
-            #print "Sample %s is already mixed"%self.name
+        if self.isMixed():
+            print "Sample %s is already mixed"%self.name
             return False
+        if not self.hasBeads:
+            print "Warning: Pippette mixing %s, which does not have beads -- use shaker?"%self.name
         blowvol=20
         mstr=""
         extraspace=blowvol+0.1
