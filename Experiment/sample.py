@@ -464,8 +464,8 @@ class Sample(object):
                     s.history=msg
 
     @staticmethod
-    def mixall(plate):
-        'Mark all on given plate as mixed'
+    def shaken(plate):
+        'Called after shaking to mark all samples (except those with beads) as mixed'
         for s in __allsamples:
             if plate==s.plate.name and s.volume>0:
                 s.lastMixed=clock.elapsed()

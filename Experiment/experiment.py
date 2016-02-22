@@ -451,7 +451,7 @@ class Experiment(object):
         worklist.pyrun("BioShake\\bioexec.py setShakeAcceleration%d"%accel)
         worklist.pyrun("BioShake\\bioexec.py shakeOn")
         self.starttimer()
-        Sample.mixall(plate.name)
+        Sample.shaken(plate.name)
         Sample.addallhistory("(S%d@%.0f)"%(dur,speed),onlyplate=plate.name)
         self.waittimer(dur)
         worklist.pyrun("BioShake\\bioexec.py shakeOff")
