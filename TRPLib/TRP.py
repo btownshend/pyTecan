@@ -90,9 +90,6 @@ def diluteName(name,dilution):
 class TRP(object):
     def __init__(self):
         'Create a new TRP run'
-        self.e=Experiment()
-        self.e.setreagenttemp(6.0)
-        self.e.sanitize(3,50)    # Heavy sanitize
             
     def reset(self):
         'Reset this experiment so we can generate it again after adjusting the reagent initial volumes and total time'
@@ -837,6 +834,11 @@ class TRP(object):
         decklayout.WATERLOC.dewpoint=args.dewpoint
         decklayout.SSDDILLOC.dewpoint=args.dewpoint
         decklayout.QPCRPLATE.dewpoint=args.dewpoint
+
+        self.e=Experiment()
+        self.e.setreagenttemp(args.dewpoint)
+        self.e.sanitize(3,50)    # Heavy sanitize
+
         self.setup()
         if args.verbose:
             print '------ Preliminary run to set volume -----'
