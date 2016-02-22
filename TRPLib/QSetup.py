@@ -65,8 +65,11 @@ class QSetup(object):
         needDil=needDil/saveDil
         nstages=int(math.ceil(math.log(needDil)/math.log(self.MAXDIL)))
         for s in sv:
-            j0=self.jobq.addShake(sample=s,prereqs=[])
-            prereqs=[j0]
+            if s.hasBeads:
+                prereqs=[]
+            else:
+                j0=self.jobq.addShake(sample=s,prereqs=[])
+                prereqs=[j0]
             intermed=s
 
             for i in range(nstages):
@@ -82,8 +85,11 @@ class QSetup(object):
                 prereqs.append(j1)
                 j2=self.jobq.addTransfer(volume=vol/dil,src=intermed,dest=dest,prereqs=prereqs)
                 #print "Dilution of %s was %.2f instead of %.2f (error=%.0f%%)"%(dest.name,(dil/(1+dil))/(1/dil),dil,((dil/(1+dil))/(1/dil)/dil-1)*100)
-                j3=self.jobq.addShake(sample=dest,prereqs=[j2])
-                prereqs=[j3]
+                if dest.hasBeads:
+                    prereqs=[j2]
+                else:
+                    j3=self.jobq.addShake(sample=dest,prereqs=[j2])
+                    prereqs=[j3]
                 intermed=dest
             self.dilProds=self.dilProds+[intermed]
             self.primers=self.primers+[primers]
