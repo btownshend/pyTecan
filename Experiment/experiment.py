@@ -158,7 +158,7 @@ class Experiment(object):
             worklist.comment(cmt)
 
             if mix[0] and not src.isMixed:
-                src.mix(tipMask,worklist)
+                src.mix(tipMask)
             src.aspirate(tipMask,sum(volumes),True)
             for i in range(len(dests)):
                 if volumes[i]>0.01:
@@ -204,11 +204,11 @@ class Experiment(object):
         worklist.comment(cmt)
 
         if mix[0]:
-            src.mix(tipMask,worklist)
+            src.mix(tipMask)
         src.aspirate(tipMask,volume)
         dest.dispense(tipMask,volume,src)
         if mix[1]:
-            dest.mix(tipMask,worklist,True)
+            dest.mix(tipMask,True)
 
         if self.useDiTis and dropDITI:
             worklist.dropDITI(tipMask&self.DITIMASK,decklayout.WASTE)
@@ -222,7 +222,7 @@ class Experiment(object):
         tipMask=self.cleantip()
         worklist.comment(cmt)
         src.isMixed=False	# Force a mix
-        src.mix(tipMask,worklist,False,nmix=nmix)
+        src.mix(tipMask,False,nmix=nmix)
 
     def dispose(self, volume, src,  mix=False, getDITI=True, dropDITI=True):
         'Dispose of a given volume by aspirating and not dispensing (will go to waste during next wash)'
@@ -254,7 +254,7 @@ class Experiment(object):
         worklist.comment(cmt)
 
         if mix and not src.isMixed:
-            src.mix(tipMask,worklist)
+            src.mix(tipMask)
         src.aspirate(tipMask,volume)
 
         if self.useDiTis and dropDITI:
