@@ -8,7 +8,7 @@ classdef RobotSamples < handle
     sampmap;
     qsamps;
     templates;
-    stages;
+    suffixes;
     stagedilution;
     wellsProcessed;
     loop1len;	% Dict that maps templates names to the length of loop1
@@ -58,7 +58,7 @@ classdef RobotSamples < handle
         obj.opd{i}=ctcalc(obj.opd{i},'thresh',args.thresh,'basecycles',args.basecycles,'doplot',args.doplot,'fulow',args.fulow,'fuhigh',args.fuhigh);
       end
       obj.templates={};
-      obj.stages={};
+      obj.suffixes={};
       obj.wellsProcessed=false;
     end
 
@@ -184,9 +184,9 @@ classdef RobotSamples < handle
           end
           obj.setwell(root,s.well,primer,dilution);
 
-          % Determine templates and stages
+          % Determine templates and suffixes
           % Templates are all the unique names up to the first dot
-          % Stages are all the unique suffixes after templates not including any dilution or QPCR suffixes
+          % Suffixes are all the unique suffixes after templates not including any dilution or QPCR suffixes
           dots=find(root=='.');
           if length(dots)>=1
             template=root(1:dots(1)-1);
@@ -197,7 +197,7 @@ classdef RobotSamples < handle
           end
           %fprintf('%s -> %s & %s\n', root, template, stage);
           obj.templates=union(obj.templates,template,'stable');
-          obj.stages=union(obj.stages,stage,'stable');
+          obj.suffixes=union(obj.suffixes,stage,'stable');
         end        
       end
       obj.wellsProcessed=true;
@@ -209,6 +209,21 @@ classdef RobotSamples < handle
       obj.stagedilution(stage)=dilution;
     end
     
+    function dil=getsuffixdilution(obj,suffix)
+    % Compute dilution for a given suffix by combining the stages (separated by dots)
+    % Look up each stage in obj.stagedilution()
+      stages=strsplit(suffix,'.');
+      dil=1;
+      for i=1:length(stages)
+        if isKey(obj.stagedilution,stages{i})
+          dil=dil*obj.stagedilution(stages{i});
+        else
+          fprintf('Dilution for stage "%s" not specified -- assuming 1.0\n',stages{i});
+          obj.stagedilution(stages{i})=1.0;
+        end
+      end
+    end
+     
     function setlooplengths(obj,template,loop1,loop2)
     % Set loop sizes for use in computing length of qPCR products
       obj.loop1len(template)=loop1;
@@ -395,34 +410,29 @@ classdef RobotSamples < handle
         end
       end
 
-      % Now summarize by template, stage taking into account stage dilutions
-      fprintf('Scaled back to reference reaction:\n');
-      for j=1:length(obj.stages)
-        note='';
-        if ~isKey(obj.stagedilution,obj.stages{j})
-          note='Not specified, assuming 1.0';
-          obj.stagedilution(obj.stages{j})=1.0;
-        end
-        fprintf(' %20.20s: %5.2f %s\n', obj.stages{j}, obj.stagedilution(obj.stages{j}),note);
+      % Force display of any missing stagedilutions errors all at once
+      for j=1:length(obj.suffixes)
+        dil=obj.getsuffixdilution(obj.suffixes{j});
       end
 
 
       sv=[];
       for i=1:length(obj.templates)
         fprintf('%-40.40s ','');
+        fprintf('  Dil ');
         for j=1:length(obj.primers())
           fprintf('%8s ',obj.primers(j));
         end
         fprintf('\n');
-        fprintf('%-40.40s ','');
+        fprintf('%-46.46s ','');
         for j=1:length(obj.primers())
           fprintf('%8d ',obj.getlength(obj.templates{i},obj.primers(j)));
         end
         fprintf('\n');
-        for j=1:length(obj.stages)
-          nm=[obj.templates{i},obj.stages{j}];
+        for j=1:length(obj.suffixes)
+          nm=[obj.templates{i},obj.suffixes{j}];
           if isKey(obj.qsamps,nm)
-            scale=obj.stagedilution(obj.stages{j});
+            scale=obj.getsuffixdilution(obj.suffixes{j});
             concs=obj.qsamps(nm).conc*scale;
             concsnm=nan*concs;	% Conc in nM
             for k=1:length(obj.primers())
@@ -430,9 +440,9 @@ classdef RobotSamples < handle
               concsnm(k)=concs(k)/1000/mw*1e9;
             end
             if all(isfinite(concsnm)==isfinite(concs))
-              fprintf('%-40.40s %s nM\n',nm,sprintf('%8.3f ',concs));
+              fprintf('%-40.40s %5.1f %s nM\n',nm,scale,sprintf('%8.3f ',concs));
             else
-              fprintf('%-40.40s %s ng/ul\n',nm,sprintf('%8.3f ',concs));
+              fprintf('%-40.40s %5.1f %s ng/ul\n',nm,scale,sprintf('%8.3f ',concs));
             end
             sv(i,j,:)=concs;
           end
