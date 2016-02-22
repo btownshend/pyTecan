@@ -408,7 +408,7 @@ class Experiment(object):
         # Move the plate to the shaker, run for the given time, and bring plate back
         samps=Sample.getAllOnPlate(plate)
         maxvol=max([x.volume for x in samps])
-        minvol=min([x.volume for x in samps if not x.isMixed]+[200])
+        minvol=min([x.volume for x in samps if not x.isMixed() and not x.hasBeads]+[200])
         (minspeed,maxspeed)=plate.getmixspeeds(minvol*0.95,maxvol+5)	# Assume volumes could be off
 
         if speed is None:
