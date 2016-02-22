@@ -395,6 +395,12 @@ class Experiment(object):
         if returnHome:
             worklist.romahome()
 
+    def shakeSamples(self,samples,dur=60,speed=None,accel=5,returnPlate=True):
+        "Shake plates containing given samples if they need mixing and don't have beads"
+        for p in set([s.plate for s in samples if not s.isMixed() and not s.hasBeads ]):
+            if p.maxspeeds is not None:
+                self.shake(p,returnPlate=returnPlate)
+
     def shake(self,plate,dur=60,speed=None,accel=5,returnPlate=True):
         if self.ptcrunning and plate==decklayout.SAMPLEPLATE:
             self.waitpgm()

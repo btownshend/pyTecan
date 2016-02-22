@@ -219,9 +219,7 @@ class TRP(object):
                 self.e.transfer(watervol[i],decklayout.WATER,src[i],(False,False))
         for i in range(len(src)):
             self.e.transfer(mastervol[i],master[i],src[i],(False,src[i].hasBeads))
-        for p in set([s.plate for s in src]):
-            if p.maxspeeds is not None:
-                self.e.shake(p,returnPlate=returnPlate)
+        self.e.shakeSamples(src,returnPlate=returnPlate)
 
     ########################
     # T7 - Transcription
@@ -253,9 +251,7 @@ class TRP(object):
             self.e.multitransfer([tv for tv in theovols if tv>0.01],reagents.getsample("Theo"),[tgt[i] for i in range(len(theovols)) if theovols[i]>0],(False,False),ignoreContents=True)
         for i in range(len(src)):
             self.e.transfer(sourcevols[i],src[i],tgt[i],(True,False))
-        for p in set([t.plate for t in tgt]):
-            if p.maxspeeds is not None:
-                self.e.shake(p,returnPlate=True)
+        self.e.shakeSamples(tgt,returnPlate=True)
         for t in tgt:
             t.ingredients['BIND']=1e-20*sum(t.ingredients.values())
         return tgt
@@ -284,9 +280,7 @@ class TRP(object):
             finalvol=tgt[i].volume+stopvol
             self.e.transfer(finalvol-tgt[i].volume,sstopmaster[i],tgt[i],(False,False))
             
-        for p in set([t.plate for t in tgt]):
-            if p.maxspeeds is not None:
-                self.e.shake(p,returnPlate=True)
+        self.e.shakeSamples(tgt,returnPlate=True)
 
         return tgt
     
@@ -515,7 +509,7 @@ class TRP(object):
             src[i].conc=Concentration(srcdil[i],1)
             
         self.e.stage('RTPos',[rtmaster],[src[i] for i in range(len(src)) ],[tgt[i] for i in range(len(tgt)) ],[vol[i] for i in range(len(vol))],destMix=False)
-        self.e.shake(tgt[0].plate,returnPlate=True)
+        self.e.shakeSamples(tgt,returnPlate=True)
         return tgt
 
     def runRTPgm(self,dur=20,heatInactivate=False):
@@ -564,10 +558,10 @@ class TRP(object):
             i=lasti
             
         if anneal:
-            self.e.shake(tgt[0].plate,returnPlate=False)
+            self.e.shakeSamples(tgt,returnPlate=False)
             self.e.runpgm("TRPANN",5,False,max(vol),hotlidmode="CONSTANT",hotlidtemp=100)
         self.e.stage('Ligation',[reagents.getsample("MLigase")],[],tgt,vol,destMix=False)
-        self.e.shake(tgt[0].plate,returnPlate=False)
+        self.e.shakeSamples(tgt,returnPlate=False)
         self.runLigPgm(max(vol),ligtemp)
         return tgt
         
@@ -633,7 +627,7 @@ class TRP(object):
             tgt=src
         else:
             self.e.stage('User',enzymes,src,tgt,vol,destMix=False)
-            self.e.shake(tgt[0].plate,returnPlate=False)
+            self.e.shakeSamples(tgt,returnPlate=False)
 
         if hiTemp is None:
             worklist.pyrun('PTC\\ptcsetpgm.py INC TEMP@%.0f,%.0f TEMP@25,30'%(incTemp,incTime*60))
@@ -727,7 +721,7 @@ class TRP(object):
             if any(p=='T7X' for p in primer):
                 self.e.stage('PCRT7X',[reagents.getsample("PCRT7X")],[src[i] for i in range(len(src)) if primer[i]=='T7X'],[tgt[i] for i in range(len(tgt)) if primer[i]=='T7X'],[vol[i] for i in range(len(vol)) if primer[i]=='T7X'],destMix=False)
         pgm="PCR%d"%ncycles
-        self.e.shake(tgt[0].plate,returnPlate=False)
+        self.e.shakeSamples(tgt,returnPlate=False)
         #        worklist.pyrun('PTC\\ptcsetpgm.py %s TEMP@95,120 TEMP@95,30 TEMP@55,30 TEMP@72,25 GOTO@2,%d TEMP@72,180 TEMP@16,2'%(pgm,ncycles-1))
         worklist.pyrun('PTC\\ptcsetpgm.py %s TEMP@95,120 TEMP@95,10 TEMP@57,10 GOTO@2,%d TEMP@72,120 TEMP@25,2'%(pgm,ncycles-1))
         self.e.runpgm(pgm,4.80+1.55*ncycles,False,max(vol),hotlidmode="CONSTANT",hotlidtemp=100)
@@ -764,10 +758,9 @@ class TRP(object):
             print "Could optimize distribution of ",len(watervol)," moves of ",dilutant.name,": vol=[", ["%.1f"%w for w in watervol],"]"
         self.e.multitransfer(watervol,dilutant,tgt,(False,False))
         
+        self.e.shakeSamples(src,returnPlate=True)
         for i in range(len(src)):
             tgt[i].conc=None		# Assume dilutant does not have a concentration of its own
-            if not src[i].isMixed and src[i].plate.name!="Eppendorfs":
-                self.e.shake(src[i].plate,returnPlate=True)
             # Check if we can align the tips here
             if i<len(src)-3 and tgt[i].well+1==tgt[i+1].well and tgt[i].well+2==tgt[i+2].well and tgt[i].well+3==tgt[i+3].well and tgt[i].well%4==0 and self.e.cleanTips!=15:
                 #print "Aligning tips"
@@ -782,6 +775,7 @@ class TRP(object):
         ## QPCR setup
         worklist.comment("runQPCR: primers=%s, source=%s"%([p for p in primers],[s.name for s in src]))
         [src,vol,srcdil,nreplicates]=listify([src,vol,srcdil,nreplicates])
+        self.e.shakeSamples(src,returnPlate=True)
 
         # Build a list of sets to be run
         torun=[]
@@ -817,8 +811,6 @@ class TRP(object):
             p=a[2]
             v=a[3]/dil[p]
             t.conc=None		# Concentration of master mix is irrelevant now
-            if not s.isMixed:
-                self.e.shake(s.plate,returnPlate=True)
             self.e.transfer(v,s,t,(False,False))
             
         return [a[1] for a in torun]
