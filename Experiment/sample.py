@@ -16,6 +16,7 @@ SHOWINGREDIENTS=False
 MINDEPOSITVOLUME=5.0	# Minimum volume to end up with in a well after dispensing
 MINSIDEDISPENSEVOLUME=10.0  # minimum final volume in well to use side-dispensing.  Side-dispensing with small volumes may result in pulling droplet up sidewall
 MIXLOSS=1.5		# Amount of sample lost during mixes
+BEADSETTLINGTIME=120 	# Time (in seconds) after which beads should be remixed before use
 
 _Sample__allsamples = []
 tiphistory={}
