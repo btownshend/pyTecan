@@ -150,7 +150,7 @@ class TRP(object):
     ########################
     # Save samples to another well
     ########################
-    def saveSamps(self,src,vol,dil,tgt=None,dilutant=None,plate=None,mix=(True,True)):
+    def saveSamps(self,src,vol,dil,tgt=None,dilutant=None,plate=None,mix=(True,False)):
         [src,vol,dil]=listify([src,vol,dil])
         if plate is None:
             plate=decklayout.REAGENTPLATE
