@@ -296,7 +296,7 @@ class Sample(object):
                 if self.hasBeads:
                     removed=removed+MIXLOSS
                     print "MIXLOSS"
-            print "Removing %.1f from %.1f leaves %.1f (tgt=%.1f)"%(volume,self.volume,self.volume-removed,tgtVolume)
+            #print "Removing %.1f from %.1f leaves %.1f (tgt=%.1f)"%(volume,self.volume,self.volume-removed,tgtVolume)
             nloop+=1
         return volume
         
