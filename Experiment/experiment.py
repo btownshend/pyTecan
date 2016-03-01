@@ -112,7 +112,7 @@ class Experiment(object):
         self.cleanTips&=~tipMask
         return tipMask
 
-    def multitransfer(self, volumes, src, dests,mix=(True,False),getDITI=True,dropDITI=True,ignoreContents=False):
+    def multitransfer(self, volumes, src, dests,mix=(True,False),getDITI=True,dropDITI=True,ignoreContents=False,extraFrac=0.05):
         'Multi pipette from src to multiple dest.  mix is (src,dest) mixing -- only mix src if needed though'
         #print "multitransfer(",volumes,",",src,",",dests,",",mix,",",getDITI,",",dropDITI,")"
         if self.ptcrunning and (src.plate==decklayout.SAMPLEPLATE or len([1 for d in dests if d.plate==decklayout.SAMPLEPLATE])>0):
@@ -130,10 +130,10 @@ class Experiment(object):
             #         maxval=max([d.volume for d in dests if d.conc != None])
         #print "volumes=",[d.volume for d in dests],", conc=",[str(d.conc) for d in dests],", maxval=",maxval
         if not mix[1] and len(volumes)>1 and ( maxval<.01 or ignoreContents):
-            if sum(volumes)>self.MAXVOLUME:
+            if sum(volumes)*(1+extraFrac)>self.MAXVOLUME:
                 #print "sum(volumes)=%.1f, MAXVOL=%.1f"%(sum(volumes),self.MAXVOLUME)
                 for i in range(1,len(volumes)):
-                    if sum(volumes[0:i+1])>self.MAXVOLUME:
+                    if sum(volumes[0:i+1])*(1+extraFrac)>self.MAXVOLUME:
                         destvol=max([d.volume for d in dests[0:i]])
                         reuseTip=destvol<=0
                         # print "Splitting multi with total volume of %.1f ul into smaller chunks < %.1f ul after %d dispenses "%(sum(volumes),self.MAXVOLUME,i),
@@ -141,14 +141,14 @@ class Experiment(object):
                         #     print "with tip reuse"
                         # else:
                         #     print "without tip reuse"
-                        self.multitransfer(volumes[0:i],src,dests[0:i],mix,getDITI,not reuseTip)
-                        self.multitransfer(volumes[i:],src,dests[i:],(False,mix[1]),not reuseTip,dropDITI)
+                        self.multitransfer(volumes[0:i],src,dests[0:i],mix,getDITI,not reuseTip,extraFrac=extraFrac)
+                        self.multitransfer(volumes[i:],src,dests[i:],(False,mix[1]),not reuseTip,dropDITI,extraFrac=extraFrac)
                         return
 
             if self.useDiTis:
                 tipMask=4
                 if  getDITI:
-                    ditivol=sum(volumes)+src.inliquidLC.multicond+src.inliquidLC.multiexcess
+                    ditivol=sum(volumes)*(1+extraFrac)+src.inliquidLC.multicond+src.inliquidLC.multiexcess
                     worklist.getDITI(tipMask&self.DITIMASK,min(self.MAXVOLUME,ditivol),True,True)
             else:
                 tipMask=self.cleantip()
@@ -159,7 +159,7 @@ class Experiment(object):
 
             if mix[0] and not src.isMixed():
                 src.mix(tipMask)
-            src.aspirate(tipMask,sum(volumes),True)
+            src.aspirate(tipMask,sum(volumesf)*(1+extraFrac),True)	# Aspirate extra
             for i in range(len(dests)):
                 if volumes[i]>0.01:
                     dests[i].dispense(tipMask,volumes[i],src)
