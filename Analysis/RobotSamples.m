@@ -91,7 +91,7 @@ classdef RobotSamples < handle
     
     function setupQPCR(obj,varargin)
     % Scan sample data to setup qPCR 
-      defaults=struct('refname','QPCRREF','refconc',50,'refstrands',2,'qpcrdil',2.5,'minct',7,'processWells',false);
+      defaults=struct('refname','QPCRREF','refconc',50,'refstrands',2,'qpcrdil',2.5,'minct',7,'processWells',false,'units','pM');
       args=processargs(defaults,varargin);
 
       ctgrid=obj.opd{1}.ctgrid;
@@ -99,14 +99,14 @@ classdef RobotSamples < handle
         ctgrid=[ctgrid,obj.opd{i}.ctgrid];
       end
       obj.q=QPCR(ctgrid,'minct',args.minct);
-      obj.addQPCRRef(args.refname);
+      obj.addQPCRRef(args.refname,'units',args.units,'refconc',args.refconc,'refstrands',args.refstrands,'qpcrdil',args.qpcrdil);
       if args.processWells
         obj.processWells;
       end
     end
     
     function addQPCRRef(obj,refname,varargin)
-      defaults=struct('refconc',50,'refstrands',2,'qpcrdil',2.5);
+      defaults=struct('refconc',50,'refstrands',2,'qpcrdil',2.5,'units','pM');
       args=processargs(defaults,varargin);
 
       ss=getrelative(obj.samps,refname);
@@ -146,13 +146,13 @@ classdef RobotSamples < handle
         fprintf('Added reference %s: ',p);
         for j=1:length(wells)
           if j<=length(ss)
-            fprintf(' %s[%s]@%.3fpM ',ss(j).name,wells{j},concs(j));
+            fprintf(' %s[%s]@%.3f %s ',ss(j).name,wells{j},concs(j),args.units);
           else
-            fprintf(' [%s]@%.3fpM ',wells{j},concs(j));
+            fprintf(' [%s]@%.3f %s ',wells{j},concs(j),args.units);
           end
         end
         fprintf('\n');
-        obj.q.addref(p,wells,concs,'units','pM','strands',args.refstrands);
+        obj.q.addref(p,wells,concs,'units',args.units,'strands',args.refstrands);
       end
     end
 
