@@ -159,7 +159,7 @@ class Experiment(object):
 
             if mix[0] and not src.isMixed():
                 src.mix(tipMask)
-            src.aspirate(tipMask,sum(volumesf)*(1+extraFrac),True)	# Aspirate extra
+            src.aspirate(tipMask,sum(volumes)*(1+extraFrac),True)	# Aspirate extra
             for i in range(len(dests)):
                 if volumes[i]>0.01:
                     dests[i].dispense(tipMask,volumes[i],src)
