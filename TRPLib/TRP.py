@@ -505,10 +505,10 @@ class TRP(object):
 
     def runRTPgm(self,dur=20,heatInactivate=False):
         if heatInactivate:
-            hidur=15
+            hidur=2
             pgm="RT-%d"%dur
-            worklist.pyrun('PTC\\ptcsetpgm.py %s TEMP@37,%d TEMP@95,%d TEMP@25,2'%(pgm,dur*60,hidur*60))
-            self.e.runpgm(pgm,dur+hidur,False,100)		# Volume doesn't matter since it's just an incubation, use 100ul
+            worklist.pyrun('PTC\\ptcsetpgm.py %s TEMP@37,%d TEMP@95,%d TEMP@25,2 RATE 0.5'%(pgm,dur*60,hidur*60))
+            self.e.runpgm(pgm,dur+hidur+2.5,False,100)		# Volume doesn't matter since it's just an incubation, use 100ul
         else:
             if dur<100:
                 pgm="TRP37-%d"%dur
