@@ -434,7 +434,7 @@ class Experiment(object):
         if speed<minspeed:
             print "WARNING: %s plate contains unmixed wells with as little as %.2f ul, which may not be mixed at %d RPM: "%(plate.name, minvol, speed),
             for x in samps:
-                if x.isMixed():
+                if x.isMixed() or x.hasBeads:
                     continue
                 tmp=plate.getmixspeeds(x.volume,x.volume)
                 if speed<tmp[0]:
