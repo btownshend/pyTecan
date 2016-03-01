@@ -372,7 +372,10 @@ classdef RobotSamples < handle
       end
     end
     
-    function printconcs(obj)
+    function printconcs(obj,varargin)
+      defaults=struct('refprimer','T7X');
+      args=processargs(defaults,varargin);
+
       keys=obj.qsamps.keys;
       fprintf('Primers:                                         ');
       qkeys=obj.q.refs.keys;
@@ -420,13 +423,33 @@ classdef RobotSamples < handle
       for i=1:length(obj.templates)
         fprintf('%-40.40s ','');
         fprintf('  Dil ');
+        ref=[];
         for j=1:length(obj.primers())
           fprintf('%8s ',obj.primers(j));
+          if strcmp(obj.primers(j),args.refprimer)
+            ref=j;
+          end
+        end
+        if ~isempty(ref)
+          fprintf('%s',blanks(7));
+          for j=1:length(obj.primers())
+            if j~=ref
+              fprintf('%6s ',obj.primers(j));
+            end
+          end
         end
         fprintf('\n');
         fprintf('%-46.46s ','');
         for j=1:length(obj.primers())
           fprintf('%8d ',obj.getlength(obj.templates{i},obj.primers(j)));
+        end
+        if ~isempty(ref)
+          fprintf('%s',blanks(7));
+          for j=1:length(obj.primers())
+            if j~=ref
+              fprintf('%6s ',['/',obj.primers(ref)]);
+            end
+          end
         end
         fprintf('\n');
         for j=1:length(obj.suffixes)
@@ -440,11 +463,16 @@ classdef RobotSamples < handle
               concsnm(k)=concs(k)/1000/mw*1e9;
             end
             if all(isfinite(concsnm)==isfinite(concs))
-              fprintf('%-40.40s %5.1f %s nM\n',nm,scale,sprintf('%8.3f ',concs));
+              fprintf('%-40.40s %5.1f %s nM    ',nm,scale,sprintf('%8.3f ',concsnm));
+              sv(i,j,:)=concsnm;
             else
-              fprintf('%-40.40s %5.1f %s ng/ul\n',nm,scale,sprintf('%8.3f ',concs));
+              fprintf('%-40.40s %5.1f %s ng/ul ',nm,scale,sprintf('%8.3f ',concs));
+              sv(i,j,:)=concs;
             end
-            sv(i,j,:)=concs;
+            if ~isempty(ref)
+              fprintf('%6.2f ',sv(i,j,[1:ref-1,ref+1:end])./sv(i,j,ref));
+            end
+            fprintf('\n');
           end
         end
         fprintf('\n');
