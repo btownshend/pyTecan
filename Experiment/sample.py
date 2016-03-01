@@ -462,11 +462,13 @@ class Sample(object):
                     s.history=msg
 
     @staticmethod
-    def shaken(plate):
+    def shaken(plate,speed):
         'Called after shaking to mark all samples (except those with beads) as mixed'
         for s in __allsamples:
             if plate==s.plate.name and s.volume>0 and not s.hasBeads:
-                s.lastMixed=clock.elapsed()
+                [minx,maxx]=s.plate.getmixspeeds(s.volume,s.volume)
+                if speed>minx:
+                    s.lastMixed=clock.elapsed()
 
     def addingredients(self,src,vol):
         'Update ingredients by adding ingredients from src'
