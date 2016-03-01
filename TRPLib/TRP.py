@@ -70,7 +70,7 @@ def diluteName(name,dilution):
         
     if components[-1][0]=='D':
         olddilstr=components[-1][1:]
-        curdil=float(olddilstr.replace("_","."))
+        curdil=float(olddilstr.replace("_",".").replace('#',''))
         if curdil==0:
             curdil=1
         else:
