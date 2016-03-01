@@ -295,8 +295,6 @@ classdef RobotSamples < handle
         qs.wells{end+1}='';
         obj.qsamps(keys{i})=qs;
       end
-      
-      obj.processWells;	% Re-process the wells
     end
     
     function [w,indices]=wellfind(obj,plate,regex)
