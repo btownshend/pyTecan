@@ -17,7 +17,7 @@ classdef RobotSamples < handle
   
   methods
     function obj=RobotSamples(sampfilename,opdfilename,varargin)
-      defaults=struct('thresh',[],'doplot',true,'basecycles',2:8,'fulow',[],'fuhigh',[]);
+      defaults=struct('thresh',[],'doplot',true,'basecycles',2:8,'fulow',[],'fuhigh',[],'refconc',10);
       args=processargs(defaults,varargin);
       if ~iscell(sampfilename)
         sampfilename={sampfilename};
@@ -448,6 +448,7 @@ classdef RobotSamples < handle
               fprintf('%6s ',['/',obj.primers(ref)]);
             end
           end
+          fprintf('* %.1f nM',obj.options.refconc);
         end
         fprintf('\n');
         for j=1:length(obj.suffixes)
