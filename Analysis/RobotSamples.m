@@ -274,6 +274,8 @@ classdef RobotSamples < handle
           len=21+6+loop1len+6+17+loop2len+29;
         elseif strncmp(primer,'T7X',3)
           len=24+11+6+loop1len+6+17+loop2len+29;
+        elseif strcmp(primer,'REF')
+          len=90;
         else
           fprintf('Not implemented: length of sequence with %s primers\n', primer);
         end
@@ -371,7 +373,7 @@ classdef RobotSamples < handle
     end
     
     function printconcs(obj,varargin)
-      defaults=struct('refprimer','T7X');
+      defaults=struct('refprimer','REF');
       args=processargs(defaults,varargin);
 
       keys=obj.qsamps.keys;
