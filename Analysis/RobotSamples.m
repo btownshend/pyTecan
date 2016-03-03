@@ -13,6 +13,7 @@ classdef RobotSamples < handle
     wellsProcessed;
     loop1len;	% Dict that maps templates names to the length of loop1
     loop2len;
+    sv;	% Saved data
   end
   
   methods
@@ -419,7 +420,7 @@ classdef RobotSamples < handle
       end
 
 
-      sv=[];
+      obj.sv=[];
       for i=1:length(obj.templates)
         fprintf('%-40.40s ','');
         fprintf('  Dil ');
@@ -465,13 +466,14 @@ classdef RobotSamples < handle
             end
             if all(isfinite(concsnm)==isfinite(concs))
               fprintf('%-40.40s %5.1f %s nM    ',nm,scale,sprintf('%8.3f ',concsnm));
-              sv(i,j,:)=concsnm;
+              obj.sv(i,j,:)=concsnm;
             else
               fprintf('%-40.40s %5.1f %s ng/ul ',nm,scale,sprintf('%8.3f ',concs));
-              sv(i,j,:)=concs;
+              obj.sv(i,j,:)=concs;
             end
             if ~isempty(ref)
-              fprintf('%6.2f ',sv(i,j,[1:ref-1,ref+1:end])./sv(i,j,ref));
+              obj.sv(i,j,:)=obj.sv(i,j,:)/obj.sv(i,j,ref)*obj.options.refconc;
+              fprintf('%6.1f ',obj.sv(i,j,[1:ref-1,ref+1:end]));
             end
             fprintf('\n');
           end
