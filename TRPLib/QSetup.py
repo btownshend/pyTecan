@@ -64,7 +64,8 @@ class QSetup(object):
 
         needDil=needDil/saveDil
         nstages=int(math.ceil(math.log(needDil)/math.log(self.MAXDIL)))
-        for s in sv:
+        for svi in range(len(sv)):
+            s=sv[svi]
             if s.hasBeads:
                 prereqs=[]
             else:
@@ -79,7 +80,11 @@ class QSetup(object):
                     vol=self.MAXDILVOL
                 else:
                     vol=min(self.MAXDILVOL,max(self.MINDILVOL,dil*self.TGTINVOL))
-                dest=Sample(diluteName(intermed.name,dil),decklayout.DILPLATE)
+                if not save and i==0 and names is not None:
+                    # Need to replace the name in this condition
+                    dest=Sample(diluteName(names[svi],dil),decklayout.DILPLATE)
+                else:
+                    dest=Sample(diluteName(intermed.name,dil),decklayout.DILPLATE)
                 #print "dest=",dest
                 j1=self.jobq.addMultiTransfer(volume=vol*(dil-1)/dil,src=self.dilutant,dest=dest,prereqs=[])
                 prereqs.append(j1)
