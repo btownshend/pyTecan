@@ -221,7 +221,7 @@ class TRP(object):
     ########################
     # T7 - Transcription
     ########################
-    def runT7Setup(self,theo,src,vol,srcdil,tgt=None):
+    def runT7Setup(self,theo,src,vol,srcdil,tgt=None,rlist=["MT7"]):
         [theo,src,tgt,srcdil]=listify([theo,src,tgt,srcdil])
         for i in range(len(src)):
             if tgt[i] is None:
@@ -233,17 +233,19 @@ class TRP(object):
 
         worklist.comment("runT7: source=%s"%[str(s) for s in src])
 
-        MT7vol=vol*1.0/reagents.getsample("MT7").conc.dilutionneeded()
+        rvols=[reagents.getsample(x).conc.volneeded(vol) for x in rlist]
+        rtotal=sum(rvols)
         sourcevols=[vol*1.0/s for s in srcdil]
         if any(theo):
             theovols=[(vol*1.0/reagents.getsample("Theo").conc.dilutionneeded() if t else 0) for t in theo]
-            watervols=[vol-theovols[i]-sourcevols[i]-MT7vol for i in range(len(src))]
+            watervols=[vol-theovols[i]-sourcevols[i]-rtotal for i in range(len(src))]
         else:
-            watervols=[vol-sourcevols[i]-MT7vol for i in range(len(src))]
+            watervols=[vol-sourcevols[i]-rtotal for i in range(len(src))]
 
         if sum(watervols)>0.01:
             self.e.multitransfer(watervols,decklayout.WATER,tgt)
-        self.e.multitransfer([MT7vol for s in tgt],reagents.getsample("MT7"),tgt)
+        for ir in range(len(rlist)):
+            self.e.multitransfer([rvols[ir] for s in tgt],reagents.getsample(rlist[ir]),tgt)
         if any(theo):
             self.e.multitransfer([tv for tv in theovols if tv>0.01],reagents.getsample("Theo"),[tgt[i] for i in range(len(theovols)) if theovols[i]>0],ignoreContents=True)
         for i in range(len(src)):
