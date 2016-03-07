@@ -242,6 +242,9 @@ class TRP(object):
         else:
             watervols=[vol-sourcevols[i]-rtotal for i in range(len(src))]
 
+        if any([w<0 for w in watervols]):
+            print "runT7Setup: Negative amount of water required: ",watervols
+            assert False
         if sum(watervols)>0.01:
             self.e.multitransfer(watervols,decklayout.WATER,tgt)
         for ir in range(len(rlist)):
