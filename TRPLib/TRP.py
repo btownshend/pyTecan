@@ -847,6 +847,8 @@ class TRP(object):
         else:
             sys.stdout=open(os.devnull,'w')
         self.pgm()
+        self.reset()
+        self.pgm()
         if args.verbose:
             print '------ Main run -----'
         else:
