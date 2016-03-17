@@ -15,7 +15,7 @@ SHOWTIPHISTORY=False
 SHOWINGREDIENTS=False
 MINDEPOSITVOLUME=5.0	# Minimum volume to end up with in a well after dispensing
 MINSIDEDISPENSEVOLUME=10.0  # minimum final volume in well to use side-dispensing.  Side-dispensing with small volumes may result in pulling droplet up sidewall
-MIXLOSS=1.5		# Amount of sample lost during mixes
+MIXLOSS=0.66		# Amount of sample lost during mixes  (in addition to any prefill volume)
 BEADSETTLINGTIME=120 	# Time (in seconds) after which beads should be remixed before use
 
 _Sample__allsamples = []
@@ -151,7 +151,7 @@ class Sample(object):
             self.inliquidLC=liquidclass.LCWaterInLiquid
 
         self.beadsLC=liquidclass.LCWaterBottomBeads
-        self.mixLC=liquidclass.LCMixSlow
+        self.mixLC=liquidclass.LCMixBottom
         self.airLC=liquidclass.LCAir
         # Same as bottom for now
         self.emptyLC=self.bottomLC
@@ -516,7 +516,12 @@ class Sample(object):
             if preaspirateAir:
                 # Aspirate some air to avoid mixing with excess volume aspirated into pipette from source in previous transfer
                 self.aspirateAir(tipMask,5)
-            if False: # self.volume>=MINLIQUIDDETECTVOLUME:
+            if True:		# Always do this
+                mixprefillvol=5
+                worklist.aspirateNC(tipMask,well,self.airLC,mixprefillvol,self.plate)
+                worklist.mix(tipMask,well,self.mixLC,mixvol,self.plate,nmix)
+                mstr="(MB)"
+            elif False: # self.volume>=MINLIQUIDDETECTVOLUME:
                 worklist.mix(tipMask,well,self.inliquidLC,mixvol,self.plate,nmix)
                 self.history+="(MLD)"
             else:
