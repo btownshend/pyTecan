@@ -508,7 +508,8 @@ class Sample(object):
             mixvol=MAXVOLUME-extraspace
             print "Warning: Mix of %s limited to %.0f ul instead of full volume of %.0ful"%(self.name,mixvol,self.volume)
         well=[self.well if self.well!=None else 2**(tipMask-1)-1 ]
-        if mixvol<self.plate.unusableVolume:
+        mixprefillvol=5
+        if mixvol<self.plate.unusableVolume-mixprefillvol:
             #print "Not enough volume in sample %s to mix"%self.name
             self.history+="(UNMIXED)"
             return False
@@ -517,8 +518,9 @@ class Sample(object):
                 # Aspirate some air to avoid mixing with excess volume aspirated into pipette from source in previous transfer
                 self.aspirateAir(tipMask,5)
             if True:		# Always do this
-                mixprefillvol=5
-                worklist.aspirateNC(tipMask,well,self.airLC,mixprefillvol,self.plate)
+                worklist.aspirateNC(tipMask,well,self.inliquidLC,mixprefillvol,self.plate)
+                self.volume-=mixprefillvol
+                self.addhistory("(PRE)",-mixprefillvol,tipMask)
                 worklist.mix(tipMask,well,self.mixLC,mixvol,self.plate,nmix)
                 mstr="(MB)"
             elif False: # self.volume>=MINLIQUIDDETECTVOLUME:
