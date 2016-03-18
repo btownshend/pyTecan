@@ -37,4 +37,4 @@ def initWellKnownSamples():
 initWellKnownSamples()
 
 ############ Header file containing matching deck layout  #############
-headerfile=os.path.expanduser("~/Dropbox/Synbio/Robot/pyTecan/header.gem")
+headerfile=os.path.join(os.path.dirname(__file__),"../header.gem")

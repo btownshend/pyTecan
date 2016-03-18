@@ -1,5 +1,6 @@
 import sys
-sys.path.append('/Users/bst/Dropbox/SynBio/robot/pyTecan/Experiment')
+import os
+sys.path.append(os.path.join(os.path.dirname(__file__),'../Experiment'))
 print "path=",sys.path
 import sample
 from sample import Sample
