@@ -119,7 +119,7 @@ class TRP(object):
 
         r=[]
         for i in range(len(names)):
-            r.append(reagents.add(names[i],plate=plate,conc=Concentration(stockconc[i],finalconc[i],units)))
+            r.append(reagents.add(names[i],plate=plate,conc=Concentration(stockconc[i],finalconc[i],units),extraVol=30))
         return r
     
     def finish(self):
