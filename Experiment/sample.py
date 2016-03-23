@@ -118,8 +118,9 @@ class Sample(object):
                 print "Attempt to assign sample %s to plate %s, well %s that already contains %s"%(name,str(plate),plate.wellname(well),s.name)
 #                print "Aliasing %s as %s"%(s.name,name)
                 assert False
-        while name in [s.name for s in __allsamples]:
-            name=name+"#"
+        if name in [s.name for s in __allsamples]:
+            while name in [s.name for s in __allsamples]:
+                name=name+"#"
             print "WARNING: renaming sample to %s"%name
         self.name=name
         self.plate=plate
