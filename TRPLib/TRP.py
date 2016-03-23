@@ -664,9 +664,14 @@ class TRP(object):
     def runPCR(self,prefix,src,vol,srcdil,tgt=None,ncycles=20,suffix='S',sepPrimers=True,primerDil=4):
         ## PCR
         [prefix,src,tgt,vol,srcdil,suffix]=listify([prefix,src,tgt,vol,srcdil,suffix])
-        if tgt is None:
-            tgt=[Sample("%s.P%s%s"%(src[i].name,prefix[i],suffix[i]),src[i].plate) for i in range(len(src))]
+        for i in range(len(tgt)):
+            if tgt[i] is None:
+                tgt[i]=Sample("%s.P%s%s"%(src[i].name,prefix[i],suffix[i]),src[i].plate)
 
+        # Adjust source dilution
+        for i in range(len(src)):
+            src[i].conc=Concentration(srcdil[i],1)
+        
         if sepPrimers:
             sampvols=[vol[i]/srcdil[i] for i in range(len(src))]
             mm=reagents.getsample("MPCR")
@@ -706,22 +711,13 @@ class TRP(object):
                 self.e.transfer(sampvols[i],src[i],tgt[i],(False,False))
                 
         else:
-            # Adjust source dilution
-            for i in range(len(src)):
-                src[i].conc=Concentration(srcdil[i],1)
-        
-            primer=prefix[i]+suffix[i]
-            #print "primer=",primer
-            if any(p=='AS' for p in primer):
-                self.e.stage('PCRAS',[reagents.getsample("PCRAS")],[src[i] for i in range(len(src)) if primer[i]=='AS'],[tgt[i] for i in range(len(tgt)) if primer[i]=='AS'],[vol[i] for i in range(len(vol)) if primer[i]=='AS'],destMix=False)
-            if any(p=='BS' for p in primer):
-                self.e.stage('PCRBS',[reagents.getsample("PCRBS")],[src[i] for i in range(len(src)) if primer[i]=='BS'],[tgt[i] for i in range(len(tgt)) if primer[i]=='BS'],[vol[i] for i in range(len(vol)) if primer[i]=='BS'],destMix=False)
-            if any(p=='AX' for p in primer):
-                self.e.stage('PCRAX',[reagents.getsample("PCRAX")],[src[i] for i in range(len(src)) if primer[i]=='AX'],[tgt[i] for i in range(len(tgt)) if primer[i]=='AX'],[vol[i] for i in range(len(vol)) if primer[i]=='AX'],destMix=False)
-            if any(p=='BX' for p in primer):
-                self.e.stage('PCRBX',[reagents.getsample("PCRBX")],[src[i] for i in range(len(src)) if primer[i]=='BX'],[tgt[i] for i in range(len(tgt)) if primer[i]=='BX'],[vol[i] for i in range(len(vol)) if primer[i]=='BX'],destMix=False)
-            if any(p=='T7X' for p in primer):
-                self.e.stage('PCRT7X',[reagents.getsample("PCRT7X")],[src[i] for i in range(len(src)) if primer[i]=='T7X'],[tgt[i] for i in range(len(tgt)) if primer[i]=='T7X'],[vol[i] for i in range(len(vol)) if primer[i]=='T7X'],destMix=False)
+            primer=[prefix[i]+suffix[i] for i in range(len(prefix))]
+            print "primer=",primer
+            for up in set(primer):
+                s="MPCR%s"%up
+                if not reagents.isReagent(s):
+                    reagents.add(name=s,conc=4/3.0,extraVol=30)
+                self.e.stage('PCR%s'%up,[reagents.getsample("MPCR%s"%up)],[src[i] for i in range(len(src)) if primer[i]==up],[tgt[i] for i in range(len(tgt)) if primer[i]==up],[vol[i] for i in range(len(vol)) if primer[i]==up],destMix=False)
         pgm="PCR%d"%ncycles
         self.e.shakeSamples(tgt,returnPlate=False)
         #        worklist.pyrun('PTC\\ptcsetpgm.py %s TEMP@95,120 TEMP@95,30 TEMP@55,30 TEMP@72,25 GOTO@2,%d TEMP@72,180 TEMP@16,2'%(pgm,ncycles-1))
