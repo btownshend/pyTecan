@@ -161,9 +161,11 @@ class TRP(object):
         if tgt is None:
             tgt=[Sample(diluteName(src[i].name,dil[i]),plate) for i in range(len(src))]
 
-        if dilutant is None:
-            dilutant=decklayout.WATER
-        self.e.multitransfer([vol[i]*(dil[i]-1) for i in range(len(vol))],dilutant,tgt,(False,False))
+        if any([d!=1.0 for d in dil]):
+            if dilutant is None:
+                dilutant=decklayout.WATER
+            self.e.multitransfer([vol[i]*(dil[i]-1) for i in range(len(vol))],dilutant,tgt,(False,False))
+
         self.e.shakeSamples(src,returnPlate=True)
         for i in range(len(src)):
             self.e.transfer(vol[i],src[i],tgt[i],mix)
