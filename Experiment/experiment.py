@@ -445,7 +445,7 @@ class Experiment(object):
             for x in samps:
                 if x.isMixed():
                     continue
-                tmp=plate.getmixspeeds(x.volume,x.volume)
+                tmp=plate.getmixspeeds(x.volume*0.95,x.volume+5)
                 if speed<tmp[0]:
                     print "%s[%.1ful, min=%.0f RPM] "%(x.name,x.volume,tmp[0]),
             print
