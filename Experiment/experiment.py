@@ -535,6 +535,8 @@ class Experiment(object):
 
         self.ptcrunning=False
         self.moveplate(decklayout.SAMPLEPLATE,"Home")
+        # Mark all samples on plate as unmixed (due to condensation)
+        Sample.notMixed(decklayout.SAMPLEPLATE.name)
         # Verify plate is in place
         worklist.vector(decklayout.SAMPLEPLATE.vectorName,decklayout.SAMPLEPLATE,worklist.SAFETOEND,False,worklist.DONOTMOVE,worklist.CLOSE)
         worklist.vector(decklayout.SAMPLEPLATE.vectorName,decklayout.SAMPLEPLATE,worklist.ENDTOSAFE,False,worklist.OPEN,worklist.DONOTMOVE)

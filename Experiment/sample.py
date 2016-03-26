@@ -481,6 +481,14 @@ class Sample(object):
                 s.wellMixed=s.wellMixed or speed>=minx
                 s.lastMixed=clock.elapsed()
 
+    @staticmethod
+    def notMixed(plate):
+        'Called after thermocycling to mark all samples as unmixed (since they have condensation)'
+        for s in __allsamples:
+            if plate==s.plate.name and s.volume>0:
+                s.lastMixed=None
+                s.wellMixed=False
+                
     def addingredients(self,src,vol):
         'Update ingredients by adding ingredients from src'
         for k in src.ingredients:
