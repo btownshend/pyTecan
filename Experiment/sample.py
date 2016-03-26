@@ -161,7 +161,7 @@ class Sample(object):
         if hasBeads:
             self.lastMixed=None
         else:
-            self.lastMixed=clock.elapsed()
+            self.lastMixed=clock.elapsed()-20*60		# Assume it was last mixed an 20 min before start of run
         self.wellMixed=True
         self.initHasBeads=hasBeads
         self.hasBeads=hasBeads		# Setting this to true overrides the manual conditioning
