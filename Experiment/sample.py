@@ -162,6 +162,7 @@ class Sample(object):
             self.lastMixed=None
         else:
             self.lastMixed=clock.elapsed()
+        self.wellMixed=True
         self.initHasBeads=hasBeads
         self.hasBeads=hasBeads		# Setting this to true overrides the manual conditioning
         self.extraVol=extraVol			# Extra volume to provide
@@ -315,6 +316,8 @@ class Sample(object):
             print "ERROR:Attempt to aspirate %.1f ul from %s that contains only %.1f ul"%(volume, self.name, self.volume)
         if not self.isMixed() and self.plate.curloc!="Magnet":
                 print "WARNING: Aspirate %.1f ul from unmixed sample %s. "%(volume,self.name)
+        if not self.wellMixed:
+            print "WARNING: Aspirate %.1f ul from poorly mixed sample %s (shake speed was too low). "%(volume,self.name)
                 
         if self.well is None:
             well=[]
@@ -415,7 +418,8 @@ class Sample(object):
          # Set to not mixed after second ingredient added
         if self.volume>0:
             self.lastMixed=None
-
+            self.wellMixed=False
+            
         if src.hasBeads and src.plate.curloc!="Magnet":
             #print "Set %s to have beads since %s does\n"%(self.name,src.name)
             self.hasBeads=True
@@ -474,8 +478,8 @@ class Sample(object):
         for s in __allsamples:
             if plate==s.plate.name and s.volume>0 and not s.hasBeads:
                 [minx,maxx]=s.plate.getmixspeeds(s.volume,s.volume)
-                if speed>minx:
-                    s.lastMixed=clock.elapsed()
+                s.wellMixed=s.wellMixed or speed>=minx
+                s.lastMixed=clock.elapsed()
 
     def addingredients(self,src,vol):
         'Update ingredients by adding ingredients from src'
@@ -562,6 +566,7 @@ class Sample(object):
             self.volume-=MIXLOSS
             self.addhistory(mstr,-MIXLOSS,tipMask)
             self.lastMixed=clock.elapsed()
+            self.wellMixed=True
             return True
 
     def __str__(self):
