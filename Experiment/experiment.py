@@ -26,7 +26,6 @@ class Experiment(object):
         self.cleanTips=0
         # self.sanitize()  # Not needed, TRP does it, also first use of tips will do this
         self.useDiTis=False
-        decklayout.BLEACH.mixLC=liquidclass.LCBleachMix
         self.ptcrunning=False
         self.overrideSanitize=False
         self.pgmStartTime=None

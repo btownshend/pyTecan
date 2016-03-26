@@ -86,7 +86,7 @@ class Sample(object):
                 cnt+=1
         return cnt
 
-    def __init__(self,name,plate,well=None,conc=None,volume=0,hasBeads=False,extraVol=50):
+    def __init__(self,name,plate,well=None,conc=None,volume=0,hasBeads=False,extraVol=50,mixLC=liquidclass.LCMixBottom):
         if well!=None and well!=-1:
             if not isinstance(well,int):
                 well=plate.wellnumber(well)
@@ -152,7 +152,7 @@ class Sample(object):
             self.inliquidLC=liquidclass.LCWaterInLiquid
 
         self.beadsLC=liquidclass.LCWaterBottomBeads
-        self.mixLC=liquidclass.LCMixBottom
+        self.mixLC=mixLC
         self.airLC=liquidclass.LCAir
         # Same as bottom for now
         self.emptyLC=self.bottomLC

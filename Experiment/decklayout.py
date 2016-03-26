@@ -1,6 +1,7 @@
 import os
 from plate import Plate
 from sample import Sample
+from liquidclass import LCBleachMix
 
 ############ Plates and plate locations  #############
 WASHLOC=Plate("Wash",1,2,1,8,False,0)
@@ -32,7 +33,7 @@ def initWellKnownSamples():
     global WATER, SSDDIL, BLEACH
     WATER=Sample("Water",WATERLOC,-1,None,50000)
     SSDDIL=Sample("SSDDil",SSDDILLOC,-1,None,50000)
-    BLEACH=Sample("RNase-Away",BLEACHLOC,-1,None,50000)
+    BLEACH=Sample("RNase-Away",BLEACHLOC,-1,None,50000,mixLC=LCBleachMix)
 
 initWellKnownSamples()
 
