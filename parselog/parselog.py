@@ -346,7 +346,9 @@ while True:
         spcmd=cmd[1:].split(',')
         dev=spcmd[0][1:]
         spcmd=spcmd[1:]
-        if cmd[0]=='>':
+        if len(cmd)<1:
+            print "Empty cmd"
+        elif cmd[0]=='>':
             if dev in send:
                 print "Double cmd to %s: %s AND %s"%(dev,send[dev],str(spcmd))
             send[dev]=[spcmd[0][0:3],spcmd[0][3:]]+spcmd[1:]
