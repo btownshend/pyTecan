@@ -405,6 +405,8 @@ class Experiment(object):
 
     def shakeSamples(self,samples,dur=60,speed=None,accel=5,returnPlate=True):
         "Shake plates if any of the given samples are on that plate and  needs mixing"
+        if self.ptcrunning and any([s.plate==decklayout.SAMPLEPLATE for s in samples]):
+            self.waitpgm()
 
         for p in set([s.plate for s in samples if not s.isMixed()  ]):
             if p.maxspeeds is not None:
