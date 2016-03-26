@@ -159,7 +159,10 @@ class Experiment(object):
             worklist.comment(cmt)
 
             if mix[0] and not src.isMixed():
-                src.mix(tipMask)
+                if src.plate==decklayout.SAMPLEPLATE or src.plate==decklayout.DILPLATE:
+                    self.shakeSamples([src])
+                else:
+                    src.mix(tipMask)
             src.aspirate(tipMask,sum(volumes)*(1+extraFrac),True)	# Aspirate extra
             for i in range(len(dests)):
                 if volumes[i]>0.01:
@@ -174,6 +177,7 @@ class Experiment(object):
     def transfer(self, volume, src, dest, mix=(True,False), getDITI=True, dropDITI=True):
         if self.ptcrunning and (src.plate==decklayout.SAMPLEPLATE or dest.plate==decklayout.SAMPLEPLATE)>0:
             self.waitpgm()
+            
         if volume>self.MAXVOLUME:
             destvol=dest.volume
             reuseTip=destvol<=0
@@ -205,7 +209,10 @@ class Experiment(object):
         worklist.comment(cmt)
 
         if mix[0] and not src.isMixed():
-            src.mix(tipMask)
+            if src.plate==decklayout.SAMPLEPLATE or src.plate==decklayout.DILPLATE:
+                self.shakeSamples([src])
+            else:
+                src.mix(tipMask)
         src.aspirate(tipMask,volume)
         dest.dispense(tipMask,volume,src)
         if mix[1]:
