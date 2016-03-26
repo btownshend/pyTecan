@@ -473,9 +473,9 @@ class Sample(object):
 
     @staticmethod
     def shaken(plate,speed):
-        'Called after shaking to mark all samples (except those with beads) as mixed'
+        'Called after shaking to mark all samples as mixed'
         for s in __allsamples:
-            if plate==s.plate.name and s.volume>0 and not s.hasBeads:
+            if plate==s.plate.name and s.volume>0:
                 [minx,maxx]=s.plate.getmixspeeds(s.volume,s.volume)
                 s.wellMixed=s.wellMixed or speed>=minx
                 s.lastMixed=clock.elapsed()

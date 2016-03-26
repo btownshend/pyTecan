@@ -404,8 +404,9 @@ class Experiment(object):
             worklist.romahome()
 
     def shakeSamples(self,samples,dur=60,speed=None,accel=5,returnPlate=True):
-        "Shake plates containing given samples if they need mixing and don't have beads"
-        for p in set([s.plate for s in samples if not s.isMixed() and not s.hasBeads ]):
+        "Shake plates if any of the given samples are on that plate and  needs mixing"
+
+        for p in set([s.plate for s in samples if not s.isMixed()  ]):
             if p.maxspeeds is not None:
                 self.shake(p,returnPlate=returnPlate)
 
@@ -419,7 +420,7 @@ class Experiment(object):
             print "No need to shake ",plate
             
         maxvol=max([x.volume for x in samps])
-        minvol=min([x.volume for x in samps if not x.isMixed() and not x.hasBeads]+[200])
+        minvol=min([x.volume for x in samps if not x.isMixed() ]+[200])
         (minspeed,maxspeed)=plate.getmixspeeds(minvol*0.95,maxvol+5)	# Assume volumes could be off
 
         if speed is None:
@@ -442,7 +443,7 @@ class Experiment(object):
         if globals.verbose and speed<minspeed:
             print "NOTICE: %s plate contains unmixed wells that may not be mixed at %d RPM: "%(plate.name, speed),
             for x in samps:
-                if x.isMixed() or x.hasBeads:
+                if x.isMixed():
                     continue
                 tmp=plate.getmixspeeds(x.volume,x.volume)
                 if speed<tmp[0]:
