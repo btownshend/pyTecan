@@ -121,7 +121,7 @@ class Sample(object):
         if name in [s.name for s in __allsamples]:
             while name in [s.name for s in __allsamples]:
                 name=name+"#"
-            print "WARNING: renaming sample to %s"%name
+            print "NOTICE: renaming sample to %s"%name
         self.name=name
         self.plate=plate
         if well>=plate.nx*plate.ny:
@@ -314,8 +314,8 @@ class Sample(object):
         if volume>self.volume and self.volume>0:
             print "ERROR:Attempt to aspirate %.1f ul from %s that contains only %.1f ul"%(volume, self.name, self.volume)
         if not self.isMixed() and self.plate.curloc!="Magnet":
-            print "WARNING: Aspirate %.1f ul from unmixed sample %s. "%(volume,self.name)
-
+                print "WARNING: Aspirate %.1f ul from unmixed sample %s. "%(volume,self.name)
+                
         if self.well is None:
             well=[]
             for i in range(4):
@@ -351,8 +351,8 @@ class Sample(object):
         self.volume=self.volume-remove
         if self.volume+.001<self.plate.unusableVolume and self.volume>0:
             # TODO - this should be more visible in output
-            print "Warning: Aspiration of %.1ful from %s brings volume down to %.1ful which is less than its unusable volume of %.1f ul"%(remove,self.name,self.volume,self.plate.unusableVolume)
-
+            print "WARNING: Aspiration of %.1ful from %s brings volume down to %.1ful which is less than its unusable volume of %.1f ul"%(remove,self.name,self.volume,self.plate.unusableVolume)
+            
         self.addhistory("",-remove,tipMask)
         #self.addhistory("[%06x]"%(self.getHash(w)&0xffffff),-remove,tipMask)
 
@@ -371,12 +371,12 @@ class Sample(object):
             return
 
         if self.volume+volume < MINDEPOSITVOLUME:
-            print "Warning: Dispense of %.1ful into %s results in total of %.1ful which is less than minimum deposit volume of %.1f ul"%(volume,self.name,self.volume+volume,MINDEPOSITVOLUME)
+            print "WARNING: Dispense of %.1ful into %s results in total of %.1ful which is less than minimum deposit volume of %.1f ul"%(volume,self.name,self.volume+volume,MINDEPOSITVOLUME)
 
         #well=[self.well if self.well!=None else 2**(tipMask-1)-1 ]
         well=[self.well if self.well!=None else int(math.log(tipMask,2)) ]
         if self.well is None:
-            print "Warning: Dispense with well is None, not sure what right logic is..., using well=%d"%well[0]
+            print "WARNING: Dispense with well is None, not sure what right logic is..., using well=%d"%well[0]
 
         if self.volume+volume > self.plate.maxVolume:
             print "ERROR: Dispense of %.1ful into %s results in total of %.1ful which is more than the maximum volume of %.1f ul"%(volume,self.name,self.volume+volume,self.plate.maxVolume)
@@ -406,7 +406,7 @@ class Sample(object):
             c1=self.conc.dilute((self.volume+volume)/self.volume)
             c2=src.conc.dilute((self.volume+volume)/volume)
             if abs(c1.stock/c1.final-c2.stock/c2.final)>.01:
-                print "Warning: Dispense of %.1ful of %s@%.2fx into %.1ful of %s@%.2fx does not equalize concentrations"%(volume,src.name,src.conc.dilutionneeded(),self.volume,self.name,self.conc.dilutionneeded())
+                print "WARNING: Dispense of %.1ful of %s@%.2fx into %.1ful of %s@%.2fx does not equalize concentrations"%(volume,src.name,src.conc.dilutionneeded(),self.volume,self.name,self.conc.dilutionneeded())
                 #assert abs(c1.stock/c1.final-c2.stock/c2.final)<.01
                 self.conc=None
             else:
@@ -505,7 +505,7 @@ class Sample(object):
             print "Sample %s is already mixed"%self.name
             return False
         if not self.hasBeads:
-            print "Warning: Pippette mixing %s, which does not have beads -- use shaker?"%self.name
+            print "WARNING: Pippette mixing %s, which does not have beads -- use shaker?"%self.name
         blowvol=20
         mstr=""
         extraspace=blowvol+0.1
@@ -514,7 +514,7 @@ class Sample(object):
         mixvol=self.volume		  # -self.plate.unusableVolume;  # Can mix entire volume, if air is aspirated, it will just be dispensed first without making a bubble
         if self.volume>MAXVOLUME-extraspace:
             mixvol=MAXVOLUME-extraspace
-            print "Warning: Mix of %s limited to %.0f ul instead of full volume of %.0ful"%(self.name,mixvol,self.volume)
+            print "WARNING: Mix of %s limited to %.0f ul instead of full volume of %.0ful"%(self.name,mixvol,self.volume)
         well=[self.well if self.well!=None else 2**(tipMask-1)-1 ]
         mixprefillvol=5
         if mixvol<self.plate.unusableVolume-mixprefillvol:

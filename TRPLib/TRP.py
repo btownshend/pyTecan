@@ -112,7 +112,7 @@ class TRP(object):
     def addTemplates(self,names,stockconc,finalconc=None,units="nM",plate=decklayout.EPPENDORFS):
         'Add templates as "reagents", return the list of them'
         if finalconc is None:
-            print "Warning: final concentration of template not specified, assuming 0.6x (should add to addTemplates() call"
+            print "WARNING: final concentration of template not specified, assuming 0.6x (should add to addTemplates() call"
             [names,stockconc]=listify([names,stockconc])
             finalconc=[0.6*x for x in stockconc]
         else:
@@ -432,7 +432,7 @@ class TRP(object):
         [src,elutionVol,elutant]=listify([src,elutionVol,elutant])
         for i in range(len(src)):
             if elutionVol[i]<30:
-                print "Warning: elution from beads with %.1f ul < minimum of 30ul"%elutionVol[i]
+                print "WARNING: elution from beads with %.1f ul < minimum of 30ul"%elutionVol[i]
                 print "  src=",src[i]
             self.e.transfer(elutionVol[i]-src[i].volume,elutant[i],src[i],(False,True))	
         if temp is None:
