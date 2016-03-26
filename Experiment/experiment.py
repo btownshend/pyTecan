@@ -6,6 +6,7 @@ import liquidclass
 import reagents
 import decklayout
 import clock
+import globals
 
 _Experiment__shakerActive = False
 
@@ -431,8 +432,8 @@ class Experiment(object):
             print
             warned=True
 
-        if speed<minspeed:
             print "WARNING: %s plate contains unmixed wells with as little as %.2f ul, which may not be mixed at %d RPM: "%(plate.name, minvol, speed),
+        if globals.verbose and speed<minspeed:
             for x in samps:
                 if x.isMixed() or x.hasBeads:
                     continue

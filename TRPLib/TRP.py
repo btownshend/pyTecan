@@ -2,6 +2,7 @@ from Experiment.sample import Sample
 from Experiment.experiment import Experiment
 from Experiment.concentration import Concentration
 from Experiment import worklist, reagents, decklayout, clock
+from Experiment import globals
 
 import os
 import sys
@@ -849,6 +850,7 @@ class TRP(object):
         self.reset()
         self.pgm()
         if args.verbose:
+            globals.verbose=True
             print '------ Main run -----'
         else:
             sys.stdout=sys.__stdout__
