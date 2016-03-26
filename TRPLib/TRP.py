@@ -453,6 +453,10 @@ class TRP(object):
                 tgt.append(Sample("%s.SN"%src[i].name,plate))
         [src,tgt]=listify([src,tgt])
 
+        if any([s.plate!=src[0].plate for s in src]):
+            print "beadSupernatant: Attempt to magsep on multiple plates at the same time"
+            assert False
+
         self.e.moveplate(src[0].plate,"Magnet")	# Move to magnet
         self.sepWait(src,sepTime)
 
