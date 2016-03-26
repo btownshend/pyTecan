@@ -352,8 +352,7 @@ class Sample(object):
                 self.ingredients[k] *= (self.volume-remove)/self.volume
 
         self.volume=self.volume-remove
-        if self.volume+.001<self.plate.unusableVolume and self.volume>0:
-            # TODO - this should be more visible in output
+        if self.volume+.001<self.plate.unusableVolume and self.volume+remove>0 and not (self.hasBeads and self.plate.curloc=='Magnet'):
             print "WARNING: Aspiration of %.1ful from %s brings volume down to %.1ful which is less than its unusable volume of %.1f ul"%(remove,self.name,self.volume,self.plate.unusableVolume)
             
         self.addhistory("",-remove,tipMask)
