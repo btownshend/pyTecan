@@ -315,6 +315,9 @@ class Sample(object):
         if volume>self.volume and self.volume>0:
             print "ERROR:Attempt to aspirate %.1f ul from %s that contains only %.1f ul"%(volume, self.name, self.volume)
         if not self.isMixed() and self.plate.curloc!="Magnet":
+            if self.hasBeads and self.lastMixed is not None:
+                print "WARNING: Aspirate %.1f ul from sample %s that has beads and has not been mixed for %.0f sec. "%(volume,self.name,clock.elapsed()-self.lastMixed)
+            else:
                 print "WARNING: Aspirate %.1f ul from unmixed sample %s. "%(volume,self.name)
         if not self.wellMixed:
             print "WARNING: Aspirate %.1f ul from poorly mixed sample %s (shake speed was too low). "%(volume,self.name)
