@@ -44,10 +44,12 @@ class Experiment(object):
     def setreagenttemp(self,temp=None):
         if temp is None:
             worklist.pyrun("RIC\\ricset.py IDLE")
+            decklayout.REAGENTPLATE.liquidTemp=22.7
         else:
             worklist.variable("dewpoint",temp,userprompt="Enter dewpoint",minval=0,maxval=20)
             worklist.variable("rictemp","~dewpoint~+2")
             worklist.pyrun("RIC\\ricset.py ~rictemp~")
+            decklayout.REAGENTPLATE.liquidTemp=temp+2   # Assumes that temp is the one used
 #            worklist.pyrun("RIC\\ricset.py %s"%temp)
 
     def saveworklist(self,filename):

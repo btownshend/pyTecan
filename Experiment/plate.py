@@ -1,11 +1,12 @@
 import math
+import globals
 
 _Plate__allplates=[]
 
 "An object representing a microplate or other container on the deck"
 class Plate(object):
     "A plate object which includes a name, location, and size"
-    def __init__(self,name, grid, pos, nx=12, ny=8,pierce=False,unusableVolume=5,maxVolume=200,zmax=None,angle=None,r1=None,h1=None,v0=None,vectorName=None,maxspeeds=None,dewpoint=None,liquidTemp=22.7):
+    def __init__(self,name, grid, pos, nx=12, ny=8,pierce=False,unusableVolume=5,maxVolume=200,zmax=None,angle=None,r1=None,h1=None,v0=None,vectorName=None,maxspeeds=None,liquidTemp=22.7):
         self.name=name
         self.grid=grid
         self.pos=pos
@@ -30,7 +31,6 @@ class Plate(object):
         self.v0=v0
         self.vectorName=vectorName		# Name of vector used for RoMa to pickup plate
         self.maxspeeds=maxspeeds
-        self.dewpoint=dewpoint
         self.liquidTemp=liquidTemp
         global __allplates
         __allplates.append(self)
@@ -110,7 +110,7 @@ class Plate(object):
         assert volume>=0
         EVAPFUDGE=0.69		# Fudge factor -- makes computed evaporation match up with observed
         area=self.getliquidarea(volume)
-        x=self.mixingratio(self.dewpoint)
+        x=self.mixingratio(globals.dewpoint)
         xs=self.mixingratio(self.liquidTemp)
         #print "vol=",volume,", area=",area
         if area==None:

@@ -832,14 +832,7 @@ class TRP(object):
         args=parser.parse_args()
         
         print "Estimating evaporation for dew point of %.1f C"%args.dewpoint
-        decklayout.SAMPLEPLATE.dewpoint=args.dewpoint
-        decklayout.DILPLATE.dewpoint=args.dewpoint
-        decklayout.REAGENTPLATE.dewpoint=args.dewpoint
-        decklayout.REAGENTPLATE.liquidTemp=args.dewpoint+2
-        decklayout.EPPENDORFS.dewpoint=args.dewpoint
-        decklayout.WATERLOC.dewpoint=args.dewpoint
-        decklayout.SSDDILLOC.dewpoint=args.dewpoint
-        decklayout.QPCRPLATE.dewpoint=args.dewpoint
+        globals.dewpoint=args.dewpoint
 
         self.e=Experiment()
         self.e.setreagenttemp(args.dewpoint)
