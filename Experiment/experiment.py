@@ -426,6 +426,8 @@ class Experiment(object):
         minvol=min([x.volume for x in samps if not x.isMixed() ]+[200])
         (minspeed,maxspeed)=plate.getmixspeeds(minvol*0.95,maxvol+5)	# Assume volumes could be off
 
+        if minspeed>maxspeed:
+            print "minspeed(",minspeed,") > maxspeed (",maxspeed,")"
         if speed is None:
             if minspeed<maxspeed:
                 speed=(maxspeed+minspeed)/2
