@@ -46,6 +46,7 @@ LCMixSlow=LC("Water-MixSlow",multiexcess=1)
 LCMix={height: LC("Mix_%d"%height,multiexcess=1) for height in range(1,13)}
 LCMixBottom=LC("Water-MixBottom",multiexcess=1)
 LCBlowout={height: LC("Blowout_%d"%height,multiexcess=1,singlelag=1) for height in range(1,15)}
+LCBlowoutLD=LC("Blowout_LD",multiexcess=1,singlelag=1)
 LCAir=LC("Air")
 LCBleachMix=LC("RNaseAway-Mix",  singletag=10,multiexcess=2,multitag=10)
 LCDip=LC("Dip",multiexcess=1)
