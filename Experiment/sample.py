@@ -518,8 +518,8 @@ class Sample(object):
         if self.isMixed():
             print "Sample %s is already mixed"%self.name
             return False
-        print "WARNING: Pippette mixing of %s may introduce bubbles"%self.name
         blowvol=20
+        print "WARNING: Pipette mixing of %s may introduce bubbles"%self.name
         mstr=""
         extraspace=blowvol+0.1
         if preaspirateAir:
@@ -538,13 +538,13 @@ class Sample(object):
             if preaspirateAir:
                 # Aspirate some air to avoid mixing with excess volume aspirated into pipette from source in previous transfer
                 self.aspirateAir(tipMask,5)
-            if True:		# Always do this
+            if False:		# this results in losing mixprefillvol of sample which was not mixed; remainder has different concentration than planned
                 worklist.aspirateNC(tipMask,well,self.inliquidLC,mixprefillvol,self.plate)
                 self.volume-=mixprefillvol
                 self.addhistory("(PRE)",-mixprefillvol,tipMask)
                 worklist.mix(tipMask,well,self.mixLC,mixvol,self.plate,nmix)
                 mstr="(MB)"
-            elif False: # self.volume>=MINLIQUIDDETECTVOLUME:
+            elif False: # self.volume>=MINLIQUIDDETECTVOLUME:    # Another short-lived strategy
                 worklist.mix(tipMask,well,self.inliquidLC,mixvol,self.plate,nmix)
                 self.history+="(MLD)"
             else:
