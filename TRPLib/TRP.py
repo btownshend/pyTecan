@@ -516,7 +516,7 @@ class TRP(object):
             src[i].conc=Concentration(srcdil[i],1)
             
         self.e.stage('RTPos',[rtmaster],[src[i] for i in range(len(src)) ],[tgt[i] for i in range(len(tgt)) ],[vol[i] for i in range(len(vol))],destMix=False)
-        self.e.shakeSamples(tgt,returnPlate=True)
+        #self.e.shakeSamples(tgt,returnPlate=True)
         return tgt
 
     def runRTPgm(self,dur=20,heatInactivate=False):
