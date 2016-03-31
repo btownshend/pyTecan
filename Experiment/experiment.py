@@ -453,11 +453,11 @@ class Experiment(object):
                     continue
                 tmp=plate.getmixspeeds(x.volume*0.95,x.volume+5)
                 if speed<tmp[0]:
-                    print "%s[%.1ful, min=%.0f RPM] "%(x.name,x.volume,tmp[0]),
+                    print "%s[%.1ful, min=%.0f RPM, max=%.0f RPM] "%(x.name,x.volume,tmp[0],tmp[1]),
             print
             warned=True
 
-        if  warned:
+        if  warned or globals.verbose:
             print "         Mixing %s at %.0f RPM (min unmixed vol=%.0ful ->  min RPM=%.0f;  max vol=%.0ful -> max RPM=%.f)"%(plate.name, speed, minvol, minspeed, maxvol, maxspeed)
 
         oldloc=plate.curloc
