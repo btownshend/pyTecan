@@ -558,8 +558,9 @@ class Sample(object):
                         mixheight=2
 #                    print 'Vol=%.1f ul, height=%.1f mm, mix=%d, blow=%d'%(self.volume,height,mixheight,blowheight)
                     mixLC=liquidclass.LCMix[mixheight]
-                    worklist.aspirateNC(tipMask,well,self.airLC,(blowvol+0.1),self.plate)
+                    if blowvol>0:
                         blowoutLC=liquidclass.LCBlowoutLD
+                        worklist.aspirateNC(tipMask,well,self.airLC,(blowvol+0.1),self.plate)
                     if self.volume<30:
                         worklist.mix(tipMask,well,self.mixLC,mixvol,self.plate,nmix)
                         mstr="(MB)"
@@ -568,8 +569,9 @@ class Sample(object):
                             worklist.aspirateNC(tipMask,well,mixLC,mixvol,self.plate)
                             worklist.dispense(tipMask,well,mixLC,mixvol,self.plate)
                         mstr="(M@%d)"%(mixheight)
-                    worklist.dispense(tipMask,well,blowoutLC,blowvol,self.plate)
-                    worklist.dispense(tipMask,well,liquidclass.LCDip,0.1,self.plate)
+                    if blowvol>0:
+                        worklist.dispense(tipMask,well,blowoutLC,blowvol,self.plate)
+                        worklist.dispense(tipMask,well,liquidclass.LCDip,0.1,self.plate)
 
             self.volume-=MIXLOSS
             self.addhistory(mstr,-MIXLOSS,tipMask)
