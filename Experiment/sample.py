@@ -518,8 +518,7 @@ class Sample(object):
         if self.isMixed():
             print "Sample %s is already mixed"%self.name
             return False
-        if not self.hasBeads:
-            print "WARNING: Pippette mixing %s, which does not have beads -- use shaker?"%self.name
+        print "WARNING: Pippette mixing of %s may introduce bubbles"%self.name
         blowvol=20
         mstr=""
         extraspace=blowvol+0.1
