@@ -15,12 +15,16 @@ class LC(object):
         self.multitag=multitag
         self.wetvolume=wetvolume
         self.ldetect=ldetect
+        self.used={}
         __alllc.append(self)
 
     @staticmethod
     def printalllc(txt="",fd=sys.stdout):
+        print >>fd, "Liquid classes used:"
         for lc in sorted(__alllc, key=lambda p:p.name.upper()):
-            print >>fd,lc.fullstr()
+            ops=lc.used.keys()
+            if len(ops)>0:
+                print >>fd,lc.fullstr()
 
     def __str__(self):
         #        return "%s(%d,%d,%d)"%(self.name,self.singletag,self.multicond,self.multiexcess)
@@ -28,8 +32,11 @@ class LC(object):
 
     def fullstr(self):
         # Full details
-        return "%-20s"%self.name+" multi: (cond=%.1f, excess=%.1f, tag=%.1f)"%(self.multicond,self.multiexcess,self.multitag)+ ", single: (tag=%.1f, lag=%.1f)"%(self.singletag,self.singlelag)+", wetvol=%.1f"%self.wetvolume+", ldetect=%d"%self.ldetect
+        return "%-20s"%self.name+"("+" ".join(self.used.keys())+") multi: (cond=%.1f, excess=%.1f, tag=%.1f)"%(self.multicond,self.multiexcess,self.multitag)+ ", single: (tag=%.1f, lag=%.1f)"%(self.singletag,self.singlelag)+", wetvol=%.1f"%self.wetvolume+", ldetect=%d"%self.ldetect
     
+    def markUsed(self,op):
+        self.used[op]=True
+        
     def volRemoved(self, vol, multi=True):
         # Compute actual amount removed when 'vol' is requested
         if multi:
