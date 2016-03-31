@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ufwb version="1.14">
+    <grammar name="Gemini_settings" start="id:230" author="Brent Townshend" email="bst@tc.com">
+        <description>Tecan Gemini settings file</description>
+        <structure name="settings" id="230" encoding="ISO_8859-1:1987" endian="little" signed="no">
+            <structref name="Header" id="241" structure="id:239"/>
+            <string name="datadir" id="244" type="pascal"/>
+            <string name="logdir" id="245" type="pascal"/>
+            <string name="cfgfilename" id="246" type="pascal"/>
+            <string name="ttlfile" id="248" type="pascal"/>
+            <string name="optfilename" id="249" type="pascal"/>
+            <string name="yesno" id="250" type="pascal"/>
+            <binary name="&lt;new binary&gt;" id="252" length="30"/>
+            <string name="&lt;new string&gt;" id="251" type="pascal"/>
+            <string name="&lt;new string-1&gt;" id="272" type="pascal"/>
+            <string name="&lt;new string-2&gt;" id="273" type="pascal"/>
+            <string name="&lt;new string-3&gt;" id="274" type="pascal"/>
+            <string name="&lt;new string-4&gt;" id="275" type="pascal"/>
+            <string name="&lt;new string-5&gt;" id="276" type="pascal"/>
+            <string name="&lt;new string-6&gt;" id="277" type="pascal"/>
+            <string name="&lt;new string-7&gt;" id="278" type="pascal"/>
+            <string name="outputdir" id="279" type="pascal"/>
+            <binary name="&lt;new binary-1&gt;" id="281" length="24"/>
+            <number name="simdelay" id="286" type="integer" length="4"/>
+            <binary name="&lt;new binary-3&gt;" id="287" length="68"/>
+            <string name="backgroundimage" id="280" type="pascal"/>
+            <number name="bgimagefmt" id="282" type="integer" length="4">
+                <fixedvalues>
+                    <fixedvalue name="center" value="0"/>
+                </fixedvalues>
+            </number>
+            <string name="runtimeimage" id="283" type="pascal"/>
+            <binary name="&lt;new binary-2&gt;" id="284" length="60"/>
+            <string name="backupdir" id="285" type="pascal"/>
+        </structure>
+        <structure name="Header" id="239" length="308" encoding="ISO_8859-1:1987" endian="big" signed="no">
+            <string name="checksum" id="232" type="delimiter-terminated" delimiter="0D0A"/>
+            <string name="priorrevision" id="233" type="fixed-length" length="15">
+                <description>Serial number of prior revision</description>
+            </string>
+            <string name="space" id="236" type="fixed-length" length="1"/>
+            <string name="user" id="237" type="delimiter-terminated" delimiter="0D0A"/>
+            <string name="logmsg" id="242" type="delimiter-terminated" delimiter="0D0A"/>
+            <string name="winuser" id="243" type="delimiter-terminated" delimiter="0D0A"/>
+        </structure>
+    </grammar>
+</ufwb>
