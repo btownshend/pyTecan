@@ -412,18 +412,21 @@ class Experiment(object):
 
         for p in set([s.plate for s in samples if not s.isMixed()  ]):
             if p.maxspeeds is not None:
-                self.shake(p,returnPlate=returnPlate,speed=speed)
+                self.shake(p,returnPlate=returnPlate,speed=speed,samps=[s for s in samples if s.plate==p])
 
-    def shake(self,plate,dur=60,speed=None,accel=5,returnPlate=True):
+    def shake(self,plate,dur=60,speed=None,accel=5,returnPlate=True,samps=None):
         if self.ptcrunning and plate==decklayout.SAMPLEPLATE:
             self.waitpgm()
 
         # Move the plate to the shaker, run for the given time, and bring plate back
-        samps=Sample.getAllOnPlate(plate)
+        allsamps=Sample.getAllOnPlate(plate)
+        if samps is None:
+            samps=allsamps
+            
         if all([x.isMixed() for x in samps]):
             print "No need to shake ",plate
             
-        maxvol=max([x.volume for x in samps])
+        maxvol=max([x.volume for x in allsamps])
         minvol=min([x.volume for x in samps if not x.isMixed() ]+[200])
         (minspeed,maxspeed)=plate.getmixspeeds(minvol*0.95,maxvol+5)	# Assume volumes could be off
 
