@@ -556,11 +556,10 @@ class Sample(object):
                     mixheight=math.floor(height-1)			# At least 1mm below liquid height
                     if mixheight<2:
                         mixheight=2
-                    blowheight=math.ceil(height)			# Anywhere above
 #                    print 'Vol=%.1f ul, height=%.1f mm, mix=%d, blow=%d'%(self.volume,height,mixheight,blowheight)
                     mixLC=liquidclass.LCMix[mixheight]
-                    blowoutLC=liquidclass.LCBlowout[blowheight]
                     worklist.aspirateNC(tipMask,well,self.airLC,(blowvol+0.1),self.plate)
+                        blowoutLC=liquidclass.LCBlowoutLD
                     if self.volume<30:
                         worklist.mix(tipMask,well,self.mixLC,mixvol,self.plate,nmix)
                         mstr="(MB)"
