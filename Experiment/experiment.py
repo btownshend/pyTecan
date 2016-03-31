@@ -79,6 +79,7 @@ class Experiment(object):
         print >>fd,rtime
         reagents.printprep(fd)
         Sample.printallsamples("All Samples:",fd,w=worklist)
+        liquidclass.LC.printalllc("All LC:",fd)
         fd.close()
 
     def sanitize(self,nmix=1,deepvol=20,force=False):

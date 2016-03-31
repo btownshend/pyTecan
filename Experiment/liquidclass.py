@@ -1,6 +1,9 @@
 'A liquid class'
+import sys
 
 SURFACEREMOVE=0.4	# Extra removed from wells due to tip wetting (assuming liquid detecting, aspirating 3.5mm below surface)
+
+_LC__alllc = []
 
 class LC(object):
     def __init__(self,name,singletag=0,singlelag=0,multicond=0,multiexcess=0,multitag=0,wetvolume=SURFACEREMOVE,ldetect=False):
@@ -12,11 +15,21 @@ class LC(object):
         self.multitag=multitag
         self.wetvolume=wetvolume
         self.ldetect=ldetect
+        __alllc.append(self)
+
+    @staticmethod
+    def printalllc(txt="",fd=sys.stdout):
+        for lc in sorted(__alllc, key=lambda p:p.name.upper()):
+            print >>fd,lc.fullstr()
 
     def __str__(self):
         #        return "%s(%d,%d,%d)"%(self.name,self.singletag,self.multicond,self.multiexcess)
         return self.name
 
+    def fullstr(self):
+        # Full details
+        return "%-20s"%self.name+" multi: (cond=%.1f, excess=%.1f, tag=%.1f)"%(self.multicond,self.multiexcess,self.multitag)+ ", single: (tag=%.1f, lag=%.1f)"%(self.singletag,self.singlelag)+", wetvol=%.1f"%self.wetvolume+", ldetect=%d"%self.ldetect
+    
     def volRemoved(self, vol, multi=True):
         # Compute actual amount removed when 'vol' is requested
         if multi:
