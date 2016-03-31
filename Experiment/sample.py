@@ -15,7 +15,7 @@ SHOWTIPHISTORY=False
 SHOWINGREDIENTS=False
 MINDEPOSITVOLUME=5.0	# Minimum volume to end up with in a well after dispensing
 MINSIDEDISPENSEVOLUME=10.0  # minimum final volume in well to use side-dispensing.  Side-dispensing with small volumes may result in pulling droplet up sidewall
-MIXLOSS=0.66		# Amount of sample lost during mixes  (in addition to any prefill volume)
+MIXLOSS=3.26		# Amount of sample lost during mixes  (in addition to any prefill volume)
 BEADSETTLINGTIME=60*60 	# Time (in seconds) after which beads should be remixed before use
 
 _Sample__allsamples = []
@@ -518,8 +518,8 @@ class Sample(object):
         if self.isMixed():
             print "Sample %s is already mixed"%self.name
             return False
-        blowvol=20
         print "WARNING: Pipette mixing of %s may introduce bubbles"%self.name
+        blowvol=5
         mstr=""
         extraspace=blowvol+0.1
         if preaspirateAir:
