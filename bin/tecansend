@@ -1,1 +1,6 @@
-scp *.gem "Admin@171.64.80.58:'/cygdrive/c/Program Files (x86)/Tecan/Gemini/Data'"
+HOST=171.64.80.58
+echo Syncing *.gem LClasses.dat
+rsync -t  *.gem "Admin@${HOST}:'/cygdrive/c/Program Files (x86)/Tecan/Gemini/Data'"
+rsync -t  "Admin@${HOST}:'/cygdrive/c/Users/Admin/AppData/Local/VirtualStore/Program Files (x86)/Tecan/Gemini/Data/LClasses.dat'" .
+
+
