@@ -1,0 +1,466 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ufwb version="1.14">
+    <grammar name="LC" start="id:1" author="Brent Townshend" email="bst@tc.com">
+        <description>Liquid Classes file for Tecan</description>
+        <scripts>
+            <script name="file" type="File" id="553">
+                <source language="Python">def init():
+	print &quot;init&quot;
+
+def processByteArray(byteArray):
+	print &quot;byteArray&quot;
+
+def terminate():
+	print &quot;terminate&quot;
+</source>
+            </script>
+            <script name="grammar" type="Grammar" id="552">
+                <source language="Python">def init():
+	print &quot;init&quot;
+
+def processGrammar(grammar):
+	print &quot;grammar&quot;
+
+def terminate():
+	print &quot;terminate&quot;
+</source>
+            </script>
+            <script name="process" type="ProcessResults" id="551">
+                <source language="Python">def init():
+	print &quot;hello init&quot;
+
+def processResult(result):
+	print &quot;hello result&quot;
+
+  	resultType = result.getType()
+
+	if resultType == RESULT_STRUCTURE_START_TYPE:
+		print(&quot;Structure Start&quot;)
+	else:
+		print(&quot;other&quot;)
+
+	level = result.getLevel()
+ 	print (level)
+
+	name = result.getName()
+
+	value = result.getValue()
+
+	if( value != None ):
+		type = value.getType()
+		if type == VALUE_BINARY:
+			startPos = result.getStartBytePos()
+			length = result.getByteLength()
+			byteView = result.getByteView()
+			for x in range(length):
+				byte = byteView.readByte(startPos + x)
+			print &quot;Binary&quot;
+		elif type == VALUE_NUMBER_UNSIGNED:
+			print &quot;Unsigned: &quot; + str(value.getUnsigned())
+		elif type == VALUE_NUMBER_SIGNED:
+			print &quot;Signed: &quot; + str(value.getSigned())
+		elif type == VALUE_NUMBER_FLOAT:
+			print &quot;Float: &quot; + str(value.getFloat())
+		elif type == VALUE_STRING:
+			print &quot;String: &quot; + value.getString()
+
+	print result.getStringRepresentation()
+
+def terminate():
+	print &quot;hello terminate&quot;
+</source>
+            </script>
+            <script name="datatype" type="DataType" id="554">
+                <source language="Python"># custom data type script
+
+def parseByteRange(element, byteView, bitPos, bitLength, results):
+	# this method parses data starting at bitPos, bitLength bits are remaining
+	&quot;&quot;&quot;parseByteRange method&quot;&quot;&quot;
+
+	# create and set new value
+	value = Value()
+	value.setString(&quot;Value of custom element&quot;)
+
+	# how many bytes were processed?
+	processedBytes = 0
+	iteration = 0
+
+	results.addElement(element, processedBytes, iteration, value)
+
+	# return number of processed bytes
+	return processedBytes
+
+def fillByteRange(value, byteArray, bitPos, bitLength):
+	# this method translates edited values back to the file
+	&quot;&quot;&quot;fillByteRange method&quot;&quot;&quot;
+
+	# write an integer back to file
+	# byteArray.writeUnsignedIntBits(highWord, bitPos, bitLength, ENDIAN_BIG)
+</source>
+            </script>
+            <script name="selection" type="Selection" id="555">
+                <source language="Python"># custom selection script
+
+def processByteRange(byteView, byteArray, bytePos, byteLength):
+	# this method processes a sequence of bytes
+	&quot;&quot;&quot;parseByteRange method&quot;&quot;&quot;
+</source>
+            </script>
+        </scripts>
+        <structure name="LiquidClasses" id="1" encoding="ISO_8859-1:1987" endian="little" signed="no">
+            <string name="Header" id="2" type="fixed-length" length="174"/>
+            <string name="Owner" id="3" type="fixed-length" length="130"/>
+            <number name="&lt;new number&gt;" id="4" type="integer" length="2"/>
+            <number name="&lt;new number&gt;-1" id="5" type="integer" length="2"/>
+            <number name="numlc" id="6" type="integer" length="2">
+                <description>Number of liquid classes</description>
+            </number>
+            <number name="&lt;new number&gt;-3" id="7" type="integer" length="2"/>
+            <number name="&lt;new number&gt;-4" id="8" type="integer" length="2"/>
+            <structref name="LC" id="10" repeatmin="numlc" repeatmax="numlc" structure="id:9"/>
+        </structure>
+        <structure name="LC" id="9" length="0" encoding="ISO_8859-1:1987" endian="little" signed="no" valueexpression="Global">
+            <number name="readonly?" mustmatch="yes" id="12" type="integer" length="4">
+                <fixedvalues>
+                    <fixedvalue name="writable" value="1"/>
+                    <fixedvalue name="readonly" value="0"/>
+                </fixedvalues>
+            </number>
+            <number name="temporary" mustmatch="yes" id="13" type="integer" length="4">
+                <description>I think this a flag for temporary LC’s (modifications of existing ones in single operations) that have &gt;&gt;&gt; xx &lt;&lt;&lt; names.</description>
+                <fixedvalues>
+                    <fixedvalue name="normal" value="0"/>
+                    <fixedvalue name="temp" value="1"/>
+                </fixedvalues>
+            </number>
+            <structure name="Global" id="14" valueexpression="name">
+                <string name="name" id="15" type="pascal"/>
+                <number name="detmode" mustmatch="yes" id="16" type="integer" length="4">
+                    <fixedvalues>
+                        <fixedvalue name="odd/even twice" value="3"/>
+                        <fixedvalue name="twice sep tips with retract" value="7"/>
+                        <fixedvalue name="simul twice" value="1"/>
+                        <fixedvalue name="simul" value="0"/>
+                        <fixedvalue name="sep twice" value="5"/>
+                        <fixedvalue name="odd/even" value="2"/>
+                        <fixedvalue name="odd/even twice" value="3"/>
+                        <fixedvalue name="sep" value="4"/>
+                        <fixedvalue name="sep w/delay" value="6"/>
+                        <fixedvalue name="first tip, others same" value="8"/>
+                    </fixedvalues>
+                </number>
+                <number name="conductivity" mustmatch="yes" id="17" type="integer" length="4">
+                    <fixedvalues>
+                        <fixedvalue name="good" value="1"/>
+                        <fixedvalue name="bad" value="2"/>
+                        <fixedvalue name="very good" value="0"/>
+                    </fixedvalues>
+                </number>
+                <number name="detectspeed" id="18" type="float" length="64" lengthunit="bit">
+                    <description>Detection Speed (mm/s)</description>
+                </number>
+                <number name="doubledist" id="19" type="float" length="64" lengthunit="bit">
+                    <description>Double Distance (mm)</description>
+                </number>
+                <number name="clotdectectspeed" id="20" type="float" length="64" lengthunit="bit">
+                    <description>Clot Detection Speed (mm/s)</description>
+                </number>
+                <number name="clotlimit" id="21" type="float" length="64" lengthunit="bit">
+                    <description>Clot Limit (mm)</description>
+                </number>
+            </structure>
+            <number name="numentries" id="23" type="integer" length="2"/>
+            <structref name="LCEntry" id="25" repeatmin="numentries" repeatmax="numentries" structure="id:24"/>
+        </structure>
+        <structure name="LCEntry" id="24" length="904" encoding="ISO_8859-1:1987" endian="big" signed="yes">
+            <number name="magic=7582400" mustmatch="yes" id="27" type="integer" length="32" lengthunit="bit" endian="little">
+                <fixedvalues>
+                    <fixedvalue value="7582400"/>
+                </fixedvalues>
+            </number>
+            <structref name="TipType" id="29" structure="id:28"/>
+            <structref name="Aspirate" id="31" structure="id:30"/>
+            <structref name="Dispense" id="33" structure="id:32"/>
+            <number name="piezodelaystart" id="34" type="integer" length="32" lengthunit="bit" endian="little"/>
+            <number name="piezodelaystop" id="35" type="integer" length="32" lengthunit="bit" endian="little"/>
+            <number name="diluterdelaystart" id="36" type="float" length="64" lengthunit="bit" endian="little"/>
+            <number name="diluterdelaystop" id="37" type="float" length="64" lengthunit="bit" endian="little"/>
+            <structref name="Calibration" id="39" structure="id:38"/>
+            <structref name="ActiveCalib" id="41" structure="id:40"/>
+            <number name="unknown1=0" mustmatch="yes" id="42" type="integer" length="32" lengthunit="bit" endian="little">
+                <fixedvalues>
+                    <fixedvalue name="zero" value="0"/>
+                </fixedvalues>
+            </number>
+            <number name="unknown2=100" mustmatch="yes" id="43" type="integer" length="32" lengthunit="bit" endian="little">
+                <fixedvalues>
+                    <fixedvalue name="zero" value="100"/>
+                </fixedvalues>
+            </number>
+            <number name="unknown3=0" mustmatch="yes" id="44" type="integer" length="32" lengthunit="bit" endian="little">
+                <fixedvalues>
+                    <fixedvalue name="zero" value="0"/>
+                </fixedvalues>
+            </number>
+            <number name="unknown4=0,30" mustmatch="yes" id="45" type="integer" length="32" lengthunit="bit" endian="little">
+                <fixedvalues>
+                    <fixedvalue name="thirty" value="30"/>
+                    <fixedvalue name="zero" value="0"/>
+                </fixedvalues>
+            </number>
+            <number name="unknown5=0,80" mustmatch="yes" id="46" type="integer" length="32" lengthunit="bit" endian="little">
+                <fixedvalues>
+                    <fixedvalue name="zero" value="0"/>
+                    <fixedvalue name="eighty" value="80"/>
+                </fixedvalues>
+            </number>
+            <number name="unknown6=0,20" mustmatch="yes" id="47" type="integer" length="32" lengthunit="bit" endian="little">
+                <fixedvalues>
+                    <fixedvalue value="0"/>
+                    <fixedvalue name="twenty" value="20"/>
+                </fixedvalues>
+            </number>
+            <number name="unknown7=0" mustmatch="yes" id="48" type="integer" length="32" lengthunit="bit" endian="little">
+                <fixedvalues>
+                    <fixedvalue name="zero" value="0"/>
+                </fixedvalues>
+            </number>
+            <number name="unknown8=0" mustmatch="yes" id="49" type="integer" length="32" lengthunit="bit" endian="little">
+                <fixedvalues>
+                    <fixedvalue name="zero" value="0"/>
+                </fixedvalues>
+            </number>
+            <structref name="Plunger" id="51" structure="id:50"/>
+            <grammarref name="&lt;new element&gt;" id="52"/>
+        </structure>
+        <structure name="TipType" id="28" encoding="ISO_8859-1:1987" endian="big" signed="no">
+            <number name="tiptype" mustmatch="yes" id="54" type="integer" length="32" lengthunit="bit" endian="little">
+                <fixedvalues>
+                    <fixedvalue name="standard" value="0"/>
+                    <fixedvalue name="TeMO 384" value="8"/>
+                    <fixedvalue name="DITI" value="1"/>
+                    <fixedvalue name="std &amp; low vol" value="2"/>
+                    <fixedvalue name="DITI &amp; low vol" value="3"/>
+                    <fixedvalue name="active" value="4"/>
+                    <fixedvalue name="TeMO Fixed" value="5"/>
+                    <fixedvalue name="TeMO DITI" value="6"/>
+                    <fixedvalue name="TeMO 384 Impulse" value="7"/>
+                </fixedvalues>
+            </number>
+            <number name="useforallvols?" mustmatch="yes" id="55" type="integer" length="32" lengthunit="bit" endian="little">
+                <fixedvalues>
+                    <fixedvalue name="no" value="0"/>
+                    <fixedvalue name="yes" value="1"/>
+                </fixedvalues>
+            </number>
+            <number name="unknown2=0" mustmatch="yes" id="56" type="integer" length="32" lengthunit="bit" endian="little">
+                <fixedvalues>
+                    <fixedvalue name="zero" value="0"/>
+                </fixedvalues>
+            </number>
+            <number name="minvol" id="57" type="float" length="64" lengthunit="bit" endian="little"/>
+            <number name="maxvol" id="58" type="float" length="64" lengthunit="bit" endian="little"/>
+        </structure>
+        <structure name="Aspirate" id="30" encoding="ISO_8859-1:1987" endian="big" signed="no">
+            <structref name="single" id="61" structure="id:60"/>
+            <structref name="multi" id="62" structure="id:60"/>
+            <number name="useld?" id="63" type="integer" length="32" lengthunit="bit" endian="little"/>
+            <number name="position" id="110" type="integer" length="8" lengthunit="bit" endian="little">
+                <fixedvalues>
+                    <fixedvalue name="zmax" value="6"/>
+                    <fixedvalue name="zmaxtrack" value="7"/>
+                    <fixedvalue name="liqlev" value="2"/>
+                    <fixedvalue name="liqlevtrack" value="3"/>
+                    <fixedvalue name="pctliqliv" value="4"/>
+                    <fixedvalue name="pctliqlivtrack" value="5"/>
+                    <fixedvalue name="zdisp" value="0"/>
+                    <fixedvalue name="zdisptrack" value="1"/>
+                </fixedvalues>
+            </number>
+            <number name="yoffset" id="111" type="integer" length="8" lengthunit="bit" endian="little">
+                <fixedvalues>
+                    <fixedvalue name="center" value="0"/>
+                    <fixedvalue name="rear" value="1"/>
+                    <fixedvalue name="front" value="2"/>
+                    <fixedvalue name="rear/front" value="3"/>
+                    <fixedvalue name="front/rear" value="4"/>
+                </fixedvalues>
+            </number>
+            <number name="xoffset" id="156" type="integer" length="8" lengthunit="bit" endian="little">
+                <fixedvalues>
+                    <fixedvalue name="center" value="0"/>
+                    <fixedvalue name="left" value="1"/>
+                    <fixedvalue name="right" value="2"/>
+                    <fixedvalue name="left/right" value="3"/>
+                    <fixedvalue name="right/left" value="4"/>
+                </fixedvalues>
+            </number>
+            <number name="pad=0" id="157" type="integer" length="8" lengthunit="bit" endian="little">
+                <fixedvalues>
+                    <fixedvalue name="zero" value="0"/>
+                </fixedvalues>
+            </number>
+            <number name="zoffset" id="65" type="float" length="64" lengthunit="bit" endian="little"/>
+            <number name="ondetecterror" id="66" type="integer" length="32" lengthunit="bit" endian="little">
+                <fixedvalues>
+                    <fixedvalue name="userprompt" value="0"/>
+                    <fixedvalue name="zmax" value="1"/>
+                    <fixedvalue name="nopipette" value="2"/>
+                    <fixedvalue name="airpipette" value="3"/>
+                </fixedvalues>
+            </number>
+            <number name="clotdet?" id="67" type="integer" length="32" lengthunit="bit" endian="little">
+                <fixedvalues>
+                    <fixedvalue name="zero" value="0"/>
+                </fixedvalues>
+            </number>
+            <number name="oncloterror" id="68" type="integer" length="32" lengthunit="bit" endian="little">
+                <fixedvalues>
+                    <fixedvalue name="userprompt" value="0"/>
+                    <fixedvalue name="dispback" value="1"/>
+                    <fixedvalue name="threetries" value="2"/>
+                </fixedvalues>
+            </number>
+            <number name="pad1" id="69" type="integer" length="32" lengthunit="bit" endian="little"/>
+            <structref name="AspDispSettings" id="71" structure="id:70"/>
+            <number name="singleexcesspct" id="72" type="integer" length="32" lengthunit="bit" endian="little"/>
+            <number name="singleexcessreuses" id="73" type="integer" length="32" lengthunit="bit" endian="little"/>
+            <number name="multiexcesspct" id="74" type="integer" length="32" lengthunit="bit" endian="little"/>
+            <number name="multiexcessreuses" id="75" type="integer" length="32" lengthunit="bit" endian="little"/>
+        </structure>
+        <structure name="AspSettings" id="60" encoding="ISO_8859-1:1987" endian="big" signed="no">
+            <number name="speed" id="77" type="float" length="64" lengthunit="bit" endian="little"/>
+            <number name="delay" id="78" type="integer" length="32" lengthunit="bit" endian="little"/>
+            <number name="pad1" id="79" type="integer" length="32" lengthunit="bit" endian="little" display="hex"/>
+            <number name="stag" id="80" type="float" length="64" lengthunit="bit" endian="little"/>
+            <number name="lag" id="81" type="float" length="64" lengthunit="bit" endian="little"/>
+            <number name="lagspeed" id="82" type="float" length="64" lengthunit="bit" endian="little"/>
+            <number name="lagdelay" id="83" type="integer" length="32" lengthunit="bit" endian="little"/>
+            <number name="pad2" id="84" type="integer" length="32" lengthunit="bit" endian="little" display="hex"/>
+            <number name="tag" id="85" type="float" length="64" lengthunit="bit" endian="little"/>
+            <number name="tagspeed" id="86" type="float" length="64" lengthunit="bit" endian="little"/>
+            <number name="tagdelay" id="87" type="integer" length="32" lengthunit="bit" endian="little"/>
+            <number name="pad3" id="88" type="integer" length="32" lengthunit="bit" endian="little" display="hex"/>
+            <number name="excessvol" id="89" type="float" length="64" lengthunit="bit" endian="little"/>
+            <number name="unknown2" id="90" type="integer" length="32" lengthunit="bit" endian="little"/>
+            <number name="excessdisposition" id="91" type="integer" length="32" lengthunit="bit" signed="yes" endian="little">
+                <fixedvalues>
+                    <fixedvalue name="waste" value="0"/>
+                    <fixedvalue name="vessel" value="1"/>
+                </fixedvalues>
+            </number>
+            <number name="condvol" id="92" type="float" length="64" lengthunit="bit" endian="little"/>
+            <number name="conddisposition" mustmatch="yes" id="93" type="integer" length="32" lengthunit="bit" endian="little">
+                <fixedvalues>
+                    <fixedvalue name="waste" value="0"/>
+                    <fixedvalue name="vessel" value="1"/>
+                </fixedvalues>
+            </number>
+            <number name="pad4" id="94" type="integer" length="32" lengthunit="bit" endian="little" display="hex"/>
+        </structure>
+        <structure name="AspDispSettings" id="70" encoding="ISO_8859-1:1987" endian="big" signed="no">
+            <number name="mixbeforeaspirate?" id="96" type="integer" length="32" lengthunit="bit" endian="little"/>
+            <number name="nmix" id="97" type="integer" length="32" lengthunit="bit" endian="little"/>
+            <number name="mixvol" id="98" type="float" length="64" lengthunit="bit" endian="little"/>
+            <number name="&lt;new number&gt;-5-1-1" id="99" type="float" length="64" lengthunit="bit" endian="little"/>
+            <number name="&lt;new number&gt;-6-1-1" id="100" type="float" length="64" lengthunit="bit" endian="little"/>
+            <number name="&lt;new number&gt;-6-2-6" id="101" type="integer" length="32" lengthunit="bit" endian="little"/>
+            <number name="unk" id="102" type="integer" length="32" lengthunit="bit" endian="little"/>
+            <number name="retractzoffset" id="103" type="float" length="64" lengthunit="bit" endian="little"/>
+            <number name="retractspeed" id="104" type="float" length="64" lengthunit="bit" endian="little"/>
+        </structure>
+        <structure name="Dispense" id="32" encoding="ISO_8859-1:1987" endian="big" signed="no">
+            <structref name="single" id="107" structure="id:106"/>
+            <structref name="multi" id="108" structure="id:106"/>
+            <number name="useld?" id="109" type="integer" length="32" lengthunit="bit" endian="little"/>
+            <number name="position" id="161" type="integer" length="8" lengthunit="bit" endian="little">
+                <fixedvalues>
+                    <fixedvalue name="zmax" value="6"/>
+                    <fixedvalue name="zmaxtrack" value="7"/>
+                    <fixedvalue name="liqlev" value="2"/>
+                    <fixedvalue name="liqlevtrack" value="3"/>
+                    <fixedvalue name="pctliqliv" value="4"/>
+                    <fixedvalue name="pctliqlivtrack" value="5"/>
+                    <fixedvalue name="zdisp" value="0"/>
+                    <fixedvalue name="zdisptrack" value="1"/>
+                </fixedvalues>
+            </number>
+            <number name="yoffset" id="160" type="integer" length="8" lengthunit="bit" endian="little">
+                <fixedvalues>
+                    <fixedvalue name="center" value="0"/>
+                    <fixedvalue name="rear" value="1"/>
+                    <fixedvalue name="front" value="2"/>
+                    <fixedvalue name="rear/front" value="3"/>
+                    <fixedvalue name="front/rear" value="4"/>
+                </fixedvalues>
+            </number>
+            <number name="xoffset" id="159" type="integer" length="8" lengthunit="bit" endian="little">
+                <fixedvalues>
+                    <fixedvalue name="center" value="0"/>
+                    <fixedvalue name="left" value="1"/>
+                    <fixedvalue name="right" value="2"/>
+                    <fixedvalue name="left/right" value="3"/>
+                    <fixedvalue name="right/left" value="4"/>
+                </fixedvalues>
+            </number>
+            <number name="pad=0" id="158" type="integer" length="8" lengthunit="bit" endian="little">
+                <fixedvalues>
+                    <fixedvalue name="zero" value="0"/>
+                </fixedvalues>
+            </number>
+            <number name="zoffset" id="112" type="float" length="64" lengthunit="bit" endian="little"/>
+            <number name="tiptouch" id="113" type="integer" length="32" lengthunit="bit" endian="little">
+                <fixedvalues>
+                    <fixedvalue name="none" value="0"/>
+                    <fixedvalue name="left" value="1"/>
+                    <fixedvalue name="right" value="2"/>
+                    <fixedvalue name="rear" value="3"/>
+                    <fixedvalue name="front" value="4"/>
+                </fixedvalues>
+            </number>
+            <number name="pad1" id="114" type="integer" length="32" lengthunit="bit" endian="little"/>
+            <number name="tiptouchspeed" id="115" type="float" length="64" lengthunit="bit" endian="little"/>
+            <number name="tiptouchdelay" id="116" type="integer" length="32" lengthunit="bit" endian="little"/>
+            <number name="pad2" id="117" type="integer" length="32" lengthunit="bit" endian="little"/>
+            <structref name="AspDispSettings" id="118" structure="id:70"/>
+        </structure>
+        <structure name="DispSettings" id="106" encoding="ISO_8859-1:1987" endian="big" signed="no">
+            <number name="speed" id="120" type="float" length="64" lengthunit="bit" endian="little"/>
+            <number name="breakoffspeed" id="121" type="float" length="64" lengthunit="bit" endian="little"/>
+            <number name="&lt;new number&gt;-6-2-7-2" id="122" type="integer" length="32" lengthunit="bit" endian="little"/>
+            <number name="&lt;new number&gt;-6-2-2-5-2" id="123" type="integer" length="32" lengthunit="bit" endian="little"/>
+            <number name="&lt;new number&gt;-12-1" id="124" type="float" length="64" lengthunit="bit" endian="little"/>
+            <number name="&lt;new number&gt;-13-1" id="125" type="float" length="64" lengthunit="bit" endian="little"/>
+            <number name="&lt;new number&gt;-15" id="126" type="float" length="64" lengthunit="bit" endian="little"/>
+        </structure>
+        <structure name="Calibration" id="38" encoding="ISO_8859-1:1987" endian="big" signed="no">
+            <number name="singleoffset" id="130" type="float" length="64" lengthunit="bit" endian="little"/>
+            <number name="singlefactor" id="131" type="float" length="64" lengthunit="bit" endian="little"/>
+            <number name="multioffset" id="132" type="float" length="64" lengthunit="bit" endian="little"/>
+            <number name="multifactor" id="133" type="float" length="64" lengthunit="bit" endian="little"/>
+        </structure>
+        <structure name="Plunger" id="50" encoding="ISO_8859-1:1987" endian="big" signed="no">
+            <structref name="single" id="136" structure="id:135"/>
+            <structref name="multi" id="137" structure="id:135"/>
+        </structure>
+        <structure name="PlungerSettings" id="135" encoding="ISO_8859-1:1987" endian="big" signed="no">
+            <number name="aspaccel" id="139" type="float" length="64" lengthunit="bit" endian="little"/>
+            <number name="aspdecel" id="140" type="float" length="64" lengthunit="bit" endian="little"/>
+            <number name="dispaccel" id="141" type="float" length="64" lengthunit="bit" endian="little"/>
+            <number name="dispdecel" id="142" type="float" length="64" lengthunit="bit" endian="little"/>
+        </structure>
+        <structure name="ActiveCalib" id="40" encoding="ISO_8859-1:1987" endian="big" signed="no">
+            <number name="voltageoffset" id="144" type="float" length="64" lengthunit="bit" endian="little"/>
+            <number name="frequencyoffset" id="145" type="float" length="64" lengthunit="bit" endian="little"/>
+            <number name="frequencyfactor" id="146" type="float" length="64" lengthunit="bit" endian="little"/>
+            <number name="voltagefactor" id="147" type="float" length="64" lengthunit="bit" endian="little"/>
+            <number name="pulsewidthoffset" id="148" type="float" length="64" lengthunit="bit" endian="little"/>
+            <number name="pulsewidthfactor" id="149" type="float" length="64" lengthunit="bit" endian="little"/>
+            <number name="sepcalib" id="150" repeatmin="8" repeatmax="8" type="integer" length="4"/>
+            <number name="voltage" id="151" repeatmin="8" repeatmax="8" type="float" length="64" lengthunit="bit" endian="little"/>
+            <number name="frequency" id="152" repeatmin="8" repeatmax="8" type="integer" length="32" lengthunit="bit" signed="yes" endian="little"/>
+            <number name="pulsewidth" id="153" repeatmin="8" repeatmax="8" type="integer" length="32" lengthunit="bit" signed="yes" endian="little"/>
+            <number name="dropvolume" id="154" type="float" length="64" lengthunit="bit" endian="little"/>
+        </structure>
+    </grammar>
+</ufwb>
