@@ -15,7 +15,10 @@ def interpolate(dict,x0):
     if lowbound is None or highbound is None:
         return None
 
-    y0=(x0-lowbound[0])/(highbound[0]-lowbound[0])*(highbound[1]-lowbound[1]) + lowbound[1]
+    if highbound[0]==lowbound[0]:
+        y0=(highbound[1]+lowbound[1])/2.0
+    else:
+        y0=(x0-lowbound[0])/(highbound[0]-lowbound[0])*(highbound[1]-lowbound[1]) + lowbound[1]
     #print "x0=",x0,", y0=",y0,", low=",lowbound,", high=",highbound
     #print "interp(",dict,",",x0,")=",y0
     return y0
