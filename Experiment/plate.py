@@ -169,8 +169,9 @@ class Plate(object):
         if self.minspeeds is not None:
             minspeed=interpolate(self.minspeeds,minvol)
         if minspeed is None:
-            print "ERROR: No shaker min speed data for volume of %.0f ul, assuming 2500 rpm"%minvol
-            minspeed=2500
+            if globals.verbose:
+                print "NOTICE: No shaker min speed data for volume of %.0f ul, assuming 1900 rpm"%minvol
+            minspeed=1900
             
         # Theoretical minimum mixing speed
         # From: http://www.qinstruments.com/en/applications/optimization-of-mixing-parameters.html
