@@ -8,14 +8,15 @@ def interpolate(dict,x0):
     lowbound=None
     highbound=None
     for x,y in dict.iteritems():
-        if x>=x0 and (lowbound is None or lowbound[0]<x):
+        if x<=x0 and (lowbound is None or lowbound[0]<x):
             lowbound=(x,y)
-        if x<=x0 and (highbound is None or highbound[0]>x):
+        if x>=x0 and (highbound is None or highbound[0]>x):
             highbound=(x,y)
     if lowbound is None or highbound is None:
         return None
 
     y0=(x0-lowbound[0])/(highbound[0]-lowbound[0])*(highbound[1]-lowbound[1]) + lowbound[1]
+    #print "x0=",x0,", y0=",y0,", low=",lowbound,", high=",highbound
     #print "interp(",dict,",",x0,")=",y0
     return y0
 
@@ -157,6 +158,7 @@ class Plate(object):
         maxspeed=None
         if self.maxspeeds is not None:
             maxspeed=interpolate(self.maxspeeds,maxvol)
+            #print "vol=",maxvol,", maxspeeds=",self.maxspeeds," -> ",maxspeed
         if maxspeed is None:
             print "ERROR: No shaker max speed data for volume of %.0f ul, assuming 1000 rpm"%maxvol
             maxspeed=1000
