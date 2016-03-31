@@ -13,7 +13,7 @@ grenmaxspeeds={150:1750,125:1900,100:1950,75:2200,50:2200}	# From shaketest expe
 eppmaxspeeds={195:1600,150:1900,125:2000,100:2050,75:2150,50:2150,25:2400} # From shaketest experiment 3/27/16
 eppminspeeds={32:1800,64:1700,96:1400,200:1300}
 #  SAMPLEPLATE=Plate("Samples",4,3,12,8,False,unusableVolume=15,maxVolume=200,zmax=1028,angle=17.5,r1=2.80,h1=10.04,v0=10.8,vectorName="Microplate Landscape",maxspeeds=hspmaxspeeds)  # HSP96xx
-SAMPLEPLATE=Plate("Samples",4,3,12,8,False,unusableVolume=15,maxVolume=200,zmax=1028,angle=17.5,r1=2.69,h1=8.94,v0=13.2,vectorName="Microplate Landscape",maxspeeds=eppmaxspeeds)  # EppLoBind
+SAMPLEPLATE=Plate("Samples",4,3,12,8,False,unusableVolume=15,maxVolume=200,zmax=1028,angle=17.5,r1=2.69,h1=8.94,v0=13.2,vectorName="Microplate Landscape",maxspeeds=eppmaxspeeds,minspeeds=eppminspeeds)  # EppLoBind
 SAMPLEPLATE.wells=SAMPLEPLATE.wells[1:-1]	 # Skip A1 and H12 due to leakage
 SHAKERPLATELOC=Plate("Shaker",9,0,1,1)
 #    READERPLATE=Plate("Reader",4,1,12,8,False,15)
