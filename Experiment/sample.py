@@ -489,7 +489,8 @@ class Sample(object):
         for s in __allsamples:
             if plate==s.plate.name and s.volume>0:
                 s.lastMixed=None
-                s.wellMixed=False
+                # Don't set wellMixed to false though -- if it was well mixed before, then any shaking will bring down condensation and it should be well mixed
+                #s.wellMixed=False
                 
     def addingredients(self,src,vol):
         'Update ingredients by adding ingredients from src'
