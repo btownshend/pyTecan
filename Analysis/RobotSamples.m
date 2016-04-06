@@ -196,7 +196,7 @@ classdef RobotSamples < handle
             template=root;
             stage='';
           end
-          %fprintf('%s -> %s & %s\n', root, template, stage);
+          fprintf('%s -> %s & %s\n', root, template, stage);
           obj.templates=union(obj.templates,template,'stable');
           obj.suffixes=union(obj.suffixes,stage,'stable');
         end        
