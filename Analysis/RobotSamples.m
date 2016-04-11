@@ -485,14 +485,19 @@ classdef RobotSamples < handle
 
     end
 
-    function analyze(obj)
+    function analyze(obj,domelt)
+      if nargin<2
+        domelt=false;
+      end
       if ~obj.wellsProcessed
         obj.processWells();
       end
       obj.printconcs();
       setfig('qpcr');clf;
       obj.q.plot();
-      obj.plotmelt('all');
+      if domelt
+        obj.plotmelt('all');
+      end
       pdfsavefig('all');
     end
   end
