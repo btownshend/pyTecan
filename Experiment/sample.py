@@ -64,7 +64,7 @@ class Sample(object):
         plates=set([s.plate for s in __allsamples])
         for p in sorted(plates, key=lambda p:p.name.upper()):
             print >>fd,"Samples in plate: ",p
-            for s in __allsamples:
+            for s in sorted(__allsamples, key=lambda p:p.well):
                 if len(s.history)==0:
                     continue   # Not used
                 if s.plate==p:
