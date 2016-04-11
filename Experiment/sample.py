@@ -86,7 +86,8 @@ class Sample(object):
                 cnt+=1
         return cnt
 
-    def __init__(self,name,plate,well=None,conc=None,volume=0,hasBeads=False,extraVol=50,mixLC=liquidclass.LCMixBottom):
+    def __init__(self,name,plate,well=None,conc=None,volume=0,hasBeads=False,extraVol=50,mixLC=liquidclass.LCMixBottom,firstWell=None):
+        # If firstWell is not None, then it is a hint of the first well position that should be used
         if well!=None and well!=-1:
             if not isinstance(well,int):
                 well=plate.wellnumber(well)
@@ -101,15 +102,30 @@ class Sample(object):
         if well is None:
             # Find first unused well
             found=False
-            for well in plate.wells:
-                found=True
-                for s in __allsamples:
-                    if s.plate==plate and s.well==well:
-                        well=well+1
-                        found=False
+            if firstWell is not None:
+                # First check only wells>=firstWell
+                for well in plate.wells:
+                    if well<firstWell:
+                        continue
+                    found=True
+                    for s in __allsamples:
+                        if s.plate==plate and s.well==well:
+                            well=well+1
+                            found=False
+                            break
+                    if found:
                         break
-                if found:
-                    break
+
+            if not found:
+                for well in plate.wells:
+                    found=True
+                    for s in __allsamples:
+                        if s.plate==plate and s.well==well:
+                            well=well+1
+                            found=False
+                            break
+                    if found:
+                        break
         elif well==-1:
             well=None
 

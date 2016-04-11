@@ -82,9 +82,9 @@ class QSetup(object):
                     vol=min(self.MAXDILVOL,max(self.MINDILVOL,dil*self.TGTINVOL))
                 if not save and i==0 and names is not None:
                     # Need to replace the name in this condition
-                    dest=Sample(diluteName(names[svi],dil),decklayout.DILPLATE)
+                    dest=Sample(diluteName(names[svi],dil),decklayout.DILPLATE,firstWell=intermed.well+4)
                 else:
-                    dest=Sample(diluteName(intermed.name,dil),decklayout.DILPLATE)
+                    dest=Sample(diluteName(intermed.name,dil),decklayout.DILPLATE,firstWell=intermed.well+4)
                 #print "dest=",dest
                 j1=self.jobq.addMultiTransfer(volume=vol*(dil-1)/dil,src=self.dilutant,dest=dest,prereqs=[])
                 prereqs.append(j1)
