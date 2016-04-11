@@ -159,7 +159,7 @@ class QSetup(object):
             print "Blocked jobs remain on queue:"
             self.jobq.dump()
             assert False
-        worklist.userprompt('Starting qPCR setup',timeout=5)
+        worklist.comment('Starting qPCR setup')
         for p in self.allprimers():
             # Build list of relevant entries
             ind=[ i for i in range(len(self.dilProds)) if p in self.primers[i]]
