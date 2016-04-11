@@ -424,7 +424,7 @@ class Experiment(object):
             samps=allsamps
             
         if all([x.isMixed() for x in samps]):
-            print "No need to shake ",plate
+            print "No need to shake ",plate,", but doing so anyway."
             
         maxvol=max([x.volume for x in allsamps])
         minvol=min([x.volume for x in samps if not x.isMixed() ]+[200])
