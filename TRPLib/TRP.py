@@ -103,7 +103,7 @@ class TRP(object):
         #print "After reset, elapsed=%d"%clock.elapsed()
         worklist.reset()
         self.e=Experiment()
-        self.e.setreagenttemp(6.0)
+        self.e.setreagenttemp(globals.dewpoint)
         self.e.sanitize(3,50)    # Heavy sanitize
         reagents.reset()
         Sample.clearall()
@@ -834,9 +834,7 @@ class TRP(object):
         print "Estimating evaporation for dew point of %.1f C"%args.dewpoint
         globals.dewpoint=args.dewpoint
 
-        self.e=Experiment()
-        self.e.setreagenttemp(args.dewpoint)
-        self.e.sanitize(3,50)    # Heavy sanitize
+        self.reset()
 
         self.setup()
         if args.verbose:
