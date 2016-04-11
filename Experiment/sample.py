@@ -469,7 +469,7 @@ class Sample(object):
         'Add history entry to all samples (such as # during thermocycling)'
         for s in __allsamples:
             if (onlyplate is None or onlyplate==s.plate.name) and (not onlybeads or s.hasBeads):
-                if len(s.history)>0:
+                if len(s.history)>0 or s.volume>0:
                     s.history+=" "+msg
                 elif addToEmpty:
                     s.history=msg
