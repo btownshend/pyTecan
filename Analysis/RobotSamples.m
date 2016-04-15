@@ -423,30 +423,33 @@ classdef RobotSamples < handle
 
       obj.sv=[];
       obj.rsv=[];
+      nrowsprinted=99;   % Default so we print headers first time
       for i=1:length(obj.templates)
-        fprintf('%-40.40s ','');
-        fprintf('  Dil ');
-        ref=[];
-        for j=1:length(obj.primers())
-          fprintf('%8s ',obj.primers(j));
-          if strcmp(obj.primers(j),args.refprimer)
-            ref=j;
-          end
-        end
-        if ~isempty(ref)
-          fprintf('%s',blanks(7));
+        if nrowsprinted>=2
+          fprintf('%-40.40s ','');
+          fprintf('  Dil ');
+          ref=[];
           for j=1:length(obj.primers())
-            if j~=ref
-              fprintf('%6s ',obj.primers(j));
+            fprintf('%8s ',obj.primers(j));
+            if strcmp(obj.primers(j),args.refprimer)
+              ref=j;
             end
           end
+          if ~isempty(ref)
+            fprintf('%s',blanks(7));
+            for j=1:length(obj.primers())
+              if j~=ref
+                fprintf('%6s ',obj.primers(j));
+              end
+            end
+          end
+          fprintf('\n');
         end
-        fprintf('\n');
         fprintf('%-46.46s ','');
         for j=1:length(obj.primers())
           fprintf('%8d ',obj.getlength(obj.templates{i},obj.primers(j)));
         end
-        if ~isempty(ref)
+        if ~isempty(ref) && nrowsprinted>=2
           fprintf('%s',blanks(7));
           for j=1:length(obj.primers())
             if j~=ref
@@ -456,6 +459,8 @@ classdef RobotSamples < handle
           fprintf('* %.1f nM',obj.options.refconc);
         end
         fprintf('\n');
+
+        nrowsprinted=0;
         for j=1:length(obj.suffixes)
           nm=[obj.templates{i},obj.suffixes{j}];
           if isKey(obj.qsamps,nm)
@@ -478,9 +483,12 @@ classdef RobotSamples < handle
               fprintf('%6.1f ',obj.sv(i,j,[1:ref-1,ref+1:end]));
             end
             fprintf('\n');
+            nrowsprinted=nrowsprinted+1;
           end
         end
-        fprintf('\n');
+        if nrowsprinted>=2
+          fprintf('\n');
+        end
       end
 
     end
