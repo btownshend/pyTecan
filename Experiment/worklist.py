@@ -245,6 +245,9 @@ def dispense(tipMask,wells, liquidClass, volume, loc):
 def mix(tipMask,wells, liquidClass, volume, loc, cycles=3, allowDelay=True):
     aspirateDispense('Mix',tipMask,wells, liquidClass, volume, loc, cycles, allowDelay)
 
+def detectLiquid(tipMask,wells,liquidClass,loc):
+    aspirateDispense('Detect_Liquid',tipMask,wells, liquidClass, 0, loc,allowDelay=False)
+
 def aspirateDispense(op,tipMask,wells, liquidClass, volume, loc, cycles=None,allowDelay=True):
     'Execute or queue liquid handling operation'
     assert isinstance(loc,Plate)
@@ -272,7 +275,9 @@ def aspirateDispense(op,tipMask,wells, liquidClass, volume, loc, cycles=None,all
         clock.pipetting+=5.51+3.23   # Extra for conditioning volume
     elif op=='AspirateNC':
         clock.pipetting+=5.51
-
+    elif op=='Detect_Liquid':
+        clock.pipetting+=5.51
+        
     comment("*%s tip=%d well=%s.%s vol=%s lc=%s"%(op,tipMask,str(loc),str(wells),str(volume),str(liquidClass)))
     # Update volumes
     for i in range(len(wells)):
@@ -363,6 +368,8 @@ def aspirateDispense(op,tipMask,wells, liquidClass, volume, loc, cycles=None,all
         wlist.append( '%s(%d,"%s",%s,%d,%d,%d,"%s",%d,0)'%(op,tipMask,liquidClass,volstr,loc.grid,loc.pos-1,spacing,ws,cycles))
     elif op=="AspirateNC":
         wlist.append( '%s(%d,"%s",%s,%d,%d,%d,"%s",0)'%("Aspirate",tipMask,liquidClass,volstr,loc.grid,loc.pos-1,spacing,ws))
+    elif op=="Detect_Liquid":
+        wlist.append( '%s(%d,"%s",%d,%d,%d,"%s",0)'%(op,tipMask,liquidClass,loc.grid,loc.pos-1,spacing,ws))
     else:
         wlist.append( '%s(%d,"%s",%s,%d,%d,%d,"%s",0)'%(op,tipMask,liquidClass,volstr,loc.grid,loc.pos-1,spacing,ws))
     if op=="Aspirate":
@@ -603,6 +610,17 @@ def pyrun( cmd):
     userprompt(msg)
     comment(label)
 
+def testvar(var,op,value):
+    'Test if a variable pass test'
+    global lnum
+    label='L%d'%lnum
+    lnum=lnum+1
+    condition(var,op,value,label)
+    msg='Failed %s (=~%s~)%s%s'%(var,var,op,value)
+    email(dest='cdsrobot@gmail.com',subject=msg)
+    userprompt(msg)
+    comment(label)
+    
 def dump():
     'Dump current worklist'
     flushQueue()

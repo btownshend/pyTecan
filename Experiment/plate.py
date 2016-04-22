@@ -159,6 +159,20 @@ class Plate(object):
         #print "h0=",h0,", v1=",v1,", h=",height,", vol=",volume,", h=",self.getliquidheight(volume)
         return volume
 
+    def getgemliquidvolume(self,height):
+        'Compute liquid volume given height above zmax in mm the way Gemini will do it'
+        if self.angle is None:
+            return None
+
+        h0=self.h1-self.r1/math.tan(self.angle/2)
+        v1=math.pi/3*(self.h1-h0)*self.r1*self.r1-self.v0
+        if height>self.h1:
+            volume=(height-self.h1)*math.pi*self.r1*self.r1+v1
+        else:
+            volume=(height-h0)**3*math.pi/3*(self.r1/(self.h1-h0))**2-self.v0
+        #print "h0=",h0,", v1=",v1,", h=",height,", vol=",volume,", h=",self.getliquidheight(volume)
+        return volume
+
     def getmixspeeds(self,minvol,maxvol):
         'Get shaker speed range for given well volume'
         maxspeed=None

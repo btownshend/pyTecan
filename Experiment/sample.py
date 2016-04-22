@@ -155,9 +155,11 @@ class Sample(object):
         self.volume=volume
         if volume>0:
             self.ingredients={name:volume}
+            self.firstaccess=True
         else:
             self.ingredients={}
-
+            self.firstaccess=False
+            
         if plate.pierce:
             self.bottomLC=liquidclass.LCWaterPierce
             self.bottomSideLC=self.bottomLC  # Can't use side with piercing
@@ -317,6 +319,21 @@ class Sample(object):
             nloop+=1
         return volume
         
+    def volcheck(self,tipMask,well,lc):
+        '''Check if the well contains the expected volume'''
+        return
+        print "Check that ",self.name," contains ",self.volume," before first aspirate"
+        self.firstaccess = False
+        worklist.detectLiquid(tipMask,well,lc,self.plate)
+        height=self.plate.getliquidheight(self.volume)
+        gemvol=1 # self.plate.getgemliquidvolume(height)	# Volume that would be reported by Gemini for this height
+        tipnum=0
+        while tipMask>0:
+            tipMask=tipMask>>1
+            tipnum+=1
+        worklist.testvar("detected_volume_%d"%tipnum,">",gemvol)
+        self.addhistory("LD",0,tipMask)
+        
     def aspirate(self,tipMask,volume,multi=False):
         self.evapcheck('aspirate')
         if self.plate.curloc=='PTC':
@@ -347,6 +364,10 @@ class Sample(object):
             well=[self.well]
 
         lc=self.chooseLC(volume)
+
+        if self.firstaccess:
+            self.volcheck(tipMask,well,lc)
+            
         if self.hasBeads and self.plate.curloc=="Magnet":
             # With beads don't do any manual conditioning and don't remove extra (since we usually want to control exact amounts left behind, if any)
             worklist.aspirateNC(tipMask,well,lc,volume,self.plate)
