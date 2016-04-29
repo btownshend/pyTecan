@@ -167,16 +167,20 @@ class Plate(object):
 
     def getgemliquidvolume(self,height):
         'Compute liquid volume given height above zmax in mm the way Gemini will do it'
-        if self.angle is None:
-            return None
-
-        h0=self.h1-self.r1/math.tan(self.angle/2)
-        v1=math.pi/3*(self.h1-h0)*self.r1*self.r1-self.v0
-        if height>self.h1:
-            volume=(height-self.h1)*math.pi*self.r1*self.r1+v1
+        if height==None:
+            volume=None
+        elif self.gemShape=='flat':
+            volume=self.gemArea*height
+        elif self.gemShape=='v-shaped':
+            r0=math.sqrt(self.gemArea/math.pi)
+            if height<self.gemDepth:
+                'conical'
+                r=height/self.gemDepth*r0
+                volume=1.0/3*math.pi*r*r*height
+            else:
+                volume=1.0/3*math.pi*r0*r0*self.gemDepth+self.gemArea*(height-self.gemDepth)
         else:
-            volume=(height-h0)**3*math.pi/3*(self.r1/(self.h1-h0))**2-self.v0
-        #print "h0=",h0,", v1=",v1,", h=",height,", vol=",volume,", h=",self.getliquidheight(volume)
+            volume=None
         return volume
 
     def getmixspeeds(self,minvol,maxvol):
