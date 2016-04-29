@@ -610,13 +610,14 @@ def pyrun( cmd):
     userprompt(msg)
     comment(label)
 
-def testvar(var,op,value):
+def testvar(var,op,value,msg=None):
     'Test if a variable pass test'
     global lnum
     label='L%d'%lnum
     lnum=lnum+1
     condition(var,op,value,label)
-    msg='Failed %s (=~%s~)%s%s'%(var,var,op,value)
+    if msg is None:
+        msg='Failed %s (=~%s~)%s%s'%(var,var,op,value)
     email(dest='cdsrobot@gmail.com',subject=msg)
     userprompt(msg)
     comment(label)
