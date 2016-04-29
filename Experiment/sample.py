@@ -321,17 +321,23 @@ class Sample(object):
         
     def volcheck(self,tipMask,well,lc):
         '''Check if the well contains the expected volume'''
-        return
-        print "Check that ",self.name," contains ",self.volume," before first aspirate"
+        #return
         self.firstaccess = False
-        worklist.detectLiquid(tipMask,well,lc,self.plate)
         height=self.plate.getliquidheight(self.volume)
-        gemvol=1 # self.plate.getgemliquidvolume(height)	# Volume that would be reported by Gemini for this height
+        gemvol=self.plate.getgemliquidvolume(height)	# Volume that would be reported by Gemini for this height
+        if gemvol is None:
+            print "No volume equation for %s, skipping initial volume check"%self.name
+            return
+        worklist.flushQueue()
+        worklist.comment( "Check that %s contains %.1f ul before first aspirate (gemvol=%.1f)"%(self.name,self.volume,gemvol))
         tipnum=0
-        while tipMask>0:
-            tipMask=tipMask>>1
+        tm=tipMask
+        while tm>0:
+            tm=tm>>1
             tipnum+=1
-        worklist.testvar("detected_volume_%d"%tipnum,">",gemvol)
+        worklist.variable('detected_volume_%d'%tipnum,-2)
+        worklist.detectLiquid(tipMask,well,lc,self.plate)
+        worklist.testvar("detected_volume_%d"%tipnum,">",min(1000,gemvol*0.8),msg="Failed volume check of %s - should have  %.0f ul"%(self.name,self.volume))
         self.addhistory("LD",0,tipMask)
         
     def aspirate(self,tipMask,volume,multi=False):
