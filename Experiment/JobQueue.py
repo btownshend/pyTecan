@@ -1,5 +1,5 @@
 '''Queue of jobs to be executed during idle times'''
-import Experiment
+from Experiment.experiment import Experiment
 import logging
 
 class JobQueue(object):

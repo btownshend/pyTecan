@@ -154,7 +154,7 @@ class Sample(object):
         else:
             self.ingredients={}
             self.firstaccess=False
-            
+
         if plate.pierce:
             self.bottomLC=liquidclass.LCWaterPierce
             self.bottomSideLC=self.bottomLC  # Can't use side with piercing
@@ -193,7 +193,7 @@ class Sample(object):
             return True
         else:
             return clock.elapsed()-self.lastMixed < BEADSETTLINGTIME
-        
+
     def sampleWellPosition(self):
         'Convert a sample well number to a well position as used by Gemini worklist'
         if self.well is None:
@@ -291,12 +291,12 @@ class Sample(object):
             logging.warning(" %s (%s.%s, vol=%.1f ul) may have %.1f ul of evaporation (%.0f%%)"%(self.name,str(self.plate),self.plate.wellname(self.well),self.volume,self.evap,pctevap))
             self.history= self.history + (' [Evap: %0.1f ul]'%(self.evap))
         self.lastevapupdate+=dt
-        
+
     def amountToRemove(self,tgtVolume):
         'Calculate amount of volume to remove from sample to hit tgtVolume'
         self.evapcheck('check')
         volume=self.volume-tgtVolume	# Run through with nominal volume
-        removed=0
+        removed=0.0
         nloop=0
         while abs(self.volume-removed-tgtVolume)>0.1 and nloop<5:
             if nloop>0:
@@ -312,7 +312,7 @@ class Sample(object):
             #print "Removing %.1f from %.1f leaves %.1f (tgt=%.1f)"%(volume,self.volume,self.volume-removed,tgtVolume)
             nloop+=1
         return volume
-        
+
     def volcheck(self,tipMask,well,lc):
         '''Check if the well contains the expected volume'''
         #return
@@ -333,7 +333,7 @@ class Sample(object):
         worklist.detectLiquid(tipMask,well,lc,self.plate)
         worklist.testvar("detected_volume_%d"%tipnum,">",min(1000,gemvol*0.8),msg="Failed volume check of %s - should have  %.0f ul"%(self.name,self.volume))
         self.addhistory("LD",0,tipMask)
-        
+
     def aspirate(self,tipMask,volume,multi=False):
         self.evapcheck('aspirate')
         if self.plate.curloc=='PTC':
@@ -353,7 +353,7 @@ class Sample(object):
                 logging.warning("Aspirate %.1f ul from unmixed sample %s. "%(volume,self.name))
         if not self.wellMixed and self.plate.curloc!="Magnet":
             logging.warning("Aspirate %.1f ul from poorly mixed sample %s (shake speed was too low). "%(volume,self.name))
-                
+
         if self.well is None:
             well=[]
             for i in range(4):
@@ -366,7 +366,7 @@ class Sample(object):
 
         if self.firstaccess:
             self.volcheck(tipMask,well,lc)
-            
+
         if self.hasBeads and self.plate.curloc=="Magnet":
             # With beads don't do any manual conditioning and don't remove extra (since we usually want to control exact amounts left behind, if any)
             worklist.aspirateNC(tipMask,well,lc,volume,self.plate)
@@ -455,7 +455,7 @@ class Sample(object):
         if self.volume>0:
             self.lastMixed=None
             self.wellMixed=False
-            
+
         if src.hasBeads and src.plate.curloc!="Magnet":
             #print "Set %s to have beads since %s does\n"%(self.name,src.name)
             self.hasBeads=True
@@ -468,22 +468,22 @@ class Sample(object):
     def addhistory(self,name,vol,tip):
         if vol>=0:
             if SHOWTIPS:
-                str="%s[%.1f#%d]"%(name,vol,tip)
+                s="%s[%.1f#%d]"%(name,vol,tip)
             else:
-                str="%s[%.1f]"%(name,vol)
+                s="%s[%.1f]"%(name,vol)
             if len(self.history)>0:
-                self.history=self.history+" +"+str
+                self.history=self.history+" +"+s
             else:
-                self.history=str
+                self.history=s
         elif vol<0:
             if SHOWTIPS:
-                str="%s[%.1f#%d]"%(name,-vol,tip)
+                s="%s[%.1f#%d]"%(name,-vol,tip)
             else:
-                str="%s[%.1f]"%(name,-vol)
+                s="%s[%.1f]"%(name,-vol)
             if len(self.history)>0:
-                self.history=self.history+" -"+str
+                self.history=self.history+" -"+s
             else:
-                self.history="-"+str
+                self.history="-"+s
         name=self.name
         if name=="RNase-Away":
             if tip in tiphistory and tiphistory[tip][-1]=='\n':
@@ -526,7 +526,7 @@ class Sample(object):
                 s.lastMixed=None
                 # Don't set wellMixed to false though -- if it was well mixed before, then any shaking will bring down condensation and it should be well mixed
                 #s.wellMixed=False
-                
+
     def addingredients(self,src,vol):
         'Update ingredients by adding ingredients from src'
         for k in src.ingredients:

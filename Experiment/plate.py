@@ -148,7 +148,7 @@ class Plate(object):
         evaprate=theta*area/1000/1000*(xs-x)*1e6
         #print "Air temp=%.1fC, DP=%.1fC, x=%.3f, xs=%.3f, vol=%.1f ul, area=%.0f mm^2, evaprate=%.3f ul/h"%(self.liquidTemp,self.dewpoint,x,xs,volume,area,evaprate)
         return evaprate*EVAPFUDGE
-    
+
     def getliquidvolume(self,height):
         'Compute liquid volume given height above zmax in mm'
         if self.angle is None:
@@ -199,7 +199,7 @@ class Plate(object):
             assumeSpeed=1900
             logging.notice("No shaker min speed data for volume of %.0f ul, assuming %.0f rpm"%(minvol,assumeSpeed))
             minspeed=assumeSpeed
-            
+
         # Theoretical minimum mixing speed
         # From: http://www.qinstruments.com/en/applications/optimization-of-mixing-parameters.html
         # surftension=71.97  	# Surface tension mN/m (for water, most other substances are lower, so this is conservative)

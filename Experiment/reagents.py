@@ -1,6 +1,7 @@
 # Reagent - a set of samples that are allocated as they are needed
 import sys
 from Experiment.sample import Sample
+import logging
 import decklayout
 
 __allReagents={}

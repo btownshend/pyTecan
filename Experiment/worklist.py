@@ -6,6 +6,7 @@ from zlib import crc32
 
 from plate import Plate
 import clock
+import logging
 
 DITI200=0
 DITI10=2
@@ -257,7 +258,7 @@ def aspirateDispense(op,tipMask,wells, liquidClass, volume, loc, cycles=None,all
         logging.error("Attempt to %s to/from %s at position (%d,%d), which is in ROMA-only area not accessible to LiHa"%(op,loc.name,loc.grid,loc.pos))
 
     liquidClass.markUsed(op)
-    
+
     if type(volume)!=type([]):
         volume=[volume]*len(wells)
 
@@ -276,7 +277,7 @@ def aspirateDispense(op,tipMask,wells, liquidClass, volume, loc, cycles=None,all
         clock.pipetting+=5.51
     elif op=='Detect_Liquid':
         clock.pipetting+=5.51
-        
+
     comment("*%s tip=%d well=%s.%s vol=%s lc=%s"%(op,tipMask,str(loc),str(wells),str(volume),str(liquidClass)))
     # Update volumes
     for i in range(len(wells)):
@@ -619,7 +620,7 @@ def testvar(var,op,value,msg=None):
     email(dest='cdsrobot@gmail.com',subject=msg)
     userprompt(msg)
     comment(label)
-    
+
 def dump():
     'Dump current worklist'
     flushQueue()

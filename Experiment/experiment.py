@@ -80,7 +80,7 @@ class Experiment(object):
         print >>fd,rtime
         reagents.printprep(fd)
         Sample.printallsamples("All Samples:",fd,w=worklist)
-        liquidclass.LC.printalllc("All LC:",fd)
+        liquidclass.LC.printalllc(fd)
         fd.close()
 
     def sanitize(self,nmix=1,deepvol=20,force=False):
@@ -420,10 +420,10 @@ class Experiment(object):
         allsamps=Sample.getAllOnPlate(plate)
         if samps is None:
             samps=allsamps
-            
+
         if all([x.isMixed() for x in samps]):
             logging.notice( "No need to shake "+plate.name+", but doing so anyway.")
-            
+
         maxvol=max([x.volume for x in allsamps])
         minvol=min([x.volume for x in samps if not x.isMixed() ]+[200])
         (minspeed,maxspeed)=plate.getmixspeeds(minvol*0.95,maxvol+5)	# Assume volumes could be off
@@ -446,7 +446,7 @@ class Experiment(object):
                     msg+="%s[%.1ful, max=%.0f RPM] "%(x.name,x.volume,tmp[1]),
             warned=True
             logging.warning(msg)
-            
+
         if globals.verbose and speed<minspeed:
             msg="%s plate contains unmixed wells that may not be mixed at %d RPM: "%(plate.name, speed),
             for x in samps:
