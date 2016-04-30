@@ -337,7 +337,7 @@ class TRP(object):
         for i in range(len(src)):
             self.e.transfer(beadvol[i],beads[i],src[i],(True,True))	# Mix beads after (before mixing handled automatically by sample.py)
 
-        self.e.shake(src[0].plate,dur=incTime,returnPlate=False)
+        self.e.shakeSamples(src,dur=incTime,returnPlate=False)
 
     def sepWait(self,src,sepTime=None):
         if sepTime is None:
@@ -397,13 +397,13 @@ class TRP(object):
                 for i in range(len(src)):
                     src[i].conc=None
                     self.e.transfer(washVol-src[i].volume,wash[i],src[i],mix=(False,True))	# Add wash
-                self.e.shake(src[0].plate,returnPlate=True)
+                self.e.shakeSamples(src,returnPlate=True)
                 self.saveSamps(src=src,tgt=finalTgt,vol=keepVol,dil=keepDil,plate=decklayout.DILPLATE)
             else:
                 for i in range(len(src)):
                     src[i].conc=None
                     self.e.transfer(washVol-src[i].volume,wash[i],src[i],mix=(False,False))	# Add wash, no need to pipette mix since some heterogenity won't hurt here
-                self.e.shake(src[0].plate,returnPlate=False)
+                    self.e.shakeSamples(src,returnPlate=False)
 
             self.e.moveplate(src[0].plate,"Magnet")	# Move to magnet
                 
@@ -438,9 +438,9 @@ class TRP(object):
                 print "  src=",src[i]
             self.e.transfer(elutionVol[i]-src[i].volume,elutant[i],src[i],(False,True))	
         if temp is None:
-            self.e.shake(src[0].plate,dur=eluteTime,returnPlate=returnPlate)
+            self.e.shakeSamples(src,dur=eluteTime,returnPlate=returnPlate)
         else:
-            self.e.shake(src[0].plate,dur=30,returnPlate=False)
+            self.e.shakeSamples(src,dur=30,returnPlate=False)
             worklist.pyrun('PTC\\ptcsetpgm.py elute TEMP@%d,%d TEMP@25,2'%(temp,eluteTime))
             self.e.runpgm("elute",eluteTime/60,False,elutionVol[0])
             if returnPlate:
