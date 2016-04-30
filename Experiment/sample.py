@@ -575,7 +575,7 @@ class Sample(object):
         well=[self.well if self.well!=None else 2**(tipMask-1)-1 ]
         mixprefillvol=5
         if mixvol<self.plate.unusableVolume-mixprefillvol:
-            #print "Not enough volume in sample %s to mix"%self.name
+            print "NOTICE: Not enough volume in sample %s (%.1f) to mix"%(self.name,self.volume)
             self.history+="(UNMIXED)"
             return False
         else:
