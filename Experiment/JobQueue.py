@@ -1,5 +1,6 @@
 '''Queue of jobs to be executed during idle times'''
-from experiment import Experiment
+import Experiment
+import logging
 
 class JobQueue(object):
     '''Queue of jobs to be executed during idle times'''
@@ -61,7 +62,7 @@ class JobQueue(object):
         'Return the next job on the queue to execute, removing it from queue'
 
         if self.runningJob!=None:
-            print "Call of getJob() while a job is running - returning None"
+            logging.warning("Call of getJob() while a job is running - returning None")
             return None
 
         # Remove any shake jobs that are unneeded
@@ -129,7 +130,8 @@ class JobQueue(object):
                 print "multitransfer(",job['volume'],", ",job['src'].name,",".join([x.name for x in job['dest']]),")",
             e.multitransfer(job['volume'],job['src'],job['dest'])
         else:
-            assert False
+            logging.error("Internal error")
+
         if self.debug:
             print
         self.removeJob(id)

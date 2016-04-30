@@ -42,7 +42,7 @@ class QSetup(object):
                 if needDil/saveDil>1 and needDil/saveDil<2:
                     saveDil=math.sqrt(needDil)
             elif saveDil>needDil:
-                print "addSamples: saveDil=",saveDil, ", but needDil is only ", needDil
+                logging.warning("addSamples: saveDil=",saveDil, ", but needDil is only ", needDil)
                 saveDil=needDil
     
             if saveVol is None:
@@ -156,7 +156,7 @@ class QSetup(object):
         self.idler(100000)
         
         if self.jobq.len()>0:
-            print "Blocked jobs remain on queue:"
+            logging.error( "Blocked jobs remain on queue:",fatal=False)
             self.jobq.dump()
             assert False
         worklist.comment('Starting qPCR setup')

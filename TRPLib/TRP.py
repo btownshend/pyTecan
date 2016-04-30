@@ -114,7 +114,7 @@ class TRP(object):
     def addTemplates(self,names,stockconc,finalconc=None,units="nM",plate=decklayout.EPPENDORFS):
         'Add templates as "reagents", return the list of them'
         if finalconc is None:
-            print "WARNING: final concentration of template not specified, assuming 0.6x (should add to addTemplates() call"
+            logging.warning("final concentration of template not specified, assuming 0.6x (should add to addTemplates() call")
             [names,stockconc]=listify([names,stockconc])
             finalconc=[0.6*x for x in stockconc]
         else:
@@ -134,17 +134,16 @@ class TRP(object):
         hasError=False
         for s in Sample.getAllOnPlate():
             if s.volume<1.0 and s.conc is not None and not s.hasBeads:
-                print "ERROR: Insufficient volume for ", s," need at least ",1.0-s.volume," ul additional"
+                logging.error("Insufficient volume for ", s," need at least ",1.0-s.volume," ul additional",fatal=False)
                 #hasError=True
             elif s.volume<2.5 and s.conc is not None:
-                print "WARNING: Low final volume for ", s
+                logging.warning("Low final volume for ", s)
             elif s.volume>s.plate.maxVolume:
-                print "ERROR: Excess final volume  (",s.volume,") for ",s,", maximum is ",s.plate.maxVolume
+                logging.erorr("Excess final volume  (",s.volume,") for ",s,", maximum is ",s.plate.maxVolume,fatal=False)
                 hasError=True
                 
         if hasError:
-            print "NO OUTPUT DUE TO ERRORS"
-            assert(False)
+            logging.error("NO OUTPUT DUE TO ERRORS")
             
         print "Wells used:  samples: %d, dilutions: %d, qPCR: %d"%(Sample.numSamplesOnPlate(decklayout.SAMPLEPLATE),Sample.numSamplesOnPlate(decklayout.DILPLATE),Sample.numSamplesOnPlate(decklayout.QPCRPLATE))
         # Save worklist to a file
@@ -201,8 +200,8 @@ class TRP(object):
             elif finalvol[i] is None and dil[i] is not None:
                 self.e.transfer(tgt[i].volume*(dil[i]-1),dilutant,tgt[i],mix=(False,False))
             else:
-                print "diluteInPlace: cannot specify both dil and finalvol"
-                assert(False)
+                logging.error("diluteInPlace: cannot specify both dil and finalvol")
+
         #print "after dilute, tgt[0]=",str(tgt[0]),",mixed=",tgt[0].isMixed()
         return tgt   #  The name of the samples are unchanged -- the predilution names
 
@@ -215,8 +214,8 @@ class TRP(object):
         mastervol=[vol[i]*finalx/master[i].conc.dilutionneeded() for i in range(len(vol))]
         watervol=[vol[i]-src[i].volume-mastervol[i] for i in range(len(vol))]
         if any([w < -0.01 for w in watervol]):
-            print "runRxInPlace: negative amount of water needed: ",w
-            assert(False)
+            logging.error("runRxInPlace: negative amount of water needed: %.1f"%w)
+
         for i in range(len(src)):
             if  watervol[i]>0:
                 self.e.transfer(watervol[i],decklayout.WATER,src[i],(False,False))
@@ -249,8 +248,8 @@ class TRP(object):
             watervols=[vol-sourcevols[i]-rtotal for i in range(len(src))]
 
         if any([w<-1e-10 for w in watervols]):
-            print "runT7Setup: Negative amount of water required: ",watervols
-            assert False
+            logging.error("runT7Setup: Negative amount of water required: "+str(watervols))
+
         if sum(watervols)>0.01:
             self.e.multitransfer(watervols,decklayout.WATER,tgt)
         for ir in range(len(rlist)):
@@ -312,8 +311,8 @@ class TRP(object):
 
         for s in src:
             if s.plate!=decklayout.SAMPLEPLATE:
-                print "runBeadCleanup: src ",s," is not in sample plate."
-                assert(0)
+                logging.error( "runBeadCleanup: src "+s+" is not in sample plate.")
+
             s.conc=None		# Can't track concentration of beads
             
         self.e.moveplate(src[0].plate,"Home")		# Make sure we do this off the magnet
@@ -362,7 +361,7 @@ class TRP(object):
                 washTgt=[]
                 for i in range(len(src)):
                     if s[i].volume-residualVolume+numWashes*(washVol-residualVolume) > decklayout.DILPLATE.maxVolume-20:
-                        print "Saving %.1f ul of wash in eppendorfs"%(numWashes*washVol)
+                        logging.notice("Saving %.1f ul of wash in eppendorfs"%(numWashes*washVol))
                         washTgt.append(Sample("%s.Wash"%src[i].name,decklayout.EPPENDORFS))
                     else:
                         washTgt.append(Sample("%s.Wash"%src[i].name,decklayout.DILPLATE))
@@ -436,8 +435,7 @@ class TRP(object):
         [src,elutionVol,elutant]=listify([src,elutionVol,elutant])
         for i in range(len(src)):
             if elutionVol[i]<30:
-                print "WARNING: elution from beads with %.1f ul < minimum of 30ul"%elutionVol[i]
-                print "  src=",src[i]
+                logging.warning("elution from beads of %s with %.1f ul < minimum of 30ul"%(src[i].name,elutionVol[i]))
             self.e.moveplate(src[i].plate,"Home")
             self.e.transfer(elutionVol[i]-src[i].volume,elutant[i],src[i],(False,True))	
         if temp is None:
@@ -459,8 +457,7 @@ class TRP(object):
         [src,tgt]=listify([src,tgt])
 
         if any([s.plate!=src[0].plate for s in src]):
-            print "beadSupernatant: Attempt to magsep on multiple plates at the same time"
-            assert False
+            logging.error("beadSupernatant: Attempt to magsep on multiple plates at the same time")
 
         self.e.moveplate(src[0].plate,"Magnet")	# Move to magnet
         self.sepWait(src,sepTime)
@@ -554,8 +551,7 @@ class TRP(object):
         minsrcdil=1/(1-1/master[0].conc.dilutionneeded()-1/reagents.getsample("MLigase").conc.dilutionneeded())
         for i in srcdil:
             if i<minsrcdil:
-                print "runLig: srcdil=%.2f, but must be at least %.2f based on concentrations of master mixes"%(i,minsrcdil)
-                assert(False)
+                logging.error("runLig: srcdil=%.2f, but must be at least %.2f based on concentrations of master mixes"%(i,minsrcdil))
 
         # Adjust source dilution
         for i in range(len(src)):
@@ -612,12 +608,10 @@ class TRP(object):
     ########################
     def runIncubation(self,src=None,vol=None,srcdil=None,tgt=None,enzymes=None,incTemp=37,incTime=15,hiTemp=None,hiTime=0,inPlace=False):
         if len(enzymes)!=1:
-            print "ERROR: runIncubation only supports a single master mix"
-            assert False
+            logging.error("runIncubation only supports a single master mix")
         if inPlace:
             if tgt is not None:
-                print "ERROR: tgt specified for in-place incubation"
-                assert False
+                logging.error("tgt specified for in-place incubation")
         elif tgt is None:
             tgt=[Sample("%s.%s"%(src[i].name,enzymes[0].name),decklayout.SAMPLEPLATE) for i in range(len(src))]
 
@@ -697,7 +691,7 @@ class TRP(object):
             suffixvols=[vol[i]/ssuffix[i].conc.dilutionneeded() for i in range(len(src))]
             watervols=[vol[i]-mmvols[i]-prefixvols[i]-suffixvols[i]-sampvols[i] for i in range(len(src))]
 
-            print "water=",watervols,", mm=",mmvols,", prefix=",prefixvols,", suffix=",suffixvols,", samp=",sampvols
+            logging.notice("water=",watervols,", mm=",mmvols,", prefix=",prefixvols,", suffix=",suffixvols,", samp=",sampvols)
             self.e.multitransfer(watervols,decklayout.WATER,tgt,(False,False))		# Transfer water
             self.e.multitransfer(mmvols,mm,tgt,(False,False))	 # PCR master mix
             sprefixset=set(sprefix)
@@ -722,7 +716,7 @@ class TRP(object):
                 
         else:
             primer=[prefix[i]+suffix[i] for i in range(len(prefix))]
-            print "primer=",primer
+            logging.notice( "primer="+str(primer))
             for up in set(primer):
                 s="MPCR%s"%up
                 if not reagents.isReagent(s):
@@ -763,7 +757,7 @@ class TRP(object):
         srcvol=[vol[i]/srcdil[i] for i in range(len(vol))]
         watervol=[vol[i]-srcvol[i] for i in range(len(vol))]
         if len(watervol) > 4 and sum(watervol)>800:
-            print "Could optimize distribution of ",len(watervol)," moves of ",dilutant.name,": vol=[", ["%.1f"%w for w in watervol],"]"
+            logging.notice("Could optimize distribution of "+str(len(watervol))+" moves of "+dilutant.name+": vol=["+str(["%.1f"%w for w in watervol])+"]")
         self.e.multitransfer(watervol,dilutant,tgt,(False,False))
         
         self.e.shakeSamples(src,returnPlate=True)

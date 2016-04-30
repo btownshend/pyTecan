@@ -1,5 +1,6 @@
 import math
 import globals
+import logging
 
 _Plate__allplates=[]
 
@@ -86,7 +87,7 @@ class Plate(object):
             if self.gemShape=='flat':
                 return volume/self.gemArea
             if not self.warned:
-                print "No liquid height equation for plate %s"%self.name
+                logging.warning("No liquid height equation for plate %s"%self.name)
                 self.warned=True
             return None
 
@@ -107,7 +108,7 @@ class Plate(object):
             if self.gemShape=='flat':
                 return self.gemArea
             if not self.warned:
-                print "No liquid height equation for plate %s"%self.name
+                logging.warning("No liquid height equation for plate %s"%self.name)
                 self.warned=True
             return None
 
@@ -190,15 +191,14 @@ class Plate(object):
             maxspeed=interpolate(self.maxspeeds,maxvol)
             #print "vol=",maxvol,", maxspeeds=",self.maxspeeds," -> ",maxspeed
         if maxspeed is None:
-            print "ERROR: No shaker max speed data for volume of %.0f ul, assuming 1000 rpm"%maxvol
+            logging.warning("No shaker max speed data for volume of %.0f ul, assuming 1000 rpm"%maxvol)
             maxspeed=1000
         minspeed=None
         if self.minspeeds is not None:
             minspeed=interpolate(self.minspeeds,minvol)
         if minspeed is None:
             assumeSpeed=1900
-            if globals.verbose:
-                print "NOTICE: No shaker min speed data for volume of %.0f ul, assuming %.0f rpm"%(minvol,assumeSpeed)
+            logging.notice("No shaker min speed data for volume of %.0f ul, assuming %.0f rpm"%(minvol,assumeSpeed))
             minspeed=assumeSpeed
             
         # Theoretical minimum mixing speed
@@ -224,8 +224,7 @@ class Plate(object):
         for i in range(self.nx*self.ny):
             if self.wellname(i)==wellname:
                 return i
-        print "Illegal well name, %s, for plate %s"%(wellname, self.name)
-        assert False
+        logging.error("Illegal well name, %s, for plate %s"%(wellname, self.name))
 
     def __str__(self):
         return self.name

@@ -7,6 +7,7 @@ import reagents
 import decklayout
 import clock
 import globals
+import logging
 
 _Experiment__shakerActive = False
 
@@ -183,11 +184,12 @@ class Experiment(object):
         if volume>self.MAXVOLUME:
             destvol=dest.volume
             reuseTip=destvol<=0
-            print "Splitting large transfer of %.1f ul into smaller chunks < %.1f ul "%(volume,self.MAXVOLUME),
+            msg="Splitting large transfer of %.1f ul into smaller chunks < %.1f ul "%(volume,self.MAXVOLUME)
             if reuseTip:
-                print "with tip reuse"
+                msg+= "with tip reuse"
             else:
-                print "without tip reuse"
+                msg+= "without tip reuse"
+            logging.notice(msg)
             self.transfer(self.MAXVOLUME,src,dest,mix,getDITI,False)
             self.transfer(volume-self.MAXVOLUME,src,dest,(mix[0] and not reuseTip,mix[1]),False,dropDITI)
             return
@@ -240,11 +242,12 @@ class Experiment(object):
             self.waitpgm()
         if volume>self.MAXVOLUME:
             reuseTip=False   # Since we need to wash to get rid of it
-            print "Splitting large transfer of %.1f ul into smaller chunks < %.1f ul "%(volume,self.MAXVOLUME),
+            msg="Splitting large transfer of %.1f ul into smaller chunks < %.1f ul "%(volume,self.MAXVOLUME),
             if reuseTip:
-                print "with tip reuse"
+                msg+= "with tip reuse"
             else:
-                print "without tip reuse"
+                msg+= "without tip reuse"
+            logging.notice(msg)
             self.dispose(self.MAXVOLUME,src,mix,getDITI,dropDITI)
             self.dispose(volume-self.MAXVOLUME,src,False,getDITI,dropDITI)
             return
@@ -280,7 +283,7 @@ class Experiment(object):
         # print "\nStage: ", stagename, "reagents=",[str(r) for r in reagents], ",sources=",[str(s) for s in sources],",samples=",[str(s) for s in samples],str(volume)
 
         if len(samples)==0:
-            print "No samples\n"
+            logging.notice("No samples")
             return
 
         if dilutant is None:
@@ -303,11 +306,11 @@ class Experiment(object):
             watervols=[volume[i]*(1-sum(reagentvols))-samples[i].volume for i in range(len(samples))]
 
         if min(watervols)<-0.01:
-            print "Error: Ingredients add up to more than desired volume by %.1f ul"%(-min(watervols))
+            msg="Error: Ingredients add up to more than desired volume by %.1f ul"%(-min(watervols))
             for s in samples:
                 if s.volume>0:
-                    print "Note: %s already contains %.1f ul\n"%(s.name,s.volume)
-            assert False
+                    msg=msg+" Note: %s already contains %.1f ul\n"%(s.name,s.volume)
+            logging.error(msg)
 
         if sum(watervols)>0.01:
             self.multitransfer(watervols,dilutant,samples,(False,destMix and (len(reagents)+len(sources)==0)))
@@ -327,11 +330,9 @@ class Experiment(object):
 
     def runpgm(self,pgm,duration,waitForCompletion=True,volume=10,hotlidmode="TRACKING",hotlidtemp=1):
         if self.ptcrunning:
-            print "ERROR: Attempt to start a progam on PTC when it is already running"
-            assert False
+            logging.error("Attempt to start a progam on PTC when it is already running")
         if len(pgm)>8:
-            print "ERROR: PTC program name (%s) too long (max is 8 char)"%pgm
-            assert False
+            logging.error("PTC program name (%s) too long (max is 8 char)"%pgm)
         # move to thermocycler
         worklist.flushQueue()
         self.lihahome()
@@ -361,8 +362,7 @@ class Experiment(object):
 
         # move to given destination (one of "Home","Magnet","Shaker","PTC" )
         if plate!=decklayout.SAMPLEPLATE and plate!=decklayout.DILPLATE:
-            print "Only able to move %s or %s plates, not %s"%(decklayout.SAMPLEPLATE.name,decklayout.DILPLATE.name,plate.name)
-            assert False
+            logging.error("Only able to move %s or %s plates, not %s"%(decklayout.SAMPLEPLATE.name,decklayout.DILPLATE.name,plate.name))
 
         if plate.curloc==dest:
             #print "Plate %s is already at %s"%(plate.name,dest)
@@ -382,8 +382,7 @@ class Experiment(object):
         elif plate.curloc=="PTC":
             worklist.vector("PTC200",decklayout.PTCPOS,worklist.SAFETOEND,True,worklist.DONOTMOVE,worklist.CLOSE)
         else:
-            print "Plate %s is in unknown location: %s"%(plate.name,plate.curloc)
-            assert False
+            logging.error("Plate %s is in unknown location: %s"%(plate.name,plate.curloc))
 
         if dest=="Home":
             plate.movetoloc(dest)
@@ -398,8 +397,7 @@ class Experiment(object):
             plate.movetoloc(dest,decklayout.PTCPOS)
             worklist.vector("PTC200",decklayout.PTCPOS,worklist.SAFETOEND,True,worklist.DONOTMOVE,worklist.OPEN)
         else:
-            print "Attempt to move plate %s to unknown location: %s"%(plate.name,dest)
-            assert False
+            logging.error("Attempt to move plate %s to unknown location: %s"%(plate.name,dest))
 
         Sample.addallhistory("{->%s}"%dest,onlyplate=plate.name)
         if returnHome:
@@ -424,14 +422,14 @@ class Experiment(object):
             samps=allsamps
             
         if all([x.isMixed() for x in samps]):
-            print "No need to shake ",plate,", but doing so anyway."
+            logging.notice( "No need to shake "+plate.name+", but doing so anyway.")
             
         maxvol=max([x.volume for x in allsamps])
         minvol=min([x.volume for x in samps if not x.isMixed() ]+[200])
         (minspeed,maxspeed)=plate.getmixspeeds(minvol*0.95,maxvol+5)	# Assume volumes could be off
 
         if minspeed>maxspeed:
-            print "minspeed(",minspeed,") > maxspeed (",maxspeed,")"
+            logging.warning("minspeed(%.0f) > maxspeed(%.0f)"%(minspeed,maxspeed))
         if speed is None:
             if minspeed<maxspeed:
                 speed=(maxspeed+minspeed)/2
@@ -441,27 +439,29 @@ class Experiment(object):
         warned=False
 
         if speed>maxspeed:
-            print "WARNING: %s plate contains wells with up to %.2f ul, which may spill at %d RPM: "%(plate.name, maxvol, speed),
+            msg="%s plate contains wells with up to %.2f ul, which may spill at %d RPM: "%(plate.name, maxvol, speed),
             for x in samps:
                 tmp=plate.getmixspeeds(x.volume,x.volume)
                 if tmp[1]<speed:
-                    print "%s[%.1ful, max=%.0f RPM] "%(x.name,x.volume,tmp[1]),
-            print
+                    msg+="%s[%.1ful, max=%.0f RPM] "%(x.name,x.volume,tmp[1]),
             warned=True
-
+            logging.warning(msg)
+            
         if globals.verbose and speed<minspeed:
-            print "NOTICE: %s plate contains unmixed wells that may not be mixed at %d RPM: "%(plate.name, speed),
+            msg="%s plate contains unmixed wells that may not be mixed at %d RPM: "%(plate.name, speed),
             for x in samps:
                 if x.isMixed():
                     continue
                 tmp=plate.getmixspeeds(x.volume*0.95,x.volume+5)
                 if speed<tmp[0]:
-                    print "%s[%.1ful, min=%.0f RPM, max=%.0f RPM] "%(x.name,x.volume,tmp[0],tmp[1]),
-            print
+                    msg+= "%s[%.1ful, min=%.0f RPM, max=%.0f RPM] "%(x.name,x.volume,tmp[0],tmp[1]),
             warned=True
+            logging.notice(msg)
 
-        if  warned or globals.verbose:
-            print "         Mixing %s at %.0f RPM (min unmixed vol=%.0ful ->  min RPM=%.0f;  max vol=%.0ful -> max RPM=%.f)"%(plate.name, speed, minvol, minspeed, maxvol, maxspeed)
+        if warned:
+            logging.warning("Mixing %s at %.0f RPM (min unmixed vol=%.0ful ->  min RPM=%.0f;  max vol=%.0ful -> max RPM=%.f)"%(plate.name, speed, minvol, minspeed, maxvol, maxspeed))
+        else:
+            logging.notice("Mixing %s at %.0f RPM (min unmixed vol=%.0ful ->  min RPM=%.0f;  max vol=%.0ful -> max RPM=%.f)"%(plate.name, speed, minvol, minspeed, maxvol, maxspeed))
 
         oldloc=plate.curloc
         self.moveplate(plate,"Shaker",returnHome=False)

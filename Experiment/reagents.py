@@ -22,7 +22,7 @@ class Reagent(object):
             self.sample=Sample(self.name,self.plate,self.preferredWell,self.conc,hasBeads=self.hasBeads,volume=self.initVol)
             wellname=self.sample.plate.wellname(self.sample.well)
             if self.preferredWell != None and self.preferredWell != wellname:
-                print "WARNING: %s moved from preferred well %s to %s\n"%(self.name,self.preferredWell,wellname)
+                logging.warning("%s moved from preferred well %s to %s\n"%(self.name,self.preferredWell,wellname))
         return self.sample
 
     def reset(self):
@@ -48,8 +48,7 @@ def __getattr__(name):
 
 def add(name,plate=decklayout.REAGENTPLATE,well=None,conc=None,hasBeads=False,extraVol=50):
     if name in __allReagents:
-        print "ERROR: Attempt to add duplicate reagent, ",name
-        assert False
+        logging.error("Attempt to add duplicate reagent, "+name)
     __allReagents[name]=Reagent(name,plate,well,conc,hasBeads,extraVol)
     return __allReagents[name]
 
@@ -80,6 +79,6 @@ def printprep(fd=sys.stdout):
                 print >>fd,"%s%s in %s.%s consume %.1f ul, provide %.1f ul"%(s.name,c,s.plate.name,s.plate.wellname(s.well),r.initVol-s.volume,r.initVol)
             total+=round((r.initVol-s.volume)*10)/10.0
             if r.initVol>s.plate.maxVolume:
-                print "ERROR: Excess initial volume (",r.initVol,") for ",s,", maximum is ",s.plate.maxVolume
+                logging.error("Excess initial volume (%.1f) for %s, maximum is %.1f"%(r.initVol,s.name,s.plate.maxVolume))
         print >>fd,"Total %s volume = %.1f ul"%(p.name,total)
 

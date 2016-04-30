@@ -254,8 +254,7 @@ def aspirateDispense(op,tipMask,wells, liquidClass, volume, loc, cycles=None,all
 
     if loc.pos==0 or loc.grid>=25:
         # Attempting to use LiHa in ROMA-Only area
-        print "Attempt to %s to/from %s at position (%d,%d), which is in ROMA-only area not accessible to LiHa"%(op,loc.name,loc.grid,loc.pos)
-        assert 0
+        logging.error("Attempt to %s to/from %s at position (%d,%d), which is in ROMA-only area not accessible to LiHa"%(op,loc.name,loc.grid,loc.pos))
 
     liquidClass.markUsed(op)
     
@@ -336,8 +335,7 @@ def aspirateDispense(op,tipMask,wells, liquidClass, volume, loc, cycles=None,all
         tip+=1
 
     if tipTmp!=0:
-        print "Number of tips (mask=%d) != number of wells (%d)"%(tipMask, len(wells))
-        assert 0
+        logging.error("Number of tips (mask=%d) != number of wells (%d)"%(tipMask, len(wells)))
 
     if debug:
         print "allvols=",allvols
@@ -533,8 +531,8 @@ def condition(varname,cond,value,dest):
     elif cond=='<':
         condval=3
     else:
-        print "Bad condition '%s' to condition()"%cond
-        assert 0
+        logging.error("Bad condition '%s' to condition()"%cond)
+
     wlist.append('If("%s",%d,"%s","%s")'%(varname,condval,value,dest))
 
 def comment( text,prepend=False):
@@ -549,19 +547,19 @@ def starttimer(timer=1):
     global timerstart
     flushQueue()
     if timer<1 or timer>100:
-        print "starttimer: Bad timer (%d); must be between 1 and 100"%timer
-        assert 0
+        logging.error("starttimer: Bad timer (%d); must be between 1 and 100"%timer)
+
     wlist.append('StartTimer("%d")'%timer)
     timerstart=clock.pipetting
 
 def waittimer(duration,timer=1):
     flushQueue()
     if timer<1 or timer>100:
-        print "waittimer: Bad timer (%d); must be between 1 and 100"%timer
-        assert 0
+        logging.error("waittimer: Bad timer (%d); must be between 1 and 100"%timer)
+
     if duration<.02 or duration >86400:
-        print "waittimer: Bad duration (%f); must be between 0.02 and 86400 seconds"%duration
-        assert 0
+        logging.error("waittimer: Bad duration (%f); must be between 0.02 and 86400 seconds"%duration)
+
     wlist.append('WaitTimer("%d","%f")'%(timer,duration))
     clock.pipetting=max(clock.pipetting,timerstart+duration)	# Assume the clock.pipetting time is the timer length
 

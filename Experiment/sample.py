@@ -4,6 +4,7 @@ import liquidclass
 import worklist
 from concentration import Concentration
 import clock
+import logging
 
 MAXVOLUME=200
 MINLIQUIDDETECTVOLUME=15
@@ -92,10 +93,10 @@ class Sample(object):
             if not isinstance(well,int):
                 well=plate.wellnumber(well)
             if well not in plate.wells:
-                print "Attempt to assign sample %s to well %d (%s) which is not legal on plate %s"%(name,well,plate.wellname(well),plate.name)
+                logging.error("Attempt to assign sample %s to well %d (%s) which is not legal on plate %s"%(name,well,plate.wellname(well),plate.name))
             for s in __allsamples:
                 if s.well==well and s.plate==plate:
-                    print "Attempt to assign sample %s to plate %s, well %s that already contains %s"%(name,str(plate),plate.wellname(well),s.name)
+                    logging.warning("Attempt to assign sample %s to plate %s, well %s that already contains %s"%(name,str(plate),plate.wellname(well),s.name))
                     well=None
                     break
 
@@ -131,21 +132,15 @@ class Sample(object):
 
         for s in __allsamples:
             if s.plate==plate and s.well==well:
-                print "Attempt to assign sample %s to plate %s, well %s that already contains %s"%(name,str(plate),plate.wellname(well),s.name)
-#                print "Aliasing %s as %s"%(s.name,name)
-                assert False
+                logging.error("Attempt to assign sample %s to plate %s, well %s that already contains %s"%(name,str(plate),plate.wellname(well),s.name))
         if name in [s.name for s in __allsamples]:
             while name in [s.name for s in __allsamples]:
                 name=name+"#"
-            print "NOTICE: renaming sample to %s"%name
+            logging.notice("renaming sample to %s"%name)
         self.name=name
         self.plate=plate
         if well>=plate.nx*plate.ny:
-            print "Overflow of plate %s"%str(plate)
-            for s in __allsamples:
-                if s.plate==plate:
-                    print s
-            assert False
+            logging.error("Overflow of plate %s while adding %s"%(str(plate),name))
 
         self.well=well
         if isinstance(conc,Concentration) or conc is None:
@@ -285,8 +280,7 @@ class Sample(object):
         else:
             dt=clock.elapsed()-self.lastevapupdate
         if dt<-0.1:
-            print  "***ERROR*** -- clock went backwards: elapsed=",clock.elapsed(),", lastevapupdate=",self.lastevapupdate,", dt=",dt
-            assert False
+            logging.error( "clock went backwards: elapsed=%f, lastevapupdate=%f, dt=%f"%(clock.elapsed(),self.lastevapupdate,dt))
         if dt<=0.1:
             return
         for i in range(10):   # Break it into smaller steps since volume affects rate
@@ -294,7 +288,7 @@ class Sample(object):
             self.evap+=evaprate*dt/3600/10
         if op=='aspirate' and self.evap>thresh*self.volume and self.evap>2.0 and self.volume>0:
             pctevap=self.evap/self.volume*100
-            print "WARNING:  %s (%s.%s, vol=%.1f ul) may have %.1f ul of evaporation (%.0f%%)"%(self.name,str(self.plate),self.plate.wellname(self.well),self.volume,self.evap,pctevap)
+            logging.warning(" %s (%s.%s, vol=%.1f ul) may have %.1f ul of evaporation (%.0f%%)"%(self.name,str(self.plate),self.plate.wellname(self.well),self.volume,self.evap,pctevap))
             self.history= self.history + (' [Evap: %0.1f ul]'%(self.evap))
         self.lastevapupdate+=dt
         
@@ -326,7 +320,7 @@ class Sample(object):
         height=self.plate.getliquidheight(self.volume)
         gemvol=self.plate.getgemliquidvolume(height)	# Volume that would be reported by Gemini for this height
         if gemvol is None:
-            print "No volume equation for %s, skipping initial volume check"%self.name
+            logging.warning( "No volume equation for %s, skipping initial volume check"%self.name)
             return
         worklist.flushQueue()
         worklist.comment( "Check that %s contains %.1f ul before first aspirate (gemvol=%.1f)"%(self.name,self.volume,gemvol))
@@ -343,23 +337,22 @@ class Sample(object):
     def aspirate(self,tipMask,volume,multi=False):
         self.evapcheck('aspirate')
         if self.plate.curloc=='PTC':
-            print "Aspirate from PTC!, loc=",self.plate.grid,",",self.plate.pos
-            assert False
+            logging.error( "Aspirate from PTC!, loc=%d,%d"%(self.plate.grid,self.plate.pos))
 
         if volume<0.1:
-            print "WARNING: attempt to aspirate only %.1f ul from %s ignored"%(volume,self.name)
+            logging.warning("attempt to aspirate only %.1f ul from %s ignored"%(volume,self.name))
             return
         if volume<2 and not multi and self.name!="Water":
-            print "WARNING: Inaccurate for < 2ul:  attempting to aspirate %.1f ul from %s"%(volume,self.name)
+            logging.warning("Inaccurate for < 2ul:  attempting to aspirate %.1f ul from %s"%(volume,self.name))
         if volume>self.volume and self.volume>0:
-            print "ERROR:Attempt to aspirate %.1f ul from %s that contains only %.1f ul"%(volume, self.name, self.volume)
+            logging.error("Attempt to aspirate %.1f ul from %s that contains only %.1f ul"%(volume, self.name, self.volume))
         if not self.isMixed() and self.plate.curloc!="Magnet":
             if self.hasBeads and self.lastMixed is not None:
-                print "WARNING: Aspirate %.1f ul from sample %s that has beads and has not been mixed for %.0f sec. "%(volume,self.name,clock.elapsed()-self.lastMixed)
+                logging.warning("Aspirate %.1f ul from sample %s that has beads and has not been mixed for %.0f sec. "%(volume,self.name,clock.elapsed()-self.lastMixed))
             else:
-                print "WARNING: Aspirate %.1f ul from unmixed sample %s. "%(volume,self.name)
+                logging.warning("Aspirate %.1f ul from unmixed sample %s. "%(volume,self.name))
         if not self.wellMixed and self.plate.curloc!="Magnet":
-            print "WARNING: Aspirate %.1f ul from poorly mixed sample %s (shake speed was too low). "%(volume,self.name)
+            logging.warning("Aspirate %.1f ul from poorly mixed sample %s (shake speed was too low). "%(volume,self.name))
                 
         if self.well is None:
             well=[]
@@ -388,7 +381,7 @@ class Sample(object):
             remove=lc.volRemoved(volume,multi=True)
 
         if self.volume<remove and self.volume>0:
-            print "WARNING: Removing all contents (%.1f from %.1ful) from %s"%(remove,self.volume,self.name)
+            logging.warning("Removing all contents (%.1f from %.1ful) from %s"%(remove,self.volume,self.name))
             remove=self.volume
             self.ingredients={}
         for k in self.ingredients:
@@ -399,7 +392,7 @@ class Sample(object):
 
         self.volume=self.volume-remove
         if self.volume+.001<self.plate.unusableVolume and self.volume+remove>0 and not (self.hasBeads and self.plate.curloc=='Magnet'):
-            print "WARNING: Aspiration of %.1ful from %s brings volume down to %.1ful which is less than its unusable volume of %.1f ul"%(remove,self.name,self.volume,self.plate.unusableVolume)
+            logging.warning("Aspiration of %.1ful from %s brings volume down to %.1ful which is less than its unusable volume of %.1f ul"%(remove,self.name,self.volume,self.plate.unusableVolume))
             
         self.addhistory("",-remove,tipMask)
         #self.addhistory("[%06x]"%(self.getHash(w)&0xffffff),-remove,tipMask)
@@ -411,24 +404,22 @@ class Sample(object):
     def dispense(self,tipMask,volume,src):
         self.evapcheck('dispense')
         if self.plate.curloc=='PTC':
-            print "Dispense to PTC!, loc=",self.plate.grid,",",self.plate.pos
-            assert False
+            logging.error("Dispense to PTC!, loc=(%d,%d)"%(self.plate.grid,self.plate.pos))
 
         if volume<0.1:
-            print "WARNING: attempt to dispense only %.1f ul to %s ignored"%(volume,self.name)
+            logging.warning("attempt to dispense only %.1f ul to %s ignored"%(volume,self.name))
             return
 
         if self.volume+volume < MINDEPOSITVOLUME:
-            print "WARNING: Dispense of %.1ful into %s results in total of %.1ful which is less than minimum deposit volume of %.1f ul"%(volume,self.name,self.volume+volume,MINDEPOSITVOLUME)
+            logging.warning("Dispense of %.1ful into %s results in total of %.1ful which is less than minimum deposit volume of %.1f ul"%(volume,self.name,self.volume+volume,MINDEPOSITVOLUME))
 
         #well=[self.well if self.well!=None else 2**(tipMask-1)-1 ]
         well=[self.well if self.well!=None else int(math.log(tipMask,2)) ]
         if self.well is None:
-            print "WARNING: Dispense with well is None, not sure what right logic is..., using well=%d"%well[0]
+            logging.warning("Dispense with well is None, not sure what right logic is..., using well=%d"%well[0])
 
         if self.volume+volume > self.plate.maxVolume:
-            print "ERROR: Dispense of %.1ful into %s results in total of %.1ful which is more than the maximum volume of %.1f ul"%(volume,self.name,self.volume+volume,self.plate.maxVolume)
-            assert False
+            logging.error("Dispense of %.1ful into %s results in total of %.1ful which is more than the maximum volume of %.1f ul"%(volume,self.name,self.volume+volume,self.plate.maxVolume))
 
         if self.hasBeads and self.plate.curloc=="Magnet":
             worklist.dispense(tipMask,well,self.beadsLC,volume,self.plate)
@@ -454,7 +445,7 @@ class Sample(object):
             c1=self.conc.dilute((self.volume+volume)/self.volume)
             c2=src.conc.dilute((self.volume+volume)/volume)
             if abs(c1.stock/c1.final-c2.stock/c2.final)>.01:
-                print "WARNING: Dispense of %.1ful of %s@%.2fx into %.1ful of %s@%.2fx does not equalize concentrations"%(volume,src.name,src.conc.dilutionneeded(),self.volume,self.name,self.conc.dilutionneeded())
+                logging.warning("Dispense of %.1ful of %s@%.2fx into %.1ful of %s@%.2fx does not equalize concentrations"%(volume,src.name,src.conc.dilutionneeded(),self.volume,self.name,self.conc.dilutionneeded()))
                 #assert abs(c1.stock/c1.final-c2.stock/c2.final)<.01
                 self.conc=None
             else:
@@ -561,9 +552,9 @@ class Sample(object):
         # Mix, return true if actually did a mix, false otherwise
     def mix(self,tipMask,preaspirateAir=False,nmix=4):
         if self.isMixed():
-            print "Sample %s is already mixed"%self.name
+            logging.notice( "mix() called for sample %s, which is already mixed"%self.name)
             return False
-        print "WARNING: Pipette mixing of %s may introduce bubbles"%self.name
+        logging.warning("Pipette mixing of %s may introduce bubbles"%self.name)
         blowvol=5
         mstr=""
         extraspace=blowvol+0.1
@@ -572,11 +563,11 @@ class Sample(object):
         mixvol=self.volume		  # -self.plate.unusableVolume;  # Can mix entire volume, if air is aspirated, it will just be dispensed first without making a bubble
         if self.volume>MAXVOLUME-extraspace:
             mixvol=MAXVOLUME-extraspace
-            print "WARNING: Mix of %s limited to %.0f ul instead of full volume of %.0ful"%(self.name,mixvol,self.volume)
+            logging.warning("Mix of %s limited to %.0f ul instead of full volume of %.0ful"%(self.name,mixvol,self.volume))
         well=[self.well if self.well!=None else 2**(tipMask-1)-1 ]
         mixprefillvol=5
         if mixvol<self.plate.unusableVolume-mixprefillvol:
-            print "NOTICE: Not enough volume in sample %s (%.1f) to mix"%(self.name,self.volume)
+            logging.notice("Not enough volume in sample %s (%.1f) to mix"%(self.name,self.volume))
             self.history+="(UNMIXED)"
             return False
         else:
