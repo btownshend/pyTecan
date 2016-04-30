@@ -410,7 +410,7 @@ class Experiment(object):
 
         for p in set([s.plate for s in samples if not s.isMixed()  ]):
             if p.maxspeeds is not None:
-                self.shake(p,returnPlate=returnPlate,speed=speed,samps=[s for s in samples if s.plate==p],dur=dur)
+                self.shake(p,returnPlate=returnPlate,speed=speed,samps=[s for s in samples if s.plate==p],dur=dur,accel=accel)
 
     def shake(self,plate,dur=60,speed=None,accel=5,returnPlate=True,samps=None):
         if self.ptcrunning and plate==decklayout.SAMPLEPLATE:
