@@ -11,7 +11,7 @@ def reset(total=None):
     pipandthermotime=0
     thermotime=0		# Time waiting for thermocycler without pipetting
     totalTime=total
-    
+
 def elapsed():
     return pipetting+pipandthermotime+thermotime
 

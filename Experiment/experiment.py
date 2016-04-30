@@ -104,7 +104,7 @@ class Experiment(object):
         self.cleanTips|=fixedTips
         # print "* Sanitize"
         worklist.comment(clock.statusString())
-        
+
     def cleantip(self):
         'Get the mask for a clean tip, washing if needed'
         if self.cleanTips==0:
@@ -180,7 +180,7 @@ class Experiment(object):
     def transfer(self, volume, src, dest, mix=(True,False), getDITI=True, dropDITI=True):
         if self.ptcrunning and (src.plate==decklayout.SAMPLEPLATE or dest.plate==decklayout.SAMPLEPLATE)>0:
             self.waitpgm()
-            
+
         if volume>self.MAXVOLUME:
             destvol=dest.volume
             reuseTip=destvol<=0

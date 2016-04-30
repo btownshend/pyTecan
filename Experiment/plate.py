@@ -25,9 +25,8 @@ def interpolate(dict,x0):
     return y0
 
 
-"An object representing a microplate or other container on the deck"
 class Plate(object):
-    "A plate object which includes a name, location, and size"
+    "An object representing a microplate or other container on the deck; includes a name, location, and size"
     def __init__(self,name, grid, pos, nx=12, ny=8,pierce=False,unusableVolume=5,maxVolume=200,zmax=None,angle=None,r1=None,h1=None,v0=None,gemDepth=None,gemArea=None,gemShape=None,vectorName=None,maxspeeds=None,minspeeds=None,liquidTemp=22.7):
         self.name=name
         self.grid=grid
@@ -143,7 +142,7 @@ class Plate(object):
         x=self.mixingratio(globals.dewpoint)
         xs=self.mixingratio(self.liquidTemp)
         #print "vol=",volume,", area=",area
-        if area==None:
+        if area is None:
             return 0
         theta=25+19*vel
         evaprate=theta*area/1000/1000*(xs-x)*1e6
@@ -168,7 +167,7 @@ class Plate(object):
 
     def getgemliquidvolume(self,height):
         'Compute liquid volume given height above zmax in mm the way Gemini will do it'
-        if height==None:
+        if height is None:
             volume=None
         elif self.gemShape=='flat':
             volume=self.gemArea*height
