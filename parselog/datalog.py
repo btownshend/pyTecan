@@ -99,13 +99,13 @@ class Datalog(object):
                     #h=" @[DEEP <%d:<%.1f#%d]"%(zadd+submerge,vol,tip)
                     h=""
                 else:
-                    h=" @[FAIL <%d:<%.1f#%d]"%(zadd+submerge,vol,tip)
+                    h=" @[FAIL <%.1fmm:<%.1ful#%d]"%((zadd+submerge)/10,vol,tip)
             else:
-                h=" @[FAIL <%d#%d]"%(zadd+submerge,tip)
+                h=" @[FAIL <%.1f#%d]"%((zadd+submerge)/10.0,tip)
         else:
             vol=sample.plate.getliquidvolume((height+submerge-zmax)/10.0)
             if vol==None:
-                h=" @[%d,%d#%d]"%(height-zmax,submerge,tip)
+                h=" @[%.1fmm,%.1fmm#%d]"%((height-zmax)/10.0,submerge/10.0,tip)
             else:
                 if prevol==0:
                     print "Got a liquid height measurement for a well that should be empty -- assuming it was prefilled"
@@ -117,7 +117,7 @@ class Datalog(object):
                     emphasize='****'
                 else:
                     emphasize=''
-                h=" @[%d,%d:%.1f#%d]{%sE=%d;%.1f}"%(height-zmax,submerge,vol,tip,emphasize,errorHeight,vol-prevol)
+                h=" @[%.1fmm,%.1fmm:%.1ful#%d]{%sE=%d;%.1f}"%((height-zmax)/10.0,submerge/10.0,vol,tip,emphasize,errorHeight,vol-prevol)
         # Insert BEFORE last history entry since the liquid height is measured before aspirate/dispense
         hsplit=sample.history.split(' ')
         sample.history=" ".join(hsplit[:-1]+[h]+hsplit[-1:])
