@@ -95,9 +95,11 @@ class Datalog(object):
         if height==-1:
             vol=sample.plate.getliquidvolume((zadd+submerge)/10.0)
             if vol!=None:
-                if prevol<vol:
-                    #h=" @[DEEP <%d:<%.1f#%d]"%(zadd+submerge,vol,tip)
-                    h=""
+                if prevol<vol and prevol!=0:
+                    # The liquid measure failed, but based on the previous volume estimate, it was guaranteed to fail since the submerge depth would've been below bottom
+                    # But if we don't know the volume (ie a prefilled tube -> prevol=0), then log this as a fail
+                    h=" @[DEEP <%.1fmm:<%.1ful#%d]"%((zadd+submerge)/10.0,vol,tip)
+                    #h=""
                 else:
                     h=" @[FAIL <%.1fmm:<%.1ful#%d]"%((zadd+submerge)/10,vol,tip)
             else:
