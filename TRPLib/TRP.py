@@ -348,7 +348,7 @@ class TRP(object):
                 sepTime=30
         self.e.pause(sepTime)	# Wait for separation
         
-    def beadWash(self,src,washTgt=None,sepTime=None,residualVolume=10,keepWash=False,numWashes=2,wash=None,washVol=50,keepFinal=False,finalTgt=None,keepVol=4.2,keepDil=5):
+    def beadWash(self,src,washTgt=None,sepTime=None,residualVolume=10,keepWash=False,numWashes=2,wash=None,washVol=50,keepFinal=False,finalTgt=None,keepVol=4.2,keepDil=5,shakeWashes=False):
         # Perform washes
         # If keepWash is true, retain all washes (combined)
         # If keepFinal is true, take a sample of the final wash (diluted by keepDil)
@@ -403,6 +403,7 @@ class TRP(object):
                 for i in range(len(src)):
                     src[i].conc=None
                     self.e.transfer(washVol-src[i].volume,wash[i],src[i],mix=(False,False))	# Add wash, no need to pipette mix since some heterogenity won't hurt here
+                if shakeWashes:
                     self.e.shakeSamples(src,returnPlate=False)
 
             self.e.moveplate(src[0].plate,"Magnet")	# Move to magnet
