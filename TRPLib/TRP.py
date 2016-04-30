@@ -391,7 +391,8 @@ class TRP(object):
         # Wash
 
         for washnum in range(numWashes):
-            self.e.moveplate(src[0].plate,"Home")
+            if src[0].plate.curloc!="Home" and src[0].plate.curloc!="Magnet":
+                self.e.moveplate(src[0].plate,"Home")
             if keepFinal and washnum==numWashes-1:
                 'Retain sample of final'
                 for i in range(len(src)):
@@ -418,7 +419,7 @@ class TRP(object):
                 else:
                     self.e.dispose(amt,src[i])	# Remove wash
 
-        self.e.moveplate(src[0].plate,"Home")
+        #self.e.moveplate(src[0].plate,"Home")
 
         # Should only be residualVolume left with beads now
         result=[]
@@ -437,6 +438,7 @@ class TRP(object):
             if elutionVol[i]<30:
                 print "WARNING: elution from beads with %.1f ul < minimum of 30ul"%elutionVol[i]
                 print "  src=",src[i]
+            self.e.moveplate(src[i].plate,"Home")
             self.e.transfer(elutionVol[i]-src[i].volume,elutant[i],src[i],(False,True))	
         if temp is None:
             self.e.shakeSamples(src,dur=eluteTime,returnPlate=returnPlate)
