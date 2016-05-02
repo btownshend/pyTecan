@@ -13,11 +13,11 @@ grenmaxspeeds={150:1750,125:1900,100:1950,75:2200,50:2200}	# From shaketest expe
 eppmaxspeeds={195:1600,150:1900,125:2000,100:2050,75:2150,50:2150,25:2400,0:2400} # From shaketest experiment 3/27/16
 eppminspeeds={32:1800,64:1700,96:1400,200:1300}
 
-SAMPLEPLATE=Plate("Samples",4,3,12,8,False,unusableVolume=15,maxVolume=200,zmax=1028,angle=17.5,r1=2.69,h1=8.94,v0=13.2,gemDepth=2.34,gemArea=16.08,gemShape='v-shaped',vectorName="Microplate Landscape",maxspeeds=eppmaxspeeds,minspeeds=eppminspeeds)  # EppLoBind
+SAMPLEPLATE=Plate("Samples",4,3,12,8,False,unusableVolume=15,maxVolume=200,zmax=1028,angle=17.5,r1=2.69,h1=8.94,v0=13.2,gemDepth=2.00,gemArea=16.57,gemShape='v-shaped',vectorName="Microplate Landscape",maxspeeds=eppmaxspeeds,minspeeds=eppminspeeds)  # EppLoBind
 SAMPLEPLATE.wells=SAMPLEPLATE.wells[1:-1]	 # Skip A1 and H12 due to leakage
 SHAKERPLATELOC=Plate("Shaker",9,0,1,1)
 QPCRPLATE=Plate("qPCR",4,1,12,8,False,unusableVolume=15,maxVolume=200,zmax=984,angle=17.5,r1=2.66,h1=9.37,v0=7.9,gemDepth=2.29,gemArea=15.19,gemShape='v-shaped')
-DILPLATE=Plate("Dilutions",4,2,12,8,False,unusableVolume=15,maxVolume=200,zmax=1028,angle=17.5,r1=2.69,h1=8.42,v0=16.3,gemDepth=2.34,gemArea=16.08,gemShape='v-shaped',vectorName="Microplate Landscape",maxspeeds=eppmaxspeeds,minspeeds=eppminspeeds) # EppLoBind
+DILPLATE=Plate("Dilutions",4,2,12,8,False,unusableVolume=15,maxVolume=200,zmax=1028,angle=17.5,r1=2.69,h1=8.42,v0=16.3,gemDepth=2.00,gemArea=16.57,gemShape='v-shaped',vectorName="Microplate Landscape",maxspeeds=eppmaxspeeds,minspeeds=eppminspeeds) # EppLoBind
 
 SSDDILLOC=Plate("SSDDil",3,1,1,4,False,100,100000,gemDepth=0,gemArea=1232,gemShape='flat')
 WATERLOC=Plate("Water",3,2,1,4,False,100,100000,gemDepth=0,gemArea=1232,gemShape='flat')
