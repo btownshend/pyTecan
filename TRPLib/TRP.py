@@ -345,6 +345,7 @@ class TRP(object):
                 sepTime=50
             else:
                 sepTime=30
+            sepTime=120
         self.e.pause(sepTime)	# Wait for separation
         
     def beadWash(self,src,washTgt=None,sepTime=None,residualVolume=10,keepWash=False,numWashes=2,wash=None,washVol=50,keepFinal=False,finalTgt=None,keepVol=4.2,keepDil=5,shakeWashes=False):
