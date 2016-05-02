@@ -22,7 +22,7 @@ class Experiment(object):
         worklist.comment("Generated %s"%(datetime.now().ctime()))
         worklist.userprompt("The following reagent tubes should be present: %s"%Sample.getAllLocOnPlate(decklayout.REAGENTPLATE))
         worklist.userprompt("The following eppendorf tubes should be present: %s"%Sample.getAllLocOnPlate(decklayout.EPPENDORFS))
-        worklist.email(dest='cdsrobot@gmail.com',subject='Run started (Generate: %s)'%(datetime.now().ctime()))
+        worklist.email(dest='cdsrobot@gmail.com',subject='Run started (Generate: %s) expected runtime %.0f minutes'%(datetime.now().ctime(),clock.totalTime/60.0 if clock.totalTime is not None else 0.0 ) )
         worklist.email(dest='cdsrobot@gmail.com',subject='Tecan error',onerror=1)
         self.cleanTips=0
         # self.sanitize()  # Not needed, TRP does it, also first use of tips will do this
