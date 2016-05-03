@@ -276,7 +276,7 @@ def aspirateDispense(op,tipMask,wells, liquidClass, volume, loc, cycles=None,all
     elif op=='AspirateNC':
         clock.pipetting+=5.51
     elif op=='Detect_Liquid':
-        clock.pipetting+=5.51
+        clock.pipetting+=4.00
 
     comment("*%s tip=%d well=%s.%s vol=%s lc=%s"%(op,tipMask,str(loc),str(wells),str(volume),str(liquidClass)))
     # Update volumes
