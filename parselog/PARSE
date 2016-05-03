@@ -1,0 +1,2 @@
+export PYTHONPATH=../pyTecan
+python ../pyTecan/parselog/parselog.py $1

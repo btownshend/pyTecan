@@ -1,0 +1,4 @@
+HOST=171.64.80.58
+rsync -v -t -r "Admin@${HOST}:'GeminiLogs/'*.LOG" .
+rsync -v -t -r "Admin@${HOST}:'/cygdrive/c/Program Files (x86)/Tecan/Gemini/Data/'PTC*.log" .
+rsync -v -t -r "Admin@${HOST}:'/cygdrive/c/Program Files (x86)/Tecan/Gemini/Data/'BioShake-20*" .
