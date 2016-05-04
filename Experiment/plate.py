@@ -27,7 +27,7 @@ def interpolate(dict,x0):
 
 class Plate(object):
     "An object representing a microplate or other container on the deck; includes a name, location, and size"
-    def __init__(self,name, grid, pos, nx=12, ny=8,pierce=False,unusableVolume=5,maxVolume=200,zmax=None,angle=None,r1=None,h1=None,v0=None,gemDepth=None,gemArea=None,gemShape=None,vectorName=None,maxspeeds=None,minspeeds=None,liquidTemp=22.7):
+    def __init__(self,name, grid, pos, nx=12, ny=8,pierce=False,unusableVolume=5,maxVolume=200,zmax=None,angle=None,r1=None,h1=None,v0=None,gemDepth=None,gemArea=None,gemShape=None,vectorName=None,maxspeeds=None,minspeeds=None,liquidTemp=22.7,slopex=0,slopey=0):
         self.name=name
         self.grid=grid
         self.pos=pos
@@ -50,6 +50,8 @@ class Plate(object):
         self.r1=r1
         self.h1=h1
         self.v0=v0
+        self.slopex=slopex  # Slope of plate in mm/well; +ve indicates right edge is higher than left edge
+        self.slopey=slopey  # Slope of plate in mm/well; +ve indicates bottom edge is higher than top edge
         self.gemDepth=gemDepth		  # Values programmed into Gemini so we can foretell what volumes Gemini will come up with for a given height
         self.gemArea=gemArea
         self.gemShape=gemShape
