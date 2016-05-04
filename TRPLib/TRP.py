@@ -414,7 +414,7 @@ class TRP(object):
             for i in range(len(src)):
                 amt=src[i].amountToRemove(residualVolume)
                 if keepWash:
-                    self.e.transfer(amt,src[i],washTgt[i])	# Remove wash
+                    self.e.transfer(amt,src[i],washTgt[i],mix=(False,False))	# Remove wash
                     washTgt[i].conc=None	# Allow it to be reused
                 else:
                     self.e.dispose(amt,src[i])	# Remove wash
