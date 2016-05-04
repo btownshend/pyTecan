@@ -440,7 +440,8 @@ class TRP(object):
             self.e.moveplate(src[i].plate,"Home")
             self.e.transfer(elutionVol[i]-src[i].volume,elutant[i],src[i],(False,True))	
         if temp is None:
-            self.e.shakeSamples(src,dur=eluteTime,returnPlate=returnPlate)
+            for plate in set([s.plate for s in src]):
+                self.e.shake(plate,dur=eluteTime,returnPlate=returnPlate,force=True)
         else:
             self.e.shakeSamples(src,dur=30,returnPlate=False)
             worklist.pyrun('PTC\\ptcsetpgm.py elute TEMP@%d,%d TEMP@25,2'%(temp,eluteTime))
