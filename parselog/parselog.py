@@ -376,7 +376,8 @@ while True:
                 cname=cmd[(colon+2):]
                 lnum=int(cmd[4:(colon-1)])
                 #print "cname=",cname
-                tdata=time.strptime("2013 "+gtime,"%Y %H:%M:%S")
+                year=time.strftime("%Y")  # Use current year since log doesn't contain year
+                tdata=time.strptime(year+" "+gtime,"%Y %H:%M:%S")
                 t=time.mktime(tdata)
                 if lastgeminicmd!=None:
                     if t-lasttime > 30:
