@@ -348,7 +348,7 @@ class TRP(object):
             sepTime=120
         self.e.pause(sepTime)	# Wait for separation
         
-    def beadWash(self,src,washTgt=None,sepTime=None,residualVolume=10,keepWash=False,numWashes=2,wash=None,washVol=50,keepFinal=False,finalTgt=None,keepVol=4.2,keepDil=5,shakeWashes=False):
+    def beadWash(self,src,washTgt=None,sepTime=None,residualVolume=0.1,keepWash=False,numWashes=2,wash=None,washVol=50,keepFinal=False,finalTgt=None,keepVol=4.2,keepDil=5,shakeWashes=False):
         # Perform washes
         # If keepWash is true, retain all washes (combined)
         # If keepFinal is true, take a sample of the final wash (diluted by keepDil)
@@ -449,7 +449,7 @@ class TRP(object):
             if returnPlate:
                 self.e.moveplate(src[0].plate,"Home")
 
-    def beadSupernatant(self,src,tgt=None,sepTime=None,residualVolume=10,plate=None):
+    def beadSupernatant(self,src,tgt=None,sepTime=None,residualVolume=0.1,plate=None):
         if plate is None:
             plate=decklayout.SAMPLEPLATE
         if tgt is None:
@@ -470,7 +470,7 @@ class TRP(object):
         self.e.moveplate(src[0].plate,"Home")
         return tgt
 
-    def beadCombine(self,src,residualVolume=10,suspendVolume=150,sepTime=None):
+    def beadCombine(self,src,residualVolume=0.1,suspendVolume=150,sepTime=None):
         'Combine everything in the src wells into a the first well; assumes that there are enough beads in that well for all the combination'
         tgt=src[0]
         for s in src[1:]:
