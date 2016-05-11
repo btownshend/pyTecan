@@ -319,11 +319,14 @@ class Sample(object):
         self.firstaccess = False
         height=self.plate.getliquidheight(self.volume)
         gemvol=self.plate.getgemliquidvolume(height)	# Volume that would be reported by Gemini for this height
+        volthresh=self.volume*0.80
+        heightthresh=min(self.plate.getliquidheight(volthresh),height-1.0)	# threshold is lower of 1mm or 80%
+        gemvolthresh=self.plate.getgemliquidvolume(heightthresh)	# Volume that would be reported by Gemini for this height
         if gemvol is None:
             logging.warning( "No volume equation for %s, skipping initial volume check"%self.name)
             return
         worklist.flushQueue()
-        worklist.comment( "Check that %s contains %.1f ul before first aspirate (gemvol=%.1f)"%(self.name,self.volume,gemvol))
+        worklist.comment( "Check that %s contains %.1f ul (> %.1f) before first aspirate (gemvol=%.1f (>%.1f); height=%.1f (>%.1f) )"%(self.name,self.volume,volthresh,gemvol,gemvolthresh,height,heightthresh))
         tipnum=0
         tm=tipMask
         while tm>0:
@@ -331,7 +334,7 @@ class Sample(object):
             tipnum+=1
         worklist.variable('detected_volume_%d'%tipnum,-2)
         worklist.detectLiquid(tipMask,well,lc,self.plate)
-        worklist.testvar("detected_volume_%d"%tipnum,">",min(1000,gemvol*0.8),msg="Failed volume check of %s - should have  %.0f ul"%(self.name,self.volume))
+        worklist.testvar("detected_volume_%d"%tipnum,">",min(1000,gemvolthresh),msg="Failed volume check of %s - should have  %.0f ul"%(self.name,self.volume))
         self.addhistory("LD",0,tipMask)
 
     def aspirate(self,tipMask,volume,multi=False):
