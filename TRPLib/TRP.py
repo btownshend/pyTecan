@@ -269,6 +269,7 @@ class TRP(object):
         else:
             pgm="T37-%d"%dur
         worklist.pyrun('PTC\\ptcsetpgm.py %s TEMP@37,%d TEMP@25,2'%(pgm,dur*60))
+        print "Running T7 at 37C for %d minutes"%dur
         self.e.runpgm(pgm,dur, False,vol)
 
     def runT7Stop(self,theo,tgt,stopmaster=None,srcdil=2):
@@ -529,6 +530,7 @@ class TRP(object):
             pgm="RT-%d"%dur
             worklist.pyrun('PTC\\ptcsetpgm.py %s TEMP@37,%d TEMP@95,%d TEMP@25,2 RATE 0.5'%(pgm,dur*60,hidur*60))
             self.e.runpgm(pgm,dur+hidur+2.5,False,100)		# Volume doesn't matter since it's just an incubation, use 100ul
+            print "Running RT at 37C for %d min, followed by heat inactivation/refold at %dC for %d minutes"%(dur,hiTemp,hidur)
         else:
             if dur<100:
                 pgm="TRP37-%d"%dur
@@ -536,6 +538,7 @@ class TRP(object):
                 pgm="T37-%d"%dur
             worklist.pyrun('PTC\\ptcsetpgm.py %s TEMP@37,%d TEMP@25,2'%(pgm,dur*60))
             self.e.runpgm(pgm,dur,False,100)		# Volume doesn't matter since it's just an incubation, use 100ul
+            print "Running RT at 37C for %d min without heat inactivation"%(dur)
  
     ########################
     # Lig - Ligation
@@ -639,9 +642,11 @@ class TRP(object):
 
         if hiTemp is None:
             worklist.pyrun('PTC\\ptcsetpgm.py INC TEMP@%.0f,%.0f TEMP@25,30'%(incTemp,incTime*60))
+            print "Incubating at %dC for %d minutes without heat inactivation"%(incTemp, incTime)
         else:
             assert(hiTime>0)
             worklist.pyrun('PTC\\ptcsetpgm.py INC TEMP@%.0f,%.0f TEMP@%.0f,%.0f TEMP@25,30'%(incTemp,incTime*60,hiTemp,hiTime*60))
+            print "Incubating at %dC for %d minutes followed by heat inactivate at %dC for %d minutes"%(incTemp,incTime,hiTemp,hiTime)
         self.e.runpgm("INC",incTime+hiTime+2,False,max(vol),hotlidmode="TRACKING",hotlidtemp=10)
         return tgt
 
