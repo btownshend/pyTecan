@@ -493,12 +493,12 @@ class TRP(object):
     ########################
     # RT - Reverse Transcription
     ########################
-    def runRT(self,src,vol,srcdil,tgt=None,dur=20,heatInactivate=False):
+    def runRT(self,src,vol,srcdil,tgt=None,dur=20,heatInactivate=False,hiTemp=None):
         result=self.runRTSetup(src,vol,srcdil,tgt)
-        self.runRTPgm(dur,heatInactivate=heatInactivate)
+        self.runRTPgm(dur,heatInactivate=heatInactivate,hiTemp=hiTemp)
         return result
     
-    def runRTInPlace(self,src,vol,dur=20,heatInactivate=False):
+    def runRTInPlace(self,src,vol,dur=20,heatInactivate=False,hiTemp=None):
         'Run RT on beads in given volume'
 
         # Adjust source dilution
@@ -506,7 +506,7 @@ class TRP(object):
             src[i].conc=None
 
         self.runRxInPlace(src,vol,reagents.getsample("MPosRT"),returnPlate=False)
-        self.runRTPgm(dur,heatInactivate=heatInactivate)
+        self.runRTPgm(dur,heatInactivate=heatInactivate,hiTemp=hiTemp)
         
     def runRTSetup(self,src,vol,srcdil,tgt=None,rtmaster=None):
         if rtmaster is None:
@@ -524,11 +524,14 @@ class TRP(object):
         #self.e.shakeSamples(tgt,returnPlate=True)
         return tgt
 
-    def runRTPgm(self,dur=20,heatInactivate=False):
+    def runRTPgm(self,dur=20,heatInactivate=False,hiTemp=None):
         if heatInactivate:
+            if hiTemp is None:
+                hiTemp=95
+                print "Assuming RT heat inactivation temperature of ",hiTemp
             hidur=2
             pgm="RT-%d"%dur
-            worklist.pyrun('PTC\\ptcsetpgm.py %s TEMP@37,%d TEMP@95,%d TEMP@25,2 RATE 0.5'%(pgm,dur*60,hidur*60))
+            worklist.pyrun('PTC\\ptcsetpgm.py %s TEMP@37,%d TEMP@%d,%d TEMP@25,2 RATE 0.5'%(pgm,dur*60,hiTemp,hidur*60))
             self.e.runpgm(pgm,dur+hidur+2.5,False,100)		# Volume doesn't matter since it's just an incubation, use 100ul
             print "Running RT at 37C for %d min, followed by heat inactivation/refold at %dC for %d minutes"%(dur,hiTemp,hidur)
         else:
@@ -659,9 +662,9 @@ class TRP(object):
     ########################
     # Klenow extension
     ########################
-    def runKlenow(self,src=None,vol=None,srcdil=None,tgt=None,incTime=15,hiTime=20,inPlace=False):
+    def runKlenow(self,src=None,vol=None,srcdil=None,tgt=None,incTime=15,hiTime=20,hiTemp=75,inPlace=False):
         assert(inPlace or vol is not None)
-        return self.runIncubation(src=src,vol=vol,srcdil=srcdil,tgt=tgt,incTemp=37,incTime=incTime,hiTemp=75,hiTime=hiTime,enzymes=[reagents.getsample("MKlenow")],inPlace=inPlace)
+        return self.runIncubation(src=src,vol=vol,srcdil=srcdil,tgt=tgt,incTemp=37,incTime=incTime,hiTemp=hiTemp,hiTime=hiTime,enzymes=[reagents.getsample("MKlenow")],inPlace=inPlace)
 
     ########################
     # DNase digestion
