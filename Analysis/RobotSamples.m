@@ -19,7 +19,7 @@ classdef RobotSamples < handle
   
   methods
     function obj=RobotSamples(sampfilename,opdfilename,varargin)
-      defaults=struct('thresh',[],'doplot',true,'basecycles',2:8,'fulow',[],'fuhigh',[],'refconc',10);
+      defaults=struct('thresh',[],'doplot',true,'basecycles',2:8,'fulow',[],'fuhigh',[],'refconc',10,'remotedir',[]);
       args=processargs(defaults,varargin);
       if ~iscell(sampfilename)
         sampfilename={sampfilename};
@@ -47,14 +47,14 @@ classdef RobotSamples < handle
       obj.loop2len=containers.Map;
       obj.buildsampmap();
       if nargin<2 || isempty(opdfilename)
-        obj.opd={opdread()};
+        obj.opd={opdread('remotedir',args.remotedir)};
       elseif iscell(opdfilename)
         obj.opd={};
         for i=1:length(opdfilename)
-          obj.opd{i}=opdread(opdfilename{i});
+          obj.opd{i}=opdread(opdfilename{i},'remotedir',args.remotedir);
         end
       else
-        obj.opd={opdread(opdfilename)};
+        obj.opd={opdread(opdfilename,'remotedir',args.remotedir)};
       end
       for i=1:length(obj.opd)
         obj.opd{i}=ctcalc(obj.opd{i},'thresh',args.thresh,'basecycles',args.basecycles,'doplot',args.doplot,'fulow',args.fulow,'fuhigh',args.fuhigh);
@@ -278,6 +278,10 @@ classdef RobotSamples < handle
           len=24+11+6+loop1len+6+17+loop2len+29;
         elseif strcmp(primer,'REF')
           len=90;
+        elseif strcmp(primer,'TBR')
+          len=74;  
+        elseif strcmp(primer,'TWR')
+          len=64;            
         else
           fprintf('Not implemented: length of sequence with %s primers\n', primer);
         end
