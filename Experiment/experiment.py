@@ -528,6 +528,7 @@ class Experiment(object):
         clock.pipetting=self.pgmStartTime
 
         #print "Waiting for PTC with %.0f seconds expected to remain"%(self.pgmEndTime-clock.pipetting)
+        self.lihahome()
         worklist.pyrun('PTC\\ptcwait.py')
         worklist.pyrun("PTC\\ptclid.py OPEN")
         #        worklist.pyrun('PTC\\ptcrun.py %s CALC ON'%"COOLDOWN")
