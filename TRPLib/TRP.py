@@ -1,7 +1,7 @@
 from Experiment.sample import Sample
 from Experiment.experiment import Experiment
 from Experiment.concentration import Concentration
-from Experiment import worklist, reagents, decklayout, clock
+from Experiment import worklist, reagents, decklayout, clock, logging
 from Experiment import globals
 
 import os
@@ -217,7 +217,7 @@ class TRP(object):
             logging.error("runRxInPlace: negative amount of water needed: %.1f"%w)
 
         for i in range(len(src)):
-            if  watervol[i]>0:
+            if  watervol[i]>=0.1:
                 self.e.transfer(watervol[i],decklayout.WATER,src[i],(False,False))
         for i in range(len(src)):
             self.e.transfer(mastervol[i],master[i],src[i],(True,src[i].hasBeads))
