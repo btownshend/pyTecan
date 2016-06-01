@@ -432,7 +432,7 @@ class Experiment(object):
             logging.warning("minspeed(%.0f) > maxspeed(%.0f)"%(minspeed,maxspeed))
         if speed is None:
             if minspeed<maxspeed:
-                speed=(maxspeed+minspeed)/2
+                speed=max((maxspeed+minspeed)/2,maxspeed-50)    # Mix as fast as safely possible (but always above minspeed)
             else:
                 speed=maxspeed
 
