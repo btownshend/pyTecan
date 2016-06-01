@@ -8,6 +8,8 @@ from plate import Plate
 import clock
 import logging
 
+WASHLOC=Plate("Wash",1,2,1,8,False,0)    # Duplicate of what's in decklayout.py -- but don't want to include all those dependencies...
+
 DITI200=0
 DITI10=2
 OPEN=0
@@ -614,6 +616,7 @@ def testvar(var,op,value,msg=None):
     condition(var,op,value,label)
     if msg is None:
         msg='Failed %s (=~%s~)%s%s'%(var,var,op,value)
+    moveliha(WASHLOC)	# Get LiHa out of the way
     email(dest='cdsrobot@gmail.com',subject=msg)
     userprompt(msg)
     comment(label)
