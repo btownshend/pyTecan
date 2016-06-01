@@ -313,7 +313,7 @@ class Sample(object):
             nloop+=1
         return volume
 
-    def volcheck(self,tipMask,well,lc):
+    def volcheck(self,tipMask,well):
         '''Check if the well contains the expected volume'''
         #return
         self.firstaccess = False
@@ -333,7 +333,7 @@ class Sample(object):
             tm=tm>>1
             tipnum+=1
         worklist.variable('detected_volume_%d'%tipnum,-2)
-        worklist.detectLiquid(tipMask,well,lc,self.plate)
+        worklist.detectLiquid(tipMask,well,self.inliquidLC,self.plate)
         worklist.testvar("detected_volume_%d"%tipnum,">",min(1000,gemvolthresh),msg="Failed volume check of %s - should have  %.0f ul"%(self.name,self.volume))
         self.addhistory("LD",0,tipMask)
 
@@ -368,7 +368,7 @@ class Sample(object):
         lc=self.chooseLC(volume)
 
         if self.firstaccess:
-            self.volcheck(tipMask,well,lc)
+            self.volcheck(tipMask,well)
 
         if self.hasBeads and self.plate.curloc=="Magnet":
             # With beads don't do any manual conditioning and don't remove extra (since we usually want to control exact amounts left behind, if any)
@@ -558,6 +558,10 @@ class Sample(object):
             logging.notice( "mix() called for sample %s, which is already mixed"%self.name)
             return False
         logging.warning("Pipette mixing of %s may introduce bubbles"%self.name)
+
+        if self.firstaccess:
+            self.volcheck(tipMask,[self.well])
+
         blowvol=5
         mstr=""
         extraspace=blowvol+0.1
