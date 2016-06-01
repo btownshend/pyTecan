@@ -564,13 +564,10 @@ def waittimer(duration,timer=1):
     wlist.append('WaitTimer("%d","%f")'%(timer,duration))
     clock.pipetting=max(clock.pipetting,timerstart+duration)	# Assume the clock.pipetting time is the timer length
 
-def userprompt( text,timeout=-1,prepend=False):
+def userprompt( text,timeout=-1):
     flushQueue()
     cmd='UserPrompt("%s",0,%d)'%(text,timeout)
-    if prepend:
-        wlist.insert(0,cmd)
-    else:
-        wlist.append(cmd)
+    wlist.append(cmd)
     if timeout>0:
         clock.pipetting+=timeout
 
