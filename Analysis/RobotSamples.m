@@ -427,10 +427,11 @@ classdef RobotSamples < handle
 
       obj.sv=[];
       obj.rsv=[];
+      printRefScale=false;   % True to add columns scaling by ref
       nrowsprinted=99;   % Default so we print headers first time
       for i=1:length(obj.templates)
-        if nrowsprinted>=2
-          fprintf('%-40.40s ','');
+        if true
+          fprintf('\n%-40.40s ','');
           fprintf('  Dil ');
           ref=[];
           for j=1:length(obj.primers())
@@ -439,7 +440,7 @@ classdef RobotSamples < handle
               ref=j;
             end
           end
-          if ~isempty(ref)
+          if ~isempty(ref) && printRefScale
             fprintf('%s',blanks(7));
             for j=1:length(obj.primers())
               if j~=ref
@@ -453,7 +454,7 @@ classdef RobotSamples < handle
         for j=1:length(obj.primers())
           fprintf('%8d ',obj.getlength(obj.templates{i},obj.primers(j)));
         end
-        if ~isempty(ref) && nrowsprinted>=2
+        if ~isempty(ref) && nrowsprinted>=2 && printRefScale
           fprintf('%s',blanks(7));
           for j=1:length(obj.primers())
             if j~=ref
@@ -482,7 +483,7 @@ classdef RobotSamples < handle
               fprintf('%-40.40s %5.1f %s ng/ul ',nm,scale,sprintf('%8.3f ',concs));
               obj.rsv(i,j,:)=concs;
             end
-            if ~isempty(ref)
+            if ~isempty(ref) && printRefScale
               obj.sv(i,j,:)=obj.rsv(i,j,:)/obj.rsv(i,j,ref)*obj.options.refconc;
               fprintf('%6.1f ',obj.sv(i,j,[1:ref-1,ref+1:end]));
             end
