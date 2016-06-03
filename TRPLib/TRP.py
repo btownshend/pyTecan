@@ -220,7 +220,7 @@ class TRP(object):
             if  watervol[i]>=0.1:
                 self.e.transfer(watervol[i],decklayout.WATER,src[i],(False,False))
         for i in range(len(src)):
-            self.e.transfer(mastervol[i],master[i],src[i],(True,src[i].hasBeads))
+            self.e.transfer(mastervol[i],master[i],src[i],(True,False))
         self.e.shakeSamples(src,returnPlate=returnPlate)
 
     ########################
