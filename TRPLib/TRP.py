@@ -786,7 +786,7 @@ class TRP(object):
     def runQPCR(self,src,vol,srcdil,primers=["A","B"],nreplicates=1):
         ## QPCR setup
         worklist.comment("runQPCR: primers=%s, source=%s"%([p for p in primers],[s.name for s in src]))
-        [src,vol,srcdil,nreplicates]=listify([src,vol,srcdil,nreplicates])
+        [src,vol,nreplicates]=listify([src,vol,nreplicates])
         self.e.shakeSamples(src,returnPlate=True)
 
         # Build a list of sets to be run

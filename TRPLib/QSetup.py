@@ -163,4 +163,4 @@ class QSetup(object):
         for p in self.allprimers():
             # Build list of relevant entries
             ind=[ i for i in range(len(self.dilProds)) if p in self.primers[i]]
-            self.trp.runQPCR(src=[self.dilProds[i] for i in ind],vol=self.volume,srcdil=10.0/4,primers=[p],nreplicates=[self.nreplicates[i] for i in ind])
+            self.trp.runQPCR(src=[self.dilProds[i] for i in ind],vol=self.volume,primers=[p],nreplicates=[self.nreplicates[i] for i in ind])
