@@ -14,41 +14,23 @@ maxVolumePerWell=150
 reagents.add("MT7",well="A1",conc=2.5,extraVol=30)
 reagents.add("MPosRT",well="B1",conc=2,extraVol=30)
 reagents.add("MKlenow",well="C1",conc=2,extraVol=30)
-reagents.add("MUser",well="D1",conc=2,extraVol=30)
-reagents.add("MLigBT7W",well="E1",conc=3)
-reagents.add("MLigase",well="A2",conc=3)
-reagents.add("MStopXBio",well="B2",conc=2)
-reagents.add("MStopXSelfExtendW",well="B2",conc=5,extraVol=30)
 reagents.add("MStopXSelfExtendT7W",well="B2",conc=5,extraVol=30,hasBeads=True)
-reagents.add("MStpX",well="C2",conc=2)
-reagents.add("MStopXSelfExtendB",well="C2",conc=5,extraVol=30)
 reagents.add("MStopXSelfExtendT7B",well="C2",conc=5,extraVol=30,hasBeads=True)
-reagents.add("MQREF",well="D2",conc=10.0/6)
-reagents.add("MQAX",well="E2",conc=10.0/6)
-reagents.add("MQBX",well="A3",conc=10.0/6)
 reagents.add("MPCRAX",well="B3",conc=4.0/3)
 reagents.add("MPCRBX",well="C3",conc=4.0/3)
-reagents.add("MQMX",well="D3",conc=10.0/6)
-reagents.add("MQWX",well="E3",conc=10.0/6)
 reagents.add("SSD",well="A4",conc=10.0)
-reagents.add("MLigAT7W",well="B4",conc=3)
 reagents.add("BeadBuffer",well="C4",conc=1)
 reagents.add("Dynabeads",well="D4",conc=4,hasBeads=True)
-reagents.add("MQT7X",well="E4",conc=15.0/9)
-reagents.add("MStpBeads",well="A5",conc=3.7)
-reagents.add("QPCRREF",well="B5",conc=Concentration(50,50,'pM'))
-reagents.add("MPCRT7X",well="C5",conc=4.0/3)
 reagents.add("NaOH",well="D5",conc=1.0)
 reagents.add("TE8",well="E5",conc=None)
 
-reagents.add("MLigBT7WBio",well=None,conc=3)
-reagents.add("MLigBT7Bio",well=None,conc=3)
-reagents.add("MLigBT7",well=None,conc=3)
-reagents.add("MPCR",well=None,conc=4)
-reagents.add("MLigB",well=None,conc=3)
-reagents.add("MNegRT",well=None,conc=2)
-reagents.add("MLigAT7",well=None,conc=3)	# Conc is relative to annealing time (not to post-ligase)
-reagents.add("Theo",well=None,conc=Concentration(25,7.5,'mM'))
+reagents.add("EvaUSER",well="A5",conc=2)
+reagents.add("P-TR",well="B5",conc=4)
+reagents.add("P-T7X",well="A6",conc=4)
+reagents.add("P-WX",well="B6",conc=4)
+reagents.add("P-BX",well="C6",conc=4)
+reagents.add("P-MX",well="D6",conc=4)
+reagents.add("P-REF",well="E6",conc=4)
     
 def listify(x):
     'Convert a list of (lists or scalars) into a list of equal length lists'
@@ -783,7 +765,7 @@ class TRP(object):
             
         return tgt
         
-    def runQPCR(self,src,vol,srcdil,primers=["A","B"],nreplicates=1):
+    def runQPCR(self,src,vol,primers,nreplicates=1,enzName="EvaUSER"):
         ## QPCR setup
         worklist.comment("runQPCR: primers=%s, source=%s"%([p for p in primers],[s.name for s in src]))
         [src,vol,nreplicates]=listify([src,vol,nreplicates])
@@ -803,17 +785,24 @@ class TRP(object):
                     s=Sample(sampname,decklayout.QPCRPLATE)
                     torun=torun+[(src[i],s,p,vol[i])]
 
+        # Add enzyme
+        e=reagents.getsample(enzName)
+        v=[a[3]/e.conc.dilutionneeded() for a in torun]
+        t=[a[1] for a in torun]
+        self.e.multitransfer(v,e,t)
+        
         # Fill the master mixes
         dil={}
         for p in primers:
-            mname="MQ%s"%p
+            mname="P-%s"%p
             if not reagents.isReagent(mname):
-                reagents.add(name=mname,conc=15.0/9.0,extraVol=30)
+                reagents.add(name=mname,conc=4,extraVol=30)
             mq=reagents.getsample(mname)
             t=[a[1] for a in torun if a[2]==p]
             v=[a[3]/mq.conc.dilutionneeded() for a in torun if a[2]==p]
+            assert(v>0)
             self.e.multitransfer(v,mq,t,(False,False))
-            dil[p]=1.0/(1-1/mq.conc.dilutionneeded())
+            dil[p]=1.0/(1-1/e.conc.dilutionneeded()-1/mq.conc.dilutionneeded())
             
         # Add the samples
         self.e.sanitize()		# In case we are aligned
