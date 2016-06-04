@@ -14,6 +14,7 @@ maxVolumePerWell=150
 reagents.add("MT7",well="A1",conc=2.5,extraVol=30)
 reagents.add("MPosRT",well="B1",conc=2,extraVol=30)
 reagents.add("MKlenow",well="C1",conc=2,extraVol=30)
+reagents.add("EDTA",well="A2",conc=Concentration(40,4,'mM'))
 reagents.add("MStopXSelfExtendT7W",well="B2",conc=5,extraVol=30,hasBeads=True)
 reagents.add("MStopXSelfExtendT7B",well="C2",conc=5,extraVol=30,hasBeads=True)
 reagents.add("MPCRAX",well="B3",conc=4.0/3)
@@ -273,7 +274,17 @@ class TRP(object):
         self.e.shakeSamples(tgt,returnPlate=True)
 
         return tgt
-    
+
+    def addEDTA(self,tgt,finalconc=4):
+        edta=reagents.getsample("EDTA")
+        edta.conc.final=finalconc
+        srcdil=edta.conc.stock*1.0/(edta.conc.stock-finalconc)
+        for t in tgt:
+            t.conc=Concentration(srcdil,1)
+            v=t.volume*finalconc/(edta.conc.stock-finalconc)
+            self.e.transfer(v,edta,t,mix=(False,False))
+        self.e.shakeSamples(tgt,returnPlate=True)
+        
     def runT7(self,theo,src,vol,srcdil,tgt=None,dur=15,stopmaster=None):
         [theo,src,tgt,srcdil,stopmaster]=listify([theo,src,tgt,srcdil,stopmaster])
         tgt=self.runT7Setup(theo,src,vol,srcdil,tgt)
