@@ -1,8 +1,9 @@
-function h=gemcalcheight(v,depth,area)
-r1=sqrt(area/pi);
-h=(v./(r1/depth)^2*3/pi).^(1/3);
-v1=1/3*pi * depth^3 * (r1/depth)^2;
-hhi=(v-v1)/area+depth;
+function h=gemcalcheight(v,mdl)
+r1=sqrt(mdl.area/pi);
+h=(v./(r1/mdl.depth)^2*3/pi).^(1/3);
+v1=1/3*pi * mdl.depth^3 * (r1/mdl.depth)^2;
+hhi=(v-v1)/mdl.area+mdl.depth;
 h(v>v1)=hhi(v>v1);
+h=h+mdl.hoffset;
 
 

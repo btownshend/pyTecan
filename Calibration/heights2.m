@@ -87,7 +87,7 @@ sel=vsteps>=vrange(1) & vsteps<=vrange(2);
 fprintf('Matching Gemini model over range of %.1f-%.1f ul using %d points\n', vrange, sum(sel));
 hsteps=hsteps(sel);
 vsteps=vsteps(sel);
-gfit=geminifit(vsteps, hsteps);
+gmdl=geminifit(vsteps, hsteps);
 title('Gemini Fit');
 
 submergecheck
