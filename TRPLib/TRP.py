@@ -123,7 +123,7 @@ class TRP(object):
                 logging.error("Insufficient volume for ", s," need at least ",1.0-s.volume," ul additional",fatal=False)
                 #hasError=True
             elif s.volume<2.5 and s.conc is not None:
-                logging.warning("Low final volume for ", s)
+                logging.warning("Low final volume for "+ s.name)
             elif s.volume>s.plate.maxVolume:
                 logging.erorr("Excess final volume  (",s.volume,") for ",s,", maximum is ",s.plate.maxVolume,fatal=False)
                 hasError=True
