@@ -671,63 +671,23 @@ class TRP(object):
     ########################
     # PCR
     ########################
-    def runPCR(self,prefix,src,vol,srcdil,tgt=None,ncycles=20,suffix='S',sepPrimers=True,primerDil=4):
+    def runPCR(self,primers,src,vol,srcdil,tgt=None,ncycles=20):
         ## PCR
-        [prefix,src,tgt,vol,srcdil,suffix]=listify([prefix,src,tgt,vol,srcdil,suffix])
+        [primers,src,tgt,vol,srcdil]=listify([primers,src,tgt,vol,srcdil])
         for i in range(len(tgt)):
             if tgt[i] is None:
-                tgt[i]=Sample("%s.P%s%s"%(src[i].name,prefix[i],suffix[i]),src[i].plate)
+                tgt[i]=Sample("%s.P%s"%(src[i].name,primers[i]),src[i].plate)
 
         # Adjust source dilution
         for i in range(len(src)):
             src[i].conc=Concentration(srcdil[i],1)
         
-        if sepPrimers:
-            sampvols=[vol[i]/srcdil[i] for i in range(len(src))]
-            mm=reagents.getsample("MPCR")
-            mmvols=[vol[i]/mm.conc.dilutionneeded() for i in range(len(src))]
-            for s in prefix + suffix:
-                if not reagents.isReagent(s):
-                    reagents.add(name=s,conc=primerDil,extraVol=30)
-
-            sprefix=[reagents.getsample(p) for p in prefix]
-            ssuffix=[reagents.getsample(p) for p in suffix]
-
-            prefixvols=[vol[i]/sprefix[i].conc.dilutionneeded() for i in range(len(src))]
-            suffixvols=[vol[i]/ssuffix[i].conc.dilutionneeded() for i in range(len(src))]
-            watervols=[vol[i]-mmvols[i]-prefixvols[i]-suffixvols[i]-sampvols[i] for i in range(len(src))]
-
-            logging.notice("water=",watervols,", mm=",mmvols,", prefix=",prefixvols,", suffix=",suffixvols,", samp=",sampvols)
-            self.e.multitransfer(watervols,decklayout.WATER,tgt,(False,False))		# Transfer water
-            self.e.multitransfer(mmvols,mm,tgt,(False,False))	 # PCR master mix
-            sprefixset=set(sprefix)
-            ssuffixset=set(ssuffix)
-            if len(sprefixset)<len(ssuffixset):
-                # Distribute sprefix first
-                for p in sprefixset:
-                    self.e.multitransfer([prefixvols[i] for i in range(len(src)) if sprefix[i]==p],p,[tgt[i] for i in range(len(src)) if sprefix[i]==p],(False,False))
-                # Then individually add ssuffix
-                for i in range(len(src)):
-                    self.e.transfer(suffixvols[i],ssuffix[i],tgt[i],(False,False))
-            else:
-                # Distribute ssuffix first
-                for p in ssuffixset:
-                    self.e.multitransfer([suffixvols[i] for i in range(len(src)) if ssuffix[i]==p],p,[tgt[i] for i in range(len(src)) if ssuffix[i]==p],(False,False))
-                # Then individually add sprefix
-                for i in range(len(src)):
-                    self.e.transfer(prefixvols[i],sprefix[i],tgt[i],(False,False))
-            # Now add templates
-            for i in range(len(src)):
-                self.e.transfer(sampvols[i],src[i],tgt[i],(False,False))
-                
-        else:
-            primer=[prefix[i]+suffix[i] for i in range(len(prefix))]
-            logging.notice( "primer="+str(primer))
-            for up in set(primer):
-                s="MPCR%s"%up
-                if not reagents.isReagent(s):
-                    reagents.add(name=s,conc=4/3.0,extraVol=30)
-                self.e.stage('PCR%s'%up,[reagents.getsample("MPCR%s"%up)],[src[i] for i in range(len(src)) if primer[i]==up],[tgt[i] for i in range(len(tgt)) if primer[i]==up],[vol[i] for i in range(len(vol)) if primer[i]==up],destMix=False)
+        logging.notice( "primer="+str(primers))
+        for up in set(primers):
+            s="P-%s"%up
+            if not reagents.isReagent(s):
+                reagents.add(name=s,conc=4,extraVol=30)
+            self.e.stage('PCR%s'%up,[reagents.getsample("MPCR"),reagents.getsample(s)],[src[i] for i in range(len(src)) if primers[i]==up],[tgt[i] for i in range(len(tgt)) if primers[i]==up],[vol[i] for i in range(len(vol)) if primers[i]==up],destMix=False)
         pgm="PCR%d"%ncycles
         self.e.shakeSamples(tgt,returnPlate=False)
         #        worklist.pyrun('PTC\\ptcsetpgm.py %s TEMP@95,120 TEMP@95,30 TEMP@55,30 TEMP@72,25 GOTO@2,%d TEMP@72,180 TEMP@16,2'%(pgm,ncycles-1))
