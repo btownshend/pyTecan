@@ -282,6 +282,8 @@ classdef RobotSamples < handle
           len=74;  
         elseif strcmp(primer,'TWR')
           len=64;            
+        elseif strcmp(primer,'TR')
+          len=mean([64,74]);   % Could be W or B
         else
           fprintf('Not implemented: length of sequence with %s primers\n', primer);
         end
