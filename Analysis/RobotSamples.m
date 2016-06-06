@@ -19,7 +19,7 @@ classdef RobotSamples < handle
   
   methods
     function obj=RobotSamples(sampfilename,opdfilename,varargin)
-      defaults=struct('thresh',[],'doplot',true,'basecycles',2:8,'fulow',[],'fuhigh',[],'refconc',10,'remotedir',[],'showall',false);
+      defaults=struct('thresh',[],'doplot',true,'basecycles',2:8,'fulow',[],'fuhigh',[],'refconc',10,'remotedir',[],'showall',false,'badcycles',[]);
       args=processargs(defaults,varargin);
       if ~iscell(sampfilename)
         sampfilename={sampfilename};
@@ -55,6 +55,11 @@ classdef RobotSamples < handle
         end
       else
         obj.opd={opdread(opdfilename,'remotedir',args.remotedir)};
+      end
+      if ~isempty(args.badcycles)
+        for bc=args.badcycles
+          obj.opd{1}.avg.scaled(bc,:,:)=(obj.opd{1}.avg.scaled(bc-1,:,:)+obj.opd{1}.avg.scaled(bc+1,:,:))/2;
+        end
       end
       for i=1:length(obj.opd)
         obj.opd{i}=ctcalc(obj.opd{i},'thresh',args.thresh,'basecycles',args.basecycles,'doplot',args.doplot,'fulow',args.fulow,'fuhigh',args.fuhigh,'showall',args.showall);
