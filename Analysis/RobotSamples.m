@@ -26,7 +26,9 @@ classdef RobotSamples < handle
       end
       obj.options=args;
       for i=1:length(sampfilename)
-        assert(exist(sampfilename{i},'file')~=0);
+        if exist(sampfilename{i},'file')==0
+          error('File not found: %s',sampfilename{i});
+        end
         eval(sampfilename{i});	% This loads all the data into a var called 'samps'
         if i==1
           obj.samps=samps;		% Copy to class
