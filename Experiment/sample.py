@@ -366,7 +366,7 @@ class Sample(object):
             well=[self.well]
 
         lc=self.chooseLC(volume)
-
+            
         if self.firstaccess:
             self.volcheck(tipMask,well)
 
@@ -544,8 +544,34 @@ class Sample(object):
 
     def chooseLC(self,aspirateVolume=0):
         if self.volume-aspirateVolume>=MINLIQUIDDETECTVOLUME:
-            return self.inliquidLC
-        elif self.volume==0 and aspirateVolume==0:
+            if aspirateVolume==0:
+                return self.inliquidLC	# Not aspirating, should be fine
+
+            # Try using liquid detection
+            initheight=self.plate.getliquidheight(self.volume)		# True height at start
+            finalheight=self.plate.getliquidheight(self.volume-aspirateVolume)	# True height at end of aspirate
+            initgemvolume=self.plate.getgemliquidvolume(initheight)		# How much will Gemini think we have at start
+            if initgemvolume<aspirateVolume+15:
+                # Not enough
+                msg="Aspirate %.1f ul from %.1f ul,  gem will think initial volume is %.1ful which is too low to reliably work - not using LD"%(aspirateVolume,self.volume,initgemvolume)
+                logging.notice(msg)
+            else:
+                finalgemvolume=initgemvolume-aspirateVolume
+                finalgemheight=self.plate.getgemliquidheight(finalgemvolume)
+                finaltipdepth=self.inliquidLC.submerge-(finalgemheight-finalheight)
+                msg="Aspirate %.1f ul from %.1f ul:  height goes from %.1f to %.1f mm, gem will think initial volume is %.1ful and final height %.1f mm"%(aspirateVolume,self.volume,initheight,finalheight,initgemvolume,finalgemheight)
+                if finalgemheight-0.1<self.inliquidLC.submerge:
+                    # Gemini won't be able to submerge as much as requested
+                    logging.notice(msg+": Gemini would think there's not enough liquid to submerge %.1f mm - not using LD"%self.inliquidLC.submerge)
+                elif finaltipdepth<0.1:
+                    # Tracking is off so much that tip will break surface of water during operation 
+                    logging.notice(msg+": tip will not be submerged enough (depth=%.1f mm) - not using LD"%finaltipdepth)
+                else:
+                    # Should be good
+                    #logging.notice(msg)
+                    return self.inliquidLC
+        # No liquid detect:
+        if self.volume==0 and aspirateVolume==0:
             return self.emptyLC
         elif self.hasBeads and self.plate.curloc=="Magnet":
             return self.beadsLC
