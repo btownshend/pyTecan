@@ -84,9 +84,14 @@ subplot(313);
 hsteps=0:0.05:40;
 vsteps=calcvol2(hsteps,[],[],angle,fit(1),fit(2),fit(3),fit(4),fit(5),fit(6:8));
 sel=vsteps>=vrange(1) & vsteps<=vrange(2);
-fprintf('Matching Gemini model over range of %.1f-%.1f ul using %d points\n', vrange, sum(sel));
 hsteps=hsteps(sel);
 vsteps=vsteps(sel);
+r1=fit(1);
+h1=fit(2);
+v0=fit(3);
+h0=h1-r1/tand(angle/2);
+gdepth=h1+h0/2+3/2*v0/pi/r1^2;
+%gmdl=geminifit(vsteps, hsteps, [], struct('depth',gdepth,'area',pi*fit(1)^2,'hoffset',0));
 gmdl=geminifit(vsteps, hsteps);
 title('Gemini Fit');
 
