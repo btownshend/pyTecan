@@ -6,7 +6,7 @@ SURFACEREMOVE=0.4	# Extra removed from wells due to tip wetting (assuming liquid
 _LC__alllc = []
 
 class LC(object):
-    def __init__(self,name,singletag=0,singlelag=0,multicond=0,multiexcess=0,multitag=0,wetvolume=SURFACEREMOVE,ldetect=False):
+    def __init__(self,name,singletag=0,singlelag=0,multicond=0,multiexcess=0,multitag=0,wetvolume=SURFACEREMOVE,ldetect=False,submerge=None):
         self.name=name
         self.multicond=multicond
         self.multiexcess=multiexcess
@@ -15,6 +15,7 @@ class LC(object):
         self.multitag=multitag
         self.wetvolume=wetvolume
         self.ldetect=ldetect
+        self.submerge=submerge
         self.used={}
         __alllc.append(self)
 
@@ -48,7 +49,7 @@ LCWaterBottom=LC("Water-Bottom",singlelag=1,multiexcess=1)
 LCWaterPierce=LC("Water-Pierce",singlelag=1,multiexcess=1)
 LCWaterBottomSide=LC("Water-BottomSide",singlelag=1,multiexcess=1)
 LCWaterBottomBeads=LC("Water-BottomBeads",singlelag=1,multiexcess=0)
-LCWaterInLiquid=LC("Water-InLiquid",singlelag=1,multiexcess=1,ldetect=True)
+LCWaterInLiquid=LC("Water-InLiquid",singlelag=1,multiexcess=1,ldetect=True,submerge=1)
 LCMixSlow=LC("Water-MixSlow",multiexcess=1)
 LCMix={height: LC("Mix_%d"%height,multiexcess=1) for height in range(1,13)}
 LCMixBottom=LC("Water-MixBottom",multiexcess=1)
