@@ -764,7 +764,11 @@ class TRP(object):
         v=[a[3]/e.conc.dilutionneeded() for a in torun]
         t=[a[1] for a in torun]
         self.e.multitransfer(v,e,t)
-        
+
+        # Make the target have 'none' concentration so we can multiadd to it again
+        for s in t:
+            s.conc=None
+
         # Fill the master mixes
         dil={}
         for p in primers:
