@@ -185,6 +185,24 @@ class Plate(object):
             volume=None
         return volume
 
+    def getgemliquidheight(self,volume):
+        'Compute liquid height above zmax in mm given volume the way Gemini will do it'
+        if volume is None:
+            height=None
+        elif self.gemShape=='flat':
+            height=volume/self.gemArea
+        elif self.gemShape=='v-shaped':
+            r0=math.sqrt(self.gemArea/math.pi)
+            conevolume=1.0/3*math.pi*r0*r0*self.gemDepth
+            if volume<conevolume:
+                'conical'
+                height=math.pow(volume*3/math.pi*(self.gemDepth/r0)**2,1.0/3)
+            else:
+                height=(volume-conevolume)/self.gemArea+self.gemDepth
+        else:
+            height=None
+        return height
+
     def getmixspeeds(self,minvol,maxvol):
         'Get shaker speed range for given well volume'
         maxspeed=None
