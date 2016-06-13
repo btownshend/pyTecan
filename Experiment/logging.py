@@ -9,8 +9,10 @@ def callhistory(includeLibs=False):
             continue
         f=frames[-i]
         nm=f[1].split("/")
-        if len(nm)==1 or includeLibs:
+        if includeLibs:
             h.append("%s:%d"%(nm[-1],f[2]))
+        elif len(nm)==1:
+            h=["%s:%d"%(nm[-1],f[2])]
     return h
 
 def notice(msg):
