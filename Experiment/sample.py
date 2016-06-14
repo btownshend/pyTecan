@@ -332,9 +332,21 @@ class Sample(object):
         while tm>0:
             tm=tm>>1
             tipnum+=1
-        worklist.variable('detected_volume_%d'%tipnum,-2)
+
+        loopLabel=worklist.getlabel()
+        worklist.beginloop(loopLabel,50)   # Large number, but have to terminate to pass Gemini's endless loop test
+        volvar='detected_volume_%d'%tipnum
+        worklist.variable(volvar,-2)
         worklist.detectLiquid(tipMask,well,self.inliquidLC,self.plate)
-        worklist.testvar("detected_volume_%d"%tipnum,">",min(1000,gemvolthresh),msg="Failed volume check of %s - should have  %.0f ul"%(self.name,self.volume))
+        doneLabel=worklist.getlabel()
+        worklist.condition(volvar,">",min(100,gemvolthresh),doneLabel)
+        worklist.moveliha(worklist.WASHLOC)	# Get LiHa out of the way
+        msg="Failed volume check of %s - should have  %.0f ul"%(self.name,self.volume)
+        worklist.email(dest='cdsrobot@gmail.com',subject=msg)
+        worklist.stringvariable("response","retry",msg+" Enter 'ignore' to ignore and continue, otherwise will retry.")
+        worklist.condition("response","==","ignore",doneLabel)
+        worklist.endloop()
+        worklist.comment(doneLabel)
         self.addhistory("LD",0,tipMask)
 
     def aspirate(self,tipMask,volume,multi=False):
