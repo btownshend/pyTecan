@@ -2,9 +2,11 @@ import os
 from plate import Plate
 from sample import Sample
 from liquidclass import LCBleachMix
+from worklist import WASHLOC
 
 ############ Plates and plate locations  #############
-WASHLOC=Plate("Wash",1,2,1,8,False,0)
+#WASHLOC=Plate("Wash",1,2,1,8,False,0)   # Defined in worklist
+
 # Use dimensional data from Robot/Calibration/20150302-LiquidHeights
 #REAGENTPLATE=Plate("Reagents",18,1,6,5,False,unusableVolume=20,maxVolume=1700,zmax=569,angle=17.5,r1=4.062,h1=17.75,v0=13.7,slopex=-0.022,slopey=-0.038,gemDepth=24.45,gemArea=51.61,gemHOffset=-7.15,gemShape='v-shaped')  
 #REAGENTPLATE=Plate("Reagents",18,1,6,5,False,unusableVolume=20,maxVolume=1700,zmax=569,angle=17.5,r1=4.062,h1=17.75,v0=13.7,slopex=-0.022,slopey=-0.038,gemDepth=13.83,gemArea=51.84,gemHOffset=0,gemShape='v-shaped')
