@@ -584,6 +584,12 @@ def variable(varname,default,userprompt=None,minval=None,maxval=None):
     else:
         wlist.append('Variable(%s,"%s",1,"%s",%d,%f,%f)'%(varname,default,userprompt,limitrange,minval,maxval))
 
+def stringvariable(varname,default,userprompt=None):
+    if userprompt is None:
+        wlist.append('String-Variable(%s,"%s",0," ")'%(varname,default))
+    else:
+        wlist.append('String-Variable(%s,"%s",1,"%s")'%(varname,default,userprompt))
+
 def execute( command, wait=True, resultvar=None):
     'Execute an external command'
     flushQueue()
@@ -598,9 +604,7 @@ def execute( command, wait=True, resultvar=None):
     clock.pipetting+=2.06   # Just overhead time, not actually time that command itself takes
 
 def pyrun( cmd):
-    global lnum
-    label='L%d'%lnum
-    lnum=lnum+1
+    label=getlabel()
     execute(r"C:\Python27\python.exe C:\cygwin\Home\Admin\%s"%cmd,resultvar="ecode")
     condition("ecode","==","0",label)
     msg='Python command %s failed with ecode=~ecode~'%cmd
@@ -608,11 +612,15 @@ def pyrun( cmd):
     userprompt(msg)
     comment(label)
 
-def testvar(var,op,value,msg=None):
-    'Test if a variable pass test'
+def getlabel():
     global lnum
     label='L%d'%lnum
     lnum=lnum+1
+    return label
+
+def testvar(var,op,value,msg=None):
+    'Test if a variable pass test'
+    label=getlabel()
     condition(var,op,value,label)
     if msg is None:
         msg='Failed %s (=~%s~)%s%s'%(var,var,op,value)
