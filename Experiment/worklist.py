@@ -590,6 +590,12 @@ def stringvariable(varname,default,userprompt=None):
     else:
         wlist.append('String-Variable(%s,"%s",1,"%s")'%(varname,default,userprompt))
 
+def beginloop(loopname,n):
+    wlist.append('BeginLoop("%d","%s")'%(n,loopname))
+
+def endloop():
+    wlist.append('EndLoop()')
+        
 def execute( command, wait=True, resultvar=None):
     'Execute an external command'
     flushQueue()
