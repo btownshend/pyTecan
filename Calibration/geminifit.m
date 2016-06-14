@@ -11,7 +11,7 @@ xlabel('Volume (ul)');
 ylabel('Height above ZMax (mm)');
 if nargin<4
   if nargin<3
-    x0=[26.35,pi*4.062^2,-8.6];
+    x0=[10,pi*4.062^2,0];
   end
   gmdl0=struct('depth',x0(1),'area',x0(2),'hoffset',x0(3));
   plot(gemcalcvol(heights,gmdl0),heights,'m','LineWidth',2);
