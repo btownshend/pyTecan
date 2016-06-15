@@ -7,6 +7,7 @@ from sample import Sample
 from plate import Plate
 from experiment import Experiment
 from liquidclass import SURFACEREMOVE
+from decklayout import TIPOFFSETS
 
 e=Experiment()		# This casuses all the plate definitions in Experiment to be loaded
 sample.SHOWTIPS=True
@@ -91,6 +92,11 @@ class Datalog(object):
         
     def logmeasure(self,tip,height,submerge,zmax,zadd):
         sample=self.lastSample[tip]
+        if sample.plate.zmax is not None:
+            curzmax=2100-sample.plate.zmax-390+TIPOFFSETS[tip-1];
+            if zmax!=curzmax:
+                print "ZMax for plate %s, tip %d at time of run was %.0f, currently at %.0f"%(sample.plate.name, tip, zmax, curzmax)
+                zmax=curzmax
         prevol=sample.volume-sample.lastadd		# Liquid height is measured before next op, whose volume effect has already been added to sample.volume
         if height==-1:
             vol=sample.plate.getliquidvolume((zadd+submerge)/10.0)
