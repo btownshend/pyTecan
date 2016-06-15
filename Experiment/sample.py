@@ -93,7 +93,7 @@ class Sample(object):
             if not isinstance(well,int):
                 well=plate.wellnumber(well)
             if well not in plate.wells:
-                logging.error("Attempt to assign sample %s to well %d (%s) which is not legal on plate %s"%(name,well,plate.wellname(well),plate.name))
+                logging.warning("Attempt to assign sample %s to well %d (%s) which is not legal on plate %s"%(name,well,plate.wellname(well),plate.name))
             for s in __allsamples:
                 if s.well==well and s.plate==plate:
                     logging.warning("Attempt to assign sample %s to plate %s, well %s that already contains %s"%(name,str(plate),plate.wellname(well),s.name))
