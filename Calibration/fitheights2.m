@@ -1,7 +1,8 @@
 % Build model to vol, height data
 % wells(:,2)  - position of well A1=(1,1), H12=(12,8)
 % tips(:)     - tip number (1-4)
-function [fit,angle,expected]=fitheights2(vol,heights,wells,tips,angle,x0)
+% slopemodel  - 1 to model slope of plate
+function [fit,angle,expected]=fitheights2(vol,heights,wells,tips,angle,x0,slopemodel)
 sel=isfinite(vol)&isfinite(heights);
 vol=vol(sel);
 heights=heights(sel);
@@ -14,7 +15,7 @@ ylabel('Height above ZMax (mm)');
 if nargin<5
   angle=17.5;
 end
-if nargin<6
+if nargin<6 || isempty(x0)
   x0=[2.5,10,10,0,0,0,0,0];
 end
 
@@ -23,7 +24,13 @@ hstep=0:max(heights(:));
 %plot(calcvol2(hstep,angle,x0(1),x0(2),x0(3)),hstep,':r','LineWidth',1);
 options=optimset('Display','notify','TolFun',1e-10,'TolX',1e-10,'MaxFunEvals',20000,'MaxIter',20000);
 % Fit with model x=[r1,h1,v0,slopex,slopey,tip2-tip1,tip3-tip1,tip4-tip1]
-fit=fminsearch(@(x) sum((calcvol2(heights,wells,tips,angle,x(1),x(2),x(3),x(4),x(5),[0,x(6:8)])-vol).^2),x0,options);
+if slopemodel
+  fit=fminsearch(@(x) sum((calcvol2(heights,wells,tips,angle,x(1),x(2),x(3),x(4),x(5),[0,x(6:8)])-vol).^2),x0,options);
+else
+  x0=x0([1:3,6:8]);
+  fit=fminsearch(@(x) sum((calcvol2(heights,wells,tips,angle,x(1),x(2),x(3),0,0,[0,x(4:6)])-vol).^2),x0,options);
+  fit=[fit(1:3),0,0,fit(4:6)];
+end
 volestimate=calcvol2(heights,wells,tips,angle,fit(1),fit(2),fit(3),fit(4),fit(5),[0,fit(6:8)]);
 rmse=sqrt(nanmean((vol-volestimate).^2));
 r1=fit(1); h1=fit(2); v0=fit(3);

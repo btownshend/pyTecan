@@ -1,4 +1,7 @@
-function [heights,meanoffset]=heights2(logfile,vol,wells,zmax,offsets,usex,vrange,angle)
+function [heights,meanoffset]=heights2(logfile,vol,wells,zmax,offsets,usex,vrange,angle,slopemodel)
+if nargin<9
+  slopemodel=false;
+end
 if nargin<7
   angle=17.5;
 end
@@ -52,7 +55,7 @@ end
 allvol=repmat(vol,4,1);
 allvol=allvol(:);
 allheights=heights(:);
-[fit,angle,expected]=fitheights2(allvol,allheights,allwells,alltips,angle);
+[fit,angle,expected]=fitheights2(allvol,allheights,allwells,alltips,angle,[],slopemodel);
 
 meanoffset=-[0,fit(6:8)];
 meanoffset=meanoffset-mean(meanoffset);
