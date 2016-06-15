@@ -18,7 +18,8 @@ eppmaxspeeds={195:1600,150:1800,125:1900,100:1950,75:2050,50:2150,25:2150,0:2150
 eppminspeeds={32:1800,64:1700,96:1400,200:1300}
 
 SAMPLEPLATE=Plate("Samples",4,3,12,8,False,unusableVolume=15,maxVolume=200,
-                zmax=1033,angle=17.5,r1=2.705,h1=9.13,v0=13.14,slopex=0.000,slopey=0.000,gemDepth=2.81,gemArea=16.41,
+                zmax=1033,angle=17.5,r1=2.698,h1=9.31,v0=17.21,slopex=0.000,slopey=0.000,
+                gemDepth=2.81,gemArea=16.41,
                 gemShape='v-shaped',vectorName="Microplate Landscape",maxspeeds=eppmaxspeeds,minspeeds=eppminspeeds)  # EppLoBind
 SAMPLEPLATE.wells=SAMPLEPLATE.wells[1:-1]	 # Skip A1 and H12 due to leakage
 SHAKERPLATELOC=Plate("Shaker",9,0,1,1)
