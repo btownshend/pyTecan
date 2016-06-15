@@ -73,9 +73,17 @@ maxvoldiff=pi*fit(1)^2*maxheightdiff;
 fprintf('Plate slope results in maximum volume difference corner-to-corner of %.1f ul (height difference of %.1fmm)\n',maxvoldiff, maxheightdiff);
 
 
+hsteps=0:0.05:40;
+vsteps=calcvol2(hsteps,[],[],angle,fit(1),fit(2),fit(3),fit(4),fit(5),fit(6:8));
+
+subplot(311);
+hold on;
+sel=vsteps<max(vol);
+plot(vsteps(sel),hsteps(sel),'k-');
+
 subplot(312);
 for i=1:4
-  plot(allvol(alltips==i),expected(alltips==i)-allvol(alltips==i),'o-');
+  plot(allvol(alltips==i),expected(alltips==i)-allvol(alltips==i),'o');
   hold on;
 end
 xlabel('Volume (ul)');
@@ -84,8 +92,6 @@ title('Fit error');
 
 subplot(313);
 % Match gemini to above model over 15-150ul range
-hsteps=0:0.05:40;
-vsteps=calcvol2(hsteps,[],[],angle,fit(1),fit(2),fit(3),fit(4),fit(5),fit(6:8));
 sel=vsteps>=vrange(1) & vsteps<=vrange(2);
 hsteps=hsteps(sel);
 vsteps=vsteps(sel);
@@ -99,3 +105,5 @@ gmdl=geminifit(vsteps, hsteps);
 title('Gemini Fit');
 
 submergecheck
+
+fprintf('zmax=%.0f,angle=%.1f,r1=%.3f,h1=%.2f,v0=%.2f,slopex=%.3f,slopey=%.3f,gemDepth=%.2f,gemArea=%.2f\n', zmax, angle, fit(1:5), gmdl.depth, gmdl.area);

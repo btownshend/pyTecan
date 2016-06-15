@@ -41,6 +41,7 @@ angle=atand(r1/(h1-h0))*2;
 hbottom=(v0/(pi/3)/((r1/(h1-h0))^2))^(1/3)+h0;
 fprintf('fit:  angle=%.1f deg, r1=%.3f mm, h1=%.2f mm, v0=%.1f ul, sx=%.3f mm/well, sy=%.3f mm/well, offsets=[0,%.2f,%.2f,%.2f]\nh0=%.1f mm, hbottom=%.1f\n', angle, fit, h0, hbottom);
 fprintf('RMSE = %.2f ul\n', rmse);
+fprintf('Volume at zmax-1.0mm = %.1f ul, zmax-1.5m = %.1f ul\n',calcvol2([1.0,1.5],[],[],angle,fit(1),fit(2),fit(3),fit(4),fit(5),[0,fit(6:8)]));
 %plot(volestimate,hstep,':k','LineWidth',2);
 %legend({'Tip 1','Tip 2','Tip 3','Tip 4','Fit'},'Location','NorthWest');
 
