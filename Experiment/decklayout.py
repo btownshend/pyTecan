@@ -17,15 +17,21 @@ grenmaxspeeds={150:1750,125:1900,100:1950,75:2200,50:2200}	# From shaketest expe
 eppmaxspeeds={195:1600,150:1800,125:1900,100:1950,75:2050,50:2150,25:2150,0:2150} # From shaketest experiment 5/17/16
 eppminspeeds={32:1800,64:1700,96:1400,200:1300}
 
-SAMPLEPLATE=Plate("Samples",4,3,12,8,False,unusableVolume=15,maxVolume=200,zmax=1028,angle=17.5,r1=2.69,h1=8.94,v0=13.2,gemDepth=2.00,gemArea=16.57,gemShape='v-shaped',vectorName="Microplate Landscape",maxspeeds=eppmaxspeeds,minspeeds=eppminspeeds)  # EppLoBind
+SAMPLEPLATE=Plate("Samples",4,3,12,8,False,unusableVolume=15,maxVolume=200,
+                zmax=1033,angle=17.5,r1=2.705,h1=9.13,v0=13.14,slopex=0.000,slopey=0.000,gemDepth=2.81,gemArea=16.41,
+                gemShape='v-shaped',vectorName="Microplate Landscape",maxspeeds=eppmaxspeeds,minspeeds=eppminspeeds)  # EppLoBind
 SAMPLEPLATE.wells=SAMPLEPLATE.wells[1:-1]	 # Skip A1 and H12 due to leakage
 SHAKERPLATELOC=Plate("Shaker",9,0,1,1)
-QPCRPLATE=Plate("qPCR",4,1,12,8,False,unusableVolume=15,maxVolume=200,zmax=984,angle=17.5,r1=2.66,h1=9.37,v0=7.9,gemDepth=2.29,gemArea=15.19,gemShape='v-shaped')
-DILPLATE=Plate("Dilutions",4,2,12,8,False,unusableVolume=15,maxVolume=200,zmax=1028,angle=17.5,r1=2.715,h1=8.81,v0=13.5,slopex=-0.003,slopey=0.044,gemDepth=1.22,gemArea=16.17,gemShape='v-shaped',vectorName="Microplate Landscape",maxspeeds=eppmaxspeeds,minspeeds=eppminspeeds) # EppLoBind
+QPCRPLATE=Plate("qPCR",4,1,12,8,False,unusableVolume=15,maxVolume=200,
+                zmax=996,angle=17.5,r1=2.704,h1=10.89,v0=0.44,slopex=0.000,slopey=0.000,gemDepth=3.17,gemArea=14.33,
+                gemShape='v-shaped')
+DILPLATE=Plate("Dilutions",4,2,12,8,False,unusableVolume=15,maxVolume=200,
+               zmax=1033,angle=17.5,r1=2.705,h1=9.13,v0=13.14,slopex=0.000,slopey=0.000,gemDepth=2.81,gemArea=16.41,
+               gemShape='v-shaped',vectorName="Microplate Landscape",maxspeeds=eppmaxspeeds,minspeeds=eppminspeeds) # EppLoBind
 
-SSDDILLOC=Plate("SSDDil",3,1,1,4,False,100,100000,gemDepth=0,gemArea=1232,gemShape='flat')
-WATERLOC=Plate("Water",3,2,1,4,False,100,100000,gemDepth=0,gemArea=1232,gemShape='flat')
-BLEACHLOC=Plate("Bleach",3,3,1,4,False,0,100000,gemDepth=0,gemArea=1232,gemShape='flat')
+SSDDILLOC=Plate("SSDDil",3,1,1,4,False,100,100000,zmax=1367,gemDepth=0,gemArea=1232,gemShape='flat')
+WATERLOC=Plate("Water",3,2,1,4,False,100,100000,zmax=1367,gemDepth=0,gemArea=1232,gemShape='flat')
+BLEACHLOC=Plate("Bleach",3,3,1,4,False,0,100000,zmax=1367,gemDepth=0,gemArea=1232,gemShape='flat')
 PTCPOS=Plate("PTC",25,1,1,1)
 HOTELPOS=Plate("Hotel",25,0,1,1)
 WASTE=Plate("Waste",20,3,1,1)
