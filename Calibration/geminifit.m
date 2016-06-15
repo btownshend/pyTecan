@@ -22,7 +22,11 @@ if nargin<4
     fit=fminsearch(@(x) sum((gemcalcheight(vol,struct('depth',x(1),'area',x(2),'hoffset',x(3)))-heights).^2),x0,options);
     gmdl=struct('depth',fit(1),'area',fit(2),'hoffset',fit(3));
   elseif fitradius
-    fit=fminsearch(@(x) sum((gemcalcheight(vol,struct('depth',x(1),'area',x(2),'hoffset',0))-heights).^2),x0(1:2),options);
+    % Seems that fitting for minimizing height error gives poor fit (stuck in local minima)
+    %fit=fminsearch(@(x) sum((gemcalcheight(vol,struct('depth',x(1),'area',x(2),'hoffset',0))-heights).^2),x0(1:2),options);
+    fit=fminsearch(@(x) sum((gemcalcvol(heights,struct('depth',x(1),'area',x(2),'hoffset',0))-vol).^2),x0(1:2),options);
+    % Refitting using above fit does work though, gives similar solution
+    %fit=fminsearch(@(x) sum((gemcalcheight(vol,struct('depth',x(1),'area',x(2),'hoffset',0))-heights).^2),fit(1:2),options);
     gmdl=struct('depth',fit(1),'area',fit(2),'hoffset',0);
   else
     area=51.84;
