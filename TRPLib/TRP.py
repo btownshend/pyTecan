@@ -814,7 +814,7 @@ class TRP(object):
 
         self.setup()
         if args.verbose:
-            print '------ Preliminary run to set volume -----'
+            print '------ Preliminary runs to set volume -----'
         else:
             sys.stdout=open(os.devnull,'w')
         self.pgm()

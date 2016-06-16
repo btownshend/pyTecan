@@ -31,7 +31,7 @@ class Reagent(object):
         if self.sample!=None:
             adj=self.extraVol-self.sample.volume
             if adj>0:
-                #print "Adjusting initVol of %s to %.1f"%(self.name,self.initVol+adj)
+                print "Adjusting initVol of %s to %.1f"%(self.name,self.initVol+adj)
                 self.initVol+=adj
             self.sample=None
 
