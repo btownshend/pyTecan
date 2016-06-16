@@ -122,11 +122,14 @@ class Datalog(object):
                     prevol=vol
                 expectHeight=sample.plate.getliquidheight(prevol)
                 errorHeight=(height+submerge-zmax)-expectHeight*10
-                if abs(errorHeight)>4:
-                    emphasize="*"*(min(10,int(abs(errorHeight))-3))
-                else:
-                    emphasize=''
-                h=" @[%.1fmm,%.1fmm:%.1ful#%d]{%sE=%d;%.1ful}"%((height-zmax)/10.0,submerge/10.0,vol,tip,emphasize,errorHeight,vol-prevol)
+                h=" @[%.1fmm,%.1fmm:%.1ful#%d]"%((height-zmax)/10.0,submerge/10.0,vol,tip)
+                if abs(errorHeight)>1:
+                    if abs(errorHeight)>4:
+                        emphasize="*"*(min(10,int(abs(errorHeight))-3))
+                    else:
+                        emphasize=''
+                    h=h+"{%sE=%d;%.1ful}"%(emphasize,errorHeight,vol-prevol)
+                sample.volume=sample.volume+(vol-prevol)
         # Insert BEFORE last history entry since the liquid height is measured before aspirate/dispense
         hsplit=sample.history.split(' ')
         sample.history=" ".join(hsplit[:-1]+[h]+hsplit[-1:])
