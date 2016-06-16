@@ -84,7 +84,7 @@ def moveliha( loc):
     speed=10   # 0.1-400 (mm/s)
     #comment('*MoveLiha to '+str(loc))
     wlist.append( 'MoveLiha(%d,%d,%d,1,"0104?",0,4,0,%.1f,0)'%(tipMask,loc.grid,loc.pos-1,speed))
-    clock.pipetting+=1.08
+    clock.pipetting+=1.05
 
 def optimizeQueue():
     'Optimize operations in queue'
@@ -270,15 +270,15 @@ def aspirateDispense(op,tipMask,wells, liquidClass, volume, loc, cycles=None,all
         return
 
     if op=='Mix':
-        clock.pipetting+=11.49
+        clock.pipetting+=11.17
     elif op=='Dispense':
-        clock.pipetting+=3.23
+        clock.pipetting+=3.01
     elif op=='Aspirate':
-        clock.pipetting+=5.51+3.23   # Extra for conditioning volume
+        clock.pipetting+=4.83+3.01   # Extra for conditioning volume
     elif op=='AspirateNC':
-        clock.pipetting+=5.51
+        clock.pipetting+=4.83
     elif op=='Detect_Liquid':
-        clock.pipetting+=4.00
+        clock.pipetting+=3.78
 
     comment("*%s tip=%d well=%s.%s vol=%s lc=%s"%(op,tipMask,str(loc),str(wells),str(volume),str(liquidClass)))
     # Update volumes
@@ -474,7 +474,7 @@ def wash( tipMask,wasteVol=1,cleanerVol=2,deepClean=False):
     atFreq=1000  # Hz, For Active tip
     wlist.append('Wash(%d,%d,%d,%d,%d,%.1f,%d,%.1f,%d,%.1f,%d,%d,%d,%d,%d)'%(tipMask,wasteLoc[0],wasteLoc[1],cleanerLoc[0],cleanerLoc[1],wasteVol,wasteDelay,cleanerVol,cleanerDelay,airgap, airgapSpeed, retractSpeed, fastWash, lowVolume, atFreq))
     #print "Wash %d,%.1fml,%.1fml,deep="%(tipMask,wasteVol,cleanerVol),deepClean
-    clock.pipetting+=19.12
+    clock.pipetting+=19.01
     if tipMask&1:
         tipHash[0]=0
     if tipMask&2:
@@ -512,12 +512,12 @@ def vector( vector,loc, direction, andBack, initialAction, finalAction, slow=Fal
     else:
         andBack=0
     wlist.append('Vector("%s",%d,%d,%d,%d,%d,%d,%d,0)'%(vector,loc.grid,loc.pos,direction,andBack,initialAction, finalAction, speed))
-    clock.pipetting+=5.15
+    clock.pipetting+=5.04
 
 def romahome():
     #comment("*ROMA Home")
     wlist.append('ROMA(2,0,0,0,0,0,60,0,0)')
-    clock.pipetting+=2.88
+    clock.pipetting+=2.83
 
 def email(dest,subject,body='',profile='cdsrobot',onerror=0,attachscreen=1):
     wlist.append('Notification(%d,"%s","%s","%s","%s",%d)'%(attachscreen,profile,dest,subject,body,onerror))
@@ -607,7 +607,7 @@ def execute( command, wait=True, resultvar=None):
     else:
         resultvar=""
     wlist.append('Execute("%s",%d,"%s")'%(command,flags,resultvar))
-    clock.pipetting+=2.06   # Just overhead time, not actually time that command itself takes
+    clock.pipetting+=1.73   # Just overhead time, not actually time that command itself takes
 
 def pyrun( cmd):
     label=getlabel()
