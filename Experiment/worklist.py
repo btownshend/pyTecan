@@ -376,6 +376,12 @@ def aspirateDispense(op,tipMask,wells, liquidClass, volume, loc, cycles=None,all
     if op=="Aspirate":
         # Return conditioning volume
         wlist.append( '%s(%d,"%s",%s,%d,%d,%d,"%s",0)'%("Dispense",tipMask,liquidClass,condvol,loc.grid,loc.pos-1,spacing,ws))
+
+    if op!="Detect_Liquid":
+        # Do final liquid detect
+        wlist.append( 'Detect_Liquid(%d,"%s",%d,%d,%d,"%s",0)'%(tipMask,"Water-InLiquid",loc.grid,loc.pos-1,spacing,ws))
+        clock.pipetting+=2.00    # Unsure of this one
+        
     ptr=0
     for i in range(len(allvols)):
         if allvols[i]>0:
