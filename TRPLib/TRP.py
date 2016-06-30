@@ -565,7 +565,7 @@ class TRP(object):
             self.runRxInPlace(src,vol,enzymes[0],returnPlate=False)
             tgt=src
         else:
-            self.e.stage('User',enzymes,src,tgt,vol,destMix=False)
+            self.e.stage('Incubation',enzymes,src,tgt,vol,destMix=False)
             self.e.shakeSamples(tgt,returnPlate=(incTime is None))
 
         if incTime is None:
