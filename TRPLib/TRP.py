@@ -15,6 +15,7 @@ reagents.add("MT7",well="A1",conc=2.5,extraVol=30)
 reagents.add("MPosRT",well="B1",conc=2,extraVol=30)
 reagents.add("MKlenow",well="C1",conc=2,extraVol=30)
 reagents.add("MPCR",well="D1",conc=3)
+reagents.add("MLigase",well="E1",conc=3,extraVol=30)
 reagents.add("EDTA",well="A2",conc=Concentration(40,4,'mM'))
 reagents.add("MSET7W-Beads",well="B2",conc=5,extraVol=30,hasBeads=True)
 reagents.add("MSET7B-Beads",well="C2",conc=5,extraVol=30,hasBeads=True)
@@ -536,74 +537,6 @@ class TRP(object):
             print "Running RT at %dC for %d min without heat inactivation"%(incTemp,dur)
  
     ########################
-    # Lig - Ligation
-    ########################
-    def runLig(self,prefix=None,src=None,vol=None,srcdil=None,tgt=None,master=None,anneal=True,ligtemp=25):
-        if master is None:
-            master=[reagents.getsample("MLigAN7") if p=='A' else reagents.getsample("MLigBN7") for p in prefix]
-
-        #Extension
-        [src,tgt,vol,srcdil,master]=listify([src,tgt,vol,srcdil,master])
-        if tgt is None:
-            tgt=[Sample("%s.%s"%(src[i].name,master[i].name),decklayout.SAMPLEPLATE) for i in range(len(src))]
-
-        # Need to check since an unused ligation master mix will not have a concentration
-        minsrcdil=1/(1-1/master[0].conc.dilutionneeded()-1/reagents.getsample("MLigase").conc.dilutionneeded())
-        for i in srcdil:
-            if i<minsrcdil:
-                logging.error("runLig: srcdil=%.2f, but must be at least %.2f based on concentrations of master mixes"%(i,minsrcdil))
-
-        # Adjust source dilution
-        for i in range(len(src)):
-            src[i].conc=Concentration(srcdil[i],1)
-
-        i=0
-        while i<len(tgt):
-            lasti=i+1
-            while lasti<len(tgt) and master[i]==master[lasti]:
-                lasti=lasti+1
-            self.e.stage('LigAnneal',[master[i]],src[i:lasti],tgt[i:lasti],[vol[j]/1.5 for j in range(i,lasti)],1.5,destMix=False)
-            i=lasti
-            
-        if anneal:
-            self.e.shakeSamples(tgt,returnPlate=False)
-            self.e.runpgm("TRPANN",5,False,max(vol),hotlidmode="CONSTANT",hotlidtemp=100)
-        self.e.stage('Ligation',[reagents.getsample("MLigase")],[],tgt,vol,destMix=False)
-        self.e.shakeSamples(tgt,returnPlate=False)
-        self.runLigPgm(max(vol),ligtemp)
-        return tgt
-        
-    def runLigPgm(self,vol,ligtemp,inactivate=True,inacttemp=65):
-        if inactivate:
-            pgm="LIG15-%.0f"%ligtemp
-            worklist.pyrun('PTC\\ptcsetpgm.py %s TEMP@%.0f,900 TEMP@%.0f,600 TEMP@25,30'%(pgm,ligtemp,inacttemp))
-            self.e.runpgm(pgm,27,False,vol,hotlidmode="TRACKING",hotlidtemp=10)
-        elif ligtemp==25:
-            worklist.comment('Ligation at room temp')
-            self.e.pause(15*60)
-        else:
-            pgm="TRP%.0f-15"%ligtemp
-            worklist.pyrun('PTC\\ptcsetpgm.py %s TEMP@%.0f,900 TEMP@25,30'%(pgm,ligtemp))
-            self.e.runpgm(pgm,17,False,vol,hotlidmode="TRACKING",hotlidtemp=10)
-
-    def runLigInPlace(self,src,vol,ligmaster,anneal=True,ligtemp=25):
-        'Run ligation on beads'
-        [vol,src]=listify([vol,src])
-        annealvol=[v*(1-1/reagents.getsample("MLigase").conc.dilutionneeded()) for v in vol]
-
-        # Adjust source dilution
-        for i in range(len(src)):
-            src[i].conc=None
-
-        self.runRxInPlace(src,annealvol,reagents.getsample(ligmaster),returnPlate=not anneal,finalx=1.5)
-        if anneal:
-            self.e.runpgm("TRPANN",5,False,max([s.volume for s in src]),hotlidmode="CONSTANT",hotlidtemp=100)
-
-        ## Add ligase
-        self.runRxInPlace(src,vol,reagents.getsample("MLigase"),returnPlate=False)
-        self.runLigPgm(max(vol),ligtemp,inactivate=False)	# Do not heat inactivate since it may denature the beads
-
-    ########################
     # Incubation - run a single temp incubation followed by inactivation
     ########################
     def runIncubation(self,src=None,vol=None,srcdil=None,tgt=None,enzymes=None,incTemp=37,incTime=15,hiTemp=None,hiTime=0,inPlace=False):
@@ -661,6 +594,13 @@ class TRP(object):
     def runKlenow(self,src=None,vol=None,srcdil=None,tgt=None,incTime=15,hiTime=20,hiTemp=75,inPlace=False):
         assert(inPlace or vol is not None)
         return self.runIncubation(src=src,vol=vol,srcdil=srcdil,tgt=tgt,incTemp=37,incTime=incTime,hiTemp=hiTemp,hiTime=hiTime,enzymes=[reagents.getsample("MKlenow")],inPlace=inPlace)
+
+    ########################
+    # Ligation
+    ########################
+    def runLig(self,src=None,vol=None,srcdil=None,tgt=None,incTime=15,hiTime=10,hiTemp=65,inPlace=False):
+        assert(inPlace or vol is not None)
+        return self.runIncubation(src=src,vol=vol,srcdil=srcdil,tgt=tgt,incTemp=37,incTime=incTime,hiTemp=hiTemp,hiTime=hiTime,enzymes=[reagents.getsample("MLigase")],inPlace=inPlace)
 
     ########################
     # DNase digestion
