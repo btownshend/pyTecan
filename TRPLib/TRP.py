@@ -633,16 +633,20 @@ class TRP(object):
             tgt=src
         else:
             self.e.stage('User',enzymes,src,tgt,vol,destMix=False)
-            self.e.shakeSamples(tgt,returnPlate=False)
+            self.e.shakeSamples(tgt,returnPlate=(incTime is None))
 
-        if hiTemp is None:
-            worklist.pyrun('PTC\\ptcsetpgm.py INC TEMP@%.0f,%.0f TEMP@25,30'%(incTemp,incTime*60))
-            print "Incubating at %dC for %d minutes without heat inactivation"%(incTemp, incTime)
+        if incTime is None:
+            print "Setup only of incubation with %s"%enzymes[0].name
         else:
-            assert(hiTime>0)
-            worklist.pyrun('PTC\\ptcsetpgm.py INC TEMP@%.0f,%.0f TEMP@%.0f,%.0f TEMP@25,30'%(incTemp,incTime*60,hiTemp,hiTime*60))
-            print "Incubating at %dC for %d minutes followed by heat inactivate at %dC for %d minutes"%(incTemp,incTime,hiTemp,hiTime)
-        self.e.runpgm("INC",incTime+hiTime+2,False,max(vol),hotlidmode="TRACKING",hotlidtemp=10)
+            if hiTemp is None:
+                worklist.pyrun('PTC\\ptcsetpgm.py INC TEMP@%.0f,%.0f TEMP@25,30'%(incTemp,incTime*60))
+                print "Incubating at %dC for %d minutes without heat inactivation"%(incTemp, incTime)
+            else:
+                assert(hiTime>0)
+                worklist.pyrun('PTC\\ptcsetpgm.py INC TEMP@%.0f,%.0f TEMP@%.0f,%.0f TEMP@25,30'%(incTemp,incTime*60,hiTemp,hiTime*60))
+                print "Incubating at %dC for %d minutes followed by heat inactivate at %dC for %d minutes"%(incTemp,incTime,hiTemp,hiTime)
+            self.e.runpgm("INC",incTime+hiTime+2,False,max(vol),hotlidmode="TRACKING",hotlidtemp=10)
+
         return tgt
 
     ########################
