@@ -489,12 +489,12 @@ class TRP(object):
     ########################
     # RT - Reverse Transcription
     ########################
-    def runRT(self,src,vol,srcdil,tgt=None,dur=20,heatInactivate=False,hiTemp=None):
+    def runRT(self,src,vol,srcdil,tgt=None,dur=20,heatInactivate=False,hiTemp=None,incTemp=37):
         result=self.runRTSetup(src,vol,srcdil,tgt)
-        self.runRTPgm(dur,heatInactivate=heatInactivate,hiTemp=hiTemp)
+        self.runRTPgm(dur,heatInactivate=heatInactivate,hiTemp=hiTemp,incTemp=incTemp)
         return result
     
-    def runRTInPlace(self,src,vol,dur=20,heatInactivate=False,hiTemp=None):
+    def runRTInPlace(self,src,vol,dur=20,heatInactivate=False,hiTemp=None,incTemp=37):
         'Run RT on beads in given volume'
 
         # Adjust source dilution
@@ -502,7 +502,7 @@ class TRP(object):
             src[i].conc=None
 
         self.runRxInPlace(src,vol,reagents.getsample("MPosRT"),returnPlate=False)
-        self.runRTPgm(dur,heatInactivate=heatInactivate,hiTemp=hiTemp)
+        self.runRTPgm(dur,heatInactivate=heatInactivate,hiTemp=hiTemp,incTemp=incTemp)
         
     def runRTSetup(self,src,vol,srcdil,tgt=None,rtmaster=None):
         if rtmaster is None:
@@ -520,24 +520,20 @@ class TRP(object):
         #self.e.shakeSamples(tgt,returnPlate=True)
         return tgt
 
-    def runRTPgm(self,dur=20,heatInactivate=False,hiTemp=None):
+    def runRTPgm(self,dur=20,heatInactivate=False,hiTemp=None,incTemp=37):
+        pgm="RT-%d"%dur
         if heatInactivate:
             if hiTemp is None:
                 hiTemp=95
                 print "Assuming RT heat inactivation temperature of ",hiTemp
             hidur=2
-            pgm="RT-%d"%dur
-            worklist.pyrun('PTC\\ptcsetpgm.py %s TEMP@37,%d TEMP@%d,%d TEMP@25,2 RATE 0.5'%(pgm,dur*60,hiTemp,hidur*60))
+            worklist.pyrun('PTC\\ptcsetpgm.py %s TEMP@%d,%d TEMP@%d,%d TEMP@25,2 RATE 0.5'%(pgm,incTemp,dur*60,hiTemp,hidur*60))
             self.e.runpgm(pgm,dur+hidur+2.5,False,100)		# Volume doesn't matter since it's just an incubation, use 100ul
-            print "Running RT at 37C for %d min, followed by heat inactivation/refold at %dC for %d minutes"%(dur,hiTemp,hidur)
+            print "Running RT at %dC for %d min, followed by heat inactivation/refold at %dC for %d minutes"%(incTemp,dur,hiTemp,hidur)
         else:
-            if dur<100:
-                pgm="TRP37-%d"%dur
-            else:
-                pgm="T37-%d"%dur
-            worklist.pyrun('PTC\\ptcsetpgm.py %s TEMP@37,%d TEMP@25,2'%(pgm,dur*60))
+            worklist.pyrun('PTC\\ptcsetpgm.py %s TEMP@%d,%d TEMP@25,2'%(pgm,incTemp,dur*60))
             self.e.runpgm(pgm,dur,False,100)		# Volume doesn't matter since it's just an incubation, use 100ul
-            print "Running RT at 37C for %d min without heat inactivation"%(dur)
+            print "Running RT at %dC for %d min without heat inactivation"%(incTemp,dur)
  
     ########################
     # Lig - Ligation
