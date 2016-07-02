@@ -105,7 +105,7 @@ classdef RobotSamples < handle
     
     function setupQPCR(obj,varargin)
     % Scan sample data to setup qPCR 
-      defaults=struct('refname','QPCRREF','refconc',50,'refstrands',2,'qpcrdil',2.5,'minct',7,'processWells',false,'units','pM');
+      defaults=struct('refname','QPCRREF','refconc',50,'refstrands',2,'qpcrdil',2.5,'minct',7,'processWells',false,'units','pM','cal',[],'primers',{{}});
       args=processargs(defaults,varargin);
 
       ctgrid=obj.opd{1}.ctgrid;
@@ -113,9 +113,34 @@ classdef RobotSamples < handle
         ctgrid=[ctgrid,obj.opd{i}.ctgrid];
       end
       obj.q=QPCR(ctgrid,'minct',args.minct);
-      obj.addQPCRRef(args.refname,'units',args.units,'refconc',args.refconc,'refstrands',args.refstrands,'qpcrdil',args.qpcrdil);
+      if isempty(args.cal)
+        obj.addQPCRRef(args.refname,'units',args.units,'refconc',args.refconc,'refstrands',args.refstrands,'qpcrdil',args.qpcrdil);
+      elseif ~isempty(args.primers)
+        for i=1:length(args.primers)
+          obj.q.addmanualref(args.primers{i},2.0,args.cal,'units','ng/ul','ctlod',obj.getWaterCt(args.primers{i}));
+        end
+      else
+        error('setupQCPR: Must specify both cal and primers to use manual calibration\n');
+      end
+
       if args.processWells
         obj.processWells;
+      end
+    end
+    
+    function ct=getWaterCt(obj,primer)
+      water=getrelative(obj.samps,['P-',primer],{'EvaUSER','Water'},true);
+      if isempty(water)
+        water=getrelative(obj.samps,['P-',primer],{'EvaUSER','SSDDil'},true);
+      end
+      if isempty(water)
+        ct=nan;
+      else
+        ct=obj.q.getct(water.well);
+      end
+      if isnan(ct)
+        ct=20;
+        fprintf('Missing water control for %s -- assuming %.1f\n', primer,ct);
       end
     end
     
@@ -136,6 +161,7 @@ classdef RobotSamples < handle
       primers=unique(primers);
       for i=1:length(primers)
         p=primers{i};
+        fprintf('WARNING: This code needs to be revised to handle using EvaUSER+P-xx instead of MQxx\n');
         ss=getrelative(obj.samps,refname,{['MQ',p],'Water'},true);
         water=getrelative(obj.samps,['MQ',p],{'Water'},true);
         if isempty(ss)
