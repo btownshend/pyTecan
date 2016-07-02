@@ -544,7 +544,6 @@ classdef RobotSamples < handle
       if domelt
         obj.plotmelt('all');
       end
-      pdfsavefig('all');
     end
 
     function trpstats(obj,nreplicates,nT7,nEXT)
