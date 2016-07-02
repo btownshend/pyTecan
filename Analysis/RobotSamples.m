@@ -9,7 +9,6 @@ classdef RobotSamples < handle
     qsamps;
     templates;
     suffixes;
-    stagedilution;
     wellsProcessed;
     loop1len;	% Dict that maps templates names to the length of loop1
     loop2len;
@@ -51,7 +50,6 @@ classdef RobotSamples < handle
       end
 
       obj.qsamps=containers.Map;
-      obj.stagedilution=containers.Map;
       obj.loop1len=containers.Map;
       obj.loop2len=containers.Map;
       obj.buildsampmap();
@@ -198,7 +196,7 @@ classdef RobotSamples < handle
             dilution=1;
             root=s.name(1:dots(end)-1);
           end
-          obj.setwell(root,s.well,primer,dilution);
+          obj.setwell(root,s.well,primer,dilution,s);
 
           % Determine templates and suffixes
           % Templates are all the unique names up to the first dot
@@ -222,32 +220,18 @@ classdef RobotSamples < handle
     function setstagedilution(obj,stage,dilution)
     % Set dilution from reference stage (e.g. T7 reaction) to 'stage'
     % e.g. setstagedilution('.T-.RT',1.1*2);
-      obj.stagedilution(stage)=dilution;
+      fprintf('setstagedilution() is not longer needed\n');
     end
     
-    function dil=getsuffixdilution(obj,suffix)
-    % Compute dilution for a given suffix by combining the stages (separated by dots)
-    % Look up each stage in obj.stagedilution()
-      stages=strsplit(suffix,'.');
-      dil=1;
-      for i=1:length(stages)
-        if isKey(obj.stagedilution,stages{i})
-          dil=dil*obj.stagedilution(stages{i});
-        else
-          fprintf('Dilution for stage "%s" not specified -- assuming 1.0\n',stages{i});
-          obj.stagedilution(stages{i})=1.0;
-        end
-      end
-    end
-     
     function setlooplengths(obj,template,loop1,loop2)
     % Set loop sizes for use in computing length of qPCR products
       obj.loop1len(template)=loop1;
       obj.loop2len(template)=loop2;
     end
     
-    function setwell(obj,root,well,primer,dilution)
-    % Set a particular well to have the name 'root', primer and dilution as given
+    function setwell(obj,root,well,primer,dilution,samp)
+    % Set a particular qPCR well to have the name 'root', primer and dilution as given
+    % Samp is entry for the sample (used to calculate dilution from T7 reaction)
     %fprintf(' root=%s, primer=%s, dilution=%f\n', root, primer, dilution);
       if ~isKey(obj.qsamps,root)
         entry=struct('name',root,'dilution',[],'ct',{-1*ones(size(obj.q.refs.keys))},'conc',{nan(size(obj.q.refs.keys))},'wells',{cell(size(obj.q.refs.keys))},'order',[]);
@@ -272,6 +256,19 @@ classdef RobotSamples < handle
         entry.conc(pindex)=obj.q.getconc(primer,well,{},{},{},'dilution',dilution);
         wellindex=obj.q.parsewells(well);
         entry.order=min([entry.order,wellindex]);
+      end
+      % Use base sample to calculate dilution from T7 step
+      pMT7=find(strcmp(samp.ingredients,'MT7'));
+      if length(pMT7)~=1
+        if length(samp.ingredients)>3   % Water controls have just EvaUSER, P-*, SSDDil
+          fprintf('Unable to locate MT7 ingredient in %s\n', samp.name);
+          keyboard
+        end
+        entry.t7dil=1;
+      else
+        t7dil=sum(samp.volumes)/samp.volumes(pMT7);
+        t7dil=t7dil/dilution/2.5/4;	% Back out dilution of MT7(2.5), qPCR dilution(dilution), qPCR final dil (4)
+        entry.t7dil=t7dil;
       end
       obj.qsamps(root)=entry;
     end      
@@ -435,12 +432,6 @@ classdef RobotSamples < handle
         end
       end
 
-      % Force display of any missing stagedilutions errors all at once
-      for j=1:length(obj.suffixes)
-        dil=obj.getsuffixdilution(obj.suffixes{j});
-      end
-
-
       obj.sv=[];
       obj.rsv=[];
       printRefScale=false;   % True to add columns scaling by ref
@@ -485,7 +476,7 @@ classdef RobotSamples < handle
         for j=1:length(obj.suffixes)
           nm=[obj.templates{i},obj.suffixes{j}];
           if isKey(obj.qsamps,nm)
-            scale=obj.getsuffixdilution(obj.suffixes{j});
+            scale=obj.qsamps(nm).t7dil;
             concs=obj.qsamps(nm).conc*scale;
             concsnm=nan*concs;	% Conc in nM
             for k=1:length(obj.primers())
