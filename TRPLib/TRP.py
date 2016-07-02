@@ -98,7 +98,7 @@ class TRP(object):
         Sample.clearall()
         decklayout.initWellKnownSamples()
         
-    def addTemplates(self,names,stockconc,finalconc=None,units="nM",plate=decklayout.EPPENDORFS):
+    def addTemplates(self,names,stockconc,finalconc=None,units="nM",plate=decklayout.EPPENDORFS,looplengths=None):
         'Add templates as "reagents", return the list of them'
         if finalconc is None:
             logging.warning("final concentration of template not specified, assuming 0.6x (should add to addTemplates() call")
@@ -108,8 +108,14 @@ class TRP(object):
             [names,stockconc,finalconc]=listify([names,stockconc,finalconc])
 
         r=[]
+        if looplengths is not None:
+            assert(len(names)==len(looplengths))
         for i in range(len(names)):
-            r.append(reagents.add(names[i],plate=plate,conc=Concentration(stockconc[i],finalconc[i],units),extraVol=30))
+            if looplengths is None:
+                r.append(reagents.add(names[i],plate=plate,conc=Concentration(stockconc[i],finalconc[i],units),extraVol=30))
+            else:
+                r.append(reagents.add(names[i],plate=plate,conc=Concentration(stockconc[i],finalconc[i],units),extraVol=30,extrainfo=looplengths[i]))
+                
         return r
     
     def finish(self):

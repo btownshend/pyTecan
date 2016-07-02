@@ -87,7 +87,7 @@ class Sample(object):
                 cnt+=1
         return cnt
 
-    def __init__(self,name,plate,well=None,conc=None,volume=0,hasBeads=False,extraVol=50,mixLC=liquidclass.LCMixBottom,firstWell=None):
+    def __init__(self,name,plate,well=None,conc=None,volume=0,hasBeads=False,extraVol=50,mixLC=liquidclass.LCMixBottom,firstWell=None,extrainfo=[]):
         # If firstWell is not None, then it is a hint of the first well position that should be used
         if well!=None and well!=-1:
             if not isinstance(well,int):
@@ -184,7 +184,8 @@ class Sample(object):
             self.lastevapupdate=clock.pipetting
         else:
             self.lastevapupdate=clock.elapsed()
-
+        self.extrainfo=extrainfo
+        
     def isMixed(self):
         'Check if sample is currently mixed'
         if self.lastMixed is None:
@@ -712,5 +713,5 @@ class Sample(object):
                     ing=ing+",'%s'"%k
                     ingvol=ingvol+",%g"%s.ingredients[k]
 
-            print >>fd,"samps=[samps,struct('name','%s','plate','%s','well','%s','concentration','%s','history','%s','ingredients',{{%s}},'volumes',[%s])];"%(s.name,s.plate,s.plate.wellname(s.well),str(s.conc),s.history,ing,ingvol)
+            print >>fd,"samps=[samps,struct('name','%s','plate','%s','well','%s','concentration','%s','history','%s','ingredients',{{%s}},'volumes',[%s],'extrainfo',[%s])];"%(s.name,s.plate,s.plate.wellname(s.well),str(s.conc),s.history,ing,ingvol,",".join(["%d"%x for x in s.extrainfo]))
         fd.close()

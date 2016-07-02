@@ -30,6 +30,13 @@ classdef RobotSamples < handle
           error('File not found: %s',sampfilename{i});
         end
         eval(sampfilename{i});	% This loads all the data into a var called 'samps'
+        for j=1:length(samps)
+          if ~isempty(samps(j).extrainfo) 
+            assert(length(samps(j).extrainfo)==2);
+            fprintf('setlooplengths(%s,%d,%d)\n',samps(j).name,samps(j).extrainfo);
+            obj.setlooplengths(samps(j).name,samps(j).extrainfo(1),samps(j).extrainfo(2));
+          end
+        end
         if i==1
           obj.samps=samps;		% Copy to class
         else

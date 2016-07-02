@@ -7,7 +7,7 @@ import decklayout
 __allReagents={}
 
 class Reagent(object):
-    def __init__(self,name,plate=decklayout.REAGENTPLATE,well=None,conc=None,hasBeads=False,extraVol=50,initVol=0):
+    def __init__(self,name,plate=decklayout.REAGENTPLATE,well=None,conc=None,hasBeads=False,extraVol=50,initVol=0,extrainfo=[]):
         self.sample=None
         self.name=name
         self.plate=plate
@@ -16,11 +16,12 @@ class Reagent(object):
         self.hasBeads=hasBeads
         self.extraVol=extraVol
         self.initVol=initVol
+        self.extrainfo=extrainfo
 
     def getsample(self):
         if self.sample is None:
             #print "Creating sample for reagent %s with %.1f ul"%(self.name,self.initVol)
-            self.sample=Sample(self.name,self.plate,self.preferredWell,self.conc,hasBeads=self.hasBeads,volume=self.initVol)
+            self.sample=Sample(self.name,self.plate,self.preferredWell,self.conc,hasBeads=self.hasBeads,volume=self.initVol,extrainfo=self.extrainfo)
             wellname=self.sample.plate.wellname(self.sample.well)
             if self.preferredWell != None and self.preferredWell != wellname:
                 logging.warning("%s moved from preferred well %s to %s\n"%(self.name,self.preferredWell,wellname))
@@ -47,10 +48,10 @@ def lookup(name):
 def __getattr__(name):
     return get(name)
 
-def add(name,plate=decklayout.REAGENTPLATE,well=None,conc=None,hasBeads=False,extraVol=50,initVol=0):
+def add(name,plate=decklayout.REAGENTPLATE,well=None,conc=None,hasBeads=False,extraVol=50,initVol=0,extrainfo=[]):
     if name in __allReagents:
         logging.error("Attempt to add duplicate reagent, "+name)
-    __allReagents[name]=Reagent(name,plate,well,conc,hasBeads,extraVol,initVol=initVol)
+    __allReagents[name]=Reagent(name,plate,well,conc,hasBeads,extraVol,initVol=initVol,extrainfo=extrainfo)
     return __allReagents[name]
 
 def reset():
