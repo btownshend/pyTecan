@@ -24,13 +24,15 @@ classdef RobotSamples < handle
         sampfilename={sampfilename};
       end
       obj.options=args;
+      obj.loop1len=containers.Map;
+      obj.loop2len=containers.Map;
       for i=1:length(sampfilename)
         if exist(sampfilename{i},'file')==0
           error('File not found: %s',sampfilename{i});
         end
         eval(sampfilename{i});	% This loads all the data into a var called 'samps'
         for j=1:length(samps)
-          if ~isempty(samps(j).extrainfo) 
+          if isfield(samps(j),'extrainfo') && ~isempty(samps(j).extrainfo) 
             assert(length(samps(j).extrainfo)==2);
             fprintf('setlooplengths(%s,%d,%d)\n',samps(j).name,samps(j).extrainfo);
             obj.setlooplengths(samps(j).name,samps(j).extrainfo(1),samps(j).extrainfo(2));
@@ -50,8 +52,6 @@ classdef RobotSamples < handle
       end
 
       obj.qsamps=containers.Map;
-      obj.loop1len=containers.Map;
-      obj.loop2len=containers.Map;
       obj.buildsampmap();
       if nargin<2 || isempty(opdfilename)
         obj.opd={opdread('remotedir',args.remotedir)};
@@ -283,18 +283,23 @@ classdef RobotSamples < handle
         wellindex=obj.q.parsewells(well);
         entry.order=min([entry.order,wellindex]);
       end
-      % Use base sample to calculate dilution from T7 step
-      pMT7=find(strcmp(samp.ingredients,'MT7'));
-      if length(pMT7)~=1
-        if length(samp.ingredients)>3   % Water controls have just EvaUSER, P-*, SSDDil
-          fprintf('Unable to locate MT7 ingredient in %s\n', samp.name);
-          keyboard
-        end
-        entry.t7dil=1;
+      pMPCR=find(strcmp(samp.ingredients,'MPCR'));
+      if ~isempty(pMPCR)
+        entry.dispDil=1;   % No dilution back-out for PCR products
       else
-        t7dil=sum(samp.volumes)/samp.volumes(pMT7);
-        t7dil=t7dil/dilution/2.5/4;	% Back out dilution of MT7(2.5), qPCR dilution(dilution), qPCR final dil (4)
-        entry.t7dil=t7dil;
+        % Use base sample to calculate dilution from T7 step
+        pMT7=find(strcmp(samp.ingredients,'MT7'));
+        if length(pMT7)~=1
+          if length(samp.ingredients)>3   % Water controls have just EvaUSER, P-*, SSDDil
+            fprintf('Unable to locate MT7 ingredient in %s\n', samp.name);
+            keyboard
+          end
+          entry.dispDil=1;
+        else
+          dispDil=sum(samp.volumes)/samp.volumes(pMT7);
+          dispDil=dispDil/dilution/2.5/4;	% Back out dilution of MT7(2.5), qPCR dilution(dilution), qPCR final dil (4)
+          entry.dispDil=dispDil;
+        end
       end
       obj.qsamps(root)=entry;
     end      
@@ -502,7 +507,7 @@ classdef RobotSamples < handle
         for j=1:length(obj.suffixes)
           nm=[obj.templates{i},obj.suffixes{j}];
           if isKey(obj.qsamps,nm)
-            scale=obj.qsamps(nm).t7dil;
+            scale=obj.qsamps(nm).dispDil;
             concs=obj.qsamps(nm).conc*scale;
             concsnm=nan*concs;	% Conc in nM
             for k=1:length(obj.primers())
@@ -546,7 +551,7 @@ classdef RobotSamples < handle
       end
     end
 
-    function trpstats(obj,nreplicates,nT7,nEXT)
+    function trpstats(obj,nT7,nEXT)
     % Display stats relevant to a typical TRP run
       if nargin<4 || isempty(nEXT)
         nEXT='.ext';
