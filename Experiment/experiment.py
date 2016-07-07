@@ -149,6 +149,10 @@ class Experiment(object):
                         self.multitransfer(volumes[i:],src,dests[i:],(False,mix[1]),not reuseTip,dropDITI,extraFrac=extraFrac)
                         return
 
+            if mix[0] and not src.isMixed() and (src.plate==decklayout.SAMPLEPLATE or src.plate==decklayout.DILPLATE):
+                worklist.comment("shaking for src mix of "+src.name)
+                self.shakeSamples([src])  # Need to do this before allocating a tip since washing during this will modify the tip clean states
+
             if self.useDiTis:
                 tipMask=4
                 if  getDITI:
@@ -161,11 +165,10 @@ class Experiment(object):
             #print "*",cmt
             worklist.comment(cmt)
 
-            if mix[0] and not src.isMixed():
-                if src.plate==decklayout.SAMPLEPLATE or src.plate==decklayout.DILPLATE:
-                    self.shakeSamples([src])
-                else:
-                    src.mix(tipMask)
+            if mix[0] and not src.isMixed() and not (src.plate==decklayout.SAMPLEPLATE or src.plate==decklayout.DILPLATE):
+                worklist.comment("pipette mix for src mix of "+src.name)
+                src.mix(tipMask)	# Manual mix (after allocating a tip for this)
+
             src.aspirate(tipMask,sum(volumes)*(1+extraFrac),True)	# Aspirate extra
             for i in range(len(dests)):
                 if volumes[i]>0.01:
@@ -203,6 +206,10 @@ class Experiment(object):
             cmt=cmt+" with dest mix"
             ditivolume=max(ditivolume,volume+dest.volume)
             #            print "Mix volume=%.1f ul"%(ditivolume)
+        if mix[0] and not src.isMixed() and (src.plate==decklayout.SAMPLEPLATE or src.plate==decklayout.DILPLATE):
+            worklist.comment("shaking for src mix of "+src.name)
+            self.shakeSamples([src])  # Need to do this before allocating a tip since washing during this will modify the tip clean states
+
         if self.useDiTis:
             tipMask=4
             if getDITI:
@@ -212,11 +219,10 @@ class Experiment(object):
         #print "*",cmt
         worklist.comment(cmt)
 
-        if mix[0] and not src.isMixed():
-            if src.plate==decklayout.SAMPLEPLATE or src.plate==decklayout.DILPLATE:
-                self.shakeSamples([src])
-            else:
-                src.mix(tipMask)
+        if mix[0] and not src.isMixed() and not (src.plate==decklayout.SAMPLEPLATE or src.plate==decklayout.DILPLATE):
+            worklist.comment("pipette mix for src mix of "+src.name)
+            src.mix(tipMask)	# Manual mix (after allocating a tip for this)
+            
         src.aspirate(tipMask,volume)
         dest.dispense(tipMask,volume,src)
         if mix[1]:
