@@ -565,6 +565,8 @@ classdef RobotSamples < handle
       pMX=find(strcmp(obj.primers,'MX'));
       pT7X=find(strcmp(obj.primers,'T7X'));
       pREF=find(strcmp(obj.primers,'REF'));
+      ref=sv(:,:,pREF);ref=ref(isfinite(ref));ref=ref(ref>0);
+      fprintf('Mean REF = [%s] = %.0f\n', sprintf('%.0f ',ref),mean(ref));
       for i=1:length(obj.templates)
         s=strrep(obj.suffixes,'#','');   % Remove replicate marker
         sT7=false(size(s));
@@ -577,19 +579,31 @@ classdef RobotSamples < handle
             sEXT(j)=strcmp(s{j}(end-length(nEXT)+1:end),nEXT);
           end
         end
+        sT7=find(sT7);
+        sEXT=find(sEXT);
         if any(sv(i,sT7,pT7X)>0)
-          fprintf('\n%s\n', obj.templates{i});
-          fprintf('[Template]= [%s]./[%s] * %.0f = [%s] = %6.1f nM\n', sprintf('%6.1f ',sv(i,sT7,pT7X)),sprintf('%6.1f ',sv(i,sT7,pREF)),obj.options.refconc,sprintf('%6.1f ',sv(i,sT7,pT7X)./sv(i,sT7,pREF)*obj.options.refconc),nanmean(sv(i,sT7,pT7X)./sv(i,sT7,pREF)*obj.options.refconc));
-          if any(any(sv(i,sEXT,:)>0))
-            fprintf('[MX]      = [%s]./[%s] * %.0f = [%s] = %6.1f nM\n',sprintf('%6.1f ',sv(i,sEXT,pMX)),sprintf('%6.1f ',sv(i,sEXT,pREF)),obj.options.refconc,sprintf('%6.1f ',sv(i,sEXT,pMX)./sv(i,sEXT,pREF)*obj.options.refconc),nanmean(sv(i,sEXT,pMX)./sv(i,sEXT,pREF)*obj.options.refconc));
-            fprintf('M/T7      = [%s]./[%s]      = [%s] = %6.1f x\n',sprintf('%6.1f ',sv(i,sEXT,pMX)),sprintf('%6.1f ',sv(i,sEXT,pT7X)),sprintf('%6.1f ',sv(i,sEXT,pMX)./sv(i,sEXT,pT7X)),nanmean(sv(i,sEXT,pMX)./sv(i,sEXT,pT7X)));
-            fprintf('B/T7      = [%s]./[%s]      = [%s] = %6.1f x\n',sprintf('%6.1f ',sv(i,sEXT,pBX)),sprintf('%6.1f ',sv(i,sEXT,pT7X)),sprintf('%6.1f ',sv(i,sEXT,pBX)./sv(i,sEXT,pT7X)),nanmean(sv(i,sEXT,pBX)./sv(i,sEXT,pT7X)));
-            fprintf('W/T7      = [%s]./[%s]      = [%s] = %6.1f x\n',sprintf('%6.1f ',sv(i,sEXT,pWX)),sprintf('%6.1f ',sv(i,sEXT,pT7X)),sprintf('%6.1f ',sv(i,sEXT,pWX)./sv(i,sEXT,pT7X)),nanmean(sv(i,sEXT,pWX)./sv(i,sEXT,pT7X)));
-            sc=sv(i,sEXT,pREF)/obj.options.refconc;
-            fprintf('B/M       = [%s]./[%s]      = [%s] = %6.1f%%\n',sprintf('%6.1f ',sv(i,sEXT,pBX)),sprintf('%6.1f ',sv(i,sEXT,pMX)),sprintf('%6.1f ',100*sv(i,sEXT,pBX)./sv(i,sEXT,pMX)),nanmean(100*sv(i,sEXT,pBX)./sv(i,sEXT,pMX)));
-            fprintf('W/M       = [%s]./[%s]      = [%s] = %6.1f%%\n',sprintf('%6.1f ',sv(i,sEXT,pWX)),sprintf('%6.1f ',sv(i,sEXT,pMX)),sprintf('%6.1f ',100*sv(i,sEXT,pWX)./sv(i,sEXT,pMX)),nanmean(100*sv(i,sEXT,pWX)./sv(i,sEXT,pMX)));
-            bw=sv(i,sEXT,pBX)+sv(i,sEXT,pWX);
-            fprintf('(B+W)/M   = [%s]./[%s]      = [%s] = %6.1f%%\n',sprintf('%6.1f ',bw),sprintf('%6.1f ',sv(i,sEXT,pMX)),sprintf('%6.1f ',100*bw./sv(i,sEXT,pMX)),nanmean(100*bw./sv(i,sEXT,pMX)));
+          svi=squeeze(sv(i,:,:));
+          valid=any(svi(sT7,:)'>0 | svi(sEXT,:)'>0);
+          sT7=sT7(valid); sEXT=sEXT(valid);
+          fprintf('\n%s (%d replicates)\n', obj.templates{i},sum(valid));
+          fprintf('[Template] = [%s]./[%s] * %.0f = [%s] = %6.1f nM\n', sprintf('%6.1f ',svi(sT7,pT7X)),sprintf('%6.1f ',svi(sT7,pREF)),obj.options.refconc,sprintf('%6.1f ',svi(sT7,pT7X)./svi(sT7,pREF)*obj.options.refconc),nanmean(svi(sT7,pT7X)./svi(sT7,pREF)*obj.options.refconc));
+          tW=svi(sT7,pWX); tB=svi(sT7,pBX);
+          if nanmean(tB./tW)>1
+            desired=tB; undesired=tW;
+          else
+            desired=tW; undesired=tB;
+          end
+          fprintf('Tmp contam = [%s]./[%s]      = [%s] = %6.1f%%\n', sprintf('%6.1f ',undesired),sprintf('%6.1f ',desired),sprintf('%6.1f ',undesired./desired*100),nanmean(undesired./desired)*100);
+          if any(any(svi(sEXT,:)>0))
+            fprintf('[MX]       = [%s]./[%s] * %.0f = [%s] = %6.1f nM\n',sprintf('%6.1f ',svi(sEXT,pMX)),sprintf('%6.1f ',svi(sEXT,pREF)),obj.options.refconc,sprintf('%6.1f ',svi(sEXT,pMX)./svi(sEXT,pREF)*obj.options.refconc),nanmean(svi(sEXT,pMX)./svi(sEXT,pREF)*obj.options.refconc));
+            fprintf('M/T7       = [%s]./[%s]      = [%s] = %6.1f x\n',sprintf('%6.1f ',svi(sEXT,pMX)),sprintf('%6.1f ',svi(sEXT,pT7X)),sprintf('%6.1f ',svi(sEXT,pMX)./svi(sEXT,pT7X)),nanmean(svi(sEXT,pMX)./svi(sEXT,pT7X)));
+            fprintf('B/T7       = [%s]./[%s]      = [%s] = %6.1f x\n',sprintf('%6.1f ',svi(sEXT,pBX)),sprintf('%6.1f ',svi(sEXT,pT7X)),sprintf('%6.1f ',svi(sEXT,pBX)./svi(sEXT,pT7X)),nanmean(svi(sEXT,pBX)./svi(sEXT,pT7X)));
+            fprintf('W/T7       = [%s]./[%s]      = [%s] = %6.1f x\n',sprintf('%6.1f ',svi(sEXT,pWX)),sprintf('%6.1f ',svi(sEXT,pT7X)),sprintf('%6.1f ',svi(sEXT,pWX)./svi(sEXT,pT7X)),nanmean(svi(sEXT,pWX)./svi(sEXT,pT7X)));
+            sc=svi(sEXT,pREF)/obj.options.refconc;
+            fprintf('B/M        = [%s]./[%s]      = [%s] = %6.1f%%\n',sprintf('%6.1f ',svi(sEXT,pBX)),sprintf('%6.1f ',svi(sEXT,pMX)),sprintf('%6.1f ',100*svi(sEXT,pBX)./svi(sEXT,pMX)),nanmean(100*svi(sEXT,pBX)./svi(sEXT,pMX)));
+            fprintf('W/M        = [%s]./[%s]      = [%s] = %6.1f%%\n',sprintf('%6.1f ',svi(sEXT,pWX)),sprintf('%6.1f ',svi(sEXT,pMX)),sprintf('%6.1f ',100*svi(sEXT,pWX)./svi(sEXT,pMX)),nanmean(100*svi(sEXT,pWX)./svi(sEXT,pMX)));
+            bw=svi(sEXT,pBX)+svi(sEXT,pWX);
+            fprintf('(B+W)/M    = [%s]./[%s]      = [%s] = %6.1f%%\n',sprintf('%6.1f ',bw),sprintf('%6.1f ',svi(sEXT,pMX)),sprintf('%6.1f ',100*bw./svi(sEXT,pMX)),nanmean(100*bw./svi(sEXT,pMX)));
           end
         end
       end
