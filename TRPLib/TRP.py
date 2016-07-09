@@ -164,7 +164,8 @@ class TRP(object):
         self.e.shakeSamples(src,returnPlate=True)
         for i in range(len(src)):
             self.e.transfer(vol[i],src[i],tgt[i],mix)
-            tgt[i].conc=Concentration(1.0/dil[i])
+            tgt[i].conc=src[i].conc
+            tgt[i].conc.stock=tgt[i].conc.stock/dil[i]
             
         return tgt
     
