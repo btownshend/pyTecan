@@ -284,7 +284,8 @@ classdef RobotSamples < handle
         entry.order=min([entry.order,wellindex]);
       end
       pMPCR=find(strcmp(samp.ingredients,'MPCR'));
-      if ~isempty(pMPCR)
+      pMT7=find(strcmp(samp.ingredients,'MT7'));
+      if ~isempty(pMPCR)  && samp.volumes(pMPCR)>samp.volumes(pMT7)
         entry.dispDil=1;   % No dilution back-out for PCR products
       else
         % Use base sample to calculate dilution from T7 step
