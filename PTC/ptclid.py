@@ -21,7 +21,6 @@ for i in range(30):
             logging.warning("Got ER_TIMEOUT, continuing wait")
         elif lidstatus!="OPENING":
             logging.error( "Unexpected lid status: %s"%lidstatus)
-            exit(1)
     else:
         if lidstatus=="CLOSED":
             exit(0)
@@ -29,7 +28,7 @@ for i in range(30):
             logging.warning("Got ER_TIMEOUT, continuing wait")
         elif lidstatus!="CLOSING":
             logging.error( "Unexpected lid status: %s"%lidstatus)
-            exit(1)
+
     time.sleep(2)
 
 logging.error( "Lid is not completing operation")
