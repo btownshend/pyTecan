@@ -618,7 +618,7 @@ class TRP(object):
     ########################
     # PCR
     ########################
-    def runPCR(self,primers,src,vol,srcdil,tgt=None,ncycles=20,usertime=None):
+    def runPCR(self,primers,src,vol,srcdil,tgt=None,ncycles=20,usertime=None,fastCycling=False):
         ## PCR
         [primers,src,tgt,vol,srcdil]=listify([primers,src,tgt,vol,srcdil])
         for i in range(len(tgt)):
@@ -637,14 +637,20 @@ class TRP(object):
             self.e.stage('PCR%s'%up,[reagents.getsample("MPCR"),reagents.getsample(s)],[src[i] for i in range(len(src)) if primers[i]==up],[tgt[i] for i in range(len(tgt)) if primers[i]==up],[vol[i] for i in range(len(vol)) if primers[i]==up],destMix=False)
         pgm="PCR%d"%ncycles
         self.e.shakeSamples(tgt,returnPlate=False)
-        #        worklist.pyrun('PTC\\ptcsetpgm.py %s TEMP@95,120 TEMP@95,30 TEMP@55,30 TEMP@72,25 GOTO@2,%d TEMP@72,180 TEMP@16,2'%(pgm,ncycles-1))
+
         if usertime is None:
-#            worklist.pyrun('PTC\\ptcsetpgm.py %s TEMP@95,120 TEMP@95,10 TEMP@57,10 GOTO@2,%d TEMP@72,120 TEMP@25,2'%(pgm,ncycles-1))
-            worklist.pyrun('PTC\\ptcsetpgm.py %s TEMP@95,120 TEMP@95,30 TEMP@57,30 TEMP@72,25 GOTO@2,%d TEMP@72,120 TEMP@25,2'%(pgm,ncycles-1))
-            self.e.runpgm(pgm,4.8+3.0*ncycles,False,max(vol),hotlidmode="CONSTANT",hotlidtemp=100)
+            runTime=0
         else:
-            worklist.pyrun('PTC\\ptcsetpgm.py %s TEMP@37,%d TEMP@95,120 TEMP@95,30 TEMP@57,30 TEMP@72,30 GOTO@3,%d TEMP@72,120 TEMP@25,2'%(pgm,usertime*60,ncycles-1))
-            self.e.runpgm(pgm,usertime+4.8+3.0*ncycles,False,max(vol),hotlidmode="CONSTANT",hotlidtemp=100)
+            runTime=usertime
+
+        if fastCycling:
+            worklist.pyrun('PTC\\ptcsetpgm.py %s TEMP@37,%d TEMP@95,120 TEMP@95,10 TEMP@57,10  GOTO@3,%d TEMP@72,60 TEMP@25,2'%(pgm,1 if usertime is None else usertime*60,ncycles-1))
+            runTime+=4.8+1.55*ncycles
+        else:
+            worklist.pyrun('PTC\\ptcsetpgm.py %s %sTEMP@95,120 TEMP@95,30 TEMP@57,30 TEMP@72,30 GOTO@3,%d TEMP@72,60 TEMP@25,2'%(pgm,1 if usertime is None else usertime*60,ncycles-1))
+            runTime+=4.8+3.0*ncycles
+            
+        self.e.runpgm(pgm,runTime,False,max(vol),hotlidmode="CONSTANT",hotlidtemp=100)
         self.e.shakeSamples(tgt,returnPlate=True)
         return tgt
 
