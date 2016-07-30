@@ -649,7 +649,7 @@ class TRP(object):
             worklist.pyrun('PTC\\ptcsetpgm.py %s TEMP@37,%d TEMP@95,120 TEMP@95,10 TEMP@57,10  GOTO@3,%d TEMP@72,60 TEMP@25,2'%(pgm,1 if usertime is None else usertime*60,ncycles-1))
             runTime+=4.8+1.55*ncycles
         else:
-            worklist.pyrun('PTC\\ptcsetpgm.py %s %sTEMP@95,120 TEMP@95,30 TEMP@57,30 TEMP@72,30 GOTO@3,%d TEMP@72,60 TEMP@25,2'%(pgm,1 if usertime is None else usertime*60,ncycles-1))
+            worklist.pyrun('PTC\\ptcsetpgm.py %s TEMP@37,%d TEMP@95,120 TEMP@95,30 TEMP@57,30 TEMP@72,30 GOTO@3,%d TEMP@72,60 TEMP@25,2'%(pgm,1 if usertime is None else usertime*60,ncycles-1))
             runTime+=4.8+3.0*ncycles
             
         self.e.runpgm(pgm,runTime,False,max(vol),hotlidmode="CONSTANT",hotlidtemp=100)
