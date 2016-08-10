@@ -113,7 +113,9 @@ class TRP(object):
         if looplengths is not None:
             assert(len(names)==len(looplengths))
         for i in range(len(names)):
-            if looplengths is None:
+            if reagents.isReagent(names[i]):
+                r.append(reagents.lookup(names[i]))
+            elif looplengths is None:
                 r.append(reagents.add(names[i],plate=plate,conc=Concentration(stockconc[i],finalconc[i],units),extraVol=30))
             else:
                 r.append(reagents.add(names[i],plate=plate,conc=Concentration(stockconc[i],finalconc[i],units),extraVol=30,extrainfo=looplengths[i]))
