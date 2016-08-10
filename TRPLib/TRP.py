@@ -648,12 +648,14 @@ class TRP(object):
             runTime=usertime
 
         if fastCycling:
-            worklist.pyrun('PTC\\ptcsetpgm.py %s TEMP@37,%d TEMP@95,120 TEMP@95,10 TEMP@57,10  GOTO@3,%d TEMP@72,60 TEMP@25,2'%(pgm,1 if usertime is None else usertime*60,ncycles-1))
+            cycling='TEMP@37,%d TEMP@95,120 TEMP@95,10 TEMP@57,10  GOTO@3,%d TEMP@72,60 TEMP@25,2'%(1 if usertime is None else usertime*60,ncycles-1)
             runTime+=4.8+1.55*ncycles
         else:
-            worklist.pyrun('PTC\\ptcsetpgm.py %s TEMP@37,%d TEMP@95,120 TEMP@95,30 TEMP@57,30 TEMP@72,30 GOTO@3,%d TEMP@72,60 TEMP@25,2'%(pgm,1 if usertime is None else usertime*60,ncycles-1))
+            cycling='TEMP@37,%d TEMP@95,120 TEMP@95,30 TEMP@57,30 TEMP@72,30 GOTO@3,%d TEMP@72,60 TEMP@25,2'%(1 if usertime is None else usertime*60,ncycles-1)
             runTime+=4.8+3.0*ncycles
             
+        print "PCR program: ",cycling
+        worklist.pyrun('PTC\\ptcsetpgm.py %s %s'%(pgm,cycling))
         self.e.runpgm(pgm,runTime,False,max(vol),hotlidmode="CONSTANT",hotlidtemp=100)
         self.e.shakeSamples(tgt,returnPlate=True)
         return tgt
@@ -668,7 +670,9 @@ class TRP(object):
 
         pgm="PCR%d"%ncycles
         #        worklist.pyrun('PTC\\ptcsetpgm.py %s TEMP@95,120 TEMP@95,30 TEMP@55,30 TEMP@72,25 GOTO@2,%d TEMP@72,180 TEMP@16,2'%(pgm,ncycles-1))
-        worklist.pyrun('PTC\\ptcsetpgm.py %s TEMP@95,120 TEMP@95,10 TEMP@%f,10 GOTO@2,%d TEMP@72,120 TEMP@25,2'%(pgm,annealtemp,ncycles-1))
+        cycling='TEMP@95,120 TEMP@95,10 TEMP@%f,10 GOTO@2,%d TEMP@72,120 TEMP@25,2'%(annealtemp,ncycles-1)
+        print "PCR program: ",cycling
+        worklist.pyrun('PTC\\ptcsetpgm.py %s %s'%(pgm,cycling))
         self.e.runpgm(pgm,4.80+1.55*ncycles,False,max(vol),hotlidmode="CONSTANT",hotlidtemp=100)
     
     ########################
