@@ -257,7 +257,7 @@ class Sample(object):
     def getAllOnPlate(cls,plate=None):
         result=[]
         for s in __allsamples:
-            if plate is None or s.plate==plate:
+            if (plate is None or s.plate==plate) and len(s.history)>0:
                 result.append(s)
         return result
 
@@ -265,7 +265,7 @@ class Sample(object):
     def getAllLocOnPlate(cls,plate=None):
         result=""
         for s in __allsamples:
-            if plate is None or s.plate==plate:
+            if (plate is None or s.plate==plate) and len(s.history)>0:
                 result+=" %s"%(s.plate.wellname(s.well))
         return result
 
