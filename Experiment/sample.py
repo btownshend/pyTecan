@@ -340,7 +340,7 @@ class Sample(object):
         worklist.variable(volvar,-2)
         worklist.detectLiquid(tipMask,well,self.inliquidLC,self.plate)
         doneLabel=worklist.getlabel()
-        worklist.condition(volvar,">",min(100,gemvolthresh),doneLabel)
+        worklist.condition(volvar,">",gemvolthresh,doneLabel)
         worklist.moveliha(worklist.WASHLOC)	# Get LiHa out of the way
         msg="Failed volume check of %s - should have  %.0f ul"%(self.name,self.volume)
         worklist.email(dest='cdsrobot@gmail.com',subject=msg)
