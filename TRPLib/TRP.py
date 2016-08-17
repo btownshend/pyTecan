@@ -27,6 +27,10 @@ reagents.add("BeadBuffer",well="C4",conc=1)
 reagents.add("Dynabeads",well="D4",conc=4,hasBeads=True)
 reagents.add("TE8",well="E4",conc=None)
 
+reagents.add("W-Stop",well="B3",conc=3,extraVol=30)
+reagents.add("A-Stop",well="C3",conc=3,extraVol=30)
+reagents.add("B-Stop",well="A3",conc=3,extraVol=30)
+
 reagents.add("EvaUSER",well="A5",conc=2)
 reagents.add("P-TR",well="B5",conc=4)
 reagents.add("P-T7BX",well="C5",conc=4)
