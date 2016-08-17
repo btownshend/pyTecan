@@ -211,11 +211,12 @@ class TRP(object):
     ########################
     # Run a reaction in place
     ########################
-    def runRxInPlace(self,src,vol,master,returnPlate=True,finalx=1.0):
+    def runRxInPlace(self,src,vol,master,master2=None,returnPlate=True,finalx=1.0):
         'Run reaction on beads in given total volume'
-        [vol,src,master]=listify([vol,src,master])
+        [vol,src,master,master2]=listify([vol,src,master,master2])
         mastervol=[vol[i]*finalx/master[i].conc.dilutionneeded() for i in range(len(vol))]
-        watervol=[vol[i]-src[i].volume-mastervol[i] for i in range(len(vol))]
+        master2vol=[0 if master2[i] is None else vol[i]*finalx/master2[i].conc.dilutionneeded() for i in range(len(vol))]
+        watervol=[vol[i]-src[i].volume-mastervol[i]-master2vol[i] for i in range(len(vol))]
         if any([w < -0.01 for w in watervol]):
             logging.error("runRxInPlace: negative amount of water needed: %.1f"%w)
 
@@ -224,6 +225,9 @@ class TRP(object):
                 self.e.transfer(watervol[i],decklayout.WATER,src[i],(False,False))
         for i in range(len(src)):
             self.e.transfer(mastervol[i],master[i],src[i],(True,False))
+        for i in range(len(src)):
+            if master2vol[i]>0:
+                self.e.transfer(master2vol[i],master2[i],src[i],(True,False))
         self.e.shakeSamples(src,returnPlate=returnPlate)
 
     ########################
