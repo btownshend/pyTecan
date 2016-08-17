@@ -637,25 +637,41 @@ class TRP(object):
     ########################
     # PCR
     ########################
-    def runPCR(self,primers,src,vol,srcdil,tgt=None,ncycles=20,usertime=None,fastCycling=False):
+    def runPCR(self,primers,src,srcdil,vol=None,tgt=None,ncycles=20,usertime=None,fastCycling=False,inPlace=False):
         ## PCR
-        [primers,src,tgt,vol,srcdil]=listify([primers,src,tgt,vol,srcdil])
-        for i in range(len(tgt)):
-            if tgt[i] is None:
-                tgt[i]=Sample("%s.P%s"%(src[i].name,primers[i]),src[i].plate)
+        if inPlace:
+            if vol!=None:
+                print "runPCR: cannot specify volume when using inPlace=True, srcdil and input volume determine reaction volume"
+                assert(False)
+            if tgt!=None:
+                print "runPCR: cannot specify tgt when using inPlace=True"
+                assert(False)
+            [primers,src,vol,srcdil]=listify([primers,src,vol,srcdil])
+            vol=[src[i].volume*srcdil[i] for i in range(len(src))]
+            tgt=src
+        else: 
+            [primers,src,tgt,vol,srcdil]=listify([primers,src,tgt,vol,srcdil])
+            for i in range(len(tgt)):
+                if tgt[i] is None:
+                    tgt[i]=Sample("%s.P%s"%(src[i].name,primers[i]),src[i].plate)
 
         # Adjust source dilution
         for i in range(len(src)):
             src[i].conc=Concentration(srcdil[i],1)
         
         logging.notice( "primer="+str(primers))
-        for up in set(primers):
-            s="P-%s"%up
-            if not reagents.isReagent(s):
-                reagents.add(name=s,conc=4,extraVol=30)
-            self.e.stage('PCR%s'%up,[reagents.getsample("MPCR"),reagents.getsample(s)],[src[i] for i in range(len(src)) if primers[i]==up],[tgt[i] for i in range(len(tgt)) if primers[i]==up],[vol[i] for i in range(len(vol)) if primers[i]==up],destMix=False)
+        if inPlace:
+            self.runRxInPlace(src,vol,reagents.getsample("MPCR"),master2=[reagents.getsample("P-%s"%p) for p in primers],returnPlate=False)
+        else:
+            for up in set(primers):
+                s="P-%s"%up
+                if not reagents.isReagent(s):
+                    reagents.add(name=s,conc=4,extraVol=30)
+                else:
+                    self.e.stage('PCR%s'%up,[reagents.getsample("MPCR"),reagents.getsample(s)],[src[i] for i in range(len(src)) if primers[i]==up],[tgt[i] for i in range(len(tgt)) if primers[i]==up],[vol[i] for i in range(len(vol)) if primers[i]==up],destMix=False)
+            self.e.shakeSamples(tgt,returnPlate=False)
+
         pgm="PCR%d"%ncycles
-        self.e.shakeSamples(tgt,returnPlate=False)
 
         if usertime is None:
             runTime=0
@@ -669,27 +685,12 @@ class TRP(object):
             cycling='TEMP@37,%d TEMP@95,120 TEMP@95,30 TEMP@57,30 TEMP@72,30 GOTO@3,%d TEMP@72,60 TEMP@25,2'%(1 if usertime is None else usertime*60,ncycles-1)
             runTime+=4.8+3.0*ncycles
             
-        print "PCR program: ",cycling
+        print "PCR volume=%.1ful, srcdil=%.1fx, program: %s"%(tgt[0].volume,srcdil[0],cycling)
         worklist.pyrun('PTC\\ptcsetpgm.py %s %s'%(pgm,cycling))
         self.e.runpgm(pgm,runTime,False,max(vol),hotlidmode="CONSTANT",hotlidtemp=100)
         self.e.shakeSamples(tgt,returnPlate=True)
         return tgt
 
-    def runPCRInPlace(self,prefix,src,vol,ncycles,suffix,annealtemp=57,save=None):
-        [prefix,src,vol,suffix]=listify([prefix,src,vol,suffix])
-
-        primer=[reagents.getsample("MPCR"+prefix[i]+suffix[i]) for i in range(len(prefix))]
-        self.runRxInPlace(src,vol,primer,returnPlate=(save is not None))
-        if save is not None:
-            self.saveSamps(src=src,vol=5,dil=10,tgt=save,plate=decklayout.DILPLATE,dilutant=decklayout.SSDDIL)
-
-        pgm="PCR%d"%ncycles
-        #        worklist.pyrun('PTC\\ptcsetpgm.py %s TEMP@95,120 TEMP@95,30 TEMP@55,30 TEMP@72,25 GOTO@2,%d TEMP@72,180 TEMP@16,2'%(pgm,ncycles-1))
-        cycling='TEMP@95,120 TEMP@95,10 TEMP@%f,10 GOTO@2,%d TEMP@72,120 TEMP@25,2'%(annealtemp,ncycles-1)
-        print "PCR program: ",cycling
-        worklist.pyrun('PTC\\ptcsetpgm.py %s %s'%(pgm,cycling))
-        self.e.runpgm(pgm,4.80+1.55*ncycles,False,max(vol),hotlidmode="CONSTANT",hotlidtemp=100)
-    
     ########################
     # qPCR
     ########################
