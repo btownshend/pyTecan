@@ -14,6 +14,7 @@ maxVolumePerWell=150
 reagents.add("MT7",well="A1",conc=2.5,extraVol=30)
 reagents.add("MPosRT",well="B1",conc=2,extraVol=30)
 reagents.add("MKlenow",well="C1",conc=2,extraVol=30)
+reagents.add("MExo",well="C1",conc=5,extraVol=30)
 reagents.add("MPCR",well="D1",conc=3)
 reagents.add("MLigase",well="E1",conc=3,extraVol=30)
 reagents.add("EDTA",well="A2",conc=Concentration(40,4,'mM'))
@@ -602,6 +603,12 @@ class TRP(object):
     ########################
     def runUser(self,src=None,vol=None,srcdil=None,tgt=None,incTime=15,inPlace=False):
         return self.runIncubation(src=src,vol=vol,srcdil=srcdil,tgt=tgt,incTemp=37,incTime=incTime,enzymes=[reagents.getsample("MUser")],inPlace=inPlace)
+        
+    ########################
+    # EXO - EXO enzyme digestion
+    ########################
+    def runExo(self,src=None,vol=None,srcdil=None,tgt=None,incTime=15,inPlace=False):
+        return self.runIncubation(src=src,vol=vol,srcdil=srcdil,tgt=tgt,incTemp=37,incTime=incTime,enzymes=[reagents.getsample("MExo")],inPlace=inPlace,hiTemp=80,hiTime=20)
         
     ########################
     # Klenow extension
