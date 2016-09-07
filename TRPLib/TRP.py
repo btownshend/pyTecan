@@ -319,13 +319,13 @@ class TRP(object):
     ########################
     # Beads
     ########################
-    def bindBeads(self,src,beads=None,beadConc=None,bbuffer=None,incTime=60,addBuffer=False):
+    def bindBeads(self,src,beads=None,beadConc=None,beadDil=None,bbuffer=None,incTime=60,addBuffer=False):
         if beads is None:
             beads=reagents.getsample("Dynabeads")
         if bbuffer is None:
             bbuffer=reagents.getsample("BeadBuffer")
             
-        [src,beads,bbuffer,beadConc]=listify([src,beads,bbuffer,beadConc])
+        [src,beads,bbuffer,beadConc,beadDil]=listify([src,beads,bbuffer,beadConc,beadDil])
 
         for s in src:
             if s.plate!=decklayout.SAMPLEPLATE:
@@ -336,8 +336,8 @@ class TRP(object):
         self.e.moveplate(src[0].plate,"Home")		# Make sure we do this off the magnet
 
         # Calculate volumes needed
-        beadConc=[beads[i].conc.final if beadConc[i] is None else beadConc[i] for i in range(len(beads))]
-        beadDil=beads[i].conc.stock/beadConc[i]
+        beadDil=[beads[i].conc.stock/(beads[i].conc.final if beadConc[i] is None else beadConc[i]) if beadDil[i] is None else beadDil[i] for i in range(len(beads))]
+
         if addBuffer:
             totalvol=[s.volume/(1-1.0/beadDil-1.0/bbuffer[i].conc.dilutionneeded()) for s in src]
             buffervol=[totalvol[i]/bbuffer[i].conc.dilutionneeded() for i in range(len(src))]
