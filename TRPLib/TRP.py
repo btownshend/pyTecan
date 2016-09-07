@@ -700,7 +700,7 @@ class TRP(object):
             cycling='TEMP@37,%d TEMP@95,120 TEMP@95,30 TEMP@57,30 TEMP@72,30 GOTO@3,%d TEMP@72,60 TEMP@25,2'%(1 if usertime is None else usertime*60,ncycles-1)
             runTime+=4.8+3.0*ncycles
             
-        print "PCR volume=%.1ful, srcdil=%.1fx, program: %s"%(tgt[0].volume,srcdil[0],cycling)
+        print "PCR volume=[",",".join(["%.1f"%t.volume for t in tgt]), "], srcdil=[",",".join(["%.1fx"%s for s in srcdil]),"], program: %s"%cycling
         worklist.pyrun('PTC\\ptcsetpgm.py %s %s'%(pgm,cycling))
         self.e.runpgm(pgm,runTime,False,max(vol),hotlidmode="CONSTANT",hotlidtemp=100)
         self.e.shakeSamples(tgt,returnPlate=True)
