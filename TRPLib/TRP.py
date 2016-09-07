@@ -15,7 +15,7 @@ reagents.add("MT7",well="A1",conc=2.5,extraVol=30)
 reagents.add("MPosRT",well="B1",conc=2,extraVol=30)
 reagents.add("MKlenow",well="C1",conc=2,extraVol=30)
 reagents.add("MExo",well="C1",conc=5,extraVol=30)
-reagents.add("MPCR",well="D1",conc=3)
+reagents.add("MTaq",well="D1",conc=3)
 reagents.add("MLigase",well="E1",conc=3,extraVol=30)
 reagents.add("EDTA",well="A2",conc=Concentration(40,4,'mM'))
 reagents.add("MSET7W-Beads",well="B2",conc=5,extraVol=30,hasBeads=True)
@@ -676,14 +676,14 @@ class TRP(object):
         
         logging.notice( "primer="+str(primers))
         if inPlace:
-            self.runRxInPlace(src,vol,reagents.getsample("MPCR"),master2=[reagents.getsample("P-%s"%p) for p in primers],returnPlate=False)
+            self.runRxInPlace(src,vol,reagents.getsample("MTaq"),master2=[reagents.getsample("P-%s"%p) for p in primers],returnPlate=False)
         else:
             for up in set(primers):
                 s="P-%s"%up
                 if not reagents.isReagent(s):
                     reagents.add(name=s,conc=4,extraVol=30)
                 else:
-                    self.e.stage('PCR%s'%up,[reagents.getsample("MPCR"),reagents.getsample(s)],[src[i] for i in range(len(src)) if primers[i]==up],[tgt[i] for i in range(len(tgt)) if primers[i]==up],[vol[i] for i in range(len(vol)) if primers[i]==up],destMix=False)
+                    self.e.stage('PCR%s'%up,[reagents.getsample("MTaq"),reagents.getsample(s)],[src[i] for i in range(len(src)) if primers[i]==up],[tgt[i] for i in range(len(tgt)) if primers[i]==up],[vol[i] for i in range(len(vol)) if primers[i]==up],destMix=False)
             self.e.shakeSamples(tgt,returnPlate=False)
 
         pgm="PCR%d"%ncycles
