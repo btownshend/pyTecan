@@ -346,9 +346,9 @@ class TRP(object):
                 self.e.transfer(buffervol[i],bbuffer[i],src[i])
         else:
             buffervol=[0.0 for i in range(len(src))]
-            totalvol=[s.volume/(1-1.0/beadDil) for s in src]
+            totalvol=[src[i].volume/(1-1.0/beadDil[i]) for i in range(len(src))]
 
-        beadvol=[t/beadDil for t in totalvol]
+        beadvol=[totalvol[i]/beadDil[i] for i in range(len(totalvol))]
 
         # Transfer the beads
         for i in range(len(src)):
