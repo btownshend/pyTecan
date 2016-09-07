@@ -22,6 +22,8 @@ reagents.add("MSET7W-Beads",well="B2",conc=5,extraVol=30,hasBeads=True)
 reagents.add("MSET7B-Beads",well="C2",conc=5,extraVol=30,hasBeads=True)
 reagents.add("MSET7W-NB",well="D2",conc=5,extraVol=30)
 reagents.add("MSET7B-NB",well="E2",conc=5,extraVol=30)
+reagents.add("Ampure",well="C2",conc=None,hasBeads=True)
+reagents.add("EtOH80",well="D2")
 reagents.add("SSD",well="A4",conc=10.0)
 reagents.add("NaOH",well="B4",conc=1.0)
 reagents.add("BeadBuffer",well="C4",conc=1)
@@ -506,6 +508,19 @@ class TRP(object):
 
         self.e.moveplate(tgt.plate,"Home")	
         return src[0:1]
+    
+    ########################
+    # Ampure Cleanup
+    ########################
+    def runAmpure(self,src,ratio,tgt=None,incTime=5*60,elutionVol=None,evapTime=2*60):
+        if elutionVol is None:
+            elutionVol=src[0].volume
+        self.bindBeads(src=src,beads=reagents.getsample("Ampure"),beadDil=(ratio+1)/ratio,incTime=incTime)
+        self.beadWash(src=src,wash=reagents.getsample("EtOH80"),washVol=100,numWashes=2)
+        self.e.pause(evapTime)	# Wait for evaporation
+        self.beadAddElutant(src=src,elutant=reagents.getsample("TE8"),elutionVol=elutionVol)
+        tgt=self.beadSupernatant(src=src,sepTime=120,tgt=[Sample("%s.ampure"%r.name,decklayout.SAMPLEPLATE) for r in src])
+        return tgt
     
     ########################
     # RT - Reverse Transcription
