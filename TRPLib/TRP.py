@@ -329,7 +329,7 @@ class TRP(object):
 
         for s in src:
             if s.plate!=decklayout.SAMPLEPLATE:
-                logging.error( "runBeadCleanup: src "+s+" is not in sample plate.")
+                logging.error( "runBeadCleanup: src "+s.name+" is not in sample plate.")
 
             s.conc=None		# Can't track concentration of beads
             
