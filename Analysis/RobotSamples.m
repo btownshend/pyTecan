@@ -298,6 +298,10 @@ classdef RobotSamples < handle
         else
           dispDil=sum(samp.volumes)/samp.volumes(pMT7);
           dispDil=dispDil/dilution/2.5/4;	% Back out dilution of MT7(2.5), qPCR dilution(dilution), qPCR final dil (4)
+          if dispDil>1000
+            fprintf('Bad display dilution computation for %s: %.0f\n', root, dispDil);
+            dispDil=1;
+          end
           entry.dispDil=dispDil;
         end
       end
