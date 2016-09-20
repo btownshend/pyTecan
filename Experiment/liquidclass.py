@@ -51,7 +51,7 @@ LCWaterBottomSide=LC("Water-BottomSide",singlelag=1,multiexcess=1)
 LCWaterBottomBeads=LC("Water-BottomBeads",singlelag=1,multiexcess=0)
 LCWaterInLiquid=LC("Water-InLiquid",singlelag=1,multiexcess=1,ldetect=True,submerge=1)
 LCMixSlow=LC("Water-MixSlow",multiexcess=1)
-LCMix={height: LC("Mix_%d"%height,multiexcess=1) for height in range(1,13)}
+LCMix={height: LC("Mix_%d"%height,multiexcess=1) for height in range(1,30)}
 LCMixBottom=LC("Water-MixBottom",multiexcess=1)
 LCBlowoutLD=LC("Blowout_LD",multiexcess=1,singlelag=1,ldetect=True)
 LCAir=LC("Air")
