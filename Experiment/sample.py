@@ -454,7 +454,7 @@ class Sample(object):
                 self.conc=None
             else:
                 self.conc=self.conc.dilute((self.volume+volume)/self.volume)
-        elif self.conc is None or self.volume==0:
+        elif self.conc is None or self.volume==0 or self.conc.final is None or src.conc.final is None:
             self.conc=src.conc.dilute((self.volume+volume)/volume)
         else:
             # Both have concentrations, they should match
