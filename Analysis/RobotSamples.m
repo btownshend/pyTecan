@@ -609,7 +609,7 @@ classdef RobotSamples < handle
           if any(svi(sT7,:)'>0)
             fprintf('[Template] = [%s]./[%s] * %.0f = [%s] = %6.1f nM\n', sprintf('%6.1f ',svi(sT7,pT7X)),sprintf('%6.1f ',svi(sT7,pREF)),obj.options.refconc,sprintf('%6.1f ',svi(sT7,pT7X)./svi(sT7,pREF)*obj.options.refconc),nanmean(svi(sT7,pT7X)./svi(sT7,pREF)*obj.options.refconc));
           end
-          tW=svi(sT7,pT7WX); tA=svi(sT7,pAX); tB=svi(sT7,pBX);
+          tW=svi(sT7,[pWX,pT7WX]); tA=svi(sT7,pAX); tB=svi(sT7,pBX);
           mtW=nanmean(tW); mtA=nanmean(tA); mtB=nanmean(tB);
           if mtW>mtA && mtW>mtB;
             desired=tW; undesired=nansum([tA,tB],2);
@@ -644,7 +644,7 @@ classdef RobotSamples < handle
               fprintf('B/M        = [%s]./[%s]      = [%s] = %6.1f%%\n',sprintf('%6.1f ',svi(sEXT,pBX)),sprintf('%6.1f ',svi(sEXT,pMX)),sprintf('%6.1f ',100*svi(sEXT,pBX)./svi(sEXT,pMX)),nanmean(100*svi(sEXT,pBX)./svi(sEXT,pMX)));
             end
 
-            add=svi(sEXT,pAX)+svi(sEXT,pT7WX)+svi(sEXT,pBX);
+            add=sum(svi(sEXT,[pAX,pWX,pT7WX,pBX]),2);
             fprintf('(total)/M  = [%s]./[%s]      = [%s] = %6.1f%%\n',sprintf('%6.1f ',add),sprintf('%6.1f ',svi(sEXT,pMX)),sprintf('%6.1f ',100*add./svi(sEXT,pMX)),nanmean(100*add./svi(sEXT,pMX)));
           end
         end
