@@ -684,7 +684,7 @@ class TRP(object):
                     reagents.add(name=s,conc=4,extraVol=30)
                 else:
                     self.e.stage('PCR%s'%up,[reagents.getsample("MTaq"),reagents.getsample(s)],[src[i] for i in range(len(src)) if primers[i]==up],[tgt[i] for i in range(len(tgt)) if primers[i]==up],[vol[i] for i in range(len(vol)) if primers[i]==up],destMix=False)
-            self.e.shakeSamples(tgt,returnPlate=False)
+            #self.e.shakeSamples(tgt,returnPlate=False)
 
         pgm="PCR%d"%ncycles
 
@@ -703,7 +703,12 @@ class TRP(object):
         print "PCR volume=[",",".join(["%.1f"%t.volume for t in tgt]), "], srcdil=[",",".join(["%.1fx"%s for s in srcdil]),"], program: %s"%cycling
         worklist.pyrun('PTC\\ptcsetpgm.py %s %s'%(pgm,cycling))
         self.e.runpgm(pgm,runTime,False,max(vol),hotlidmode="CONSTANT",hotlidtemp=100)
-        self.e.shakeSamples(tgt,returnPlate=True)
+        # Mark samples as mixed (by thermal convection)
+        print "Marking samples as mixed (by thermal convection)"
+        for t in tgt:
+            t.wellMixed=True
+            t.lastMixed=clock.elapsed()
+        #self.e.shakeSamples(tgt,returnPlate=True)
         return tgt
 
     ########################
