@@ -15,8 +15,9 @@ MAGPLATELOC=Plate("MagPlate",18,2,12,8,False,unusableVolume=9,maxVolume=200,zmax
 hspmaxspeeds={200:1400,150:1600,100:1850,50:2000,20:2200}	# From shaketest experiment
 grenmaxspeeds={150:1750,125:1900,100:1950,75:2200,50:2200}	# From shaketest experiment
 #eppmaxspeeds={195:1600,150:1800,125:1900,100:1950,75:2050,50:2150,25:2150,0:2150} # From shaketest experiment 5/17/16
-eppmaxspeeds={195:1400,150:1600,125:1700,100:1750,75:1850,50:1950,25:1950,0:1950} # Decrease by 200 RPM 7/7/16 to avoid spilling
-eppminspeeds={32:1800,64:1700,96:1400,200:1300}
+eppdilmaxspeeds={195:1400,150:1600,125:1700,100:1750,75:1850,50:1950,25:1950,0:1950} # Decrease by 200 RPM 7/7/16 to avoid spilling
+eppmaxspeeds={195:0,150:1150,138:1250,100:1350,75:1850,50:1950,25:1950,0:1950} # Decrease based on 9/23/16 testing with MTaq
+eppminspeeds={32:1800,64:1700,96:1400,150:1100}  # 1100@150ul untested
 
 SAMPLEPLATE=Plate("Samples",4,3,12,8,False,unusableVolume=15,maxVolume=200,
                 zmax=1033,angle=17.5,r1=2.698,h1=9.31,v0=17.21,slopex=0.000,slopey=0.000,
@@ -29,7 +30,7 @@ QPCRPLATE=Plate("qPCR",4,1,12,8,False,unusableVolume=15,maxVolume=200,
                 gemShape='v-shaped')
 DILPLATE=Plate("Dilutions",4,2,12,8,False,unusableVolume=15,maxVolume=200,
                zmax=1033,angle=17.5,r1=2.705,h1=9.13,v0=13.14,slopex=0.000,slopey=0.000,gemDepth=2.81,gemArea=16.41,
-               gemShape='v-shaped',vectorName="Microplate Landscape",maxspeeds=eppmaxspeeds,minspeeds=eppminspeeds) # EppLoBind
+               gemShape='v-shaped',vectorName="Microplate Landscape",maxspeeds=eppdilmaxspeeds,minspeeds=eppminspeeds) # EppLoBind
 
 SSDDILLOC=Plate("SSDDil",3,1,1,4,False,100,100000,zmax=1367,gemDepth=0,gemArea=1232,gemShape='flat')
 WATERLOC=Plate("Water",3,2,1,4,False,100,100000,zmax=1367,gemDepth=0,gemArea=1232,gemShape='flat')
