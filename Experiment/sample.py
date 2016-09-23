@@ -639,7 +639,7 @@ class Sample(object):
                     if mixheight<2:
                         mixheight=2
 #                    print 'Vol=%.1f ul, height=%.1f mm, mix=%d, blow=%d'%(self.volume,height,mixheight,blowheight)
-                    mixLC=liquidclass.LCMix[mixheight]
+                    mixLC=liquidclass.LCMix[min(12,mixheight)]
                     if blowvol>0:
                         blowoutLC=liquidclass.LCBlowoutLD
                         worklist.aspirateNC(tipMask,well,self.airLC,(blowvol+0.1),self.plate)
@@ -677,7 +677,7 @@ class Sample(object):
             evapString=""
         s+=" %-30s"%("(%s.%s,%.2f ul%s%s)"%(self.plate.name,self.plate.wellname(self.well),self.volume,evapString,beadString))
         hist=self.history
-        trunchistory=True
+        trunchistory=self.plate.name!="Samples"
         if trunchistory and len(hist)>0:
             # Remove any trailing {xx} or (xx) markers from history
             wds=hist.strip().split(' ')
