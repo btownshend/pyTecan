@@ -435,7 +435,7 @@ class Experiment(object):
         (minspeed,maxspeed)=plate.getmixspeeds(minvol*0.95,maxvol+5)	# Assume volumes could be off
 
         if minspeed>maxspeed:
-            logging.warning("minspeed(%.0f) > maxspeed(%.0f)"%(minspeed,maxspeed))
+            logging.warning("minspeed(%.0f) > maxspeed(%.0f) minvol=%.1f, maxvol=%.1f"%(minspeed,maxspeed,minvol,maxvol))
         if speed is None:
             if minspeed<maxspeed:
                 speed=max((maxspeed+minspeed)/2,maxspeed-50)    # Mix as fast as safely possible (but always above minspeed)
