@@ -219,8 +219,8 @@ class TRP(object):
         mastervol=[vol[i]*finalx/master[i].conc.dilutionneeded() for i in range(len(vol))]
         master2vol=[0 if master2[i] is None else vol[i]*finalx/master2[i].conc.dilutionneeded() for i in range(len(vol))]
         watervol=[vol[i]-src[i].volume-mastervol[i]-master2vol[i] for i in range(len(vol))]
-        if any([w < -0.01 for w in watervol]):
-            logging.error("runRxInPlace: negative amount of water needed: %.1f"%w)
+        if any([w < -0.02 for w in watervol]):
+            logging.error("runRxInPlace: negative amount of water needed: %.2f"%min(watervol))
 
         for i in range(len(src)):
             if  watervol[i]>=0.1:
