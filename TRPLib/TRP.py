@@ -695,8 +695,8 @@ class TRP(object):
             runTime=usertime
 
         if fastCycling:
-            cycling='TEMP@37,%d TEMP@95,120 TEMP@95,10 TEMP@57,10  GOTO@3,%d TEMP@72,60 TEMP@25,2'%(1 if usertime is None else usertime*60,ncycles-1)
-            runTime+=4.8+1.55*ncycles
+            cycling='TEMP@37,%d TEMP@95,120 TEMP@95,10 TEMP@57,10 TEMP @72,1 GOTO@3,%d TEMP@72,60 TEMP@25,2'%(1 if usertime is None else usertime*60,ncycles-1)
+            runTime+=4.8+1.65*ncycles
         else:
             cycling='TEMP@37,%d TEMP@95,120 TEMP@95,30 TEMP@57,30 TEMP@72,30 GOTO@3,%d TEMP@72,60 TEMP@25,2'%(1 if usertime is None else usertime*60,ncycles-1)
             runTime+=4.8+3.0*ncycles
