@@ -236,12 +236,18 @@ class TRP(object):
     ########################
     # T7 - Transcription
     ########################
-    def runT7Setup(self,theo,src,vol,srcdil,tgt=None,rlist=["MT7"]):
-        [theo,src,tgt,srcdil]=listify([theo,src,tgt,srcdil])
+    def runT7Setup(self,src,vol,srcdil,ligands=None,tgt=None,rlist=["MT7"]):
+        if isinstance(ligands,bool):
+            if not ligands:
+                ligands=None
+            else:
+                assert('runT7Setup:  arg should be names of ligands, not True')
+                
+        [ligands,src,tgt,srcdil]=listify([ligands,src,tgt,srcdil])
         for i in range(len(src)):
             if tgt[i] is None:
-                if theo[i]:
-                    tgt[i]=Sample("%s.T+"%src[i].name,decklayout.SAMPLEPLATE)
+                if ligands[i] is not None:
+                    tgt[i]=Sample("%s.T+%s"%(src[i].name,ligands[i]),decklayout.SAMPLEPLATE)
                 else:
                     tgt[i]=Sample("%s.T-"%src[i].name,decklayout.SAMPLEPLATE)
 
@@ -251,11 +257,14 @@ class TRP(object):
         rvols=[reagents.getsample(x).conc.volneeded(vol) for x in rlist]
         rtotal=sum(rvols)
         sourcevols=[vol*1.0/s for s in srcdil]
-        if any(theo):
-            theovols=[(vol*1.0/reagents.getsample("Theo").conc.dilutionneeded() if t else 0) for t in theo]
-            watervols=[vol-theovols[i]-sourcevols[i]-rtotal for i in range(len(src))]
-        else:
-            watervols=[vol-sourcevols[i]-rtotal for i in range(len(src))]
+        ligandvols=[0 for s in srcdil]
+        watervols=[0 for s in srcdil]
+        for i in range(len(srcdil)):
+            if ligands[i] is not None:
+                ligandvols[i]=vol*1.0/reagents.getsample(ligands[i]).conc.dilutionneeded()
+                watervols[i]=vol-ligandvols[i]-sourcevols[i]-rtotal
+            else:
+                watervols[i]=vol-sourcevols[i]-rtotal
 
         if any([w<-.01 for w in watervols]):
             logging.error("runT7Setup: Negative amount of water required: "+str(watervols))
@@ -264,8 +273,9 @@ class TRP(object):
             self.e.multitransfer(watervols,decklayout.WATER,tgt)
         for ir in range(len(rlist)):
             self.e.multitransfer([rvols[ir] for s in tgt],reagents.getsample(rlist[ir]),tgt)
-        if any(theo):
-            self.e.multitransfer([tv for tv in theovols if tv>0.01],reagents.getsample("Theo"),[tgt[i] for i in range(len(theovols)) if theovols[i]>0],ignoreContents=True)
+        for i in range(len(ligands)):
+            if ligandvols[i] > 0.01:
+                self.e.transfer(ligandvols[i],reagents.getsample(ligands[i]),tgt[i])
         for i in range(len(src)):
             self.e.transfer(sourcevols[i],src[i],tgt[i])
         self.e.shakeSamples(tgt,returnPlate=True)
