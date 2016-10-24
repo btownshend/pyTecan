@@ -24,6 +24,7 @@ reagents.add("SSD",well="A4",conc=10.0)
 #reagents.add("NaOH",well="B4",conc=1.0)
 #reagents.add("BeadBuffer",well="C4",conc=1)
 #reagents.add("Dynabeads",well="D4",conc=4,hasBeads=True)
+reagents.add("TheoX",well="C1",conc=4)
 reagents.add("TE8",well="E4",conc=None)
 
 reagents.add("W-Stop",well="B3",conc=3,extraVol=30)
