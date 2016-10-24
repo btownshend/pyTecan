@@ -241,13 +241,13 @@ class TRP(object):
             if not ligands:
                 ligands=None
             else:
-                assert('runT7Setup:  arg should be names of ligands, not True')
+                assert('runT7Setup:  ligands arg should be ligand samples or None, not True')
                 
         [ligands,src,tgt,srcdil]=listify([ligands,src,tgt,srcdil])
         for i in range(len(src)):
             if tgt[i] is None:
                 if ligands[i] is not None:
-                    tgt[i]=Sample("%s.T+%s"%(src[i].name,ligands[i]),decklayout.SAMPLEPLATE)
+                    tgt[i]=Sample("%s.T+%s"%(src[i].name,ligands[i].name),decklayout.SAMPLEPLATE)
                 else:
                     tgt[i]=Sample("%s.T-"%src[i].name,decklayout.SAMPLEPLATE)
 
@@ -261,7 +261,7 @@ class TRP(object):
         watervols=[0 for s in srcdil]
         for i in range(len(srcdil)):
             if ligands[i] is not None:
-                ligandvols[i]=vol*1.0/reagents.getsample(ligands[i]).conc.dilutionneeded()
+                ligandvols[i]=vol*1.0/ligands[i].conc.dilutionneeded()
                 watervols[i]=vol-ligandvols[i]-sourcevols[i]-rtotal
             else:
                 watervols[i]=vol-sourcevols[i]-rtotal
@@ -275,7 +275,7 @@ class TRP(object):
             self.e.multitransfer([rvols[ir] for s in tgt],reagents.getsample(rlist[ir]),tgt)
         for i in range(len(ligands)):
             if ligandvols[i] > 0.01:
-                self.e.transfer(ligandvols[i],reagents.getsample(ligands[i]),tgt[i])
+                self.e.transfer(ligandvols[i],ligands[i],tgt[i])
         for i in range(len(src)):
             self.e.transfer(sourcevols[i],src[i],tgt[i])
         self.e.shakeSamples(tgt,returnPlate=True)
