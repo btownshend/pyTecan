@@ -210,7 +210,7 @@ class Plate(object):
             maxspeed=interpolate(self.maxspeeds,maxvol)
             #print "vol=",maxvol,", maxspeeds=",self.maxspeeds," -> ",maxspeed
         if maxspeed is None:
-            logging.warning("No shaker max speed data for volume of %.0f ul, assuming 1000 rpm"%maxvol)
+            logging.mixwarning("No shaker max speed data for volume of %.0f ul, assuming 1000 rpm"%maxvol)
             maxspeed=1000
         minspeed=None
         if self.minspeeds is not None:

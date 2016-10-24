@@ -435,7 +435,7 @@ class Experiment(object):
         (minspeed,maxspeed)=plate.getmixspeeds(minvol*0.95,maxvol+5)	# Assume volumes could be off
 
         if minspeed>maxspeed:
-            logging.warning("minspeed(%.0f) > maxspeed(%.0f) minvol=%.1f, maxvol=%.1f"%(minspeed,maxspeed,minvol,maxvol))
+            logging.mixwarning("minspeed(%.0f) > maxspeed(%.0f) minvol=%.1f, maxvol=%.1f"%(minspeed,maxspeed,minvol,maxvol))
         if speed is None:
             if minspeed<maxspeed:
                 speed=max((maxspeed+minspeed)/2,maxspeed-50)    # Mix as fast as safely possible (but always above minspeed)
@@ -451,7 +451,7 @@ class Experiment(object):
                 if tmp[1]<speed:
                     msg+="%s[%.1ful, max=%.0f RPM] "%(x.name,x.volume,tmp[1]),
             warned=True
-            logging.warning(msg)
+            logging.mixwarning(msg)
 
         if globals.verbose and speed<minspeed:
             msg="%s plate contains unmixed wells that may not be mixed at %d RPM: "%(plate.name, speed),
@@ -465,7 +465,7 @@ class Experiment(object):
             logging.notice(msg)
 
         if warned:
-            logging.warning("Mixing %s at %.0f RPM (min unmixed vol=%.0ful ->  min RPM=%.0f;  max vol=%.0ful -> max RPM=%.f)"%(plate.name, speed, minvol, minspeed, maxvol, maxspeed))
+            logging.mixwarning("Mixing %s at %.0f RPM (min unmixed vol=%.0ful ->  min RPM=%.0f;  max vol=%.0ful -> max RPM=%.f)"%(plate.name, speed, minvol, minspeed, maxvol, maxspeed))
         else:
             logging.notice("Mixing %s at %.0f RPM (min unmixed vol=%.0ful ->  min RPM=%.0f;  max vol=%.0ful -> max RPM=%.f)"%(plate.name, speed, minvol, minspeed, maxvol, maxspeed))
 

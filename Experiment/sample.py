@@ -364,11 +364,11 @@ class Sample(object):
             logging.error("Attempt to aspirate %.1f ul from %s that contains only %.1f ul"%(volume, self.name, self.volume))
         if not self.isMixed() and self.plate.curloc!="Magnet":
             if self.hasBeads and self.lastMixed is not None:
-                logging.warning("Aspirate %.1f ul from sample %s that has beads and has not been mixed for %.0f sec. "%(volume,self.name,clock.elapsed()-self.lastMixed))
+                logging.mixwarning("Aspirate %.1f ul from sample %s that has beads and has not been mixed for %.0f sec. "%(volume,self.name,clock.elapsed()-self.lastMixed))
             else:
-                logging.warning("Aspirate %.1f ul from unmixed sample %s. "%(volume,self.name))
+                logging.mixwarning("Aspirate %.1f ul from unmixed sample %s. "%(volume,self.name))
         if not self.wellMixed and self.plate.curloc!="Magnet":
-            logging.warning("Aspirate %.1f ul from poorly mixed sample %s (shake speed was too low). "%(volume,self.name))
+            logging.mixwarning("Aspirate %.1f ul from poorly mixed sample %s (shake speed was too low). "%(volume,self.name))
 
         if self.well is None:
             well=[]
@@ -596,7 +596,7 @@ class Sample(object):
         if self.isMixed():
             logging.notice( "mix() called for sample %s, which is already mixed"%self.name)
             return False
-        logging.warning("Pipette mixing of %s may introduce bubbles"%self.name)
+        logging.mixwarning("Pipette mixing of %s may introduce bubbles"%self.name)
 
         if self.firstaccess:
             self.volcheck(tipMask,[self.well])
@@ -609,7 +609,7 @@ class Sample(object):
         mixvol=self.volume		  # -self.plate.unusableVolume;  # Can mix entire volume, if air is aspirated, it will just be dispensed first without making a bubble
         if self.volume>MAXVOLUME-extraspace:
             mixvol=MAXVOLUME-extraspace
-            logging.warning("Mix of %s limited to %.0f ul instead of full volume of %.0ful"%(self.name,mixvol,self.volume))
+            logging.mixwarning("Mix of %s limited to %.0f ul instead of full volume of %.0ful"%(self.name,mixvol,self.volume))
         well=[self.well if self.well!=None else 2**(tipMask-1)-1 ]
         mixprefillvol=5
         if mixvol<self.plate.unusableVolume-mixprefillvol:

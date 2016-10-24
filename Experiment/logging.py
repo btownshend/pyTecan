@@ -22,6 +22,9 @@ def notice(msg):
 def warning(msg):
     print "WARNING: %s [%s]"%(msg,"->".join(callhistory(globals.verbose)))
 
+def mixwarning(msg):
+    print "MIXING: %s [%s]"%(msg,"->".join(callhistory(globals.verbose)))
+
 def error(msg,fatal=True):
     print "ERROR: %s [%s]"%(msg,"->".join(callhistory(True)))
     if fatal:
