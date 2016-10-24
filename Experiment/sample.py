@@ -398,8 +398,8 @@ class Sample(object):
 
         if self.volume<remove and self.volume>0:
             logging.warning("Removing all contents (%.1f from %.1ful) from %s"%(remove,self.volume,self.name))
-            remove=self.volume
-            self.ingredients={}
+            remove=self.volume-0.1   # Leave residual
+
         for k in self.ingredients:
             if self.plate.curloc=="Magnet" and k=='BIND':
                 pass
