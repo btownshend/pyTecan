@@ -17,8 +17,8 @@ grenmaxspeeds={150:1750,125:1900,100:1950,75:2200,50:2200}	# From shaketest expe
 eppmaxspeeds={195:1600,150:1800,125:1900,100:1950,75:2050,50:2150,25:2150,0:2150} # From shaketest experiment 5/17/16
 #eppdilmaxspeeds={195:1400,150:1600,125:1700,100:1750,75:1850,50:1950,25:1950,0:1950} # Decrease by 200 RPM 7/7/16 to avoid spilling
 #eppmaxspeeds={195:0,150:1150,138:1250,100:1350,75:1850,50:1950,25:1950,0:1950} # Decrease based on 9/23/16 testing with MTaq
-eppminspeeds={32:1800,64:1700,96:1400,150:1100}  # 1100@150ul untested
 eppglycerolmaxspeeds={195:0,150:1150,138:1250,100:1350,90:1450,80:1500,70:1550,60:1650,50:1750,40:1950,20:2000,0:2000} # Decrease based on 10/21/16 testing with MTaq (with Glycerol @ 0.5%)
+eppminspeeds={20:1900,32:1800,64:1700,96:1400,150:1100}  # 1100@150ul untested
 
 SAMPLEPLATE=Plate("Samples",4,3,12,8,False,unusableVolume=15,maxVolume=200,
                 zmax=1033,angle=17.5,r1=2.698,h1=9.31,v0=17.21,slopex=0.000,slopey=0.000,
