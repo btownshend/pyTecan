@@ -430,45 +430,32 @@ class Experiment(object):
         if all([x.isMixed() for x in samps]) and not force:
             logging.notice( "No need to shake "+plate.name+", but doing so anyway.")
 
-        maxvol=max([x.volume for x in allsamps])
-        minvol=min([x.volume for x in samps if not x.isMixed() ]+[200])
-        (minspeed,maxspeed)=plate.getmixspeeds(minvol*0.95,maxvol+5)	# Assume volumes could be off
+        minspeed=0
+        maxspeed=2000
+        for x in samps:
+            (a,b)=x.getmixspeeds()
+            minspeed=max([a,minspeed])
+            maxspeed=min([b,maxspeed])
 
-        if minspeed>maxspeed:
-            logging.mixwarning("minspeed(%.0f) > maxspeed(%.0f) minvol=%.1f, maxvol=%.1f"%(minspeed,maxspeed,minvol,maxvol))
         if speed is None:
             if minspeed<maxspeed:
                 speed=max((maxspeed+minspeed)/2,maxspeed-50)    # Mix as fast as safely possible (but always above minspeed)
             else:
                 speed=maxspeed
 
-        warned=False
-
-        if speed>maxspeed:
-            msg="%s plate contains wells with up to %.2f ul, which may spill at %d RPM: "%(plate.name, maxvol, speed),
-            for x in samps:
-                tmp=plate.getmixspeeds(x.volume,x.volume)
-                if tmp[1]<speed:
-                    msg+="%s[%.1ful, max=%.0f RPM] "%(x.name,x.volume,tmp[1]),
-            warned=True
-            logging.mixwarning(msg)
-
-        if globals.verbose and speed<minspeed:
-            msg="%s plate contains unmixed wells that may not be mixed at %d RPM: "%(plate.name, speed),
-            for x in samps:
-                if x.isMixed():
-                    continue
-                tmp=plate.getmixspeeds(x.volume*0.95,x.volume+5)
-                if speed<tmp[0]:
-                    msg+= "%s[%.1ful, min=%.0f RPM, max=%.0f RPM] "%(x.name,x.volume,tmp[0],tmp[1]),
-            warned=True
-            logging.notice(msg)
-
-        if warned:
-            logging.mixwarning("Mixing %s at %.0f RPM (min unmixed vol=%.0ful ->  min RPM=%.0f;  max vol=%.0ful -> max RPM=%.f)"%(plate.name, speed, minvol, minspeed, maxvol, maxspeed))
+        if speed<minspeed or speed>maxspeed:
+            others=""
+            for x in allsamps:
+                (a,b)=x.getmixspeeds()
+                if b<minspeed or a>maxspeed:
+                    if a>0:
+                        others+=" {%s: %.1ful,G=%.2f%%,min=%.0f,max=%.0f}"%(x.name,x.volume,x.glycerolfrac()*100,a,b)
+                    else:
+                        others+=" {%s: %.1ful,G=%.2f%%,max=%.0f}"%(x.name,x.volume,x.glycerolfrac()*100,b)
+            logging.mixwarning("Mixing %s at %.0f RPM; minspeed(%.0f) > maxspeed(%.0f), limits=[%s]"%(plate.name,speed,minspeed,maxspeed,others))
         else:
-            logging.notice("Mixing %s at %.0f RPM (min unmixed vol=%.0ful ->  min RPM=%.0f;  max vol=%.0ful -> max RPM=%.f)"%(plate.name, speed, minvol, minspeed, maxvol, maxspeed))
-
+            logging.notice("Mixing %s at %.0f RPM ( min RPM=%.0f, max RPM=%.f)"%(plate.name, speed, minspeed, maxspeed))
+            
         oldloc=plate.curloc
         self.moveplate(plate,"Shaker",returnHome=False)
         global __shakerActive

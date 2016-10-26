@@ -27,7 +27,7 @@ def interpolate(dict,x0):
 
 class Plate(object):
     "An object representing a microplate or other container on the deck; includes a name, location, and size"
-    def __init__(self,name, grid, pos, nx=12, ny=8,pierce=False,unusableVolume=5,maxVolume=200,zmax=None,angle=None,r1=None,h1=None,v0=None,gemDepth=None,gemArea=None,gemHOffset=None,gemShape=None,vectorName=None,maxspeeds=None,minspeeds=None,liquidTemp=22.7,slopex=0,slopey=0):
+    def __init__(self,name, grid, pos, nx=12, ny=8,pierce=False,unusableVolume=5,maxVolume=200,zmax=None,angle=None,r1=None,h1=None,v0=None,gemDepth=None,gemArea=None,gemHOffset=None,gemShape=None,vectorName=None,maxspeeds=None,glycerolmaxspeeds=None,glycerol=None,minspeeds=None,liquidTemp=22.7,slopex=0,slopey=0):
         self.name=name
         self.grid=grid
         self.pos=pos
@@ -57,6 +57,8 @@ class Plate(object):
         self.gemShape=gemShape
         self.vectorName=vectorName		# Name of vector used for RoMa to pickup plate
         self.maxspeeds=maxspeeds
+        self.glycerolmaxspeeds=glycerolmaxspeeds
+        self.glycerol=glycerol			# Glycerol fraction for above speeds
         self.minspeeds=minspeeds
         self.liquidTemp=liquidTemp
         global __allplates
@@ -202,34 +204,6 @@ class Plate(object):
         else:
             height=None
         return height
-
-    def getmixspeeds(self,minvol,maxvol):
-        'Get shaker speed range for given well volume'
-        maxspeed=None
-        if self.maxspeeds is not None:
-            maxspeed=interpolate(self.maxspeeds,maxvol)
-            #print "vol=",maxvol,", maxspeeds=",self.maxspeeds," -> ",maxspeed
-        if maxspeed is None:
-            logging.mixwarning("No shaker max speed data for volume of %.0f ul, assuming 1000 rpm"%maxvol)
-            maxspeed=1000
-        minspeed=None
-        if self.minspeeds is not None:
-            minspeed=interpolate(self.minspeeds,minvol)
-        if minspeed is None:
-            assumeSpeed=1900
-            logging.notice("No shaker min speed data for volume of %.0f ul, assuming %.0f rpm"%(minvol,assumeSpeed))
-            minspeed=assumeSpeed
-
-        # Theoretical minimum mixing speed
-        # From: http://www.qinstruments.com/en/applications/optimization-of-mixing-parameters.html
-        # surftension=71.97  	# Surface tension mN/m (for water, most other substances are lower, so this is conservative)
-        # welldiam=self.r1*2	# mm - use widest part for conservative estimate (smaller region will mix at lower RPM)
-        # density=1e-3		    # g/ul (for water)
-        # d0=2			 				# mixing diameter (mm) (for BioShake 3000)
-        # thminspeed=60*math.sqrt(surftension*welldiam/(4*math.pi*minvol*density*d0))
-        # Units will be sqrt(mN/m * mm / ul*(mg/ul)*mm) = sqrt(mN/(m*mg)) = s^-1 * 60 = min^-1
-        #print "mix(%.0f,%.0f) = [%.0f, %.0f]"%(minvol,maxvol,minspeed,maxspeed)
-        return (minspeed,maxspeed)
 
     def wellname(self,well):
         if well is None:

@@ -5,6 +5,7 @@ import worklist
 from concentration import Concentration
 import clock
 import logging
+from plate import interpolate
 
 MAXVOLUME=200
 MINLIQUIDDETECTVOLUME=15
@@ -536,7 +537,7 @@ class Sample(object):
         for s in __allsamples:
             if plate==s.plate.name and s.volume>0:
                 if not s.wellMixed:
-                    [minx,maxx]=s.plate.getmixspeeds(s.volume,s.volume)
+                    (minx,maxx)=s.getmixspeeds()
                     s.wellMixed=speed>=minx
                 s.lastMixed=clock.elapsed()
 
@@ -568,6 +569,32 @@ class Sample(object):
         total=sum([v for v in self.ingredients.values()])
         return self.ingredients['glycerol']/total
 
+    def getmixspeeds(self):
+        'Get minimum, maximum speed for mixing this sample'
+        if self.isMixed():
+            minspeed=0
+        else:
+            minspeed=interpolate(self.plate.minspeeds,self.volume)
+            if minspeed is None:
+                assumeSpeed=1900
+                logging.notice("No shaker min speed data for volume of %.0f ul, assuming %.0f rpm"%(minvol,assumeSpeed))
+                minspeed=assumeSpeed
+
+        maxspeed=interpolate(self.plate.maxspeeds,self.volume)
+        glycerol=self.glycerolfrac()
+        if glycerol>0:
+            gmaxspeed=interpolate(self.plate.glycerolmaxspeeds,self.volume)
+            if glycerol>self.plate.glycerol:
+                logging.notice("Sample %s contains %.1f%% Glycerol (more than tested of %.1f%%)"%(self.name,glycerol*100,self.plate.glycerol*100))
+                maxspeed=gmaxspeed
+            else:
+                maxspeed=maxspeed+(gmaxspeed-maxspeed)*(glycerol/self.plate.glycerol)
+            if maxspeed<minspeed:
+                logging.notice("%s with %.1ful and %.1f%% glycerol has minspeed of %.0f greater than maxspeed of %.0f"%(self.name,self.volume,glycerol*100,minspeed,maxspeed))
+                minspeed=maxspeed	# Glycerol presence should also reduce minspeed
+
+        return (minspeed,maxspeed)
+    
     def chooseLC(self,aspirateVolume=0):
         if self.volume-aspirateVolume>=MINLIQUIDDETECTVOLUME:
             if aspirateVolume==0:
