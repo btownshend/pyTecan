@@ -87,7 +87,7 @@ class Sample(object):
                 cnt+=1
         return cnt
 
-    def __init__(self,name,plate,well=None,conc=None,volume=0,hasBeads=False,extraVol=50,mixLC=liquidclass.LCMixBottom,firstWell=None,extrainfo=[]):
+    def __init__(self,name,plate,well=None,conc=None,volume=0,hasBeads=False,extraVol=50,mixLC=liquidclass.LCMixBottom,firstWell=None,extrainfo=[],ingredients=None):
         # If firstWell is not None, then it is a hint of the first well position that should be used
         if well!=None and well!=-1:
             if not isinstance(well,int):
@@ -149,7 +149,13 @@ class Sample(object):
             self.conc=Concentration(conc)
         self.volume=volume
         if volume>0:
-            self.ingredients={name:volume}
+            if ingredients is None:
+                self.ingredients={name:volume}
+            else:
+                self.ingredients=ingredients
+                total=sum([v for v in ingredients.values()])
+                for k in self.ingredients:
+                    self.ingredients[k]=self.ingredients[k]*volume/total
             self.firstaccess=True
         else:
             self.ingredients={}
@@ -554,6 +560,13 @@ class Sample(object):
                     self.ingredients[k]+=addition
                 else:
                     self.ingredients[k]=addition
+
+    def glycerolfrac(self):
+        'Return fraction of sample that is Glycerol'
+        if not 'glycerol' in self.ingredients:
+            return 0.0
+        total=sum([v for v in self.ingredients.values()])
+        return self.ingredients['glycerol']/total
 
     def chooseLC(self,aspirateVolume=0):
         if self.volume-aspirateVolume>=MINLIQUIDDETECTVOLUME:

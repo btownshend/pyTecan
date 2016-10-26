@@ -11,12 +11,14 @@ import argparse
 
 maxVolumePerWell=150
 
-reagents.add("MT7",well="A1",conc=2.5,extraVol=30)
-reagents.add("MPosRT",well="B1",conc=2,extraVol=30)
-reagents.add("MExo",well="C1",conc=5,extraVol=30)
-reagents.add("MTaq",well="D1",conc=3)
-reagents.add("MLigase",well="E1",conc=3,extraVol=30)
-reagents.add("MUser",well="B2",conc=5,extraVol=30)
+
+# Ingredients based on volumes in spreadsheet to make 100ul  (can be scaled arbitrarily)
+reagents.add("MT7",well="A1",conc=2.5,extraVol=30,ingredients={'glycerol':0.5*37.5,'SuperaseIn':0.5*12.5,'T7':0.5*25,'T7-ABE':62.5})
+reagents.add("MPosRT",well="B1",conc=2,extraVol=30,ingredients={'Omniscript':0.5*10,'glycerol':0.5*10,'RT-ABE':90})
+reagents.add("MExo",well="C1",conc=5,extraVol=30,ingredients={'ExoI':0.5*55,'ExoIII':0.5*7,'glycerol':0.5*(55+7),'NEBuffer1':10,'Water':28})
+reagents.add("MTaq",well="D1",conc=3,ingredients={'Taq':0.5*1.5,'USER':0.5*1.5,'glycerol':0.5*3,'TAQ-ABE':95.5,'Water':1.5})
+reagents.add("MLigase",well="E1",conc=3,extraVol=30,ingredients={'T4DNALigase':0.5*2.50,'glycerol':0.5*2.50,'T4-ABE':97.47})
+reagents.add("MUser",well="B2",conc=5,extraVol=30,ingredients={'USER':0.5*2.5,'glycerol':0.5*2.5,'CutSmart':25,'Water':72.5})
 #reagents.add("Ampure",well="C2",conc=None,hasBeads=True)
 #reagents.add("EtOH80",well="D2")
 reagents.add("SSD",well="A4",conc=10.0)
