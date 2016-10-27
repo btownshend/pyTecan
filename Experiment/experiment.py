@@ -1,4 +1,5 @@
 from datetime import datetime
+from hashlib import md5
 
 import worklist
 from sample import Sample
@@ -8,8 +9,16 @@ import decklayout
 import clock
 import globals
 import logging
+import sys
 
 _Experiment__shakerActive = False
+
+def md5sum(filename):
+    hash = md5()
+    with open(filename, "rb") as f:
+        for chunk in iter(lambda: f.read(128 * hash.block_size), b""):
+            hash.update(chunk)
+    return hash.hexdigest()
 
 class Experiment(object):
     DITIMASK=0   # Which tips are DiTis
@@ -19,7 +28,9 @@ class Experiment(object):
 
     def __init__(self):
         'Create a new experiment with given sample locations for water and WASTE;  totalTime is expected run time in seconds, if known'
-        worklist.comment("Generated %s"%(datetime.now().ctime()))
+        self.checksum=md5sum(sys.argv[0])
+        self.checksum=self.checksum[-4:]
+        worklist.comment("Generated %s (%s-%s)"%(datetime.now().ctime(),sys.argv[0],self.checksum))
         worklist.userprompt("The following reagent tubes should be present: %s"%Sample.getAllLocOnPlate(decklayout.REAGENTPLATE))
         worklist.userprompt("The following eppendorf tubes should be present: %s"%Sample.getAllLocOnPlate(decklayout.EPPENDORFS))
         worklist.email(dest='cdsrobot@gmail.com',subject='Run started (Generate: %s) expected runtime %.0f minutes'%(datetime.now().ctime(),clock.totalTime/60.0 if clock.totalTime is not None else 0.0 ) )
@@ -57,6 +68,7 @@ class Experiment(object):
         worklist.saveworklist(filename)
 
     def savegem(self,filename):
+        worklist.comment("Completed (%s-%s)"%(sys.argv[0],self.checksum))
         worklist.flushQueue()
         worklist.savegem(decklayout.headerfile,filename)
 
@@ -74,7 +86,7 @@ class Experiment(object):
         # print >>fd
         #print >>fd,"DiTi usage:",worklist.getDITIcnt()
         #print >>fd
-
+        print >>fd,"Generated %s (%s-%s)"%(datetime.now().ctime(),sys.argv[0],self.checksum)
         rtime="Run time: %d (pipetting only) + %d (thermocycling only) + %d (both) = %d minutes\n"%(clock.pipetting/60.0,clock.thermotime/60, clock.pipandthermotime/60, clock.elapsed()/60)
         print rtime
         print >>fd,rtime
