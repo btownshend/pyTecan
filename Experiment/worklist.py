@@ -9,6 +9,7 @@ import clock
 import logging
 
 WASHLOC=Plate("Wash",1,2,1,8,False,0)    # Duplicate of what's in decklayout.py -- but don't want to include all those dependencies...
+QPCRLOC=Plate("qPCR",4,1,12,8,False,0)    # Duplicate of what's in decklayout.py -- but don't want to include all those dependencies...
 
 DITI200=0
 DITI10=2
@@ -377,8 +378,8 @@ def aspirateDispense(op,tipMask,wells, liquidClass, volume, loc, cycles=None,all
         # Return conditioning volume
         wlist.append( '%s(%d,"%s",%s,%d,%d,%d,"%s",0)'%("Dispense",tipMask,liquidClass,condvol,loc.grid,loc.pos-1,spacing,ws))
 
-    if op!="Detect_Liquid":
-        # Do final liquid detect
+    if op!="Detect_Liquid" and (loc.grid!=QPCRLOC.grid or loc.pos!=QPCRLOC.pos):
+        # Do final liquid detect (but not on qPCR plate, since that doesn't work anyway)
         wlist.append( 'Detect_Liquid(%d,"%s",%d,%d,%d,"%s",0)'%(tipMask,"Water-InLiquid",loc.grid,loc.pos-1,spacing,ws))
         clock.pipetting+=2.00    # Unsure of this one
         

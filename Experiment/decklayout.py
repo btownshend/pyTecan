@@ -2,7 +2,7 @@ import os
 from plate import Plate
 from sample import Sample
 from liquidclass import LCBleachMix
-from worklist import WASHLOC
+from worklist import WASHLOC, QPCRLOC
 
 ############ Plates and plate locations  #############
 #WASHLOC=Plate("Wash",1,2,1,8,False,0)   # Defined in worklist
@@ -26,9 +26,10 @@ SAMPLEPLATE=Plate("Samples",4,3,12,8,False,unusableVolume=15,maxVolume=200,
                 gemShape='v-shaped',vectorName="Microplate Landscape",maxspeeds=eppmaxspeeds,minspeeds=eppminspeeds,glycerolmaxspeeds=eppglycerolmaxspeeds,glycerol=0.005)  # EppLoBind
 SAMPLEPLATE.wells=SAMPLEPLATE.wells[1:-1]	 # Skip A1 and H12 due to leakage
 SHAKERPLATELOC=Plate("Shaker",9,0,1,1)
-QPCRPLATE=Plate("qPCR",4,1,12,8,False,unusableVolume=15,maxVolume=200,
+QPCRPLATE=Plate("qPCR",QPCRLOC.grid,QPCRLOC.pos,12,8,False,unusableVolume=15,maxVolume=200,
                 zmax=996,angle=17.5,r1=2.704,h1=10.89,v0=0.44,slopex=0.000,slopey=0.000,gemDepth=3.17,gemArea=14.33,
                 gemShape='v-shaped')
+# If changing location of QPCRPLATE, also update QPCRLOC in worklist.py
 DILPLATE=Plate("Dilutions",4,2,12,8,False,unusableVolume=15,maxVolume=200,
                zmax=1033,angle=17.5,r1=2.705,h1=9.13,v0=13.14,slopex=0.000,slopey=0.000,gemDepth=2.81,gemArea=16.41,
                gemShape='v-shaped',vectorName="Microplate Landscape",maxspeeds=eppmaxspeeds,minspeeds=eppminspeeds,glycerolmaxspeeds=eppglycerolmaxspeeds,glycerol=0.005) # EppLoBind
