@@ -139,7 +139,7 @@ classdef RobotSamples < handle
         ct=obj.q.getct(water.well);
       end
       if isnan(ct)
-        ct=20;
+        ct=22;
         fprintf('Missing water control for %s -- assuming %.1f\n', primer,ct);
       end
     end
