@@ -285,19 +285,25 @@ classdef RobotSamples < handle
       end
       pMPCR=find(strcmp(samp.ingredients,'MPCR'));
       pMT7=find(strcmp(samp.ingredients,'MT7'));
+      pT7=find(strcmp(samp.ingredients,'T7'));
       if ~isempty(pMPCR)  && samp.volumes(pMPCR)>samp.volumes(pMT7)
         entry.dispDil=1;   % No dilution back-out for PCR products
       else
         % Use base sample to calculate dilution from T7 step
         pMT7=find(strcmp(samp.ingredients,'MT7'));
-        if length(pMT7)~=1
+        if length(pMT7)~=1 && length(pT7)~=1
           if length(samp.ingredients)>3   % Water controls have just EvaUSER, P-*, SSDDil
-            fprintf('Unable to locate MT7 ingredient in %s -- assuming 1x dilution\n', samp.name);
+            fprintf('Unable to locate MT7 or T7 ingredient in %s -- assuming 1x dilution\n', samp.name);
           end
           entry.dispDil=1;
-        else
-          dispDil=sum(samp.volumes)/samp.volumes(pMT7);
-          dispDil=dispDil/dilution/2.5/4;	% Back out dilution of MT7(2.5), qPCR dilution(dilution), qPCR final dil (4)
+        else 
+          if length(pMT7)==1
+            dispDil=sum(samp.volumes)/samp.volumes(pMT7);
+            dispDil=dispDil/dilution/2.5/4;	% Back out dilution of MT7(2.5), qPCR dilution(dilution), qPCR final dil (4)
+          else
+            dispDil=sum(samp.volumes)/samp.volumes(pT7);
+            dispDil=dispDil/dilution/20/4;	% Back out dilution of T7(20) (note: 10x of actual T7, but half is marked as glycerol), qPCR dilution(dilution), qPCR final dil (4)
+          end
           if dispDil>1000
             fprintf('Bad display dilution computation for %s: %.0f\n', root, dispDil);
             dispDil=1;
