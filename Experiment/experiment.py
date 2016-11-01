@@ -177,7 +177,9 @@ class Experiment(object):
             #print "*",cmt
             worklist.comment(cmt)
 
-            if mix[0] and not src.isMixed() and not (src.plate==decklayout.SAMPLEPLATE or src.plate==decklayout.DILPLATE):
+            if mix[0] and (not src.isMixed() or not src.wellMixed):
+                if (src.plate==decklayout.SAMPLEPLATE or src.plate==decklayout.DILPLATE):
+                    logging.notice("Forcing pipette mix of "+src.name)
                 worklist.comment("pipette mix for src mix of "+src.name)
                 src.mix(tipMask)	# Manual mix (after allocating a tip for this)
 
@@ -231,7 +233,9 @@ class Experiment(object):
         #print "*",cmt
         worklist.comment(cmt)
 
-        if mix[0] and not src.isMixed() and not (src.plate==decklayout.SAMPLEPLATE or src.plate==decklayout.DILPLATE):
+        if mix[0] and (not src.isMixed() or not src.wellMixed):
+            if (src.plate==decklayout.SAMPLEPLATE or src.plate==decklayout.DILPLATE):
+                logging.notice("Forcing pipette mix of "+src.name)
             worklist.comment("pipette mix for src mix of "+src.name)
             src.mix(tipMask)	# Manual mix (after allocating a tip for this)
             
