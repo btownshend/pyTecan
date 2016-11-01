@@ -251,6 +251,10 @@ classdef RobotSamples < handle
     
     function setlooplengths(obj,template,loop1,loop2)
     % Set loop sizes for use in computing length of qPCR products
+      dot=find(template=='.',1);
+      if ~isempty(dot)
+        template=template(1:dot-1);
+      end
       obj.loop1len(template)=loop1;
       obj.loop2len(template)=loop2;
     end
