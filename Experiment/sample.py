@@ -633,7 +633,7 @@ class Sample(object):
 
         # Mix, return true if actually did a mix, false otherwise
     def mix(self,tipMask,preaspirateAir=False,nmix=4):
-        if self.isMixed():
+        if self.isMixed() and self.wellMixed:
             logging.notice( "mix() called for sample %s, which is already mixed"%self.name)
             return False
         logging.mixwarning("Pipette mixing of %s may introduce bubbles"%self.name)
