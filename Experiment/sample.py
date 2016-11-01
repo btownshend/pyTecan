@@ -538,7 +538,7 @@ class Sample(object):
             if plate==s.plate.name and s.volume>0:
                 if not s.wellMixed:
                     (minx,maxx)=s.getmixspeeds()
-                    s.wellMixed=speed>=minx
+                    s.wellMixed=speed>=minx-1
                 s.lastMixed=clock.elapsed()
 
     @staticmethod

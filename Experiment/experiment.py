@@ -455,7 +455,7 @@ class Experiment(object):
             else:
                 speed=maxspeed
 
-        if speed<minspeed or speed>maxspeed:
+        if speed<minspeed-2 or speed>maxspeed+2:
             others=""
             for x in allsamps:
                 (a,b)=x.getmixspeeds()
