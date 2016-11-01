@@ -124,7 +124,7 @@ class JobQueue(object):
         elif  job['type']=='transfer':
             if self.debug:
                 print " transfer(",job['volume'],", ",job['src'].name,",",job['dest'].name,")",
-            e.transfer(job['volume'],job['src'],job['dest'],(job['src'].hasBeads,False))
+            e.transfer(job['volume'],job['src'],job['dest'],(True,False))
         elif  job['type']=='multitransfer':
             if self.debug:
                 print "multitransfer(",job['volume'],", ",job['src'].name,",".join([x.name for x in job['dest']]),")",
