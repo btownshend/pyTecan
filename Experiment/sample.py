@@ -577,7 +577,7 @@ class Sample(object):
             minspeed=interpolate(self.plate.minspeeds,self.volume)
             if minspeed is None:
                 assumeSpeed=1900
-                logging.notice("No shaker min speed data for volume of %.0f ul, assuming %.0f rpm"%(minvol,assumeSpeed))
+                logging.notice("No shaker min speed data for volume of %.0f ul, assuming %.0f rpm"%(self.volume,assumeSpeed))
                 minspeed=assumeSpeed
 
         maxspeed=interpolate(self.plate.maxspeeds,self.volume)
