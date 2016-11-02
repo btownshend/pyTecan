@@ -59,6 +59,32 @@ classdef Summary < handle
       in.addEntry(e);
     end
     
+    function plotall(obj)
+      setfig('plotall');clf;
+      k=obj.samps.keys();
+      for i=1:length(k)
+        s=obj.samps(k{i});
+        for j=1:length(s.data)
+          semilogy(s.rndnum,s.data(j).cleavage(),'o');
+          hold on;
+          text(s.rndnum+0.2,s.data(j).cleavage(),s.name);
+        end
+      end
+      cleaveticks(0,1,0.01,0.9,true);
+      ylabel('clvd/(clvd+unclvd)');
+      xlabel('Round');
+      axis auto;
+      c=axis;
+      c(1)=0;
+      axis(c);
+      set(gca,'XTick',1:c(2));
+      lbls={};
+      for i=1:c(2)
+        lbls{i}=sprintf('%d',i);
+      end
+      set(gca,'XTickLabel',lbls);
+    end
+    
     function h=plotcleavage(obj,samp,track,prior)
     % Plot cleavage starting with 'samp'
       if nargin<3
