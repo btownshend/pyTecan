@@ -38,10 +38,13 @@ classdef Summary < handle
     end
         
       
-    function add(obj,run,in,out,t7,ext,ind)
+    function add(obj,run,in,out,t7,ext,ind,rndnum)
+      if nargin<8
+        rndnum=[];
+      end
       in=obj.getsamp(in); 
       out=obj.getsamp(out);
-      e=Entry(run,t7,ext,ind);
+      e=Entry(run,t7,ext,ind,rndnum);
       if size(obj.data,1)>=in && size(obj.data,2)>=out
         obj.data{in,out}=[obj.data{in,out},e];
       else
@@ -49,7 +52,7 @@ classdef Summary < handle
       end
     end
     
-    function h=plotcleavage(obj,name,depth,track,prior)
+    function h=plotcleavage(obj,name,depth,track,prior,priorrnd)
     % Plot cleavage starting with 'name'
       if nargin<3
         depth=1;
@@ -58,9 +61,10 @@ classdef Summary < handle
         track=1;
       end
       if nargin<5
-        prior=1;
+        prior=nan;
+        priorrnd=nan;
       end
-      fprintf('plotcleavage(%s,%d,%d,%.2f)\n', name, depth,track,prior);
+      fprintf('plotcleavage(%s,%d,%d,%.2f,%d)\n', name, depth,track,prior,priorrnd);
       is=find(strcmp(obj.samps,name));
       if is>size(obj.data,1)
         return;
@@ -87,7 +91,7 @@ classdef Summary < handle
               prior=cOVERu(k);
               plot([rndnum-0.6,rndnum],[cOVERu(k),cOVERu(k)],[':',color]);
             else
-              plot([rndnum-1,rndnum],[prior,cOVERu(k)],['-',color]);
+              plot([priorrnd,rndnum],[prior,cOVERu(k)],['-',color]);
             end
             rps=obj.runprimers{d(k).run};
             prefix=rps{d(k).ind(2)};
@@ -97,12 +101,12 @@ classdef Summary < handle
             end
             text(rndnum+0.05,cOVERu(k),[obj.samps{j},'-',prefix]);
             if isfinite(prior)
-              text(rndnum-0.5,sqrt(prior*cOVERu(k)),obj.runs{d(k).run}(5:8));
+              text((priorrnd+rndnum)/2,sqrt(prior*cOVERu(k)),obj.runs{d(k).run}(5:8));
             else
               text(rndnum-0.5,cOVERu(k),obj.runs{d(k).run}(5:8));
             end
           end
-          obj.plotcleavage(obj.samps{j},depth+1,track,mean(cOVERu));
+          obj.plotcleavage(obj.samps{j},depth+1,track,mean(cOVERu),rndnum);
           %track=track+1;
         end
       end
