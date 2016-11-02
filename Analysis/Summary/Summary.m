@@ -6,6 +6,7 @@ classdef Summary < handle
     runcolor;	  % Color to use to display
     samps;
     data;
+    anonID;	   % ID for anonymous samples
   end
   
   methods
@@ -14,6 +15,7 @@ classdef Summary < handle
       obj.runs={};
       obj.runprimers={};
       obj.data={[]};
+      obj.anonID=1;
     end
 
     function r=addrun(obj,desc,lbls,color)
@@ -27,11 +29,12 @@ classdef Summary < handle
       r=length(obj.runs);
     end
     
-    function addsamp(obj,name,prefix,rndnum)
+    function s=addsamp(obj,name,prefix,rndnum)
       if obj.samps.isKey(name)
         error('Sample %s already exists.',name);
       end
-      obj.samps(name)=Sample(name,prefix,rndnum);
+      s=Sample(name,prefix,rndnum);
+      obj.samps(name)=s;
     end
     
     function n=getsamp(obj,name)
@@ -46,7 +49,10 @@ classdef Summary < handle
         rndnum=[];
       end
       in=obj.getsamp(in); 
-      if ~isempty(out)
+      if isempty(out)
+        out=obj.addsamp(sprintf('z%d',obj.anonID),'?',in.rndnum+1);
+        obj.anonID=obj.anonID+1;
+      else
         out=obj.getsamp(out);
       end
       e=Entry(run,t7,ext,ind,rndnum,out);
@@ -88,7 +94,7 @@ classdef Summary < handle
           plot([prior.rndnum,samp.rndnum]+1,[prior.cleaveratio,cOVERu],['-',color]);
         end
         rps=obj.runprimers{d.run};
-        if ~isempty(d.out)
+        if ~isempty(d.out) && d.out.name(1)~='z'
           text(samp.rndnum+1.05,cOVERu,[d.out.name,'-',d.out.prefix]);
         end
         rtext=obj.runs{d.run};
