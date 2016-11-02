@@ -6,11 +6,12 @@ classdef Entry < handle
     ext;
     ind; % index of [m,clvd,unclvd]
     rndnum;
+    src;	% Source sample
     out;	% Output sample
   end
   
   methods
-    function obj=Entry(run, t7,ext, ind, rndnum, out)
+    function obj=Entry(run, t7,ext, ind, rndnum, src, out)
       obj.run=run;
       obj.t7=t7;
       obj.ext=ext;
@@ -20,10 +21,12 @@ classdef Entry < handle
       else
         obj.rndnum=[];
       end
+      obj.src=src;
       obj.out=out;
     end
     
     function print(obj)
+      fprintf(' %s->%s\n', obj.src.name, obj.out.name);
       fprintf('   T7:  [%s]\n', sprintf('%.1f ',obj.t7));
       fprintf('   Ext: [%s]\n', sprintf('%.1f ',obj.ext));
       fprintf('   x/M: %.1f%% %.1f%%\n', obj.ratios()*100);

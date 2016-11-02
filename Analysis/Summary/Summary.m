@@ -55,7 +55,7 @@ classdef Summary < handle
       else
         out=obj.getsamp(out);
       end
-      e=Entry(run,t7,ext,ind,rndnum,out);
+      e=Entry(run,t7,ext,ind,rndnum,in,out);
       in.addEntry(e);
     end
     
