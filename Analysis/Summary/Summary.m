@@ -90,6 +90,7 @@ classdef Summary < handle
             if rndnum==1
               prior=cOVERu(k);
               plot([rndnum-0.6,rndnum],[cOVERu(k),cOVERu(k)],[':',color]);
+              text(rndnum-0.6,cOVERu(k),name);
             else
               plot([priorrnd,rndnum],[prior,cOVERu(k)],['-',color]);
             end
