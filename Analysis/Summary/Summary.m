@@ -73,7 +73,7 @@ classdef Summary < handle
       for j=1:size(obj.data,2)
         d=obj.data{is,j};
         if ~isempty(d)
-          cOVERu=arrayfun(@(z) z.ext(z.ind(2))/z.ext(z.ind(3)),d);
+          cOVERu=arrayfun(@(z) z.cleavage(),d);
           fprintf('%s%s: %s -> %s  [ %s ]\n',blanks(depth*2),obj.runs{d(1).run},obj.samps{is},obj.samps{j},sprintf('%.2f ',cOVERu));
           for k=1:length(cOVERu)
             if isempty(d(k).rndnum)

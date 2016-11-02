@@ -28,7 +28,19 @@ classdef Entry < handle
     end
     
     function r=ratios(obj)
-      r=obj.ext(obj.ind(2:3))/obj.ext(obj.ind(1));
+      if length(obj.ind)==3
+        r=obj.ext(obj.ind(2:3))/obj.ext(obj.ind(1));
+      else
+        r=NaN;
+      end
+    end
+
+    function c=cleavage(obj)
+      if length(obj.ind)==3
+        c=obj.ext(obj.ind(2))/obj.ext(obj.ind(3));
+      else
+        c=NaN;
+      end
     end
   end
 end
