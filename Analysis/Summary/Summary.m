@@ -43,13 +43,14 @@ classdef Summary < handle
         rndnum=[];
       end
       in=obj.getsamp(in); 
-      out=obj.getsamp(out);
-      e=Entry(run,t7,ext,ind,rndnum);
       if size(obj.data,1)>=in && size(obj.data,2)>=out
         obj.data{in,out}=[obj.data{in,out},e];
       else
         obj.data{in,out}=e;
+      if ~isempty(out)
+        out=obj.getsamp(out);
       end
+      e=Entry(run,t7,ext,ind,rndnum,out);
     end
     
     function h=plotcleavage(obj,name,depth,track,prior,priorrnd)

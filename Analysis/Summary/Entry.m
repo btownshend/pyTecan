@@ -6,10 +6,11 @@ classdef Entry < handle
     ext;
     ind; % index of [m,clvd,unclvd]
     rndnum;
+    out;	% Output sample
   end
   
   methods
-    function obj=Entry(run, t7,ext, ind, rndnum)
+    function obj=Entry(run, t7,ext, ind, rndnum, out)
       obj.run=run;
       obj.t7=t7;
       obj.ext=ext;
@@ -19,6 +20,7 @@ classdef Entry < handle
       else
         obj.rndnum=[];
       end
+      obj.out=out;
     end
     
     function print(obj)
