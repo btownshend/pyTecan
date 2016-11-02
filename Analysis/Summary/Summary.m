@@ -72,17 +72,22 @@ classdef Summary < handle
           cOVERu=arrayfun(@(z) z.ext(z.ind(2))/z.ext(z.ind(3)),d);
           fprintf('%s%s: %s -> %s  [ %s ]\n',blanks(depth*2),obj.runs{d(1).run},obj.samps{is},obj.samps{j},sprintf('%.2f ',cOVERu));
           for k=1:length(cOVERu)
-            h=semilogy(depth,cOVERu(k),['o',colors(mod(track-1,length(colors))+1)]);
+            if isempty(d(k).rndnum)
+              rndnum=depth;
+            else
+              rndnum=d(k).rndnum;
+            end
+            h=semilogy(rndnum,cOVERu(k),['o',colors(mod(track-1,length(colors))+1)]);
             hold on;
             color=obj.runcolor{d(k).run};
             if isempty(color)
               color=colors(mod(track-1,length(colors))+1);
             end
-            if depth==1
+            if rndnum==1
               prior=cOVERu(k);
-              plot([depth-0.6,depth],[cOVERu(k),cOVERu(k)],[':',color]);
+              plot([rndnum-0.6,rndnum],[cOVERu(k),cOVERu(k)],[':',color]);
             else
-              plot([depth-1,depth],[prior,cOVERu(k)],['-',color]);
+              plot([rndnum-1,rndnum],[prior,cOVERu(k)],['-',color]);
             end
             rps=obj.runprimers{d(k).run};
             prefix=rps{d(k).ind(2)};
@@ -90,8 +95,12 @@ classdef Summary < handle
             if prefix(end)=='X'
               prefix=prefix(1:end-1);
             end
-            text(depth+0.05,cOVERu(k),[obj.samps{j},'-',prefix]);
-            text(depth-0.5,sqrt(prior*cOVERu(k)),['-',obj.runs{d(k).run}(end-1:end)]);
+            text(rndnum+0.05,cOVERu(k),[obj.samps{j},'-',prefix]);
+            if isfinite(prior)
+              text(rndnum-0.5,sqrt(prior*cOVERu(k)),obj.runs{d(k).run}(5:8));
+            else
+              text(rndnum-0.5,cOVERu(k),obj.runs{d(k).run}(5:8));
+            end
           end
           obj.plotcleavage(obj.samps{j},depth+1,track,mean(cOVERu));
           %track=track+1;

@@ -5,14 +5,20 @@ classdef Entry < handle
     t7;
     ext;
     ind; % index of [m,clvd,unclvd]
+    rndnum;
   end
   
   methods
-    function obj=Entry(run, t7,ext, ind)
+    function obj=Entry(run, t7,ext, ind, rndnum)
       obj.run=run;
       obj.t7=t7;
       obj.ext=ext;
       obj.ind=ind;
+      if nargin>=5
+        obj.rndnum=rndnum;
+      else
+        obj.rndnum=[];
+      end
     end
     
     function print(obj)
