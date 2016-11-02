@@ -38,6 +38,11 @@ classdef Entry < handle
     function c=cleavage(obj)
       if length(obj.ind)==3
         c=obj.ext(obj.ind(2))/obj.ext(obj.ind(3));
+        if isinf(c) || c>10
+          c=10;
+        elseif c<0.01
+          c=0.01;
+        end
       else
         c=NaN;
       end
