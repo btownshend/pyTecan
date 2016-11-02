@@ -10,7 +10,7 @@ classdef Summary < handle
   
   methods
     function obj=Summary()
-      obj.samps={};
+      obj.samps=containers.Map();
       obj.runs={};
       obj.runprimers={};
       obj.data={[]};
@@ -27,92 +27,89 @@ classdef Summary < handle
       r=length(obj.runs);
     end
     
-    function n=getsamp(obj,name)
-      sel=strcmp(obj.samps,name);
-      if sum(sel)==1
-        n=find(sel);
-      else
-        obj.samps{end+1}=name;
-        n=length(obj.samps);
+    function addsamp(obj,name,prefix,rndnum)
+      if obj.samps.isKey(name)
+        error('Sample %s already exists.',name);
       end
+      obj.samps(name)=Sample(name,prefix,rndnum);
     end
-        
+    
+    function n=getsamp(obj,name)
+      if ~obj.samps.isKey(name)
+        error('Sample %s does not exist.',name);
+      end
+      n=obj.samps(name);
+    end
       
     function add(obj,run,in,out,t7,ext,ind,rndnum)
       if nargin<8
         rndnum=[];
       end
       in=obj.getsamp(in); 
-      if size(obj.data,1)>=in && size(obj.data,2)>=out
-        obj.data{in,out}=[obj.data{in,out},e];
-      else
-        obj.data{in,out}=e;
       if ~isempty(out)
         out=obj.getsamp(out);
       end
       e=Entry(run,t7,ext,ind,rndnum,out);
+      in.addEntry(e);
     end
     
-    function h=plotcleavage(obj,name,depth,track,prior,priorrnd)
-    % Plot cleavage starting with 'name'
+    function h=plotcleavage(obj,samp,track,prior)
+    % Plot cleavage starting with 'samp'
       if nargin<3
-        depth=1;
-      end
-      if nargin<4
         track=1;
       end
-      if nargin<5
-        prior=nan;
-        priorrnd=nan;
+      if nargin<4
+        prior=[];
       end
-      fprintf('plotcleavage(%s,%d,%d,%.2f,%d)\n', name, depth,track,prior,priorrnd);
-      is=find(strcmp(obj.samps,name));
-      if is>size(obj.data,1)
-        return;
+      if isempty(prior)
+        fprintf('plotcleavage(%s@%.2f,%d)\n', samp.name, samp.cleaveratio,track);
+      else
+        fprintf('plotcleavage(%s@%.2f,%d,%s@%.2f)\n', samp.name, samp.cleaveratio, track, prior.name,prior.cleaveratio);
       end
       colors='rgbmcyk';
-      for j=1:size(obj.data,2)
-        d=obj.data{is,j};
-        if ~isempty(d)
-          cOVERu=arrayfun(@(z) z.cleavage(),d);
-          fprintf('%s%s: %s -> %s  [ %s ]\n',blanks(depth*2),obj.runs{d(1).run},obj.samps{is},obj.samps{j},sprintf('%.2f ',cOVERu));
-          for k=1:length(cOVERu)
-            if isempty(d(k).rndnum)
-              rndnum=depth;
-            else
-              rndnum=d(k).rndnum;
-            end
-            h=semilogy(rndnum,cOVERu(k),['o',colors(mod(track-1,length(colors))+1)]);
-            hold on;
-            color=obj.runcolor{d(k).run};
-            if isempty(color)
-              color=colors(mod(track-1,length(colors))+1);
-            end
-            if rndnum==1
-              prior=cOVERu(k);
-              plot([rndnum-0.6,rndnum],[cOVERu(k),cOVERu(k)],[':',color]);
-              text(rndnum-0.6,cOVERu(k),name);
-            else
-              plot([priorrnd,rndnum],[prior,cOVERu(k)],['-',color]);
-            end
-            rps=obj.runprimers{d(k).run};
-            prefix=rps{d(k).ind(2)};
-            %prefix=strrep(prefix,'T7','');
-            if prefix(end)=='X'
-              prefix=prefix(1:end-1);
-            end
-            text(rndnum+0.05,cOVERu(k),[obj.samps{j},'-',prefix]);
-            if isfinite(prior)
-              text((priorrnd+rndnum)/2,sqrt(prior*cOVERu(k)),obj.runs{d(k).run}(5:8));
-            else
-              text(rndnum-0.5,cOVERu(k),obj.runs{d(k).run}(5:8));
-            end
-          end
-          obj.plotcleavage(obj.samps{j},depth+1,track,mean(cOVERu),rndnum);
-          %track=track+1;
+      for j=1:size(samp.data,2)
+        d=samp.data(j);  % An Entry
+        cOVERu=d.cleavage();
+        if ~isempty(d.out)
+          fprintf('%s%s: %s -> %s  %.2f\n',blanks(samp.rndnum*2),obj.runs{d(1).run},samp.name,d.out.name,cOVERu);
+        else
+          fprintf('%s%s: %s -> %.2f\n',blanks(samp.rndnum*2),obj.runs{d(1).run},samp.name,cOVERu);
+        end
+        h=semilogy(samp.rndnum+1,cOVERu,['o',colors(mod(track-1,length(colors))+1)]);
+        hold on;
+        color=obj.runcolor{d.run};
+        if isempty(color)
+          color=colors(mod(track-1,length(colors))+1);
+        end
+        if isempty(prior)
+          plot([samp.rndnum+0.6,samp.rndnum+1],[cOVERu,cOVERu],[':',color]);
+          text(samp.rndnum+0.2,cOVERu,samp.name);
+        else
+          plot([prior.rndnum,samp.rndnum]+1,[prior.cleaveratio,cOVERu],['-',color]);
+        end
+        rps=obj.runprimers{d.run};
+        if ~isempty(d.out)
+          text(samp.rndnum+1.05,cOVERu,[d.out.name,'-',d.out.prefix]);
+        end
+        rtext=obj.runs{d.run};
+        if length(rtext)>=8 && strcmp(rtext(1:2),'20')
+          rtext=rtext(5:8);
+        end
+        if ~isempty(prior) && isfinite(prior.cleaveratio)
+          text((prior.rndnum+samp.rndnum)/2+1,sqrt(prior.cleaveratio*cOVERu),rtext);
+        else
+          text(samp.rndnum+0.5,cOVERu,rtext);
         end
       end
-      if depth==1
+      for j=1:size(samp.data,2)
+        d=samp.data(j);  % An Entry
+        if ~isempty(d.out)
+          obj.plotcleavage(d.out,track,samp);
+        end
+      end
+      %track=track+1;
+
+      if nargin<4
         cleaveticks(0,1,0.01,0.9,true);
         ylabel('clvd/(clvd+unclvd)');
         xlabel('Round');
