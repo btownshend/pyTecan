@@ -115,6 +115,8 @@ classdef Summary < handle
         xlabel('Round');
         axis auto;
         c=axis;
+        c(1)=0;
+        axis(c);
         set(gca,'XTick',1:c(2));
         lbls={};
         for i=1:c(2)
