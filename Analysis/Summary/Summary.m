@@ -7,6 +7,7 @@ classdef Summary < handle
     samps;
     data;
     anonID;	   % ID for anonymous samples
+    showruns;	   % True to show run IDs on plots
   end
   
   methods
@@ -16,6 +17,7 @@ classdef Summary < handle
       obj.runprimers={};
       obj.data={[]};
       obj.anonID=1;
+      obj.showruns=false;
     end
 
     function r=addrun(obj,desc,lbls,color)
@@ -43,20 +45,58 @@ classdef Summary < handle
       end
       n=obj.samps(name);
     end
-      
-    function add(obj,run,in,out,t7,ext,ind,rndnum)
-      if nargin<8
-        rndnum=[];
+    
+    function n=anonsamp(obj,rndnum)
+        n=obj.addsamp(sprintf('z%d',obj.anonID),'?',rndnum);
+        obj.anonID=obj.anonID+1;
+    end
+    
+    function add(obj,run,stype,in,out,t7,ext,ind,tgt)
+      if nargin<9
+        tgt=[];
       end
       in=obj.getsamp(in); 
       if isempty(out)
-        out=obj.addsamp(sprintf('z%d',obj.anonID),'?',in.rndnum+1);
-        obj.anonID=obj.anonID+1;
+        out=obj.anonsamp(in.rndnum+1);
       else
         out=obj.getsamp(out);
       end
-      e=Entry(run,t7,ext,ind,rndnum,in,out);
-      in.addEntry(e);
+      if strcmp(stype,'UC')
+        % Break into 2 runs
+        assert(out.rndnum==in.rndnum+2);
+        tmp=obj.anonsamp(in.rndnum+1);
+        tmp.prefix=in.prefix;
+        obj.add(run,'U',in.name,tmp.name,t7,nan*ext,ind,tgt);
+        obj.add(run,'C',tmp.name,out.name,nan*t7,ext,ind,[]);
+        return;
+      end
+      if out.prefix(1)=='?'
+        if strcmp(stype,'U')
+          out.prefix=in.prefix;
+        else
+          if strcmp(in.prefix,'W')
+            out.prefix='A';
+          elseif strcmp(in.prefix,'A')
+            out.prefix='B';
+          else
+            out.prefix='W';
+          end
+        end
+      end
+      
+      assert(out.rndnum==in.rndnum+1 || out.rndnum==in.rndnum);
+      if length(ind)==3 && isfinite(ind(3))
+        assert(strcmp(obj.runprimers{run}{ind(1)},'MX'));
+        assert(strcmp(obj.runprimers{run}{ind(3)},[in.prefix,'X']));
+        if stype=='C'
+          assert(strcmp(obj.runprimers{run}{ind(2)},[out.prefix,'X']));
+        else
+          assert(strcmp(in.prefix,out.prefix));
+        end
+      end
+      e=Entry(run,t7,ext,ind,in,out,tgt,stype);
+      out.addSrcEntry(e);
+      in.addProduct(out);
     end
     
     function plotall(obj)
@@ -85,69 +125,68 @@ classdef Summary < handle
       set(gca,'XTickLabel',lbls);
     end
     
-    function h=plotcleavage(obj,samp,track,prior)
+    function h=plotcleavage(obj,samp,track)
     % Plot cleavage starting with 'samp'
       if nargin<3
         track=1;
       end
-      if nargin<4
-        prior=[];
-      end
-      if isempty(prior)
-        fprintf('plotcleavage(%s@%.2f,%d)\n', samp.name, samp.cleaveratio,track);
-      else
-        fprintf('plotcleavage(%s@%.2f,%d,%s@%.2f)\n', samp.name, samp.cleaveratio, track, prior.name,prior.cleaveratio);
-      end
       colors='rgbmcyk';
-      for j=1:size(samp.data,2)
-        d=samp.data(j);  % An Entry
-        cOVERu=d.cleavage();
-        if ~isempty(d.out)
-          fprintf('%s%s: %s -> %s  %.2f\n',blanks(samp.rndnum*2),obj.runs{d(1).run},samp.name,d.out.name,cOVERu);
-        else
-          fprintf('%s%s: %s -> %.2f\n',blanks(samp.rndnum*2),obj.runs{d(1).run},samp.name,cOVERu);
-        end
-        h=semilogy(samp.rndnum+1,cOVERu,['o',colors(mod(track-1,length(colors))+1)]);
-        hold on;
+      [cr,estimated]=samp.cleaveRatio();
+      if estimated
+        sym='x';
+      else
+        sym='o';
+      end
+      fprintf('plotcleavage(%s@%.2f(%s),%d)\n', samp.name, cr, sym,track);
+      h=semilogy(samp.rndnum,cr,[sym,colors(mod(track-1,length(colors))+1)]);
+      hold on;
+      if samp.name(1)~='z'
+        text(samp.rndnum+0.05,cr/1.1,[samp.name,'-',samp.prefix]);
+      end
+      
+      d=samp.srcEntry;  % An Entry
+      if isempty(d)
+        fprintf('No source for %s\n', samp.name);
+      else
         color=obj.runcolor{d.run};
         if isempty(color)
           color=colors(mod(track-1,length(colors))+1);
         end
-        if isempty(prior)
-          plot([samp.rndnum+0.6,samp.rndnum+1],[cOVERu,cOVERu],[':',color]);
-          text(samp.rndnum+0.2,cOVERu,samp.name);
+        [inRatio,inEst]=d.in.cleaveRatio();
+        if inEst || estimated
+          sym=':';
         else
-          plot([prior.rndnum,samp.rndnum]+1,[prior.cleaveratio,cOVERu],['-',color]);
+          sym='-';
         end
-        rps=obj.runprimers{d.run};
-        if ~isempty(d.out) && d.out.name(1)~='z'
-          text(samp.rndnum+1.05,cOVERu,[d.out.name,'-',d.out.prefix]);
-        end
-        rtext=obj.runs{d.run};
-        if length(rtext)>=8 && strcmp(rtext(1:2),'20')
-          rtext=rtext(5:8);
-        end
-        if ~isempty(prior) && isfinite(prior.cleaveratio)
-          text((prior.rndnum+samp.rndnum)/2+1,sqrt(prior.cleaveratio*cOVERu),rtext);
-        else
-          text(samp.rndnum+0.5,cOVERu,rtext);
-        end
-      end
-      for j=1:size(samp.data,2)
-        d=samp.data(j);  % An Entry
-        if ~isempty(d.out)
-          obj.plotcleavage(d.out,track,samp);
-        end
-      end
-      %track=track+1;
+        plot([d.in.rndnum,samp.rndnum],[inRatio,cr],[sym,color]);
 
-      if nargin<4
+        if obj.showruns
+          rtext=obj.runs{d.run};
+          if length(rtext)>=8 && strcmp(rtext(1:2),'20')
+            rtext=rtext(5:8);
+          end
+        else
+          rtext='';
+        end
+        if ~isempty(d.tgt)
+          rtext=[rtext,'+',d.tgt];
+        end
+        text((d.in.rndnum+samp.rndnum)/2,sqrt(inRatio*cr)*1.1,rtext,'Color','g');
+      end
+      
+      for j=1:length(samp.products)
+        obj.plotcleavage(samp.products(j),track);
+      end
+
+      if nargin<3
         cleaveticks(0,1,0.01,0.9,true);
         ylabel('clvd/(clvd+unclvd)');
         xlabel('Round');
         axis auto;
         c=axis;
         c(1)=0;
+        c(3)=min([c(3),.01/.99]);
+        c(4)=max([c(4),.9/.1]);
         axis(c);
         set(gca,'XTick',1:c(2));
         lbls={};

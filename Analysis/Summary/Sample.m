@@ -1,11 +1,14 @@
 % Entry of data 
+% Samples contain cleavage information based on what the cleavage was on the operation that 
+% formed them, NOT what will be observed if they are run in a TRP
 classdef Sample < handle
   properties
     name;
     prefix;
     rndnum;
-    data;	% struct array of entries
+    srcEntry;	% Entry whose PRODUCT is this sample
     cleaveratio;
+    products;
   end
   
   methods
@@ -13,17 +16,30 @@ classdef Sample < handle
       obj.name=name;
       obj.prefix=prefix;
       obj.rndnum=rndnum;
-      obj.data=[];
-      obj.cleaveratio=nan;
+      obj.srcEntry=[];
+      obj.products=[];
     end
     
-    function computeCleavage(obj)
-      obj.cleaveratio=nanmean(arrayfun(@(z) z.cleavage(), obj.data));
+    function [c,estimated]=cleaveRatio(obj)
+    % Get the cleavage ratio of the sample
+    % If no particular data, use estimate based on average of product's and return negative of value
+      if isempty(obj.srcEntry) || ~isfinite(obj.srcEntry.cleaveRatio())
+        prodRatios=arrayfun(@(z) z.cleaveRatio(), obj.products);
+        c=exp(nanmean(log(prodRatios)));
+        estimated=true;
+      else
+        c=obj.srcEntry.cleaveRatio();
+        estimated=false;
+      end
     end
 
-    function addEntry(obj,e)
-      obj.data=[obj.data,e];
-      obj.computeCleavage();
+    function addSrcEntry(obj,e)
+      assert(isempty(obj.srcEntry));
+      obj.srcEntry=e;
+    end
+    
+    function addProduct(obj,p)
+      obj.products=[obj.products,p];
     end
   end
 end
