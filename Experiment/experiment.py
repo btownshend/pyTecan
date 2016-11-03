@@ -421,7 +421,7 @@ class Experiment(object):
         else:
             logging.error("Attempt to move plate %s to unknown location: %s"%(plate.name,dest))
 
-        Sample.addallhistory("{->%s}"%dest,onlyplate=plate.name)
+        #Sample.addallhistory("{->%s}"%dest,onlyplate=plate.name)
         if returnHome:
             worklist.romahome()
 
