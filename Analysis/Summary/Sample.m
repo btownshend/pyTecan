@@ -32,6 +32,14 @@ classdef Sample < handle
         estimated=false;
       end
     end
+    
+    function g=rnagain(obj)
+      if isempty(obj.srcEntry) || ~isfinite(obj.srcEntry.cleaveRatio())
+        g=nan;
+      else
+        g=obj.srcEntry.rnagain();
+      end
+    end
 
     function addSrcEntry(obj,e)
       assert(isempty(obj.srcEntry));
@@ -40,6 +48,12 @@ classdef Sample < handle
     
     function addProduct(obj,p)
       obj.products=[obj.products,p];
+    end
+
+    function print(obj)
+      if ~isempty(obj.srcEntry)
+        obj.srcEntry.print();
+      end
     end
   end
 end

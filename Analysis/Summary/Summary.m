@@ -1,11 +1,7 @@
 % Summary of data 
 classdef Summary < handle
   properties
-    runs;
-    runprimers;   % Primers (in order) used for this run
-    runcolor;	  % Color to use to display
     samps;
-    data;
     anonID;	   % ID for anonymous samples
     showruns;	   % True to show run IDs on plots
   end
@@ -13,22 +9,12 @@ classdef Summary < handle
   methods
     function obj=Summary()
       obj.samps=containers.Map();
-      obj.runs={};
-      obj.runprimers={};
-      obj.data={[]};
       obj.anonID=1;
       obj.showruns=false;
     end
 
-    function r=addrun(obj,desc,lbls,color)
-      obj.runs{end+1}=desc;
-      obj.runprimers{end+1}=lbls;
-      if nargin>=4
-        obj.runcolor{end+1}=color;
-      else
-        obj.runcolor{end+1}=[];
-      end
-      r=length(obj.runs);
+    function r=addrun(obj,desc,primers,color)
+      r=Run(desc,primers,color);
     end
     
     function s=addsamp(obj,name,prefix,rndnum)
@@ -86,10 +72,10 @@ classdef Summary < handle
       
       assert(out.rndnum==in.rndnum+1 || out.rndnum==in.rndnum);
       if length(ind)==3 && isfinite(ind(3))
-        assert(strcmp(obj.runprimers{run}{ind(1)},'MX'));
-        assert(strcmp(obj.runprimers{run}{ind(3)},[in.prefix,'X']));
+        assert(strcmp(run.primers{ind(1)},'MX'));
+        assert(strcmp(run.primers{ind(3)},[in.prefix,'X']));
         if stype=='C'
-          assert(strcmp(obj.runprimers{run}{ind(2)},[out.prefix,'X']));
+          assert(strcmp(run.primers{ind(2)},[out.prefix,'X']));
         else
           assert(strcmp(in.prefix,out.prefix));
         end
@@ -99,36 +85,13 @@ classdef Summary < handle
       in.addProduct(out);
     end
     
-    function plotall(obj)
-      setfig('plotall');clf;
-      k=obj.samps.keys();
-      for i=1:length(k)
-        s=obj.samps(k{i});
-        for j=1:length(s.data)
-          semilogy(s.rndnum,s.data(j).cleavage(),'o');
-          hold on;
-          text(s.rndnum+0.2,s.data(j).cleavage(),s.name);
-        end
-      end
-      cleaveticks(0,1,0.01,0.9,true);
-      ylabel('clvd/(clvd+unclvd)');
-      xlabel('Round');
-      axis auto;
-      c=axis;
-      c(1)=0;
-      axis(c);
-      set(gca,'XTick',1:c(2));
-      lbls={};
-      for i=1:c(2)
-        lbls{i}=sprintf('%d',i);
-      end
-      set(gca,'XTickLabel',lbls);
-    end
-    
     function h=plotcleavage(obj,samp,track)
     % Plot cleavage starting with 'samp'
       if nargin<3
         track=1;
+      end
+      if ischar(samp)
+        samp=obj.getsamp(samp);
       end
       colors='rgbmcyk';
       [cr,estimated]=samp.cleaveRatio();
@@ -148,7 +111,7 @@ classdef Summary < handle
       if isempty(d)
         fprintf('No source for %s\n', samp.name);
       else
-        color=obj.runcolor{d.run};
+        color=d.run.color;
         if isempty(color)
           color=colors(mod(track-1,length(colors))+1);
         end
@@ -197,45 +160,53 @@ classdef Summary < handle
       end
     end
       
-    function h=plotgain(obj,name,depth,track,prior)
-    % Plot gain starting with 'name'
+    function h=plotgain(obj,samp,track)
+    % Plot RNA gain starting with 'samp'
       if nargin<3
-        depth=1;
-      end
-      if nargin<4
         track=1;
       end
-      if nargin<5
-        prior=1;
-      end
-      fprintf('plotgain(%s,%d,%d,%.2f)\n', name, depth,track,prior);
-      is=find(strcmp(obj.samps,name));
-      if is>size(obj.data,1)
-        return;
+      if ischar(samp)
+        samp=obj.getsamp(samp);
       end
       colors='rgbmcyk';
-      for j=1:size(obj.data,2)
-        d=obj.data{is,j};
-        if ~isempty(d)
-          gain=arrayfun(@(z) z.ext(2)/z.ext(4),d);
-          fprintf('%s%s: %s -> %s  [ %s ]\n',blanks(depth*2),obj.runs{d(1).run},obj.samps{is},obj.samps{j},sprintf('%.2f ',gain));
-          for k=1:length(gain)
-            h=plot(depth,gain(k),['o',colors(mod(track-1,length(colors))+1)]);
-            hold on;
-            if depth==1
-              prior=gain(k);
-              plot([depth-0.6,depth],[gain(k),gain(k)],[':',colors(mod(track-1,length(colors))+1)]);
-            else
-              plot([depth-1,depth],[prior,gain(k)],['-',colors(mod(track-1,length(colors))+1)]);
-            end
-            text(depth,gain(k),obj.samps{j});
-            text(depth-0.53,mean([prior,gain(k)]),obj.runs{d(k).run}(end-1:end));
-          end
-          obj.plotgain(obj.samps{j},depth+1,track,mean(gain));
-          %track=track+1;
-        end
+      rnagain=samp.rnagain();
+      fprintf('plotgain(%s@%.2f(%s),%d)\n', samp.name, rnagain, sym,track);
+      h=plot(samp.rndnum,rnagain,['o',colors(mod(track-1,length(colors))+1)]);
+      hold on;
+      if samp.name(1)~='z'
+        text(samp.rndnum+0.05,rnagain/1.1,[samp.name,'-',samp.prefix]);
       end
-      if depth==1
+      
+      d=samp.srcEntry;  % An Entry
+      if isempty(d)
+        fprintf('No source for %s\n', samp.name);
+      else
+        color=d.run.color;
+        if isempty(color)
+          color=colors(mod(track-1,length(colors))+1);
+        end
+        inGain=d.in.rnagain();
+        plot([d.in.rndnum,samp.rndnum],[inGain,rnagain],['-',color]);
+
+        if obj.showruns
+          rtext=obj.runs{d.run};
+          if length(rtext)>=8 && strcmp(rtext(1:2),'20')
+            rtext=rtext(5:8);
+          end
+        else
+          rtext='';
+        end
+        if ~isempty(d.tgt)
+          rtext=[rtext,'+',d.tgt];
+        end
+        text((d.in.rndnum+samp.rndnum)/2,mean([inGain,rnagain])*1.1,rtext,'Color','g');
+      end
+      
+      for j=1:length(samp.products)
+        obj.plotgain(samp.products(j),track);
+      end
+
+      if nargin<3
         ylabel('RNA Gain (M/T7)');
         xlabel('Round (with prefix of input)');
         axis auto;
@@ -243,24 +214,17 @@ classdef Summary < handle
         set(gca,'XTick',1:c(2));
         lbls={};
         for i=1:c(2)
-          lbls{i}=sprintf('%d%s',obj.runlabels{obj.data{is,i}.ind(3)});
+          lbls{i}=sprintf('%d',i);
         end
         set(gca,'XTickLabel',lbls);
       end
     end
       
     function print(obj)
-      for i=1:size(obj.data,1)
-        for j=1:size(obj.data,2)
-          d=obj.data{i,j};
-          if ~isempty(d)
-            fprintf('%s -> %s\n',obj.samps{i},obj.samps{j});
-            for k=1:length(d)
-              fprintf(' %s\n', obj.runs{d(k).run});
-              d(k).print();
-            end
-          end
-        end
+      k=obj.samps.keys();
+      for i=1:length(k)
+        s=obj.samps(k{i});
+        s.print();
       end
     end
   end
