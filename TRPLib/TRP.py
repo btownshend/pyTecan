@@ -697,8 +697,7 @@ class TRP(object):
                 s="P-%s"%up
                 if not reagents.isReagent(s):
                     reagents.add(name=s,conc=4,extraVol=30)
-                else:
-                    self.e.stage('PCR%s'%up,[reagents.getsample("MTaq"),reagents.getsample(s)],[src[i] for i in range(len(src)) if primers[i]==up],[tgt[i] for i in range(len(tgt)) if primers[i]==up],[vol[i] for i in range(len(vol)) if primers[i]==up],destMix=False)
+                self.e.stage('PCR%s'%up,[reagents.getsample("MTaq"),reagents.getsample(s)],[src[i] for i in range(len(src)) if primers[i]==up],[tgt[i] for i in range(len(tgt)) if primers[i]==up],[vol[i] for i in range(len(vol)) if primers[i]==up],destMix=False)
             #self.e.shakeSamples(tgt,returnPlate=False)
 
         pgm="PCR%d"%ncycles
