@@ -114,7 +114,9 @@ class TRP(object):
             finalconc=[0.6*x for x in stockconc]
         else:
             [names,stockconc,finalconc]=listify([names,stockconc,finalconc])
-
+        if len(set(names))!=len(names):
+            logging.error("addTemplates: template names must be unique")
+            
         r=[]
         if looplengths is not None:
             assert(len(names)==len(looplengths))
@@ -714,6 +716,7 @@ class TRP(object):
             runTime+=4.8+3.0*ncycles
             
         print "PCR volume=[",",".join(["%.1f"%t.volume for t in tgt]), "], srcdil=[",",".join(["%.1fx"%s for s in srcdil]),"], program: %s"%cycling
+
         worklist.pyrun('PTC\\ptcsetpgm.py %s %s'%(pgm,cycling))
         self.e.runpgm(pgm,runTime,False,max(vol),hotlidmode="CONSTANT",hotlidtemp=100)
         # Mark samples as mixed (by thermal convection)
@@ -830,6 +833,7 @@ class TRP(object):
 
         self.setup()
         if args.verbose:
+            globals.verbose=True
             print '------ Preliminary runs to set volume -----'
         else:
             sys.stdout=open(os.devnull,'w')
@@ -837,7 +841,6 @@ class TRP(object):
         self.reset()
         self.pgm()
         if args.verbose:
-            globals.verbose=True
             print '------ Main run -----'
         else:
             sys.stdout=sys.__stdout__

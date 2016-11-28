@@ -18,7 +18,7 @@ def callhistory(includeLibs=False):
 def notice(msg):
     if globals.verbose:
         print "NOTICE: %s [%s]"%(msg,"->".join(callhistory()))
-
+    
 def warning(msg):
     print "WARNING: %s [%s]"%(msg,"->".join(callhistory(globals.verbose)))
 
