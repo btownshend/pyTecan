@@ -642,8 +642,14 @@ classdef RobotSamples < handle
         sEXT=find(sEXT,1);
         if true % any(sv(i,sT7,pT7X)>0)
           svi=squeeze(sv(i,:,:));
-          valid=any(svi(sT7,:)'>0 | svi(sEXT,:)'>0);
-          sT7=sT7(valid); sEXT=sEXT(valid);
+          valid=false(size(svi,2),1);
+          if ~isempty(sT7)
+            valid=valid|(svi(sT7,:)'>0);
+          end
+          if ~isempty(sEXT)
+            valid=valid|(svi(sEXT,:)'>0);
+          end
+          %sT7=sT7(valid); sEXT=sEXT(valid);
           fprintf('\n%s (%d replicates)\n', obj.templates{i},sum(valid));
           if any(svi(sT7,:)'>0)
             fprintf('[Template] = [%s]./[%s] * %.0f = [%s] = %6.1f nM\n', sprintf('%6.1f ',svi(sT7,pT7X)),sprintf('%6.1f ',svi(sT7,pREF)),obj.options.refconc,sprintf('%6.1f ',svi(sT7,pT7X)./svi(sT7,pREF)*obj.options.refconc),nanmean(svi(sT7,pT7X)./svi(sT7,pREF)*obj.options.refconc));
