@@ -584,9 +584,12 @@ classdef RobotSamples < handle
 
     end
 
-    function analyze(obj,domelt)
+    function analyze(obj,domelt,doqpcr)
       if nargin<2
         domelt=false;
+      end
+      if nargin<3
+        doqpcr=false;
       end
       if ~obj.wellsProcessed
         obj.processWells();
