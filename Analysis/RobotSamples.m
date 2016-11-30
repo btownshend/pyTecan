@@ -450,6 +450,20 @@ classdef RobotSamples < handle
       defaults=struct('refprimer','REF');
       args=processargs(defaults,varargin);
 
+      pT7WX=find(strcmp(obj.primers,'T7WX'));
+      pWX=find(strcmp(obj.primers,'WX'));
+      pAX=find(strcmp(obj.primers,'T7AX'));
+      if isempty(pAX)
+        pAX=find(strcmp(obj.primers,'AX'));
+      end
+      pBX=find(strcmp(obj.primers,'T7BX'));
+      if isempty(pBX)
+        pBX=find(strcmp(obj.primers,'BX'));
+      end
+      pMX=find(strcmp(obj.primers,'MX'));
+      pT7X=find(strcmp(obj.primers,'T7X'));
+      pREF=find(strcmp(obj.primers,'REF'));
+
       keys=obj.qsamps.keys;
       fprintf('Primers:                                         ');
       qkeys=obj.q.refs.keys;
@@ -548,6 +562,16 @@ classdef RobotSamples < handle
             if ~isempty(ref) && printRefScale
               obj.sv(i,j,:)=obj.rsv(i,j,:)/obj.rsv(i,j,ref)*obj.options.refconc;
               fprintf('%6.1f ',obj.sv(i,j,[1:ref-1,ref+1:end]));
+            end
+            if strcmp(nm(end-3:end),'.ext')
+              if nm(1)=='A'
+                pCLV=pBX; pUNCLV=pAX;
+              elseif nm(1)=='B'
+                pCLV=pT7WX; pUNCLV=pBX;
+              elseif nm(1)=='W'
+                pCLV=pAX; pUNCLV=pT7WX;
+              end
+              fprintf('T=%4.1f, Clv=%4.1f%%',concsnm(pT7X)/concsnm(pREF)*obj.options.refconc, 100*concsnm(pCLV)/sum(concsnm([pCLV,pUNCLV])));
             end
             fprintf('\n');
             nrowsprinted=nrowsprinted+1;
