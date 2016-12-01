@@ -624,6 +624,7 @@ class TRP(object):
             if hiTemp is None:
                 worklist.pyrun('PTC\\ptcsetpgm.py INC TEMP@%.0f,%.0f TEMP@25,30'%(incTemp,incTime*60))
                 print "Incubating at %dC for %d minutes without heat inactivation"%(incTemp, incTime)
+                hiTime=0
             else:
                 assert(hiTime>0)
                 worklist.pyrun('PTC\\ptcsetpgm.py INC TEMP@%.0f,%.0f TEMP@%.0f,%.0f TEMP@25,30'%(incTemp,incTime*60,hiTemp,hiTime*60))
