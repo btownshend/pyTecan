@@ -595,8 +595,10 @@ classdef RobotSamples < handle
         obj.processWells();
       end
       obj.printconcs();
-      setfig('qpcr');clf;
-      obj.q.plot();
+      if doqpcr
+        setfig('qpcr');clf;
+        obj.q.plot();
+      end
       if domelt
         obj.plotmelt('all');
       end
