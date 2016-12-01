@@ -324,7 +324,7 @@ class Sample(object):
     def volcheck(self,tipMask,well):
         '''Check if the well contains the expected volume'''
         #return
-        self.firstaccess = False
+        self.firstaccess = False if self.volume<200 or self.volume>1500 else True   # Keep rechecking when working with tubes with large capacity (but not water) TODO-improve logic
         height=self.plate.getliquidheight(self.volume)
         gemvol=self.plate.getgemliquidvolume(height)	# Volume that would be reported by Gemini for this height
         volthresh=self.volume*0.80
