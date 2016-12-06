@@ -231,8 +231,9 @@ class TRP(object):
             logging.error("runRxInPlace: negative amount of water needed: %.2f"%min(watervol))
 
         for i in range(len(src)):
-            if  watervol[i]>=0.1:
+            if  watervol[i]+src[i].volume>=4.0 and watervol[i]>0.1:
                 self.e.transfer(watervol[i],decklayout.WATER,src[i],(False,False))
+                watervol[i]=0
         for i in range(len(src)):
             self.e.transfer(mastervol[i],master[i],src[i],(True,False))
         for i in range(len(src)):
@@ -240,6 +241,9 @@ class TRP(object):
                 self.e.transfer(master2vol[i],master2[i],src[i],(True,False))
             if master3vol[i]>0:
                 self.e.transfer(master3vol[i],master3[i],src[i],(True,False))
+        for i in range(len(src)):
+            if  watervol[i]>=0.1:
+                self.e.transfer(watervol[i],decklayout.WATER,src[i],(False,False))
         self.e.shakeSamples(src,returnPlate=returnPlate)
 
     ########################
