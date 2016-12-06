@@ -677,7 +677,7 @@ class TRP(object):
     ########################
     # PCR
     ########################
-    def runPCR(self,primers,src,srcdil,vol=None,tgt=None,ncycles=20,usertime=None,fastCycling=False,inPlace=False):
+    def runPCR(self,primers,src,srcdil,vol=None,tgt=None,ncycles=20,usertime=None,fastCycling=False,inPlace=False,master="MTaq"):
         ## PCR
         if inPlace:
             if vol!=None:
@@ -693,22 +693,44 @@ class TRP(object):
             [primers,src,tgt,vol,srcdil]=listify([primers,src,tgt,vol,srcdil])
             for i in range(len(tgt)):
                 if tgt[i] is None:
-                    tgt[i]=Sample("%s.P%s"%(src[i].name,primers[i]),src[i].plate)
+                    if isinstance(primers[i],list):
+                        tgt[i]=Sample("%s.P%s"%(src[i].name,"+".join(primers[i])),src[i].plate)
+                    else:
+                        tgt[i]=Sample("%s.P%s"%(src[i].name,primers[i]),src[i].plate)
 
         # Adjust source dilution
         for i in range(len(src)):
             src[i].conc=Concentration(srcdil[i],1)
         
         logging.notice( "primer="+str(primers))
-        if inPlace:
-            self.runRxInPlace(src,vol,reagents.getsample("MTaq"),master2=[reagents.getsample("P-%s"%p) for p in primers],returnPlate=False)
+
+        # Add reagent entries for any missing primers
+        if isinstance(primers[0],list):
+            allprimers=[x for y in primers for x in y]
         else:
-            for up in set(primers):
-                s="P-%s"%up
-                if not reagents.isReagent(s):
-                    reagents.add(name=s,conc=4,extraVol=30)
-                self.e.stage('PCR%s'%up,[reagents.getsample("MTaq"),reagents.getsample(s)],[src[i] for i in range(len(src)) if primers[i]==up],[tgt[i] for i in range(len(tgt)) if primers[i]==up],[vol[i] for i in range(len(vol)) if primers[i]==up],destMix=False)
-            #self.e.shakeSamples(tgt,returnPlate=False)
+            allprimers=primers
+        for up in set(allprimers):
+            s="P-%s"%up
+            if not reagents.isReagent(s):
+                reagents.add(name=s,conc=4,extraVol=30)
+
+        if isinstance(primers[0],list):
+            # Multiple primers
+            if inPlace:
+                assert len(primers[0])==2
+                self.runRxInPlace(src,vol,reagents.getsample(master),master2=[reagents.getsample("P-%s"%p[0]) for p in primers],master3=[reagents.getsample("P-%s"%p[1]) for p in primers],returnPlate=False)
+            else:
+                for i in range(len(primers)):
+                    self.e.stage('PCR%d'%i,[reagents.getsample(master)]+[reagents.getsample(s) for s in primers[i]],src[i] ,tgt[i],vol[i],destMix=False)
+                #self.e.shakeSamples(tgt,returnPlate=False)
+        else:
+            # Single primer
+            if inPlace:
+                self.runRxInPlace(src,vol,reagents.getsample(master),master2=[reagents.getsample("P-%s"%p) for p in primers],returnPlate=False)
+            else:
+                for up in set(primers):
+                    self.e.stage('PCR%s'%up,[reagents.getsample(master),reagents.getsample(s)],[src[i] for i in range(len(src)) if primers[i]==up],[tgt[i] for i in range(len(tgt)) if primers[i]==up],[vol[i] for i in range(len(vol)) if primers[i]==up],destMix=False)
+                #self.e.shakeSamples(tgt,returnPlate=False)
 
         pgm="PCR%d"%ncycles
 
