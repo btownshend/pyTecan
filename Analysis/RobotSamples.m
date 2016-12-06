@@ -308,7 +308,7 @@ classdef RobotSamples < handle
             dispDil=sum(samp.volumes)/samp.volumes(pT7);
             dispDil=dispDil/dilution/20/4;	% Back out dilution of T7(20) (note: 10x of actual T7, but half is marked as glycerol), qPCR dilution(dilution), qPCR final dil (4)
           end
-          if dispDil>1000
+          if dispDil>10000
             fprintf('Bad display dilution computation for %s: %.0f\n', root, dispDil);
             dispDil=1;
           end
