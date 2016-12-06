@@ -72,6 +72,12 @@ class Plate(object):
                 return p
         return None
 
+    @classmethod
+    def reset(cls):
+        global __allplates
+        for p in __allplates:
+            p.movetoloc("Home")
+
     def movetoloc(self,dest,newloc=None):
         self.curloc=dest
         if  dest=="Home":

@@ -1,4 +1,5 @@
 from Experiment.sample import Sample
+from Experiment.plate import Plate
 from Experiment.experiment import Experiment
 from Experiment.concentration import Concentration
 from Experiment import worklist, reagents, decklayout, clock, logging
@@ -104,6 +105,7 @@ class TRP(object):
         self.e.sanitize(3,50)    # Heavy sanitize
         reagents.reset()
         Sample.clearall()
+        Plate.reset()
         decklayout.initWellKnownSamples()
         
     def addTemplates(self,names,stockconc,finalconc=None,units="nM",plate=decklayout.EPPENDORFS,looplengths=None,extraVol=30,wellnames=None,initVol=0):
