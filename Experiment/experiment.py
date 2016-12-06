@@ -334,11 +334,16 @@ class Experiment(object):
                     msg=msg+" Note: %s already contains %.1f ul\n"%(s.name,s.volume)
             logging.error(msg)
 
-        if sum(watervols)>0.01:
+        watervols2=[w if w<=2 else 0 for w in watervols]   # Move later since volume is low
+        watervols=[w if w>2 else 0 for w in watervols]  # Only move>=2 at beginning
+        if any([w>0.01 for w in watervols]):
             self.multitransfer(watervols,dilutant,samples,(False,destMix and (len(reagents)+len(sources)==0)))
 
         for i in range(len(reagents)):
             self.multitransfer([reagentvols[i]*v for v in volume],reagents[i],samples,(True,destMix and (len(sources)==0 and i==len(reagents)-1)))
+
+        if any([w>0.01 for w in watervols2]):
+            self.multitransfer(watervols2,dilutant,samples,(False,destMix and (len(reagents)+len(sources)==0)))
 
         if len(sources)>0:
             assert len(sources)<=len(samples)
