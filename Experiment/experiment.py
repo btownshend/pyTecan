@@ -469,7 +469,7 @@ class Experiment(object):
             for x in allsamps:
                 (a,b)=x.getmixspeeds()
                 if b<minspeed or a>maxspeed:
-                    if a>0:
+                    if a is not None and a>0:
                         others+=" {%s: %.1ful,G=%.2f%%,min=%.0f,max=%.0f}"%(x.name,x.volume,x.glycerolfrac()*100,a,b)
                     else:
                         others+=" {%s: %.1ful,G=%.2f%%,max=%.0f}"%(x.name,x.volume,x.glycerolfrac()*100,b)
