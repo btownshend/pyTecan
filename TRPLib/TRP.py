@@ -46,6 +46,12 @@ reagents.add("P-WX",well="B6",conc=4)
 reagents.add("P-BX",well="C6",conc=4)
 reagents.add("P-MX",well="D6",conc=4)
 reagents.add("P-REF",well="E6",conc=4)
+
+# Targets
+reagents.add("T1",well='B4',conc=Concentration(25.0,7.5,'mM'))  #Theo
+reagents.add("T2",well='C4',conc=Concentration(10.0,1.0,'mM')) # Acetyl CoA
+reagents.add("T3",well=None,conc=Concentration(3.333,1.0,'x')) # BIAs
+reagents.add("T6",well='D4',conc=Concentration(10.0,1.0,'x')) # Redox
     
 def listify(x):
     'Convert a list of (lists or scalars) into a list of equal length lists'
