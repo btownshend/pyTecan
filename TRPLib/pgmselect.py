@@ -12,7 +12,7 @@ from pcrgain import pcrgain
 class PGMSelect(TRP):
     '''Selection experiment'''
     
-    def __init__(self,inputs,nrounds,doexo=False,doampure=False,directT7=True,templateDilution=0.3,tmplFinalConc=50,pmolesIn=0.8,firstID=None):
+    def __init__(self,inputs,nrounds,firstID,pmolesIn,doexo=False,doampure=False,directT7=True,templateDilution=0.3,tmplFinalConc=50,saveDil=10):
         # Initialize field values which will never change during multiple calls to pgm()
         self.inputs=inputs
         self.nrounds=nrounds
@@ -23,7 +23,8 @@ class PGMSelect(TRP):
         self.templateDilution=templateDilution
         self.pmolesIn=pmolesIn
         self.firstID=firstID
-
+        self.saveDil=saveDil
+        
         # General parameters
         self.qConc = 0.025			# Target qPCR concentration in nM (corresponds to Ct ~ 10)
         self.rnaConc=2000		    # Expectec concentration of RNA
@@ -213,11 +214,10 @@ class PGMSelect(TRP):
                 if not self.doexo:
                     pcrdil=pcrdil/extpostdil
                     
-            saveDil=10
-            if saveDil is not None:
-                ext=self.saveSamps(src=rxs,vol=3,dil=saveDil,dilutant=reagents.getsample("TE8"),tgt=[Sample("%s.ext"%n,decklayout.DILPLATE) for n in names],mix=(False,True))   # Save cDNA product for subsequent NGS
+            if self.saveDil is not None:
+                ext=self.saveSamps(src=rxs,vol=3,dil=self.saveDil,dilutant=reagents.getsample("TE8"),tgt=[Sample("%s.ext"%n,decklayout.DILPLATE) for n in names],mix=(False,True))   # Save cDNA product for subsequent NGS
                 for i in self.trackIndices:
-                    q.addSamples(src=[ext[i]],needDil=needDil/saveDil,primers=["T7"+prefixIn[i]+"X","T7"+prefixOut[i]+"X","MX","T7X","REF"],names=["%s.ext"%names[i]])
+                    q.addSamples(src=[ext[i]],needDil=needDil/self.saveDil,primers=["T7"+prefixIn[i]+"X","T7"+prefixOut[i]+"X","MX","T7X","REF"],names=["%s.ext"%names[i]])
             else:
                 for i in self.trackIndices:
                     q.addSamples(src=[rxs[i]],needDil=needDil,primers=["T7"+prefixIn[i]+"X","T7"+prefixOut[i]+"X","MX","T7X","REF"],names=["%s.ext"%names[i]])
