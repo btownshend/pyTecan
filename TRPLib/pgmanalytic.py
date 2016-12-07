@@ -9,7 +9,7 @@ from TRPLib.TRP import TRP
 from TRPLib.QSetup import QSetup
 from pcrgain import pcrgain
 
-class PGMSelect(TRP):
+class PGMAnalytic(TRP):
     '''Selection experiment'''
     
     def __init__(self,inputs,nrounds,doexo=False,doampure=False,directT7=True,templateDilution=0.3,tmplFinalConc=50,pmolesIn=0.8,firstID=None):
@@ -149,10 +149,6 @@ class PGMSelect(TRP):
         else:
             rxs = self.runT7Setup(ligands=[reagents.getsample(inp['ligand']) for inp in self.inputs],src=input,vol=t7vol,srcdil=[inp.conc.dilutionneeded() for inp in input])
             
-        for i in range(len(rxs)):
-            rxs[i].name="%s.rx"%names[i]
-
-
         #for i in self.trackIndices:
         #   q.addSamples(src=[rxs[i]],needDil=needDil,primers=["T7"+prefixIn[i]+"X","MX","T7X","REF"],names=["%s.T-"%names[i]])
         
@@ -173,6 +169,9 @@ class PGMSelect(TRP):
         
         stop=["Unclvd-Stop" if (not keepCleaved and not self.rtSave) else "A-Stop" if n=="A" else "B-Stop" if n=="B" else "W-Stop" if n=="W" else "BADPREFIX" for n in prefixOut]
 
+        for i in range(len(rxs)):
+            rxs[i].name=rxs[i].name+"."+stop[i]
+
         stopDil=rxs[0].volume/preStopVolume
         needDil = self.rnaConc/self.qConc/stopDil
         #q.addSamples(src=rxs,needDil=needDil,primers=["T7AX","MX","T7X","REF"],names=["%s.stopped"%r.name for r in rxs])
@@ -182,9 +181,18 @@ class PGMSelect(TRP):
         hiTemp=95
         rtDur=20
 
+        rxin=rxs
         rxs=self.runRT(src=rxs,vol=rtvol,srcdil=rtDil,heatInactivate=True,hiTemp=hiTemp,dur=rtDur,incTemp=50,stop=[reagents.getsample(s) for s in stop])    # Heat inactivate also allows splint to fold
         print "RT volume= ",[x.volume for x in rxs]
+        for r in rxin:
+            if r.volume>20:
+                print "Have more T7 reaction remaining than needed: %s has %.1f ul"%(r.name,r.volume)
+
         needDil /= rtDil
+        rtPostDil=5
+        if rtPostDil!=1:
+            self.diluteInPlace(tgt=rxs,dil=rtPostDil)
+            needDil /= rtPostDil
         #q.addSamples(src=rxs,needDil=needDil,primers=["T7AX","MX","REF"],names=["%s.rt"%r.name for r in rxs])
 
         rtSaveDil=10
@@ -201,11 +209,13 @@ class PGMSelect(TRP):
             print "######## Ligation setup  ###########"
             extdil=5.0/4
             reagents.getsample("MLigase").conc=Concentration(5)
-            rxs=self.runLig(rxs,inPlace=True)
+            extvol=20;
+            print "Extension volume=",extvol
+            rxs=self.runLig(rxs,vol=extvol)
 
             print "Ligation volume= ",[x.volume for x in rxs]
             needDil=needDil/extdil
-            extpostdil=2
+            extpostdil=4
             if extpostdil>1:
                 print "Dilution after extension: %.2f"%extpostdil
                 self.diluteInPlace(tgt=rxs,dil=extpostdil)
@@ -258,9 +268,9 @@ class PGMSelect(TRP):
             q.addSamples(src=[clean[i] for i in self.trackIndices],needDil=needDil,primers=["T7AX","MX","T7X","REF"])
             rxs=rxs+clean   # Use the cleaned products for PCR
             
-        totalDil=stopDil*rtDil*extdil*extpostdil*exoDil
+        totalDil=stopDil*rtDil*rtPostDil*extdil*extpostdil*exoDil
         fracRetained=rxs[0].volume/(t7vol*totalDil)
-        print "Total dilution from T7 to Pre-pcr Product = %.2f*%.2f*%.2f*%.2f*%.2f = %.2f, fraction retained=%.0f%%"%(stopDil,rtDil,extdil,extpostdil,exoDil,totalDil,fracRetained*100)
+        print "Total dilution from T7 to Pre-pcr Product = %.2f*%.2f*%.2f*%.2f*%.2f*%.2f = %.2f, fraction retained=%.0f%%"%(stopDil,rtDil,rtPostDil,extdil,extpostdil,exoDil,totalDil,fracRetained*100)
 
         if self.rtSave and not keepCleaved:
             # Remove the extra samples
@@ -288,37 +298,16 @@ class PGMSelect(TRP):
             gain=pcrgain(initConc,400,cycles)
             finalConc=initConc*gain
             print "Estimated starting concentration in PCR = %.1f nM, running %d cycles -> %.0f nM\n"%(needDil*self.qConc,cycles,finalConc)
-            nsplit=int(math.ceil(pcrvol*1.0/maxSampleVolume))
-            print "Split each PCR into %d reactions"%nsplit
-            srcdil=(1-1.0/3-1.0/4)
-            sampNeeded=pcrvol/pcrdil
-            if self.rtSave and keepCleaved:
-                sampNeeded+=rtSaveVol
-            maxvol=max([r.volume for r in rxs]);
-            minvol=min([r.volume for r in rxs]);
-            predil=min(75/maxvol,(40+1.4*nsplit)/(minvol-sampNeeded))  # Dilute to have 40ul left -- keeps enough sample to allow good mixing
-            if keepCleaved and self.rtSave and predil>rtSaveDil:
-                print "Reducing predil from %.1f to %.1f (rtSaveDil)"%(predil, rtSaveDil)
-                predil=rtSaveDil
-            if predil>1:
-                self.diluteInPlace(rxs,predil)
-                self.e.shakeSamples(rxs)
-                print "Pre-diluting by %.1fx into [%s] ul"%(predil,",".join(["%.1f"%r.volume for r in rxs]))
-            if keepCleaved and self.rtSave:
-                assert(len(rxs)==len(rtSave))
-                print "Saving %.1f ul of each pre-PCR sample (@%.1f*%.1f dilution)"%(rtSaveVol ,predil, rtSaveDil/predil)
-                self.lastSaved=[Sample("%s.sv"%x.name,decklayout.DILPLATE) for x in rxs]
-                for i in range(len(rxs)):
-                    # Save with rtSaveDil dilution to reduce amount of RT consumed (will have Ct's 2-3 lower than others)
-                    self.e.transfer(rtSaveVol*predil,rxs[i],self.lastSaved[i],(False,False))
-                    self.e.transfer(rtSaveVol*(rtSaveDil/predil-1),decklayout.WATER,self.lastSaved[i],(False,True))  # Use pipette mixing -- shaker mixing will be too slow
-
-            pcr=self.runPCR(src=rxs*nsplit,vol=pcrvol/nsplit,srcdil=pcrdil*1.0/predil,ncycles=cycles,primers=["T7%sX"%x for x in (prefixOut if keepCleaved else prefixIn)]*nsplit,usertime=self.usertime if keepCleaved else None,fastCycling=True,inPlace=False)
+            pcr=self.runPCR(src=rxs,vol=pcrvol,srcdil=pcrdil,ncycles=cycles,primers=["T7%sX"%x for x in (prefixOut if keepCleaved else prefixIn)]*nsplit,usertime=self.usertime if keepCleaved else None,fastCycling=True)
                 
             needDil=finalConc/self.qConc
-            print "Projected final concentration = %.0f nM"%(needDil*self.qConc)
+            pcrpostdil=2
+            if pcrpostdil>1:
+                self.diluteInPlace(pcr,pcrpostdil)
+                needDil=needDil/pcrpostdil
+            print "Projected final concentration = %.0f nM (after %.1fx dilution)"%(needDil*self.qConc,pcrpostdil)
             for i in range(len(pcr)):
-                pcr[i].conc=Concentration(stock=finalConc,final=None,units='nM')
+                pcr[i].conc=Concentration(stock=finalConc/pcrpostdil,final=None,units='nM')
 
             if self.pcrSave:
                 # Save samples at 1x
