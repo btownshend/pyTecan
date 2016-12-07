@@ -580,7 +580,8 @@ class TRP(object):
             src[i].conc=Concentration(srcdil[i],1)
             
         stopvol=[ 0 if stop[i] is None else vol[i]/stop[i].conc.dilutionneeded() for i in range(len(vol))]
-        self.e.stage('RTPos',[rtmaster],[src[i] for i in range(len(src)) ],[tgt[i] for i in range(len(tgt)) ],[vol[i]-stopvol[i] for i in range(len(vol))],destMix=False)
+        assert(min(stopvol)==max(stopvol))   # Assume all stop volumes are the same
+        self.e.stage('RTPos',[rtmaster],[src[i] for i in range(len(src)) ],[tgt[i] for i in range(len(tgt)) ],[vol[i]-stopvol[i] for i in range(len(vol))],destMix=False,finalx=vol[0]/(vol[0]-stopvol[0]))
         for i in range(len(tgt)):
             if stopvol[i]>0.1:
                 self.e.transfer(stopvol[i],stop[i],tgt[i],(False,False))
