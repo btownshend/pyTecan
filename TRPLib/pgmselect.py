@@ -1,4 +1,4 @@
-# Multi-round to compare  conditions
+# Generic selection progam
 import debughook
 import math
 
@@ -37,18 +37,18 @@ class PGMSelect(TRP):
         self.cleavage=0.30			# Estimated cleavage (for computing dilutions of qPCRs)
         
         # Computed parameters
-        self.t7vol1=max(20.5,pmolesIn*1000/tmplFinalConc+1)
+        self.t7vol1=max(20,self.pmolesIn*1000/tmplFinalConc)
         self.rtvol1=max(8,self.pmolesIn*1000/self.rnaConc)
         self.pcrdil1=80
-        self.pcrvol1=self.pmolesIn*1000/(self.rnaConc/(1.5*2))*self.pcrdil1
+        self.pcrvol1=self.pmolesIn*1000/(self.rnaConc*0.9/4)*self.pcrdil1    # Concentration up to PCR dilution is RNA concentration after EDTA addition and RT setup
         self.pcrcycles1=10
         
-        self.t7vol2=max(22,self.pmolesIn*1000/self.tmplFinalConc+1)
+        self.t7vol2=max(22,self.pmolesIn*1000/self.tmplFinalConc)
         self.rtvol2=max(9,self.pmolesIn*1000/self.rnaConc)
         self.pcrdil2=40
-        self.pcrvol2=self.pmolesIn*1000/(self.rnaConc/(1.5*2*1.25))*self.pcrdil2
+        self.pcrvol2=self.pmolesIn*1000/(self.rnaConc*0.9/4/1.25)*self.pcrdil2  # Concentration up to PCR dilution is RNA concentration after EDTA addition and RT setup and Ligation
         self.pcrcycles2=10
-        
+
         # Add templates
         if self.directT7:
             self.srcs = self.addTemplates([inp['name'] for inp in inputs],stockconc=tmplFinalConc/templateDilution,finalconc=tmplFinalConc,plate=decklayout.SAMPLEPLATE,looplengths=[inp['looplength'] for inp in inputs],initVol=self.t7vol1*templateDilution,extraVol=0)
@@ -77,6 +77,7 @@ class PGMSelect(TRP):
             self.rndNum=self.rndNum+1
                 
             prefixOut=["A" if p=="W" else "B" if p=="A" else "W" if p=="B" else "BADPREFIX" for p in curPrefix]
+            self.t7vol1=max(20,self.pmolesIn*1000/min([inp.conc.final for inp in t7in]))
             r1=self.oneround(q,t7in,prefixOut,prefixIn=curPrefix,analytic=analytic,keepCleaved=False,rtvol=self.rtvol1,t7vol=self.t7vol1,cycles=self.pcrcycles1,pcrdil=self.pcrdil1,pcrvol=self.pcrvol1)
             # pcrvol is set to have same diversity as input 
             for i in range(len(r1)):
@@ -95,6 +96,7 @@ class PGMSelect(TRP):
             print "prefixIn=",curPrefix
             print "prefixOut=",prefixOut
             
+            self.t7vol2=max(20,self.pmolesIn*1000/min([inp.conc.final for inp in r1]))
             r2=self.oneround(q,r1,prefixOut,prefixIn=curPrefix,analytic=analytic,keepCleaved=True,rtvol=self.rtvol2,t7vol=self.t7vol2,cycles=self.pcrcycles2,pcrdil=self.pcrdil2,pcrvol=self.pcrvol2)
             # pcrvol is set to have same diversity as input = (self.t7vol2*self.templateDilution/rnagain*stopdil*rtdil*extdil*exodil*pcrdil)
             for i in range(len(self.inputs)):
@@ -120,7 +122,7 @@ class PGMSelect(TRP):
         names=[i.name for i in input]
             
         print "######## T7 ###########"
-        print "Inputs: "
+        print "Inputs:  (t7vol=%.2f)"%t7vol
         for inp in input:
             print "    %s:  %.1ful@%.1f nM, use %.1f ul (%.3f pmoles)"%(inp.name,inp.volume,inp.conc.stock,t7vol/inp.conc.dilutionneeded(), t7vol*inp.conc.final/1000)
             # inp.conc.final=inp.conc.stock*self.templateDilution
@@ -132,7 +134,11 @@ class PGMSelect(TRP):
                 self.e.transfer(t7vol/ligand.conc.dilutionneeded(),ligand,input[i],mix=(False,False))
             mconc=reagents.getsample("MT7").conc.dilutionneeded()
             for i in range(len(input)):
+                watervol=t7vol*(1-1/mconc)-input[i].volume
+                if watervol>0.1:
+                    self.e.transfer(watervol,decklayout.WATER,input[i],mix=(False,False))
                 self.e.transfer(t7vol/mconc,reagents.getsample("MT7"),input[i],mix=(False,False))
+                assert(input[i].volume==t7vol)
             rxs=input
         elif self.rndNum==self.nrounds:
             rxs = self.runT7Setup(src=input,vol=t7vol,srcdil=[inp.conc.dilutionneeded() for inp in input])
