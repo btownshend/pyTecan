@@ -12,7 +12,7 @@ from pcrgain import pcrgain
 class PGMAnalytic(TRP):
     '''Selection experiment'''
     
-    def __init__(self,inputs,doexo=False,doampure=False,directT7=True,templateDilution=0.6,tmplFinalConc=5):
+    def __init__(self,inputs,doexo=False,doampure=False,directT7=True,templateDilution=0.6,tmplFinalConc=5,saveDil=None):
         # Initialize field values which will never change during multiple calls to pgm()
         self.inputs=inputs
         self.doexo=doexo
@@ -20,7 +20,8 @@ class PGMAnalytic(TRP):
         self.directT7=directT7
         self.tmplFinalConc=tmplFinalConc
         self.templateDilution=templateDilution
-
+        self.saveDil=saveDil
+        
         # General parameters
         self.qConc = 0.025			# Target qPCR concentration in nM (corresponds to Ct ~ 10)
         self.pcrSave=True		    # Save PCR products
@@ -145,12 +146,10 @@ class PGMAnalytic(TRP):
             if not self.doexo:
                 self.pcrdil=self.pcrdil/extpostdil
 
-        saveDil=10
-        if saveDil is not None:
-            ext=self.saveSamps(src=rxs,vol=3,dil=saveDil,dilutant=reagents.getsample("TE8"),tgt=[Sample("%s.ext"%n,decklayout.DILPLATE) for n in names],mix=(False,True))   # Save cDNA product for subsequent NGS
-            print "needDil=",needDil,",saveDil=",saveDil
+        if self.saveDil is not None:
+            ext=self.saveSamps(src=rxs,vol=3,dil=self.saveDil,dilutant=reagents.getsample("TE8"),tgt=[Sample("%s.ext"%n,decklayout.DILPLATE) for n in names],mix=(False,True))   # Save cDNA product for subsequent NGS
             for i in range(len(rxs)):
-                q.addSamples(src=[ext[i]],needDil=needDil/saveDil,primers=["T7"+prefixIn[i]+"X","T7"+prefixOut[i]+"X","MX","T7X","REF"],names=["%s.ext"%names[i]])
+                q.addSamples(src=[ext[i]],needDil=needDil/self.saveDil,primers=["T7"+prefixIn[i]+"X","T7"+prefixOut[i]+"X","MX","T7X","REF"],names=["%s.ext"%names[i]])
         else:
             for i in range(len(rxs)):
                 q.addSamples(src=[rxs[i]],needDil=needDil,primers=["T7"+prefixIn[i]+"X","T7"+prefixOut[i]+"X","MX","T7X","REF"],names=["%s.ext"%names[i]])
