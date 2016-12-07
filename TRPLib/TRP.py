@@ -552,8 +552,8 @@ class TRP(object):
     ########################
     # RT - Reverse Transcription
     ########################
-    def runRT(self,src,vol,srcdil,tgt=None,dur=20,heatInactivate=False,hiTemp=None,incTemp=37):
-        result=self.runRTSetup(src,vol,srcdil,tgt)
+    def runRT(self,src,vol,srcdil,tgt=None,dur=20,heatInactivate=False,hiTemp=None,incTemp=37,stop=None):
+        result=self.runRTSetup(src,vol,srcdil,tgt,stop=stop)
         self.runRTPgm(dur,heatInactivate=heatInactivate,hiTemp=hiTemp,incTemp=incTemp)
         return result
     
@@ -567,19 +567,24 @@ class TRP(object):
         self.runRxInPlace(src,vol,reagents.getsample("MPosRT"),returnPlate=False)
         self.runRTPgm(dur,heatInactivate=heatInactivate,hiTemp=hiTemp,incTemp=incTemp)
         
-    def runRTSetup(self,src,vol,srcdil,tgt=None,rtmaster=None):
+    def runRTSetup(self,src,vol,srcdil,tgt=None,rtmaster=None,stop=None):
         if rtmaster is None:
             rtmaster=reagents.getsample("MPosRT")
         if tgt is None:
             tgt=[Sample(s.name+".RT+",decklayout.SAMPLEPLATE) for s in src]
 
-        [src,tgt,vol,srcdil]=listify([src,tgt,vol,srcdil])
+        [src,tgt,vol,srcdil,stop]=listify([src,tgt,vol,srcdil,stop])
 
         # Adjust source dilution
         for i in range(len(src)):
             src[i].conc=Concentration(srcdil[i],1)
             
-        self.e.stage('RTPos',[rtmaster],[src[i] for i in range(len(src)) ],[tgt[i] for i in range(len(tgt)) ],[vol[i] for i in range(len(vol))],destMix=False)
+        stopvol=[ 0 if stop[i] is None else vol[i]/stop[i].conc.dilutionneeded() for i in range(len(vol))]
+        self.e.stage('RTPos',[rtmaster],[src[i] for i in range(len(src)) ],[tgt[i] for i in range(len(tgt)) ],[vol[i]-stopvol[i] for i in range(len(vol))],destMix=False)
+        for i in range(len(tgt)):
+            if stopvol[i]>0.1:
+                self.e.transfer(stopvol[i],stop[i],tgt[i],(False,False))
+
         #self.e.shakeSamples(tgt,returnPlate=True)
         return tgt
 
