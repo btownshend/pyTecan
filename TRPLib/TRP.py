@@ -307,8 +307,7 @@ class TRP(object):
 
     def runT7Stop(self,theo,tgt,stopmaster=None,srcdil=2):
         [theo,tgt,stopmaster,srcdil]=listify([theo,tgt,stopmaster,srcdil])
-        if stopmaster is None:
-            stopmaster=["MStpS_NT" if t==0 else "MStpS_WT" for t in theo]
+        assert( stopmaster is not None)
             
         # Adjust source dilution
         for i in range(len(tgt)):
