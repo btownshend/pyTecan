@@ -309,15 +309,12 @@ class TRP(object):
         [theo,tgt,stopmaster,srcdil]=listify([theo,tgt,stopmaster,srcdil])
         assert( stopmaster is not None)
             
-        # Adjust source dilution
-        for i in range(len(tgt)):
-            tgt[i].conc=Concentration(srcdil[i],1)
-
         ## Stop
         sstopmaster=[reagents.getsample(s) for s in stopmaster]
         for i in range(len(tgt)):
             stopvol=tgt[i].volume/(sstopmaster[i].conc.dilutionneeded()-1)
             finalvol=tgt[i].volume+stopvol
+            tgt[i].conc=Concentration(finalvol/tgt[i].volume,1)  # Adjust source dilution to avoid warnings
             self.e.transfer(finalvol-tgt[i].volume,sstopmaster[i],tgt[i])
             
         self.e.shakeSamples(tgt,returnPlate=True)
