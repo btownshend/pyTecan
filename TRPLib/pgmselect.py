@@ -84,7 +84,7 @@ class PGMSelect(TRP):
                 self.nextID+=1
                 r1[i].conc.final=r1[i].conc.stock*self.templateDilution
             if self.rndNum>=self.nrounds:
-                print "Warning: ending on an uncleaved round"
+                logging.warning("Warning: ending on an uncleaved round")
                 break
             
             self.rndNum=self.rndNum+1
