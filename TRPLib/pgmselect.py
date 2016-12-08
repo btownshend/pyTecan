@@ -4,7 +4,7 @@ import math
 
 from Experiment.concentration import Concentration
 from Experiment.sample import Sample
-from Experiment import worklist, reagents, decklayout
+from Experiment import worklist, reagents, decklayout, logging
 from TRPLib.TRP import TRP
 from TRPLib.QSetup import QSetup
 from pcrgain import pcrgain
@@ -12,8 +12,11 @@ from pcrgain import pcrgain
 class PGMSelect(TRP):
     '''Selection experiment'''
     
-    def __init__(self,inputs,nrounds,firstID,pmolesIn,doexo=False,doampure=False,directT7=True,templateDilution=0.3,tmplFinalConc=50,saveDil=10):
+    def __init__(self,inputs,nrounds,firstID,pmolesIn,doexo=False,doampure=False,directT7=True,templateDilution=0.3,tmplFinalConc=50,saveDil=24):
         # Initialize field values which will never change during multiple calls to pgm()
+        for i in range(len(inputs)):
+            if 'name' not in inputs[i]:
+                inputs[i]['name']='%s_%d_R%d_%s'%(inputs[i]['prefix'],inputs[i]['ID'],inputs[i]['round'],inputs[i]['ligand'])
         self.inputs=inputs
         self.nrounds=nrounds
         self.doexo=doexo
@@ -65,8 +68,7 @@ class PGMSelect(TRP):
 
         qpcrPrimers=["REF","MX","T7X","T7AX","T7BX","T7WX"]
         q.addSamples(decklayout.SSDDIL,1,qpcrPrimers,save=False)   # Negative controls
-        self.trackIndices=[]
-
+        
         # Save RT product from first (uncleaved) round and then use it during 2nd (cleaved) round for ligation and qPCR measurements
         self.rndNum=0
         self.nextID=self.firstID
@@ -88,10 +90,6 @@ class PGMSelect(TRP):
                 break
             
             self.rndNum=self.rndNum+1
-            if self.rndNum==self.nrounds:
-                print "Tracking with qPCR for final round"
-                self.trackIndices=range(len(t7in))	# Track the final round
-
             print "prefixIn=",curPrefix
             print "prefixOut=",prefixOut
             
@@ -102,10 +100,10 @@ class PGMSelect(TRP):
                 r2[i].name="%s_%d_R%dC_%s"%(prefixOut[i],self.nextID,self.inputs[i]['round']+self.rndNum,self.inputs[i]['ligand'])
                 self.nextID+=1
                 r2[i].conc.final=r2[i].conc.stock*self.templateDilution
-            if len(self.trackIndices)>0:
-                q.addSamples(src=r2,needDil=r2[0].conc.stock/self.qConc,primers=qpcrPrimers)
             t7in=r2
             curPrefix=prefixOut
+        for i in range(len(r2)):
+            q.addSamples(src=r2[i],needDil=r2[i].conc.stock/self.qConc,primers=["T7X","T7"+prefixOut[i]])
             
         print "######### qPCR ###########"
         #q.addReferences(mindil=4,nsteps=6,primers=["T7X","MX","T7AX"])
@@ -153,9 +151,10 @@ class PGMSelect(TRP):
         for i in range(len(rxs)):
             rxs[i].name="%s.rx"%names[i]
 
-
-        #for i in self.trackIndices:
-        #   q.addSamples(src=[rxs[i]],needDil=needDil,primers=["T7"+prefixIn[i]+"X","MX","T7X","REF"],names=["%s.T-"%names[i]])
+        if self.rndNum==1:
+            # Initial input 
+            for i in range(len(rxs)):
+                q.addSamples(src=rxs[i],needDil=needDil,primers=["T7X","REF","T7"+prefixIn[i]],names=["%s.T-"%names[i]])
         
         needDil = needDil*max([inp.conc.dilutionneeded() for inp in input])
         t7dur=30
@@ -216,10 +215,14 @@ class PGMSelect(TRP):
                     
             if self.saveDil is not None:
                 ext=self.saveSamps(src=rxs,vol=3,dil=self.saveDil,dilutant=reagents.getsample("TE8"),tgt=[Sample("%s.ext"%n,decklayout.DILPLATE) for n in names],mix=(False,True))   # Save cDNA product for subsequent NGS
-                for i in self.trackIndices:
-                    q.addSamples(src=[ext[i]],needDil=needDil/self.saveDil,primers=["T7"+prefixIn[i]+"X","T7"+prefixOut[i]+"X","MX","T7X","REF"],names=["%s.ext"%names[i]])
+                for i in range(len(ext)):
+                    # Make sure we don't take more than 2 more steps
+                    maxdil=q.MAXDIL*q.MAXDIL
+                    if needDil/self.saveDil>maxdil:
+                        logging.notice( "Diluting ext by %.0fx instead of needed %.0f to save steps"%(maxdil,needDil/self.saveDil))
+                    q.addSamples(src=[ext[i]],needDil=min(maxdil,needDil/self.saveDil),primers=["T7"+prefixIn[i]+"X","T7"+prefixOut[i]+"X","MX","T7X","REF"],names=["%s.ext"%names[i]],save=False)
             else:
-                for i in self.trackIndices:
+                for i in range(len(input)):
                     q.addSamples(src=[rxs[i]],needDil=needDil,primers=["T7"+prefixIn[i]+"X","T7"+prefixOut[i]+"X","MX","T7X","REF"],names=["%s.ext"%names[i]])
                     isave=i+len(input)
                     if isave<len(rxs):
