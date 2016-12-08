@@ -80,11 +80,15 @@ class QSetup(object):
                     vol=self.MAXDILVOL
                 else:
                     vol=min(self.MAXDILVOL,max(self.MINDILVOL,dil*self.TGTINVOL))
+                if intermed.plate==decklayout.DILPLATE:
+                    firstWell=intermed.well+4   # Skip by 4 wells at a time to optimize multi-tip movements
+                else:
+                    firstWell=0
                 if not save and i==0 and names is not None:
                     # Need to replace the name in this condition
-                    dest=Sample(diluteName(names[svi],dil),decklayout.DILPLATE,firstWell=intermed.well+4)
+                    dest=Sample(diluteName(names[svi],dil),decklayout.DILPLATE,firstWell=firstWell)
                 else:
-                    dest=Sample(diluteName(intermed.name,dil),decklayout.DILPLATE,firstWell=intermed.well+4)
+                    dest=Sample(diluteName(intermed.name,dil),decklayout.DILPLATE,firstWell=firstWell)
                 #print "dest=",dest
                 j1=self.jobq.addMultiTransfer(volume=vol*(dil-1)/dil,src=self.dilutant,dest=dest,prereqs=[])
                 prereqs.append(j1)
