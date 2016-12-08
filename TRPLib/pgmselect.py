@@ -103,7 +103,7 @@ class PGMSelect(TRP):
             t7in=r2
             curPrefix=prefixOut
         for i in range(len(r2)):
-            q.addSamples(src=r2[i],needDil=r2[i].conc.stock/self.qConc,primers=["T7X","T7"+prefixOut[i]])
+            q.addSamples(src=r2[i],needDil=r2[i].conc.stock/self.qConc,primers=["T7X","T7"+prefixOut[i]+"X"])
             
         print "######### qPCR ###########"
         #q.addReferences(mindil=4,nsteps=6,primers=["T7X","MX","T7AX"])
@@ -154,7 +154,7 @@ class PGMSelect(TRP):
         if self.rndNum==1:
             # Initial input 
             for i in range(len(rxs)):
-                q.addSamples(src=rxs[i],needDil=needDil,primers=["T7X","REF","T7"+prefixIn[i]],names=["%s.T-"%names[i]])
+                q.addSamples(src=rxs[i],needDil=needDil,primers=["T7X","REF","T7"+prefixIn[i]+"X"],names=["%s.T-"%names[i]])
         
         needDil = needDil*max([inp.conc.dilutionneeded() for inp in input])
         t7dur=30
