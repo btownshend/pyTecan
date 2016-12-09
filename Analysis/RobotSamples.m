@@ -505,8 +505,13 @@ classdef RobotSamples < handle
       obj.rsv=[];
       printRefScale=false;   % True to add columns scaling by ref
       nrowsprinted=99;   % Default so we print headers first time
+      prevlenlist=[];
       for i=1:length(obj.templates)
-        if true
+        lenlist=[];
+        for j=1:length(obj.primers())
+          lenlist(j)=obj.getlength(obj.templates{i},obj.primers(j));
+        end
+        if isempty(prevlenlist) || any(prevlenlist~=lenlist)
           fprintf('\n%-40.40s ','');
           fprintf('  Dil ');
           ref=[];
@@ -525,11 +530,11 @@ classdef RobotSamples < handle
             end
           end
           fprintf('\n');
+          fprintf('%-46.46s ','');
+          fprintf('%8d ',lenlist);
         end
-        fprintf('%-46.46s ','');
-        for j=1:length(obj.primers())
-          fprintf('%8d ',obj.getlength(obj.templates{i},obj.primers(j)));
-        end
+        prevlenlist=lenlist;
+        
         if ~isempty(ref) && nrowsprinted>=2 && printRefScale
           fprintf('%s',blanks(7));
           for j=1:length(obj.primers())
@@ -563,7 +568,7 @@ classdef RobotSamples < handle
               obj.sv(i,j,:)=obj.rsv(i,j,:)/obj.rsv(i,j,ref)*obj.options.refconc;
               fprintf('%6.1f ',obj.sv(i,j,[1:ref-1,ref+1:end]));
             end
-            if strcmp(nm(end-3:end),'.ext')
+            if length(nm)>4 && strcmp(nm(end-3:end),'.ext')
               if nm(1)=='A'
                 pCLV=pBX; pUNCLV=pAX;
               elseif nm(1)=='B'
