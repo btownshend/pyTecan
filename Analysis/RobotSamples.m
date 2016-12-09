@@ -571,7 +571,7 @@ classdef RobotSamples < handle
               elseif nm(1)=='W'
                 pCLV=pAX; pUNCLV=pT7WX;
               end
-              fprintf('T=%4.1f, Clv=%4.1f%%',concsnm(pT7X)/concsnm(pREF)*obj.options.refconc, 100*concsnm(pCLV)/sum(concsnm([pCLV,pUNCLV])));
+              fprintf('T=%4.1f Clv=%4.1f%% ABW/M=%.2f',concsnm(pT7X)/concsnm(pREF)*obj.options.refconc, 100*concsnm(pCLV)/sum(concsnm([pCLV,pUNCLV])),nansum(concsnm([pAX,pBX,pT7WX]))/concsnm(pMX));
             end
             fprintf('\n');
             nrowsprinted=nrowsprinted+1;
