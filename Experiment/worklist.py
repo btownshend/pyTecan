@@ -32,6 +32,7 @@ hashCodes={}
 tipHash=[0,0,0,0]
 #print "tipHash=[%06x,%06x,%06x,%06x]"%(tipHash[0],tipHash[1],tipHash[2],tipHash[3])
 timerstart=None
+nloops=0
 
 def reset():
     global hashCodes, lnum,volumes,opQueue, hashCodes,tipHash,wlist
@@ -42,6 +43,7 @@ def reset():
     hashCodes={}
     tipHash=[0,0,0,0]
     wlist=[]
+    nloops=0   # Gemini crashes if more than 100 loops
 
 def bin(s):
     return str(s) if s<=1 else bin(s>>1) + str(s&1)
@@ -598,6 +600,10 @@ def stringvariable(varname,default,userprompt=None):
         wlist.append('String-Variable(%s,"%s",1,"%s")'%(varname,default,userprompt))
 
 def beginloop(loopname,n):
+    global nloops
+    if nloops>=100:
+        logging.error('Too many loops;  Gemini can only handle 100')
+    nloops+=1
     wlist.append('BeginLoop("%d","%s")'%(n,loopname))
 
 def endloop():
