@@ -157,10 +157,10 @@ class Sample(object):
                 total=sum([v for v in ingredients.values()])
                 for k in self.ingredients:
                     self.ingredients[k]=self.ingredients[k]*volume/total
-            self.firstaccess=True
+            self.lastvolcheck=None
         else:
             self.ingredients={}
-            self.firstaccess=False
+            self.lastvolcheck=0   # Assume that it has already been checked for 0 (since it can't be any less...)
 
         if plate.pierce:
             self.bottomLC=liquidclass.LCWaterPierce
@@ -321,20 +321,33 @@ class Sample(object):
             nloop+=1
         return volume
 
-    def volcheck(self,tipMask,well):
+    def volcheck(self,tipMask,well,volToRemove):
         '''Check if the well contains the expected volume'''
-        #return
-        self.firstaccess = False if self.volume<200 or self.volume>1500 else True   # Keep rechecking when working with tubes with large capacity (but not water) TODO-improve logic
+        if self.lastvolcheck is not None:
+            # Decide if a volume check is needed
+            if volToRemove==0:
+                # No need to check if not removing anything and it has been checked previously (i.e. lastvolcheck is not None)
+                return
+            if self.volume-volToRemove > max(40,self.lastvolcheck-100) or self.volume-volToRemove>200:
+                # Not needed
+                return
+        self.lastvolcheck=self.volume
         height=self.plate.getliquidheight(self.volume)
         gemvol=self.plate.getgemliquidvolume(height)	# Volume that would be reported by Gemini for this height
-        volthresh=self.volume*0.80
-        heightthresh=min(self.plate.getliquidheight(volthresh),height-1.0)	# threshold is lower of 1mm or 80%
-        gemvolthresh=self.plate.getgemliquidvolume(heightthresh)	# Volume that would be reported by Gemini for this height
         if gemvol is None:
             logging.warning( "No volume equation for %s, skipping initial volume check"%self.name)
             return
+
+        volwarn=self.volume*0.80
+        heightwarn=min(self.plate.getliquidheight(volwarn),height-1.0)	# threshold is lower of 1mm or 80%
+        gemvolwarn=self.plate.getgemliquidvolume(heightwarn)	# Volume that would be reported by Gemini for this height
+
+        volcrit=self.plate.unusableVolume*0.8+volToRemove
+        heightcrit=self.plate.getliquidheight(volcrit)
+        gemvolcrit=self.plate.getgemliquidvolume(heightcrit)	# Volume that would be reported by Gemini for this height
+    
         worklist.flushQueue()
-        worklist.comment( "Check that %s contains %.1f ul (> %.1f) before first aspirate (gemvol=%.1f (>%.1f); height=%.1f (>%.1f) )"%(self.name,self.volume,volthresh,gemvol,gemvolthresh,height,heightthresh))
+        worklist.comment( "Check that %s contains %.1f ul (warn< %.1f, crit<%.1f), (gemvol=%.1f (warn<%.1f,crit<%.1f); height=%.1f (>%.1f) )"%(self.name,self.volume,volwarn,volcrit,gemvol,gemvolwarn,gemvolcrit,height,heightwarn))
         tipnum=0
         tm=tipMask
         while tm>0:
@@ -347,13 +360,18 @@ class Sample(object):
         worklist.variable(volvar,-2)
         worklist.detectLiquid(tipMask,well,self.inliquidLC,self.plate)
         doneLabel=worklist.getlabel()
-        worklist.condition(volvar,">",gemvolthresh,doneLabel)
+        worklist.condition(volvar,">",gemvolwarn,doneLabel)
+        warnLabel=worklist.getlabel()
+        worklist.condition(volvar,">",gemvolcrit,warnLabel)
         worklist.moveliha(worklist.WASHLOC)	# Get LiHa out of the way
-        msg="Failed volume check of %s - should have  %.0f ul"%(self.name,self.volume)
+        msg="Failed volume check of %s - should have  %.0f ul (gemvol=~%s~, crit=%.0f)"%(self.name,self.volume,volvar,gemvolcrit)
         worklist.email(dest='cdsrobot@gmail.com',subject=msg)
         worklist.stringvariable("response","retry",msg+" Enter 'ignore' to ignore and continue, otherwise will retry.")
         worklist.condition("response","==","ignore",doneLabel)
         worklist.endloop()
+        worklist.comment(warnLabel)
+        msg="Warning: volume check of %s - should have  %.0f ul (gemvol=~%s~, warn=%.0f, crit=%.0f)"%(self.name,self.volume,volvar,gemvolwarn,gemvolcrit)
+        worklist.email(dest='cdsrobot@gmail.com',subject=msg)
         worklist.comment(doneLabel)
         self.addhistory("LD",0,tipMask)
 
@@ -387,8 +405,7 @@ class Sample(object):
 
         lc=self.chooseLC(volume)
             
-        if self.firstaccess:
-            self.volcheck(tipMask,well)
+        self.volcheck(tipMask,well,volume)
 
         if self.hasBeads and self.plate.curloc=="Magnet":
             # With beads don't do any manual conditioning and don't remove extra (since we usually want to control exact amounts left behind, if any)
@@ -638,8 +655,7 @@ class Sample(object):
             return False
         logging.mixwarning("Pipette mixing of %s may introduce bubbles"%self.name)
 
-        if self.firstaccess:
-            self.volcheck(tipMask,[self.well])
+        self.volcheck(tipMask,[self.well],0)
 
         blowvol=5
         mstr=""
