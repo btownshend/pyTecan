@@ -10,6 +10,9 @@ import clock
 import globals
 import logging
 import sys
+import subprocess
+import os
+from string import strip
 
 _Experiment__shakerActive = False
 
@@ -30,7 +33,9 @@ class Experiment(object):
         'Create a new experiment with given sample locations for water and WASTE;  totalTime is expected run time in seconds, if known'
         self.checksum=md5sum(sys.argv[0])
         self.checksum=self.checksum[-4:]
-        worklist.comment("Generated %s (%s-%s)"%(datetime.now().ctime(),sys.argv[0],self.checksum))
+        pyTecan=os.path.dirname(os.path.realpath(worklist.__file__))
+        self.gitlabel=strip(subprocess.check_output(["git", "describe","--always"],cwd=pyTecan))
+        worklist.comment("Generated %s (%s-%s pyTecan-%s)"%(datetime.now().ctime(),sys.argv[0],self.checksum,self.gitlabel))
         worklist.userprompt("The following reagent tubes should be present: %s"%Sample.getAllLocOnPlate(decklayout.REAGENTPLATE))
         worklist.userprompt("The following eppendorf tubes should be present: %s"%Sample.getAllLocOnPlate(decklayout.EPPENDORFS))
         worklist.email(dest='cdsrobot@gmail.com',subject='Run started (Generate: %s) expected runtime %.0f minutes'%(datetime.now().ctime(),clock.totalTime/60.0 if clock.totalTime is not None else 0.0 ) )
@@ -86,7 +91,7 @@ class Experiment(object):
         # print >>fd
         #print >>fd,"DiTi usage:",worklist.getDITIcnt()
         #print >>fd
-        print >>fd,"Generated %s (%s-%s)"%(datetime.now().ctime(),sys.argv[0],self.checksum)
+        print >>fd,"Generated %s (%s-%s pyTecan-%s)"%(datetime.now().ctime(),sys.argv[0],self.checksum,self.gitlabel)
         rtime="Run time: %d (pipetting only) + %d (thermocycling only) + %d (both) = %d minutes\n"%(clock.pipetting/60.0,clock.thermotime/60, clock.pipandthermotime/60, clock.elapsed()/60)
         print rtime
         print >>fd,rtime
