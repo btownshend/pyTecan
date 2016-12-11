@@ -149,6 +149,7 @@ class Sample(object):
         else:
             self.conc=Concentration(conc)
         self.volume=volume
+        self.initVol=volume
         if volume>0:
             if ingredients is None:
                 self.ingredients={name:volume}
@@ -731,7 +732,12 @@ class Sample(object):
             evapString=" -%.1f ul"%self.evap
         else:
             evapString=""
-        s+=" %-30s"%("(%s.%s,%.2f ul%s%s)"%(self.plate.name,self.plate.wellname(self.well),self.volume,evapString,beadString))
+        if self.initVol!=0:
+            volString="%.1f->%.1f"%(self.initVol, self.volume)
+        else:
+            volString="%.1f"%(self.volume)
+            
+        s+=" %-30s"%("(%s.%s,%s ul%s%s)"%(self.plate.name,self.plate.wellname(self.well),volString,evapString,beadString))
         hist=self.history
         trunchistory=self.plate.name!="Samples"
         if trunchistory and len(hist)>0:
