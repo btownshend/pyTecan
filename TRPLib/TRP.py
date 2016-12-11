@@ -730,7 +730,7 @@ class TRP(object):
                 self.runRxInPlace(src,vol,reagents.getsample(master),master2=[reagents.getsample("P-%s"%p[0]) for p in primers],master3=[reagents.getsample("P-%s"%p[1]) for p in primers],returnPlate=False)
             else:
                 for i in range(len(primers)):
-                    self.e.stage('PCR%d'%i,[reagents.getsample(master)]+[reagents.getsample(s) for s in primers[i]],src[i] ,tgt[i],vol[i],destMix=False)
+                    self.e.stage('PCR%d'%i,[reagents.getsample(master)]+[reagents.getsample("P-%s"%s) for s in primers[i]],src[i:i+1] ,tgt[i:i+1],vol[i:i+1],destMix=False)
                 #self.e.shakeSamples(tgt,returnPlate=False)
         else:
             # Single primer
@@ -738,7 +738,7 @@ class TRP(object):
                 self.runRxInPlace(src,vol,reagents.getsample(master),master2=[reagents.getsample("P-%s"%p) for p in primers],returnPlate=False)
             else:
                 for up in set(primers):
-                    self.e.stage('PCR%s'%up,[reagents.getsample(master),reagents.getsample(s)],[src[i] for i in range(len(src)) if primers[i]==up],[tgt[i] for i in range(len(tgt)) if primers[i]==up],[vol[i] for i in range(len(vol)) if primers[i]==up],destMix=False)
+                    self.e.stage('PCR%s'%up,[reagents.getsample(master),reagents.getsample("P-%s"%up)],[src[i] for i in range(len(src)) if primers[i]==up],[tgt[i] for i in range(len(tgt)) if primers[i]==up],[vol[i] for i in range(len(vol)) if primers[i]==up],destMix=False)
                 #self.e.shakeSamples(tgt,returnPlate=False)
 
         pgm="PCR%d"%ncycles
