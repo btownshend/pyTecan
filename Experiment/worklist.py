@@ -380,7 +380,7 @@ def aspirateDispense(op,tipMask,wells, liquidClass, volume, loc, cycles=None,all
         # Return conditioning volume
         wlist.append( '%s(%d,"%s",%s,%d,%d,%d,"%s",0)'%("Dispense",tipMask,liquidClass,condvol,loc.grid,loc.pos-1,spacing,ws))
 
-    if op!="Detect_Liquid" and (loc.grid!=QPCRLOC.grid or loc.pos!=QPCRLOC.pos):
+    if op!="Detect_Liquid" and (loc.grid!=QPCRLOC.grid or loc.pos!=QPCRLOC.pos) and loc.grid>3:
         # Do final liquid detect (but not on qPCR plate, since that doesn't work anyway)
         wlist.append( 'Detect_Liquid(%d,"%s",%d,%d,%d,"%s",0)'%(tipMask,"Water-InLiquid",loc.grid,loc.pos-1,spacing,ws))
         clock.pipetting+=2.00    # Unsure of this one
