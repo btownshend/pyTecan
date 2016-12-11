@@ -686,7 +686,7 @@ class TRP(object):
     ########################
     # PCR
     ########################
-    def runPCR(self,primers,src,srcdil,vol=None,tgt=None,ncycles=20,usertime=None,fastCycling=False,inPlace=False,master="MTaq"):
+    def runPCR(self,primers,src,srcdil,vol=None,tgt=None,ncycles=20,usertime=None,fastCycling=False,inPlace=False,master="MTaq",annealTemp=None,kapa=False):
         ## PCR
         if inPlace:
             if vol!=None:
@@ -748,12 +748,19 @@ class TRP(object):
         else:
             runTime=usertime
 
+        if annealTemp is None:
+            annealTemp=60 if kapa else 57
+
+        meltTemp=98 if kapa else 95
+        hotTime=180 if kapa else 30
+        extTemp=72 if kapa else 68
+        
         if fastCycling:
-            cycling='TEMP@37,%d TEMP@95,120 TEMP@95,10 TEMP@57,10 TEMP @72,1 GOTO@3,%d TEMP@72,60 TEMP@25,2'%(1 if usertime is None else usertime*60,ncycles-1)
-            runTime+=4.8+1.65*ncycles
+            cycling='TEMP@37,%d TEMP@95,%d TEMP@%.1f,10 TEMP@%.1f,10 TEMP @%.1f,1 GOTO@3,%d TEMP@%.1f,60 TEMP@25,2'%(1 if usertime is None else usertime*60,hotTime,meltTemp,annealTemp,extTemp,ncycles-1,extTemp)
+            runTime+=hotTime/60+2.8+1.65*ncycles
         else:
-            cycling='TEMP@37,%d TEMP@95,120 TEMP@95,30 TEMP@57,30 TEMP@72,30 GOTO@3,%d TEMP@72,60 TEMP@25,2'%(1 if usertime is None else usertime*60,ncycles-1)
-            runTime+=4.8+3.0*ncycles
+            cycling='TEMP@37,%d TEMP@95,%d TEMP@%.1f,30 TEMP@%.1f,30 TEMP@%.1f,30 GOTO@3,%d TEMP@%.1f,60 TEMP@25,2'%(1 if usertime is None else usertime*60,hotTime,meltTemp,annealTemp,extTemp,ncycles-1,extTemp)
+            runTime+=hotTime/60+2.8+3.0*ncycles
             
         print "PCR volume=[",",".join(["%.1f"%t.volume for t in tgt]), "], srcdil=[",",".join(["%.1fx"%s for s in srcdil]),"], program: %s"%cycling
 
