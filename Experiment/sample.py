@@ -364,6 +364,7 @@ class Sample(object):
         worklist.detectLiquid(tipMask,well,self.inliquidLC,self.plate)
         doneLabel=worklist.getlabel()
         worklist.condition(volvar,">",gemvolwarn,doneLabel)
+        ptmp=clock.pipetting;
         warnLabel=worklist.getlabel()
         worklist.condition(volvar,">",gemvolcrit,warnLabel)
         worklist.moveliha(worklist.WASHLOC)	# Get LiHa out of the way
@@ -377,6 +378,7 @@ class Sample(object):
         msg="Warning: volume check of %s - should have  %.0f ul (gemvol=~%s~, warn=%.0f, crit=%.0f)"%(self.name,self.volume,volvar,gemvolwarn,gemvolcrit)
         worklist.email(dest='cdsrobot@gmail.com',subject=msg)
         worklist.comment(doneLabel)
+        clock.pipetting=ptmp   # All the retries don't usually happen, so don't count in total time
         self.addhistory("LD",0,tipMask)
 
     def aspirate(self,tipMask,volume,multi=False):
