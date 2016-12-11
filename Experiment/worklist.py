@@ -35,7 +35,7 @@ timerstart=None
 nloops=0
 
 def reset():
-    global hashCodes, lnum,volumes,opQueue, hashCodes,tipHash,wlist
+    global hashCodes, lnum,volumes,opQueue, hashCodes,tipHash,wlist, nloops
     hashCodes={}
     lnum=0
     volumes={}
@@ -602,7 +602,7 @@ def stringvariable(varname,default,userprompt=None):
 def beginloop(loopname,n):
     global nloops
     if nloops>=100:
-        logging.error('Too many loops;  Gemini can only handle 100')
+        logging.error('Too many loops;  Gemini can only handle 100 (%s)'%loopname)
     nloops+=1
     wlist.append('BeginLoop("%d","%s")'%(n,loopname))
 
