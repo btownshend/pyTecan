@@ -356,7 +356,9 @@ class Sample(object):
             tipnum+=1
 
         loopLabel=worklist.getlabel()
-        worklist.comment(loopLabel)
+        worklist.beginloop(loopLabel,50)
+#        worklist.comment(loopLabel)
+
         volvar='detected_volume_%d'%tipnum
         worklist.variable(volvar,-2)
         worklist.detectLiquid(tipMask,well,self.inliquidLC,self.plate)
@@ -369,7 +371,8 @@ class Sample(object):
         worklist.email(dest='cdsrobot@gmail.com',subject=msg)
         worklist.stringvariable("response","retry",msg+" Enter 'ignore' to ignore and continue, otherwise will retry.")
         worklist.condition("response","==","ignore",doneLabel)
-        worklist.condition("response","!=","ignore",loopLabel)
+#        worklist.condition("response","!=","ignore",loopLabel)
+        worklist.endloop()
         worklist.comment(warnLabel)
         msg="Warning: volume check of %s - should have  %.0f ul (gemvol=~%s~, warn=%.0f, crit=%.0f)"%(self.name,self.volume,volvar,gemvolwarn,gemvolcrit)
         worklist.email(dest='cdsrobot@gmail.com',subject=msg)
