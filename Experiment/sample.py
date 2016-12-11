@@ -329,7 +329,7 @@ class Sample(object):
             if volToRemove==0:
                 # No need to check if not removing anything and it has been checked previously (i.e. lastvolcheck is not None)
                 return
-            if self.volume-volToRemove > max(40,self.lastvolcheck-100) or self.volume-volToRemove>200:
+            if self.volume-volToRemove > max(30,self.lastvolcheck-200) or self.volume-volToRemove>200:
                 # Not needed
                 return
         self.lastvolcheck=self.volume
