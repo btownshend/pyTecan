@@ -92,7 +92,7 @@ class Experiment(object):
         #print >>fd,"DiTi usage:",worklist.getDITIcnt()
         #print >>fd
         print >>fd,"Generated %s (%s-%s pyTecan-%s)"%(datetime.now().ctime(),sys.argv[0],self.checksum,self.gitlabel)
-        rtime="Run time: %d (pipetting only) + %d (thermocycling only) + %d (both) = %d minutes\n"%(clock.pipetting/60.0,clock.thermotime/60, clock.pipandthermotime/60, clock.elapsed()/60)
+        rtime="Run time: %d (pipetting only) + %d (thermocycling only) + %d (both) = %d minutes (%.1f hours)\n"%(clock.pipetting/60.0,clock.thermotime/60, clock.pipandthermotime/60, clock.elapsed()/60, clock.elapsed()/3600.0)
         print rtime
         print >>fd,rtime
         reagents.printprep(fd)
