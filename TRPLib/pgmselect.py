@@ -39,21 +39,22 @@ class PGMSelect(TRP):
         self.cleavage=0.30			# Estimated cleavage (for computing dilutions of qPCRs)
         
         # Computed parameters
-        self.t7vol1=max(20,self.pmolesIn*1000/tmplFinalConc)
+        self.t7vol1a=max(20+5.4,self.pmolesIn*1000/tmplFinalConc)  # Extra vol for first round to compensate for qPCR removals
         self.rtvol1=max(8,self.pmolesIn*1000/self.rnaConc)
         self.pcrdil1=80
-        self.pcrvol1=self.pmolesIn*1000/(self.rnaConc*0.9/4)*self.pcrdil1    # Concentration up to PCR dilution is RNA concentration after EDTA addition and RT setup
+        self.pcrvol1=max(100,self.pmolesIn*1000/(self.rnaConc*0.9/4)*self.pcrdil1)    # Concentration up to PCR dilution is RNA concentration after EDTA addition and RT setup
+        # Use at least 100ul so the evaporation of the saved sample that occurs during the run will be relatively small
         self.pcrcycles1=10
         
         self.t7vol2=max(22,self.pmolesIn*1000/self.tmplFinalConc)
         self.rtvol2=max(9,self.pmolesIn*1000/self.rnaConc)
         self.pcrdil2=40
-        self.pcrvol2=self.pmolesIn*1000/(self.rnaConc*0.9/4/1.25)*self.pcrdil2  # Concentration up to PCR dilution is RNA concentration after EDTA addition and RT setup and Ligation
+        self.pcrvol2=max(100,self.pmolesIn*1000/(self.rnaConc*0.9/4/1.25)*self.pcrdil2)  # Concentration up to PCR dilution is RNA concentration after EDTA addition and RT setup and Ligation
         self.pcrcycles2=10
 
         # Add templates
         if self.directT7:
-            self.srcs = self.addTemplates([inp['name'] for inp in inputs],stockconc=tmplFinalConc/templateDilution,finalconc=tmplFinalConc,plate=decklayout.SAMPLEPLATE,looplengths=[inp['looplength'] for inp in inputs],initVol=self.t7vol1*templateDilution,extraVol=0)
+            self.srcs = self.addTemplates([inp['name'] for inp in inputs],stockconc=tmplFinalConc/templateDilution,finalconc=tmplFinalConc,plate=decklayout.SAMPLEPLATE,looplengths=[inp['looplength'] for inp in inputs],initVol=self.t7vol1a*templateDilution,extraVol=0)
         else:
             self.srcs = self.addTemplates([inp['name'] for inp in inputs],stockconc=tmplFinalConc/templateDilution,finalconc=tmplFinalConc,plate=decklayout.DILPLATE,looplengths=[inp['looplength'] for inp in inputs],extraVol=15) 
         
@@ -78,7 +79,10 @@ class PGMSelect(TRP):
             self.rndNum=self.rndNum+1
                 
             prefixOut=["A" if p=="W" else "B" if p=="A" else "W" if p=="B" else "BADPREFIX" for p in curPrefix]
-            self.t7vol1=max(20,self.pmolesIn*1000/min([inp.conc.final for inp in t7in]))
+            if self.rndNum==1:
+                self.t7vol1=self.t7vol1a
+            else:
+                self.t7vol1=max(20,self.pmolesIn*1000/min([inp.conc.final for inp in t7in])) # New input volueme
             r1=self.oneround(q,t7in,prefixOut,prefixIn=curPrefix,keepCleaved=False,rtvol=self.rtvol1,t7vol=self.t7vol1,cycles=self.pcrcycles1,pcrdil=self.pcrdil1,pcrvol=self.pcrvol1)
             # pcrvol is set to have same diversity as input 
             for i in range(len(r1)):
@@ -135,7 +139,7 @@ class PGMSelect(TRP):
                 if watervol>0.1:
                     self.e.transfer(watervol,decklayout.WATER,input[i],mix=(False,False))
                 self.e.transfer(t7vol/mconc,reagents.getsample("MT7"),input[i],mix=(False,False))
-                assert(input[i].volume==t7vol)
+                assert(abs(input[i].volume-t7vol)<0.1)
             rxs=input
         elif self.rndNum==self.nrounds:
             rxs = self.runT7Setup(src=input,vol=t7vol,srcdil=[inp.conc.dilutionneeded() for inp in input])
@@ -324,11 +328,11 @@ class PGMSelect(TRP):
                 pcr[i].conc=Concentration(stock=finalConc,final=None,units='nM')
 
             if self.pcrSave:
-                # Save samples at 1x
+                # Save samples at 1x (move all contents -- can ignore warnings)
                 if self.savedilplate:
-                    sv=self.saveSamps(src=pcr[:len(rxs)],vol=[x.volume-16.4 for x in pcr[:len(rxs)]],dil=1,plate=decklayout.DILPLATE)
+                    sv=self.saveSamps(src=pcr[:len(rxs)],vol=[x.volume-2.4 for x in pcr[:len(rxs)]],dil=1,plate=decklayout.DILPLATE)
                 else:
-                    sv=self.saveSamps(src=pcr[:len(rxs)],vol=[x.volume-16.4 for x in pcr[:len(rxs)]],dil=1,plate=decklayout.EPPENDORFS)
+                    sv=self.saveSamps(src=pcr[:len(rxs)],vol=[x.volume-2.4 for x in pcr[:len(rxs)]],dil=1,plate=decklayout.EPPENDORFS)
                 if nsplit>1:
                     # Combine split
                     for i in range(len(rxs),len(rxs)*nsplit):
