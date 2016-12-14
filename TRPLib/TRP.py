@@ -176,12 +176,12 @@ class TRP(object):
     ########################
     # Save samples to another well
     ########################
-    def saveSamps(self,src,vol,dil,tgt=None,dilutant=None,plate=None,mix=(True,False)):
+    def saveSamps(self,src,vol,dil,tgt=None,dilutant=None,plate=None,mix=(True,False),atEnd=False):
         [src,vol,dil]=listify([src,vol,dil])
         if plate is None:
             plate=decklayout.REAGENTPLATE
         if tgt is None:
-            tgt=[Sample(diluteName(src[i].name,dil[i]),plate) for i in range(len(src))]
+            tgt=[Sample(diluteName(src[i].name,dil[i]),plate,atEnd=atEnd) for i in range(len(src))]
 
         if any([d!=1.0 for d in dil]):
             if dilutant is None:
