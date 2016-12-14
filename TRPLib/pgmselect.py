@@ -12,7 +12,7 @@ from pcrgain import pcrgain
 class PGMSelect(TRP):
     '''Selection experiment'''
     
-    def __init__(self,inputs,nrounds,firstID,pmolesIn,doexo=False,doampure=False,directT7=True,templateDilution=0.3,tmplFinalConc=50,saveDil=24):
+    def __init__(self,inputs,nrounds,firstID,pmolesIn,doexo=False,doampure=False,directT7=True,templateDilution=0.3,tmplFinalConc=50,saveDil=24,qpcrWait=False):
         # Initialize field values which will never change during multiple calls to pgm()
         for i in range(len(inputs)):
             if 'name' not in inputs[i]:
@@ -27,6 +27,7 @@ class PGMSelect(TRP):
         self.pmolesIn=pmolesIn
         self.firstID=firstID
         self.saveDil=saveDil
+        self.qpcrWait=qpcrWait
         
         # General parameters
         self.qConc = 0.025			# Target qPCR concentration in nM (corresponds to Ct ~ 10)
@@ -111,7 +112,8 @@ class PGMSelect(TRP):
             
         print "######### qPCR ###########"
         #q.addReferences(mindil=4,nsteps=6,primers=["T7X","MX","T7AX"])
-        #worklist.userprompt('Continue to setup qPCR')
+        if self.qpcrWait:
+            worklist.userprompt('Continue to setup qPCR')
         q.run()
         
     def oneround(self,q,input,prefixOut,prefixIn,keepCleaved,t7vol,rtvol,pcrdil,cycles,pcrvol):
