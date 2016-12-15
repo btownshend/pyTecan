@@ -547,6 +547,11 @@ def condition(varname,cond,value,dest):
 
     wlist.append('If("%s",%d,"%s","%s")'%(varname,condval,value,dest))
 
+def goto(dest):
+    'Unconditional goto'
+    variable('dummy',0)
+    condition('dummy','==',0,dest)
+        
 def comment( text,prepend=False):
     if len(text) > 200:
         text=text[0:197]+"..."
