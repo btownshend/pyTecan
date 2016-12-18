@@ -265,11 +265,6 @@ class PGMSelect(TRP):
             extdil=1
             extpostdil=1
             exoDil=1
-
-            #user=self.runUser(rxs,vol=20)
-            #needDil=needDil*4/5
-            #q.addSamples(src=user,needDil=needDil,primers=["T7AX","MX","T7X","REF"],names=["%s.user"%n for n in names])
-        
             
         if self.doampure:
             print "######## Ampure Cleanup ###########"
