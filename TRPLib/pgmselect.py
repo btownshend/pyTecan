@@ -12,7 +12,7 @@ from pcrgain import pcrgain
 class PGMSelect(TRP):
     '''Selection experiment'''
     
-    def __init__(self,inputs,nrounds,firstID,pmolesIn,doexo=False,doampure=False,directT7=True,templateDilution=0.3,tmplFinalConc=50,saveDil=24,qpcrWait=False,allLig=False,qpcrStages=["negative","template","ext","finalpcr"]):
+    def __init__(self,inputs,nrounds,firstID,pmolesIn,doexo=False,doampure=False,directT7=True,templateDilution=0.3,tmplFinalConc=50,saveDil=24,qpcrWait=False,allLig=False,qpcrStages=["negative","template","ext","finalpcr"],finalPlus=True):
         # Initialize field values which will never change during multiple calls to pgm()
         for i in range(len(inputs)):
             if 'name' not in inputs[i]:
@@ -30,6 +30,7 @@ class PGMSelect(TRP):
         self.qpcrWait=qpcrWait
         self.allLig=allLig
         self.qpcrStages=qpcrStages
+        self.finalPlus=finalPlus
         
         # General parameters
         self.qConc = 0.025			# Target qPCR concentration in nM (corresponds to Ct ~ 10)
@@ -152,7 +153,7 @@ class PGMSelect(TRP):
                 self.e.transfer(t7vol/mconc,reagents.getsample("MT7"),input[i],mix=(False,False))
                 assert(abs(input[i].volume-t7vol)<0.1)
             rxs=input
-        elif self.rndNum==self.nrounds:
+        elif self.rndNum==self.nrounds and self.finalPlus:
             rxs = self.runT7Setup(src=input,vol=t7vol,srcdil=[inp.conc.dilutionneeded() for inp in input])
             rxs += self.runT7Setup(ligands=[reagents.getsample(inp['ligand']) for inp in self.inputs],src=input,vol=t7vol,srcdil=[inp.conc.dilutionneeded() for inp in input])
             prefixIn+=prefixIn
