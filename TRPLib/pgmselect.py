@@ -134,6 +134,7 @@ class PGMSelect(TRP):
             
         print "######## T7 ###########"
         print "Inputs:  (t7vol=%.2f)"%t7vol
+        inconc=[inp.conc.final for inp in input]
         for inp in input:
             print "    %s:  %.1ful@%.1f nM, use %.1f ul (%.3f pmoles)"%(inp.name,inp.volume,inp.conc.stock,t7vol/inp.conc.dilutionneeded(), t7vol*inp.conc.final/1000)
             # inp.conc.final=inp.conc.stock*self.templateDilution
@@ -173,8 +174,8 @@ class PGMSelect(TRP):
         needDil = needDil*max([inp.conc.dilutionneeded() for inp in input])
         t7dur=30
         self.runT7Pgm(dur=t7dur,vol=t7vol)
-        self.rnaConc=min(40,inp.conc.final)*t7dur*65/30
         print "Estimate RNA concentration in T7 reaction at %.0f nM"%self.rnaConc
+        self.rnaConc=min(40,inconc)*t7dur*65/30
 
         print "######## Stop ###########"
         #self.saveSamps(src=rxs,vol=5,dil=10,plate=decklayout.EPPENDORFS,dilutant=reagents.getsample("TE8"),mix=(False,False))   # Save to check [RNA] on Qubit, bioanalyzer
