@@ -7,7 +7,7 @@ from Experiment.experiment import Experiment
 from Experiment.sample import Sample
 from Experiment.JobQueue import JobQueue
 from TRPLib.TRP import  diluteName
-from Experiment import worklist, reagents, decklayout,clock
+from Experiment import worklist, reagents, decklayout,clock,logging
 
 class QSetup(object):
     TGTINVOL=4
@@ -64,6 +64,9 @@ class QSetup(object):
 
         needDil=needDil/saveDil
         nstages=int(math.ceil(math.log(needDil)/math.log(self.MAXDIL)))
+        ndil=len(src)*(nstages+ (1 if save else 0))
+        logging.notice("QPCR: %dQ/%dD [%s], dilution:%.1fx, primers: [%s]"%(len(src)*len(primers)*nreplicates,ndil,",".join([s.name for s in src]) if names is None else ",".join(names), needDil, ",".join(primers)))
+
         for svi in range(len(sv)):
             s=sv[svi]
             if s.hasBeads:
