@@ -12,7 +12,7 @@ from pcrgain import pcrgain
 class PGMSelect(TRP):
     '''Selection experiment'''
     
-    def __init__(self,inputs,nrounds,firstID,pmolesIn,doexo=False,doampure=False,directT7=True,templateDilution=0.3,tmplFinalConc=50,saveDil=24,qpcrWait=False,allLig=False,qpcrStages=["negative","template","ext","finalpcr","final+"]):
+    def __init__(self,inputs,nrounds,firstID,pmolesIn,doexo=False,doampure=False,directT7=True,templateDilution=0.3,tmplFinalConc=50,saveDil=24,qpcrWait=False,allLig=False,qpcrStages=["negative","template","ext","finalpcr"]):
         # Initialize field values which will never change during multiple calls to pgm()
         for i in range(len(inputs)):
             if 'name' not in inputs[i]:
@@ -29,6 +29,7 @@ class PGMSelect(TRP):
         self.saveDil=saveDil
         self.qpcrWait=qpcrWait
         self.allLig=allLig
+        self.qpcrStages=qpcrStages
         
         # General parameters
         self.qConc = 0.025			# Target qPCR concentration in nM (corresponds to Ct ~ 10)
@@ -68,9 +69,10 @@ class PGMSelect(TRP):
         q = QSetup(self,maxdil=16,debug=False,mindilvol=60)
         self.e.addIdleProgram(q.idler)
         t7in = [s.getsample()  for s in self.srcs]
-
-        qpcrPrimers=["REF","MX","T7X","T7AX","T7BX","T7WX"]
-        q.addSamples(decklayout.SSDDIL,1,qpcrPrimers,save=False)   # Negative controls
+        
+        if "negative" in self.qpcrStages:
+            qpcrPrimers=["REF","MX","T7X","T7AX","T7BX","T7WX"]
+            q.addSamples(decklayout.SSDDIL,1,qpcrPrimers,save=False)   # Negative controls
         
         # Save RT product from first (uncleaved) round and then use it during 2nd (cleaved) round for ligation and qPCR measurements
         self.rndNum=0
@@ -108,8 +110,9 @@ class PGMSelect(TRP):
                 r2[i].conc.final=r2[i].conc.stock*self.templateDilution
             t7in=r2
             curPrefix=prefixOut
-        for i in range(len(r2)):
-            q.addSamples(src=r2[i],needDil=r2[i].conc.stock/self.qConc,primers=["T7X","T7"+prefixOut[i]+"X"])
+        if "finalpcr" in self.qpcrStages:
+            for i in range(len(r2)):
+                q.addSamples(src=r2[i],needDil=r2[i].conc.stock/self.qConc,primers=["T7X","T7"+prefixOut[i]+"X"])
             
         print "######### qPCR ###########"
         #q.addReferences(mindil=4,nsteps=6,primers=["T7X","MX","T7AX"])
@@ -162,7 +165,7 @@ class PGMSelect(TRP):
         for i in range(len(rxs)):
             rxs[i].name="%s.rx"%names[i]
 
-        if self.rndNum==1:
+        if self.rndNum==1 and "template" in self.qpcrStages:
             # Initial input 
             for i in range(len(rxs)):
                 q.addSamples(src=rxs[i],needDil=needDil,primers=["T7X","REF","T7"+prefixIn[i]+"X"],names=["%s.T-"%names[i]])
@@ -186,7 +189,8 @@ class PGMSelect(TRP):
 
         stopDil=rxs[0].volume/preStopVolume
         needDil = self.rnaConc/self.qConc/stopDil
-        #q.addSamples(src=rxs,needDil=needDil,primers=["T7AX","MX","T7X","REF"],names=["%s.stopped"%r.name for r in rxs])
+        if "stopped" in self.qpcrStages:
+            q.addSamples(src=rxs,needDil=needDil,primers=["T7AX","MX","T7X","REF"],names=["%s.stopped"%r.name for r in rxs])
         
         print "######## RT  Setup ###########"
         rtDil=4
@@ -196,7 +200,8 @@ class PGMSelect(TRP):
         rxs=self.runRT(src=rxs,vol=rtvol,srcdil=rtDil,heatInactivate=True,hiTemp=hiTemp,dur=rtDur,incTemp=50,stop=[reagents.getsample(s) for s in stop])    # Heat inactivate also allows splint to fold
         print "RT volume= ",[x.volume for x in rxs]
         needDil /= rtDil
-        #q.addSamples(src=rxs,needDil=needDil,primers=["T7AX","MX","REF"],names=["%s.rt"%r.name for r in rxs])
+        if "rt" in self.qpcrStages:
+            q.addSamples(src=rxs,needDil=needDil,primers=["T7AX","MX","REF"],names=["%s.rt"%r.name for r in rxs])
 
         rtSaveDil=10
         rtSaveVol=3.5
@@ -226,19 +231,21 @@ class PGMSelect(TRP):
                     
             if self.saveDil is not None:
                 ext=self.saveSamps(src=rxs,vol=3,dil=self.saveDil,dilutant=reagents.getsample("TE8"),tgt=[Sample("%s.ext"%n,decklayout.DILPLATE) for n in names],mix=(False,True))   # Save cDNA product for subsequent NGS
-                for i in range(len(ext)):
-                    # Make sure we don't take more than 2 more steps
-                    maxdil=q.MAXDIL*q.MAXDIL
-                    if needDil/self.saveDil>maxdil:
-                        logging.notice( "Diluting ext by %.0fx instead of needed %.0f to save steps"%(maxdil,needDil/self.saveDil))
-                    q.addSamples(src=[ext[i]],needDil=min(maxdil,needDil/self.saveDil),primers=["T7"+prefixIn[i]+"X","T7"+prefixOut[i]+"X","MX","T7X","REF"],names=["%s.ext"%names[i]],save=False)
+                if "ext" in self.qpcrStages:
+                    for i in range(len(ext)):
+                        # Make sure we don't take more than 2 more steps
+                        maxdil=q.MAXDIL*q.MAXDIL
+                        if needDil/self.saveDil>maxdil:
+                            logging.notice( "Diluting ext by %.0fx instead of needed %.0f to save steps"%(maxdil,needDil/self.saveDil))
+                        q.addSamples(src=[ext[i]],needDil=min(maxdil,needDil/self.saveDil),primers=["T7"+prefixIn[i]+"X","T7"+prefixOut[i]+"X","MX","T7X","REF"],names=["%s.ext"%names[i]],save=False)
             else:
-                for i in range(len(input)):
-                    q.addSamples(src=[rxs[i]],needDil=needDil,primers=["T7"+prefixIn[i]+"X","T7"+prefixOut[i]+"X","MX","T7X","REF"],names=["%s.ext"%names[i]])
-                    isave=i+len(input)
-                    if isave<len(rxs):
-                        # samples restored
-                        q.addSamples(src=[rxs[isave]],needDil=needDil/rtSaveDil,primers=["T7"+rxs[isave].name[0]+"X","T7"+("B" if rxs[isave].name[0]=="A" else "W" if rxs[isave].name[0]=="B" else "A")+"X","MX","T7X","REF"])
+                if "ext" in self.qpcrStages:
+                    for i in range(len(input)):
+                        q.addSamples(src=[rxs[i]],needDil=needDil,primers=["T7"+prefixIn[i]+"X","T7"+prefixOut[i]+"X","MX","T7X","REF"],names=["%s.ext"%names[i]])
+                        isave=i+len(input)
+                        if isave<len(rxs):
+                            # samples restored
+                            q.addSamples(src=[rxs[isave]],needDil=needDil/rtSaveDil,primers=["T7"+rxs[isave].name[0]+"X","T7"+("B" if rxs[isave].name[0]=="A" else "W" if rxs[isave].name[0]=="B" else "A")+"X","MX","T7X","REF"])
 
             if self.doexo:
                 print "######## Exo ###########"
@@ -247,8 +254,9 @@ class PGMSelect(TRP):
                 exoDil=rxs[0].volume/prevvol
                 needDil/=exoDil
                 needDil/=7   #  Anecdotal based on Ct's -- large components (MX) reduced by exo digestion
-                q.addSamples(src=[rxs[i] for i in self.trackIndices],needDil=needDil,primers=["T7AX","T7BX","MX","T7X","REF"],names=["%s.exo"%names[i] for i in self.trackIndices])
-                #exo=self.saveSamps(src=rxs,vol=10*exoDil,dil=2/exoDil,dilutant=reagents.getsample("TE8"),tgt=[Sample("%s.exo"%n,decklayout.SAMPLEPLATE) for n in names])   # Save cDNA product
+                if "exo" in self.qpcrStages:
+                    q.addSamples(src=[rxs[i] for i in self.trackIndices],needDil=needDil,primers=["T7AX","T7BX","MX","T7X","REF"],names=["%s.exo"%names[i] for i in self.trackIndices])
+                exo=self.saveSamps(src=rxs,vol=10*exoDil,dil=2/exoDil,dilutant=reagents.getsample("TE8"),tgt=[Sample("%s.exo"%n,decklayout.SAMPLEPLATE) for n in names])   # Save cDNA product
             else:
                 exoDil=1
                 exo=[]
@@ -269,7 +277,8 @@ class PGMSelect(TRP):
             cleanIn=ext+exo+user
             needDil=needDil*cleanIn[0].volume/elutionVol
             clean=self.runAmpure(src=cleanIn,ratio=ratio,elutionVol=elutionVol)
-            q.addSamples(src=[clean[i] for i in self.trackIndices],needDil=needDil,primers=["T7AX","MX","T7X","REF"])
+            if "ampure" in self.qpcrStages:
+                q.addSamples(src=[clean[i] for i in self.trackIndices],needDil=needDil,primers=["T7AX","MX","T7X","REF"])
             rxs=rxs+clean   # Use the cleaned products for PCR
             
         totalDil=stopDil*rtDil*extdil*extpostdil*exoDil
@@ -348,8 +357,9 @@ class PGMSelect(TRP):
                     for i in range(len(sv)):
                         sv[i].conc=pcr[i].conc
 
-                # for i in range(len(pcr)):
-                #     q.addSamples(pcr,needDil,["T7%sX"%prefixOut[i]])
+                if "pcr" in self.qpcrStages:
+                    for i in range(len(pcr)):
+                        q.addSamples(pcr,needDil,["T7%sX"%prefixOut[i]])
 
                 processEff=0.5   # Estimate of overall efficiency of process
                 print "Saved %.2f pmoles of product (%.0f ul @ %.1f nM)"%(sv[0].volume*sv[0].conc.stock/1000,sv[0].volume,sv[0].conc.stock)
