@@ -12,7 +12,7 @@ from pcrgain import pcrgain
 class PGMSelect(TRP):
     '''Selection experiment'''
     
-    def __init__(self,inputs,nrounds,firstID,pmolesIn,doexo=False,doampure=False,directT7=True,templateDilution=0.3,tmplFinalConc=50,saveDil=24,qpcrWait=False):
+    def __init__(self,inputs,nrounds,firstID,pmolesIn,doexo=False,doampure=False,directT7=True,templateDilution=0.3,tmplFinalConc=50,saveDil=24,qpcrWait=False,allLig=False,qpcrStages=["negative","template","ext","finalpcr","final+"]):
         # Initialize field values which will never change during multiple calls to pgm()
         for i in range(len(inputs)):
             if 'name' not in inputs[i]:
@@ -28,6 +28,7 @@ class PGMSelect(TRP):
         self.firstID=firstID
         self.saveDil=saveDil
         self.qpcrWait=qpcrWait
+        self.allLig=allLig
         
         # General parameters
         self.qConc = 0.025			# Target qPCR concentration in nM (corresponds to Ct ~ 10)
@@ -84,7 +85,7 @@ class PGMSelect(TRP):
                 self.t7vol1=self.t7vol1a
             else:
                 self.t7vol1=max(20,self.pmolesIn*1000/min([inp.conc.final for inp in t7in])) # New input volueme
-            r1=self.oneround(q,t7in,prefixOut,prefixIn=curPrefix,keepCleaved=False,rtvol=self.rtvol1,t7vol=self.t7vol1,cycles=self.pcrcycles1,pcrdil=self.pcrdil1,pcrvol=self.pcrvol1)
+            r1=self.oneround(q,t7in,prefixOut,prefixIn=curPrefix,keepCleaved=False,rtvol=self.rtvol1,t7vol=self.t7vol1,cycles=self.pcrcycles1,pcrdil=self.pcrdil1,pcrvol=self.pcrvol1,dolig=self.allLig)
             # pcrvol is set to have same diversity as input 
             for i in range(len(r1)):
                 r1[i].name="%s_%d_R%dU_%s"%(curPrefix[i],self.nextID,self.inputs[i]['round']+self.rndNum,self.inputs[i]['ligand'])
@@ -99,7 +100,7 @@ class PGMSelect(TRP):
             print "prefixOut=",prefixOut
             
             self.t7vol2=max(20,self.pmolesIn*1000/min([inp.conc.final for inp in r1]))
-            r2=self.oneround(q,r1,prefixOut,prefixIn=curPrefix,keepCleaved=True,rtvol=self.rtvol2,t7vol=self.t7vol2,cycles=self.pcrcycles2,pcrdil=self.pcrdil2,pcrvol=self.pcrvol2)
+            r2=self.oneround(q,r1,prefixOut,prefixIn=curPrefix,keepCleaved=True,rtvol=self.rtvol2,t7vol=self.t7vol2,cycles=self.pcrcycles2,pcrdil=self.pcrdil2,pcrvol=self.pcrvol2,dolig=True)
             # pcrvol is set to have same diversity as input = (self.t7vol2*self.templateDilution/rnagain*stopdil*rtdil*extdil*exodil*pcrdil)
             for i in range(len(self.inputs)):
                 r2[i].name="%s_%d_R%dC_%s"%(prefixOut[i],self.nextID,self.inputs[i]['round']+self.rndNum,self.inputs[i]['ligand'])
@@ -116,12 +117,16 @@ class PGMSelect(TRP):
             worklist.userprompt('Continue to setup qPCR')
         q.run()
         
-    def oneround(self,q,input,prefixOut,prefixIn,keepCleaved,t7vol,rtvol,pcrdil,cycles,pcrvol):
+    def oneround(self,q,input,prefixOut,prefixIn,keepCleaved,t7vol,rtvol,pcrdil,cycles,pcrvol,dolig):
         if keepCleaved:
             print "Starting new cleavage round, will add prefix: ",prefixOut
+            assert(dolig)
         else:
             print "Starting new uncleaved round, will retain prefix: ",prefixIn
 
+        if self.rtSave:
+            assert(dolig)
+            
         names=[i.name for i in input]
             
         print "######## T7 ###########"
@@ -177,7 +182,7 @@ class PGMSelect(TRP):
         preStopVolume=rxs[0].volume
         self.addEDTA(tgt=rxs,finalconc=2)	# Stop to 2mM EDTA final
         
-        stop=["Unclvd-Stop" if (not keepCleaved and not self.rtSave) else "A-Stop" if n=="A" else "B-Stop" if n=="B" else "W-Stop" if n=="W" else "BADPREFIX" for n in prefixOut]
+        stop=["Unclvd-Stop" if (not dolig) else "A-Stop" if n=="A" else "B-Stop" if n=="B" else "W-Stop" if n=="W" else "BADPREFIX" for n in prefixOut]
 
         stopDil=rxs[0].volume/preStopVolume
         needDil = self.rnaConc/self.qConc/stopDil
@@ -203,7 +208,7 @@ class PGMSelect(TRP):
                 self.e.transfer(rxs[0].volume,r,newsamp,(False,False))
                 rxs.append(newsamp)
             
-        if keepCleaved:
+        if dolig:
             print "######## Ligation setup  ###########"
             extdil=5.0/4
             reagents.getsample("MLigase").conc=Concentration(5)
