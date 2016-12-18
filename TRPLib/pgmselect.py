@@ -303,7 +303,9 @@ class PGMSelect(TRP):
                     initConc=initConc*7*self.cleavage		# Back out 7x dilution in exo step, but only use cleaved as input conc
                 else:
                     initConc=initConc*self.cleavage		# Only use cleaved as input conc
-
+            else:
+                initConc=initConc*(1-self.cleavage)
+                
             gain=pcrgain(initConc,400,cycles)
             finalConc=initConc*gain
             print "Estimated starting concentration in PCR = %.1f nM, running %d cycles -> %.0f nM\n"%(needDil*self.qConc,cycles,finalConc)
