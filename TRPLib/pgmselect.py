@@ -40,7 +40,7 @@ class PGMSelect(TRP):
         self.usertime=10				# USER incubation time in minutes
         self.rtSave=False			# True to save RT product from uncleaved round and run ligation during cleaved round
         self.dopcr=True			    # Run PCR of samples
-        self.cleavage=0.30			# Estimated cleavage (for computing dilutions of qPCRs)
+        self.cleavage=0.40			# Estimated cleavage (for computing dilutions of qPCRs)
         
         # Computed parameters
         self.t7vol1a=max(20+5.4,self.pmolesIn*1000/tmplFinalConc)  # Extra vol for first round to compensate for qPCR removals
