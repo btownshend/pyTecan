@@ -430,9 +430,8 @@ class Sample(object):
             remove=lc.volRemoved(volume,multi=False)
             if self.volume==volume:
                 # Removing all, ignore excess remove
-                remove=self.volume-0.1
+                remove=self.volume-0.1   # Leave behind enough to be able to keep track of ingredients
                 self.emptied=True
-                #self.ingredients={}
         else:
             worklist.aspirate(tipMask,well,lc,volume,self.plate)
             # Manual conditioning handled in worklist
@@ -443,10 +442,7 @@ class Sample(object):
                 remove=self.volume-0.1   # Leave residual
 
         for k in self.ingredients:
-            if self.plate.curloc=="Magnet" and k=='BIND':
-                pass
-            else:
-                self.ingredients[k] *= (self.volume-remove)/self.volume
+            self.ingredients[k] *= (self.volume-remove)/self.volume
 
         self.volume=self.volume-remove
         if self.volume+.001<self.plate.unusableVolume and self.volume+remove>0 and not (self.hasBeads and self.plate.curloc=='Magnet') and not removeAll:
