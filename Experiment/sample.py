@@ -194,6 +194,7 @@ class Sample(object):
         else:
             self.lastevapupdate=clock.elapsed()
         self.extrainfo=extrainfo
+        self.emptied=False
         
     def isMixed(self):
         'Check if sample is currently mixed'
@@ -392,6 +393,10 @@ class Sample(object):
         if self.plate.curloc=='PTC':
             logging.error( "Aspirate from PTC!, loc=%d,%d"%(self.plate.grid,self.plate.pos))
 
+        removeAll=volume==self.volume
+        if removeAll:
+            logging.notice("Removing all contents (%.1ful) from %s"%(volume,self.name))
+            
         if volume<0.1:
             logging.warning("attempt to aspirate only %.1f ul from %s ignored"%(volume,self.name))
             return
@@ -419,22 +424,23 @@ class Sample(object):
             
         self.volcheck(tipMask,well,volume)
 
-        if self.hasBeads and self.plate.curloc=="Magnet":
+        if (self.hasBeads and self.plate.curloc=="Magnet") or removeAll:
             # With beads don't do any manual conditioning and don't remove extra (since we usually want to control exact amounts left behind, if any)
             worklist.aspirateNC(tipMask,well,lc,volume,self.plate)
             remove=lc.volRemoved(volume,multi=False)
             if self.volume==volume:
                 # Removing all, ignore excess remove
-                remove=self.volume
-                self.ingredients={}
+                remove=self.volume-0.1
+                self.emptied=True
+                #self.ingredients={}
         else:
             worklist.aspirate(tipMask,well,lc,volume,self.plate)
             # Manual conditioning handled in worklist
             remove=lc.volRemoved(volume,multi=True)
 
-        if self.volume<remove+0.1 and self.volume>0:
-            logging.warning("Removing all contents (%.1f from %.1ful) from %s"%(remove,self.volume,self.name))
-            remove=self.volume-0.1   # Leave residual
+            if self.volume<remove+0.1 and self.volume>0:
+                logging.warning("Removing all contents (%.1f from %.1ful) from %s"%(remove,self.volume,self.name))
+                remove=self.volume-0.1   # Leave residual
 
         for k in self.ingredients:
             if self.plate.curloc=="Magnet" and k=='BIND':
@@ -443,7 +449,7 @@ class Sample(object):
                 self.ingredients[k] *= (self.volume-remove)/self.volume
 
         self.volume=self.volume-remove
-        if self.volume+.001<self.plate.unusableVolume and self.volume+remove>0 and not (self.hasBeads and self.plate.curloc=='Magnet'):
+        if self.volume+.001<self.plate.unusableVolume and self.volume+remove>0 and not (self.hasBeads and self.plate.curloc=='Magnet') and not removeAll:
             logging.warning("Aspiration of %.1ful from %s brings volume down to %.1ful which is less than its unusable volume of %.1f ul"%(remove,self.name,self.volume,self.plate.unusableVolume))
             
         self.addhistory("",-remove,tipMask)
@@ -513,6 +519,7 @@ class Sample(object):
             self.hasBeads=True
 
         self.volume=self.volume+volume
+        self.emptied=False
         #self.addhistory("%06x %s"%(self.getHash(w)&0xffffff,src.name),volume,tipMask)
         self.addhistory(src.name,volume,tipMask)
         self.addingredients(src,volume)

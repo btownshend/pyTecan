@@ -153,10 +153,10 @@ class TRP(object):
         #Sample.printallsamples("At completion")
         hasError=False
         for s in Sample.getAllOnPlate():
-            if s.volume<1.0 and s.conc is not None and not s.hasBeads:
+            if s.volume<1.0 and s.conc is not None and not s.emptied:
                 logging.error("Insufficient volume for %s: need at least %.1f ul additional"%(s.name,1.0-s.volume),fatal=False)
                 #hasError=True
-            elif s.volume<2.5 and s.conc is not None:
+            elif s.volume<2.5 and s.conc is not None and not s.emptied:
                 logging.warning("Low final volume for "+ s.name)
             elif s.volume>s.plate.maxVolume:
                 logging.erorr("Excess final volume  (%.1f) for %s: maximum is %.1f ul"%(s.volume,s.name,s.plate.maxVolume),fatal=False)
