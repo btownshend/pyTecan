@@ -12,7 +12,7 @@ from pcrgain import pcrgain
 class PGMAnalytic(TRP):
     '''Selection experiment'''
     
-    def __init__(self,inputs,doexo=False,doampure=False,directT7=True,templateDilution=0.6,tmplFinalConc=5,saveDil=None):
+    def __init__(self,inputs,doexo=False,doampure=False,directT7=True,templateDilution=0.6,tmplFinalConc=5,saveDil=None,saveRNA=False):
         # Initialize field values which will never change during multiple calls to pgm()
         self.inputs=inputs
         self.doexo=doexo
@@ -21,6 +21,7 @@ class PGMAnalytic(TRP):
         self.tmplFinalConc=tmplFinalConc
         self.templateDilution=templateDilution
         self.saveDil=saveDil
+        self.saveRNA=saveRNA
         
         # General parameters
         self.qConc = 0.025			# Target qPCR concentration in nM (corresponds to Ct ~ 10)
@@ -31,7 +32,7 @@ class PGMAnalytic(TRP):
         self.cleavage=0.30			# Estimated cleavage (for computing dilutions of qPCRs)
         
         # Computed parameters
-        self.t7vol=20
+        self.t7vol=20+(5 if saveRNA else 0)
         self.t7dur=30
         self.rtvol=8
         self.pcrdil=80
@@ -93,14 +94,15 @@ class PGMAnalytic(TRP):
         print "Template conc=%.1f nM, estimated RNA concentration in T7 reaction at %.0f nM"%(self.tmplFinalConc,self.rnaConc)
         
         print "######## Stop ###########"
-        #self.saveSamps(src=rxs,vol=5,dil=10,plate=decklayout.EPPENDORFS,dilutant=reagents.getsample("TE8"),mix=(False,False))   # Save to check [RNA] on Qubit, bioanalyzer
-
         self.e.lihahome()
 
         print "Have %.1f ul before stop"%rxs[0].volume
         preStopVolume=rxs[0].volume
         self.addEDTA(tgt=rxs,finalconc=2)	# Stop to 2mM EDTA final
         
+        if self.saveRNA:
+            self.saveSamps(src=rxs,vol=5,dil=2,plate=decklayout.DILPLATE,dilutant=reagents.getsample("TE8"),mix=(False,False))   # Save to check [RNA] on Qubit, bioanalyzer
+
         stop=[ "A-Stop" if n=="A" else "B-Stop" if n=="B" else "W-Stop" if n=="W" else "BADPREFIX" for n in prefixOut]
 
         for i in range(len(rxs)):
