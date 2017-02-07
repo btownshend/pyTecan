@@ -662,8 +662,8 @@ class TRP(object):
     ########################
     # EXO - EXO enzyme digestion
     ########################
-    def runExo(self,src=None,vol=None,srcdil=None,tgt=None,incTime=15,inPlace=False):
-        return self.runIncubation(src=src,vol=vol,srcdil=srcdil,tgt=tgt,incTemp=37,incTime=incTime,enzymes=[reagents.getsample("MExo")],inPlace=inPlace,hiTemp=80,hiTime=20)
+    def runExo(self,src=None,vol=None,srcdil=None,tgt=None,incTime=15,inPlace=False,hiTemp=80,hiTime=20):
+        return self.runIncubation(src=src,vol=vol,srcdil=srcdil,tgt=tgt,incTemp=37,incTime=incTime,enzymes=[reagents.getsample("MExo")],inPlace=inPlace,hiTemp=hiTemp,hiTime=hiTime)
         
     ########################
     # Klenow extension
