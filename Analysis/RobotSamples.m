@@ -472,11 +472,7 @@ classdef RobotSamples < handle
       end
       fprintf('\n');
       for i=1:length(keys)
-          if isempty(obj.qsamps(keys{i}).order)
-              ord(i)=1;
-          else
         ord(i)=obj.qsamps(keys{i}).order;
-          end
       end
       [~,sortorder]=sort(ord);
       for i=sortorder
