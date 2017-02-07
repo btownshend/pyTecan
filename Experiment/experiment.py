@@ -384,7 +384,7 @@ class Experiment(object):
         self.pgmStartTime=clock.pipetting
         self.pgmEndTime=duration*60+clock.pipetting
         self.ptcrunning=True
-        Sample.addallhistory("{%s}"%pgm,addToEmpty=False,onlyplate=decklayout.SAMPLEPLATE.name)
+        Sample.addallhistory("{%s}"%pgm,addToEmpty=False,onlyplate=decklayout.SAMPLEPLATE.name,type="ptc")
         if waitForCompletion:
             self.waitpgm()
 
@@ -492,7 +492,7 @@ class Experiment(object):
         worklist.pyrun("BioShake\\bioexec.py shakeOn")
         self.starttimer()
         Sample.shaken(plate.name,speed)
-        Sample.addallhistory("(S%d@%.0f)"%(dur,speed),onlyplate=plate.name)
+        Sample.addallhistory("(S%d@%.0f)"%(dur,speed),onlyplate=plate.name,type="shake")
         self.waittimer(dur)
         worklist.pyrun("BioShake\\bioexec.py shakeOff")
         self.starttimer()
@@ -521,7 +521,7 @@ class Experiment(object):
     def pause(self,duration):
         self.starttimer()
         self.waittimer(duration)
-        Sample.addallhistory("(%ds)"%duration)
+        Sample.addallhistory("(%ds)"%duration,type="pause")
 
     def waitpgm(self, sanitize=True):
         if not self.ptcrunning:

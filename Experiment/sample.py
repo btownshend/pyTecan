@@ -21,6 +21,7 @@ MIXLOSS=3.26		# Amount of sample lost during mixes  (in addition to any prefill 
 BEADSETTLINGTIME=10*60 	# Time (in seconds) after which beads should be remixed before use
 
 _Sample__allsamples = []
+_Sample__historyOptions =["normal","shake","detect","ptc","evap"]
 tiphistory={}
 
 #Updated LC's:
@@ -88,6 +89,11 @@ class Sample(object):
                 cnt+=1
         return cnt
 
+    @staticmethod
+    def setHistoryOptions(opts):
+        global __historyOptions
+        __historyOptions=opts
+        
     def __init__(self,name,plate,well=None,conc=None,volume=0,hasBeads=False,extraVol=50,mixLC=liquidclass.LCMixBottom,firstWell=None,extrainfo=[],ingredients=None,atEnd=False):
         # If firstWell is not None, then it is a hint of the first well position that should be used
         if well!=None and well!=-1:
@@ -300,7 +306,8 @@ class Sample(object):
         if op=='aspirate' and self.evap>thresh*self.volume and self.evap>2.0 and self.volume>0:
             pctevap=self.evap/self.volume*100
             logging.warning(" %s (%s.%s, vol=%.1f ul) may have %.1f ul of evaporation (%.0f%%)"%(self.name,str(self.plate),self.plate.wellname(self.well),self.volume,self.evap,pctevap))
-            self.history= self.history + (' [Evap: %0.1f ul]'%(self.evap))
+            if "evap" in __historyOptions:
+                self.history= self.history + (' [Evap: %0.1f ul]'%(self.evap))
         self.lastevapupdate+=dt
 
     def amountToRemove(self,tgtVolume):
@@ -386,7 +393,7 @@ class Sample(object):
         worklist.email(dest='cdsrobot@gmail.com',subject=msg)
         worklist.comment(doneLabel)
         clock.pipetting=ptmp   # All the retries don't usually happen, so don't count in total time
-        self.addhistory("LD",0,tipMask)
+        self.addhistory("LD",0,tipMask,"detect")
 
     def aspirate(self,tipMask,volume,multi=False):
         self.evapcheck('aspirate')
@@ -520,7 +527,9 @@ class Sample(object):
         self.addhistory(src.name,volume,tipMask)
         self.addingredients(src,volume)
 
-    def addhistory(self,name,vol,tip):
+    def addhistory(self,name,vol,tip,type="normal"):
+        if type not in __historyOptions:
+            return
         if vol>=0:
             if SHOWTIPS:
                 s="%s[%.1f#%d]"%(name,vol,tip)
@@ -554,8 +563,10 @@ class Sample(object):
             tiphistory[tip]=fstr
 
     @staticmethod
-    def addallhistory(msg,addToEmpty=False,onlyplate=None,onlybeads=False):
+    def addallhistory(msg,addToEmpty=False,onlyplate=None,onlybeads=False,type="normal"):
         'Add history entry to all samples (such as # during thermocycling)'
+        if type not in __historyOptions:
+            return  # Not logging this type
         for s in __allsamples:
             if (onlyplate is None or onlyplate==s.plate.name) and (not onlybeads or s.hasBeads):
                 if len(s.history)>0 or (s.volume>0 and msg[0]!='('):
