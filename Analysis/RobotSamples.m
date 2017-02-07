@@ -214,13 +214,25 @@ classdef RobotSamples < handle
         if isempty(obj.q.primers{well})
           %fprintf('Need to parse %s at well %s (%d)\n', s.name, s.well, well);
           dots=find(s.name=='.');
-          primer=s.name(dots(end)+2:end);
+          if s.name(dots(end)+1)~='Q'
+            % Replicate (i.e. ".2" suffix after what we're looking for
+            primers=s.name(dots(end-1)+2:dots(end)-1);
+            replicate=str2double(s.name(dots(end)+1:end));
+            assert(isfinite(replicate));
+            dots=dots(1:end-1);
+          else
+            primer=s.name(dots(end)+2:end);
+            replicate=1;
+          end
           if length(dots)>1 && s.name(dots(end-1)+1)=='D'
             dilution=str2double(strrep(s.name(dots(end-1)+2:dots(end)-1),'_','.'));
             root=s.name(1:dots(end-1)-1);
           else
             dilution=1;
             root=s.name(1:dots(end)-1);
+          end
+          if replicate~=1
+            root=sprintf('%s.R%d',root,replicate);
           end
           obj.setwell(root,s.well,primer,dilution,s);
 
