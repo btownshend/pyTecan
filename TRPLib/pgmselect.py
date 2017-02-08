@@ -292,11 +292,11 @@ class PGMSelect(TRP):
             
         if self.doampure:
             print "######## Ampure Cleanup ###########"
-            ratio=1.5
+            ratio=1.8
             elutionVol=30
-            cleanIn=ext+exo
-            needDil=needDil*cleanIn[0].volume/elutionVol
-            clean=self.runAmpure(src=cleanIn,ratio=ratio,elutionVol=elutionVol)
+            needDil=needDil*rxs[0].volume/elutionVol
+            print "Ampure cleanup of [%s] into %.1f ul"%(",".join(["%.1f"%r.volume for r in rxs]),elutionVol)
+            clean=self.runAmpure(src=rxs,ratio=ratio,elutionVol=elutionVol)
             if "ampure" in self.qpcrStages:
                 q.addSamples(src=clean,needDil=needDil,primers=["T7AX","T7BX","T7WX","MX","T7X","REF"],names=["%s.amp"%n for n in names])
             rxs=clean   # Use the cleaned products for PCR
