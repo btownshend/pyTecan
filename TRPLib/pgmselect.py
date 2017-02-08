@@ -304,9 +304,7 @@ class PGMSelect(TRP):
         if self.columnclean:
             print "######## Column Cleanup ###########"
             elutionVol=30
-            cleaned=[Sample("%s.cln"%r.name,decklayout.SAMPLEPLATE) for r in rxs]
-            for c in cleaned:
-                c.volume=elutionVol
+            cleaned=[Sample("%s.cln"%r.name,decklayout.SAMPLEPLATE,volume=elutionVol,ingredients=r.ingredients) for r in rxs]
             columnDil=elutionVol/rxs[0].volume
             print "Column cleanup of [%s] into %.1f ul"%(",".join(["%.1f"%r.volume for r in rxs]),elutionVol)
             inwells=",".join([r.plate.wellname(r.well) for r in rxs])
