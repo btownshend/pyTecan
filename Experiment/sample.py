@@ -161,7 +161,7 @@ class Sample(object):
             if ingredients is None:
                 self.ingredients={name:volume}
             else:
-                self.ingredients=ingredients
+                self.ingredients=ingredients.copy()
                 total=sum([v for v in ingredients.values()])
                 for k in self.ingredients:
                     self.ingredients[k]=self.ingredients[k]*volume/total
