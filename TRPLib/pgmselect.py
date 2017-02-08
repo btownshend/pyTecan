@@ -12,7 +12,7 @@ from pcrgain import pcrgain
 class PGMSelect(TRP):
     '''Selection experiment'''
     
-    def __init__(self,inputs,nrounds,firstID,pmolesIn,doexo=False,doampure=False,directT7=True,templateDilution=0.3,tmplFinalConc=50,saveDil=24,qpcrWait=False,allLig=False,qpcrStages=["negative","template","ext","finalpcr"],finalPlus=True, cleaveOnly=False,t7dur=30,columnclean=False,douser=False,usertime=10,pcrdil=None):
+    def __init__(self,inputs,nrounds,firstID,pmolesIn,doexo=False,doampure=False,directT7=True,templateDilution=0.3,tmplFinalConc=50,saveDil=24,qpcrWait=False,allLig=False,qpcrStages=["negative","template","ext","finalpcr"],finalPlus=True, cleaveOnly=False,t7dur=30,columnclean=False,douser=False,usertime=10,pcrdil=None,exotime=120):
         # Initialize field values which will never change during multiple calls to pgm()
         for i in range(len(inputs)):
             if 'name' not in inputs[i]:
@@ -20,6 +20,7 @@ class PGMSelect(TRP):
         self.inputs=inputs
         self.nrounds=nrounds
         self.doexo=doexo
+        self.exotime=exotime
         self.doampure=doampure
         self.directT7=directT7
         self.tmplFinalConc=tmplFinalConc
@@ -266,7 +267,7 @@ class PGMSelect(TRP):
             if self.doexo:
                 print "######## Exo ###########"
                 prevvol=rxs[0].volume
-                rxs=self.runExo(rxs,incTime=120,inPlace=True,hiTemp=95,hiTime=20)
+                rxs=self.runExo(rxs,incTime=self.exotime,inPlace=True,hiTemp=95,hiTime=20)
                 print "Exo volume=%.1f ul"%rxs[0].volume
                 exoDil=rxs[0].volume/prevvol
                 needDil/=exoDil
