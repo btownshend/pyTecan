@@ -268,7 +268,7 @@ class PGMSelect(TRP):
                 print "######## Exo ###########"
                 prevvol=rxs[0].volume
                 rxs=self.runExo(rxs,incTime=self.exotime,inPlace=True,hiTemp=95,hiTime=20)
-                print "Exo volume=%.1f ul"%rxs[0].volume
+                print "Exo volume=[%s]"%",".join(["%.1f"%r.volume for r in rxs])
                 exoDil=rxs[0].volume/prevvol
                 needDil/=exoDil
                 needDil/=7   #  Anecdotal based on Ct's -- large components (MX) reduced by exo digestion
@@ -323,7 +323,7 @@ class PGMSelect(TRP):
             print "######## User ###########"
             prevvol=rxs[0].volume
             self.runUser(rxs,incTime=self.usertime,inPlace=True)
-            print "User volume=%.1f ul"%rxs[0].volume
+            print "USER volume=[%s]"%",".join(["%.1f"%r.volume for r in rxs])
             userDil=rxs[0].volume/prevvol
             needDil/=userDil
             if "user" in self.qpcrStages:
