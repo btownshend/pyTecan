@@ -632,7 +632,7 @@ class TRP(object):
             src[i].conc=Concentration(srcdil[i],1)
 
         if inPlace:
-            self.runRxInPlace(src,vol,enzymes[0],returnPlate=False)
+            self.runRxInPlace(src,vol,enzymes[0],returnPlate=(incTime is None))
             tgt=src
         else:
             self.e.stage('Incubation',enzymes,src,tgt,vol,destMix=False)
