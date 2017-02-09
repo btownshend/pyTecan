@@ -362,7 +362,7 @@ class PGMSelect(TRP):
                 
             gain=pcrgain(initConc,400,cycles)
             finalConc=initConc*gain
-            print "Estimated starting concentration in PCR = %.1f nM, running %d cycles -> %.0f nM\n"%(needDil*self.qConc,cycles,finalConc)
+            print "Estimated starting concentration in PCR = %.1f nM, running %d cycles -> %.0f nM\n"%(needDil*self.qConc/pcrdil,cycles,finalConc)
             nsplit=int(math.ceil(pcrvol*1.0/maxSampleVolume))
             print "Split each PCR into %d reactions"%nsplit
             minsrcdil=1/(1-1.0/3-1.0/4)
