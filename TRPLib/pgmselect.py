@@ -348,6 +348,12 @@ class PGMSelect(TRP):
             
         if self.dopcr:
             print "######### PCR #############"
+            maxvol=max([r.volume for r in rxs])
+            if pcrvol/pcrdil > maxvol-10:
+                newpcrvol=(maxvol-10)*pcrdil
+                print "Reducing PCR volume from %.1ful to %.1ful due to limited input"%(pcrvol, newpcrvol)
+                pcrvol=newpcrvol
+                
             print "PCR Volume: %.1f, Dilution: %.1f, volumes available for PCR: [%s]"%(pcrvol, pcrdil,",".join(["%.1f"%r.volume for r in rxs]))
             maxSampleVolume=100  # Maximum sample volume of each PCR reaction (thermocycler limit, and mixing limit)
 
