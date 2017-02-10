@@ -225,11 +225,15 @@ classdef RobotSamples < handle
             replicate=1;
           end
           if length(dots)>1 && s.name(dots(end-1)+1)=='D'
-            dilution=str2double(strrep(s.name(dots(end-1)+2:dots(end)-1),'_','.'));
+            dilution=str2double(strrep(strrep(s.name(dots(end-1)+2:dots(end)-1),'_','.'),'#',''));
             root=s.name(1:dots(end-1)-1);
           else
             dilution=1;
             root=s.name(1:dots(end)-1);
+          end
+          npound=sum(s.name=='#');
+          if npound>0
+            replicate=replicate+npound;
           end
           if replicate~=1
             root=sprintf('%s.R%d',root,replicate);
