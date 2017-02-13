@@ -31,6 +31,7 @@ reagents.add("TE8",well="E4",conc=None)
 reagents.add("EDTA",well="A4",conc=Concentration(20,2,'mM'),extraVol=30)
 
 reagents.add("W-Stop",well="B3",conc=Concentration(4,1,'uM'),extraVol=30)
+reagents.add("T7W-Stop",well="B3",conc=Concentration(4,1,'uM'),extraVol=30)
 reagents.add("A-Stop",well="C3",conc=Concentration(4,1,'uM'),extraVol=30)
 reagents.add("B-Stop",well="A3",conc=Concentration(4,1,'uM'),extraVol=30)
 reagents.add("Unclvd-Stop",well="A2",conc=Concentration(4,1,'uM'),extraVol=30)
