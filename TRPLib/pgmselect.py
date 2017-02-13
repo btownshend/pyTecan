@@ -142,7 +142,6 @@ class PGMSelect(TRP):
                 q.addSamples(src=r2[i],needDil=r2[i].conc.stock/self.qConc,primers=["T7X","T7"+prefixOut[i]+"X"])
             
         print "######### qPCR ###########"
-        #q.addReferences(mindil=4,nsteps=6,primers=["T7X","MX","T7AX"])
         if self.qpcrWait:
             worklist.userprompt('Continue to setup qPCR')
         q.run()
@@ -291,10 +290,16 @@ class PGMSelect(TRP):
                     self.diluteInPlace(tgt=rxs,dil=self.exopostdil)
                     needDil=needDil/self.exopostdil
 
-                exo=self.saveSamps(src=rxs,vol=3,dil=self.saveDil,dilutant=reagents.getsample("TE8"),tgt=[Sample("%s.exo"%n,decklayout.DILPLATE) for n in names])   # Save cDNA product
-                if "exo" in self.qpcrStages:
+                if self.saveDil is not None:
+                    exo=self.saveSamps(src=rxs,vol=3,dil=self.saveDil,dilutant=reagents.getsample("TE8"),tgt=[Sample("%s.exo"%n,decklayout.DILPLATE) for n in names])   # Save cDNA product
+                    if "exo" in self.qpcrStages:
                         for i in range(len(exo)):
                             q.addSamples(src=[exo[i]],needDil=needDil/self.saveDil,primers=primerSet[i],names=["%s.exo"%names[i]])
+                else:
+                    if "exo" in self.qpcrStages:
+                        for i in range(len(rxs)):
+                            q.addSamples(src=[rxs[i]],needDil=needDil,primers=primerSet[i],names=["%s.exo"%names[i]])
+                    
             else:
                 exoDil=1
                 self.exopostdil=1
