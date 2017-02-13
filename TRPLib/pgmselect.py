@@ -69,6 +69,10 @@ class PGMSelect(TRP):
         self.pcrvol2=max(100,self.pmolesIn*1000/(self.rnaConc*0.9/4/1.25)*self.pcrdil2)  # Concentration up to PCR dilution is RNA concentration after EDTA addition and RT setup and Ligation
         self.pcrcycles2=10
 
+        if "rt" in self.qpcrStages:
+            self.rtvol1=max(self.rtvol1,15)+5.4
+            self.rtvol2=max(self.rtvol2,15)+5.4
+
         # Add templates
         if self.directT7:
             self.srcs = self.addTemplates([inp['name'] for inp in inputs],stockconc=tmplFinalConc/templateDilution,finalconc=tmplFinalConc,plate=decklayout.SAMPLEPLATE,looplengths=[inp['looplength'] for inp in inputs],initVol=self.t7vol1a*templateDilution,extraVol=0)
