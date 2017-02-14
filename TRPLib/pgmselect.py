@@ -50,6 +50,7 @@ class PGMSelect(TRP):
         self.exopostdil=2
         self.extpostdil=2
         self.nopcrdil=4
+        self.userMelt=False
         
         # Computed parameters
         if pcrdil is None:
@@ -345,7 +346,10 @@ class PGMSelect(TRP):
         if self.douser:
             print "######## User ###########"
             prevvol=rxs[0].volume
-            self.runUser(rxs,incTime=self.usertime,inPlace=True)
+            if self.userMelt:
+                self.runUser(rxs,incTime=self.usertime,inPlace=True,hiTime=1,hiTemp=95)
+            else:
+                self.runUser(rxs,incTime=self.usertime,inPlace=True)
             print "USER volume=[%s]"%",".join(["%.1f"%r.volume for r in rxs])
             userDil=rxs[0].volume/prevvol
             needDil/=userDil

@@ -657,8 +657,8 @@ class TRP(object):
     ########################
     # USER - USER enzyme digestion
     ########################
-    def runUser(self,src=None,vol=None,srcdil=None,tgt=None,incTime=15,inPlace=False):
-        return self.runIncubation(src=src,vol=vol,srcdil=srcdil,tgt=tgt,incTemp=37,incTime=incTime,enzymes=[reagents.getsample("MUser")],inPlace=inPlace)
+    def runUser(self,src=None,vol=None,srcdil=None,tgt=None,incTime=15,inPlace=False,hiTemp=None,hiTime=0):
+        return self.runIncubation(src=src,vol=vol,srcdil=srcdil,tgt=tgt,incTemp=37,incTime=incTime,enzymes=[reagents.getsample("MUser")],inPlace=inPlace,hiTime=hiTime,hiTemp=hiTemp)
         
     ########################
     # EXO - EXO enzyme digestion
