@@ -49,6 +49,7 @@ class PGMSelect(TRP):
         self.cleavage=0.40			# Estimated cleavage (for computing dilutions of qPCRs)
         self.exopostdil=2
         self.extpostdil=2
+        self.nopcrdil=4
         
         # Computed parameters
         if pcrdil is None:
@@ -110,7 +111,7 @@ class PGMSelect(TRP):
                 if self.rndNum==1:
                     self.t7vol1=self.t7vol1a
                 else:
-                    self.t7vol1=max(20,self.pmolesIn*1000/min([inp.conc.final for inp in t7in])) # New input volueme
+                    self.t7vol1=max(20,self.pmolesIn*1000/min([inp.conc.final for inp in t7in])) # New input volume
                 r1=self.oneround(q,t7in,prefixOut,prefixIn=curPrefix,keepCleaved=False,rtvol=self.rtvol1,t7vol=self.t7vol1,cycles=self.pcrcycles1,pcrdil=self.pcrdil1,pcrvol=self.pcrvol1,dolig=self.allLig)
                 # pcrvol is set to have same diversity as input 
                 for i in range(len(r1)):
@@ -450,6 +451,18 @@ class PGMSelect(TRP):
             else:
                 return pcr[:len(rxs)]
         else:
+            if self.nopcrdil>1:
+                print "Dilution instead of PCR: %.2f"%self.nopcrdil
+                self.diluteInPlace(tgt=rxs,dil=self.nopcrdil)
+                needDil=needDil/self.nopcrdil
+                # Need to add enough t7prefix to compensate for all of the Stop primer currently present, regardless of whether it is for cleaved or uncleaved
+                # Will result in some short transcripts corresponding to the stop primers that are not used for cleaved product, producing just GGG_W_GTCTGC in the next round.  These would be reverse-trancribed, but may compete for T7 yield
+                t7prefix=reagents.getsample("BT88")
+                for r in rxs:
+                    vol=r.volume/(t7prefix.conc.dilutionneeded()-1)
+                    r.conc.final=r.conc.stock*r.volume/(r.volume+vol)
+                    self.e.transfer(vol,t7prefix,r,mix=(False,False))
+                
             return rxs
     
 
