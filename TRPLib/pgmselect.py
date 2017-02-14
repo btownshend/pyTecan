@@ -74,6 +74,9 @@ class PGMSelect(TRP):
         if "rt" in self.qpcrStages:
             self.rtvol1=max(self.rtvol1,15)+5.4
             self.rtvol2=max(self.rtvol2,15)+5.4
+            if "ext" in self.qpcrStages:
+                self.rtvol1+=1.4
+                self.rtvol2+=1.4
 
         # Add templates
         if self.directT7:
