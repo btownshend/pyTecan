@@ -193,7 +193,8 @@ class TRP(object):
         for i in range(len(src)):
             self.e.transfer(vol[i],src[i],tgt[i],mix)
             tgt[i].conc=src[i].conc
-            tgt[i].conc.stock=tgt[i].conc.stock/dil[i]
+            if tgt[i].conc is not None:
+                tgt[i].conc.stock=tgt[i].conc.stock/dil[i]
             
         return tgt
     
