@@ -119,7 +119,10 @@ class PGMSelect(TRP):
                 r1=self.oneround(q,t7in,prefixOut,prefixIn=curPrefix,keepCleaved=False,rtvol=self.rtvol1,t7vol=self.t7vol1,cycles=self.pcrcycles1,pcrdil=self.pcrdil1,pcrvol=self.pcrvol1,dolig=self.allLig)
                 # pcrvol is set to have same diversity as input 
                 for i in range(len(r1)):
-                    r1[i].name="%s_%d_R%dU_%s"%(curPrefix[i],self.nextID,self.inputs[i]['round']+self.rndNum,self.inputs[i]['ligand'])
+                    if self.inputs[i]['ligand'] is None:
+                        r1[i].name="%s_%d_R%dU"%(curPrefix[i],self.nextID,self.inputs[i]['round']+self.rndNum)
+                    else:
+                        r1[i].name="%s_%d_R%dU_%s"%(curPrefix[i],self.nextID,self.inputs[i]['round']+self.rndNum,self.inputs[i]['ligand'])
                     self.nextID+=1
                     r1[i].conc.final=r1[i].conc.stock*self.templateDilution
                 if self.rndNum>=self.nrounds:
@@ -137,7 +140,10 @@ class PGMSelect(TRP):
             r2=self.oneround(q,r1,prefixOut,prefixIn=curPrefix,keepCleaved=True,rtvol=self.rtvol2,t7vol=self.t7vol2,cycles=self.pcrcycles2,pcrdil=self.pcrdil2,pcrvol=self.pcrvol2,dolig=True)
             # pcrvol is set to have same diversity as input = (self.t7vol2*self.templateDilution/rnagain*stopdil*rtdil*extdil*exodil*pcrdil)
             for i in range(len(self.inputs)):
-                r2[i].name="%s_%d_R%dC_%s"%(prefixOut[i],self.nextID,self.inputs[i]['round']+self.rndNum,self.inputs[i]['ligand'])
+                if self.inputs[i]['ligand'] is None:
+                    r2[i].name="%s_%d_R%dC"%(prefixOut[i],self.nextID,self.inputs[i]['round']+self.rndNum)
+                else:
+                    r2[i].name="%s_%d_R%dC_%s"%(prefixOut[i],self.nextID,self.inputs[i]['round']+self.rndNum,self.inputs[i]['ligand'])
                 self.nextID+=1
                 r2[i].conc.final=r2[i].conc.stock*self.templateDilution
             t7in=r2
