@@ -245,7 +245,8 @@ class PGMSelect(TRP):
         print "RT volume= ",[x.volume for x in rxs]
         needDil /= rtDil
         if "rt" in self.qpcrStages:
-            q.addSamples(src=rxs[i:i+1],needDil=needDil,primers=primerSet[i]+["MX"],names=["%s.rt"%names[i]])
+            for i in range(len(rxs)):
+                q.addSamples(src=rxs[i:i+1],needDil=needDil,primers=primerSet[i]+["MX"],names=["%s.rt"%names[i]])
 
         rtSaveDil=10
         rtSaveVol=3.5
