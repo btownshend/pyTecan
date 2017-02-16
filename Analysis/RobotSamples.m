@@ -303,10 +303,10 @@ classdef RobotSamples < handle
         wellindex=obj.q.parsewells(well);
         entry.order=min([entry.order,wellindex]);
       end
-      pMPCR=find(strcmp(samp.ingredients,'MPCR'));
+      pTaq=find(strcmp(samp.ingredients,'Taq'));
       pMT7=find(strcmp(samp.ingredients,'MT7'));
       pT7=find(strcmp(samp.ingredients,'T7'));
-      if ~isempty(pMPCR)  && samp.volumes(pMPCR)>samp.volumes(pMT7)
+      if ~isempty(pTaq)  && sum(samp.volumes(pTaq))>sum(samp.volumes(pT7))
         entry.dispDil=1;   % No dilution back-out for PCR products
       else
         % Use base sample to calculate dilution from T7 step
