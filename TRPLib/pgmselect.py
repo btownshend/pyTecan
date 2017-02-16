@@ -153,9 +153,7 @@ class PGMSelect(TRP):
                 q.addSamples(src=r2[i],needDil=r2[i].conc.stock/self.qConc,primers=["T7X","T7"+prefixOut[i]+"X"])
             
         print "######### qPCR ###########"
-        if self.qpcrWait:
-            worklist.userprompt('Continue to setup qPCR')
-        q.run()
+        q.run(confirm=self.qpcrWait)
         
     def oneround(self,q,input,prefixOut,prefixIn,keepCleaved,t7vol,rtvol,pcrdil,cycles,pcrvol,dolig):
         if self.singlePrefix:

@@ -154,19 +154,24 @@ class QSetup(object):
         if self.debug:
             print "Idler done with ",endTime-clock.elapsed()," seconds remaining"
 
-    def run(self):
+    def run(self,confirm=False):
         'Run the dilutions and QPCR setup'
         # Setup qPCRs
         #self.jobq.dump()
         self.idler(100000)
         self.trp.e.waitpgm()		# May still need to wait for PTC to complete before able to do final jobs
         self.idler(100000)
-        
+        worklist.flushQueue()
         if self.jobq.len()>0:
             logging.error( "Blocked jobs remain on queue:",fatal=False)
             self.jobq.dump()
             assert False
+
+        if confirm:
+            worklist.userprompt('Continue to setup qPCR')
+
         worklist.comment('Starting qPCR setup')
+        self.trp.e.sanitize(force=True)
         for p in self.allprimers():
             # Build list of relevant entries
             ind=[ i for i in range(len(self.dilProds)) if p in self.primers[i]]

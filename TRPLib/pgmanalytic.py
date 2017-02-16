@@ -223,9 +223,4 @@ class PGMAnalytic(TRP):
 
         print "######### qPCR ###########"
         #q.addReferences(mindil=4,nsteps=6,primers=["T7X","MX","T7AX"])
-        #worklist.userprompt('Continue to setup qPCR')
-        q.run()
-        
-    
-
-    
+        q.run(confirm=False)
