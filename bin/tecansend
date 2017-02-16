@@ -1,6 +1,12 @@
 HOST=171.64.80.58
-echo Syncing *.gem LClasses.dat
-rsync -t  *.gem "Admin@${HOST}:'/cygdrive/c/Program Files (x86)/Tecan/Gemini/Data'"
-rsync -t  "Admin@${HOST}:'/cygdrive/c/Users/Admin/AppData/Local/VirtualStore/Program Files (x86)/Tecan/Gemini/Data/LClasses.dat'" .
+if [ "$#" -ge 1 ]
+then
+   files=$*
+else
+   files="*.gem"
+fi
+echo Syncing $files LClasses.dat
+echo rsync -t  $files "Admin@${HOST}:'/cygdrive/c/Program Files (x86)/Tecan/Gemini/Data'"
+echo rsync -t  "Admin@${HOST}:'/cygdrive/c/Users/Admin/AppData/Local/VirtualStore/Program Files (x86)/Tecan/Gemini/Data/LClasses.dat'" .
 
 
