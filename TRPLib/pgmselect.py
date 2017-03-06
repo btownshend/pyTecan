@@ -401,11 +401,6 @@ class PGMSelect(TRP):
         if self.dopcr:
             print "######### PCR #############"
             maxvol=max([r.volume for r in rxs])
-            if pcrvol/pcrdil > maxvol-10:
-                newpcrvol=(maxvol-10)*pcrdil
-                print "Reducing PCR volume from %.1ful to %.1ful due to limited input"%(pcrvol, newpcrvol)
-                pcrvol=newpcrvol
-                
             print "PCR Volume: %.1f, Dilution: %.1f, volumes available for PCR: [%s]"%(pcrvol, pcrdil,",".join(["%.1f"%r.volume for r in rxs]))
             maxSampleVolume=100  # Maximum sample volume of each PCR reaction (thermocycler limit, and mixing limit)
 
@@ -447,6 +442,12 @@ class PGMSelect(TRP):
                     # Save with rtSaveDil dilution to reduce amount of RT consumed (will have Ct's 2-3 lower than others)
                     self.e.transfer(rtSaveVol*predil,rxs[i],self.lastSaved[i],(False,False))
                     self.e.transfer(rtSaveVol*(rtSaveDil/predil-1),decklayout.WATER,self.lastSaved[i],(False,True))  # Use pipette mixing -- shaker mixing will be too slow
+
+            minvol=min([r.volume for r in rxs]);
+            maxpcrvol=(minvol-15-1.4*nsplit)*pcrdil/predil
+            if maxpcrvol<pcrvol:
+                print "Reducing PCR volume from %.1ful to %.1ful due to limited input"%(pcrvol, maxpcrvol)
+                pcrvol=maxpcrvol
 
             pcr=self.runPCR(src=rxs*nsplit,vol=pcrvol/nsplit,srcdil=pcrdil*1.0/predil,ncycles=cycles,primers=["T7%sX"%("" if self.singlePrefix else x) for x in (prefixOut if keepCleaved else prefixIn)]*nsplit,usertime=self.usertime if keepCleaved and not self.douser else None,fastCycling=False,inPlace=False)
                 
