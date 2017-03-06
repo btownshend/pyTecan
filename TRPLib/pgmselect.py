@@ -423,7 +423,7 @@ class PGMSelect(TRP):
                 sampNeeded+=rtSaveVol
             maxvol=max([r.volume for r in rxs]);
             minvol=min([r.volume for r in rxs]);
-            predil=min(75/maxvol,(40+1.4*nsplit)/(minvol-sampNeeded))  # Dilute to have 40ul left -- keeps enough sample to allow good mixing
+            predil=min(150/maxvol,(40+1.4*nsplit)/(minvol-sampNeeded))  # Dilute to have 40ul left -- keeps enough sample to allow good mixing
             if keepCleaved and self.rtSave and predil>rtSaveDil:
                 print "Reducing predil from %.1f to %.1f (rtSaveDil)"%(predil, rtSaveDil)
                 predil=rtSaveDil
