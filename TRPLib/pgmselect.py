@@ -442,6 +442,7 @@ class PGMSelect(TRP):
                     self.e.transfer(rtSaveVol*predil,rxs[i],self.lastSaved[i],(False,False))
                     self.e.transfer(rtSaveVol*(rtSaveDil/predil-1),decklayout.WATER,self.lastSaved[i],(False,True))  # Use pipette mixing -- shaker mixing will be too slow
 
+            #print "NSplit=",nsplit,", PCR vol=",pcrvol/nsplit,", srcdil=",pcrdil*1.0/predil,", input vol=",pcrvol/nsplit/pcrdil*predil
             minvol=min([r.volume for r in rxs]);
             maxpcrvol=(minvol-15-1.4*nsplit)*pcrdil/predil
             if maxpcrvol<pcrvol:
