@@ -42,7 +42,7 @@ class PGMSelect(TRP):
         
         # General parameters
         self.qConc = 0.025			# Target qPCR concentration in nM (corresponds to Ct ~ 10)
-        self.rnaConc=2000		    # Expectec concentration of RNA
+        self.rnaConc=2000		    # Expected concentration of RNA
         self.pcrSave=True		    # Save PCR products
         self.savedilplate=True	# Save PCR products on dilutions plate
         self.rtSave=False			# True to save RT product from uncleaved round and run ligation during cleaved round
@@ -176,7 +176,7 @@ class PGMSelect(TRP):
             assert(dolig)
         else:
             print "Starting new uncleaved round, will retain prefix: ",prefixIn
-
+        print "prefixOut=",prefixOut,", prefixIn=",prefixIn,",t7vol=",t7vol,",rtvol=",rtvol,",pcrdil=",pcrdil,",cycles=",cycles,",dolig=",dolig
         if self.rtSave:
             assert(dolig)
             
@@ -450,6 +450,7 @@ class PGMSelect(TRP):
 
             pcr=self.runPCR(src=rxs*nsplit,vol=pcrvol/nsplit,srcdil=pcrdil*1.0/predil,ncycles=cycles,primers=["T7%sX"%("" if self.singlePrefix else x) for x in (prefixOut if keepCleaved else prefixIn)]*nsplit,usertime=self.usertime if keepCleaved and not self.douser else None,fastCycling=False,inPlace=False)
                 
+            print "Volume remaining in PCR input source: [",",".join(["%.1f"%r.volume for r in rxs]),"]"
             needDil=finalConc/self.qConc
             print "Projected final concentration = %.0f nM"%(needDil*self.qConc)
             for i in range(len(pcr)):
