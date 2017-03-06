@@ -467,7 +467,7 @@ class PGMSelect(TRP):
                 if nsplit>1:
                     # Combine split
                     for i in range(len(rxs),len(rxs)*nsplit):
-                        self.e.transfer(pcr[i].volume-16.4,pcr[i],sv[i%len(sv)],mix=(False,i>=len(rxs)*(nsplit-1)))
+                        self.e.transfer(pcr[i].volume,pcr[i],sv[i%len(sv)],mix=(False,i>=len(rxs)*(nsplit-1)))
                     # Correct concentration (above would've assumed it was diluted)
                     for i in range(len(sv)):
                         sv[i].conc=pcr[i].conc
