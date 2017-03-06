@@ -55,12 +55,19 @@ class PGMAnalytic(TRP):
         self.e.addIdleProgram(q.idler)
         input = [s.getsample()  for s in self.srcs]
 
-        qpcrPrimers=["REF","MX","T7X","T7AX","T7BX","T7WX"]
-        q.addSamples(decklayout.SSDDIL,1,qpcrPrimers,save=False)   # Negative controls
 
         # Save RT product from first (uncleaved) round and then use it during 2nd (cleaved) round for ligation and qPCR measurements
         prefixIn=[inp['prefix'] for inp in self.inputs]
         prefixOut=["A" if p=="W" else "B" if p=="A" else "W" if p=="B" else "BADPREFIX" for p in prefixIn]
+
+        qpcrPrimers=["REF","MX","T7X"]
+        if "W" in prefixIn+prefixOut:
+            qpcrPrimers+=["T7WX"]
+        if "A" in prefixIn+prefixOut:
+            qpcrPrimers+=["T7AX"]
+        if "B" in prefixIn+prefixOut:
+            qpcrPrimers+=["T7BX"]
+        q.addSamples(decklayout.SSDDIL,1,qpcrPrimers,save=False)   # Negative controls
             
         print "Starting new cleavage round, will add prefix: ",prefixOut
 
