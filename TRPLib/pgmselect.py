@@ -212,6 +212,7 @@ class PGMSelect(TRP):
             rxs += self.runT7Setup(ligands=[reagents.getsample(inp['ligand']) for inp in self.inputs],src=input,vol=t7vol,srcdil=[inp.conc.dilutionneeded() for inp in input])
             prefixIn+=prefixIn
             prefixOut+=prefixOut
+            primerSet+=primerSet
             names+=["%s+"%n for n in names]
         elif keepCleaved:
             rxs = self.runT7Setup(src=input,vol=t7vol,srcdil=[inp.conc.dilutionneeded() for inp in input])
