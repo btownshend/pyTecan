@@ -115,7 +115,6 @@ class PGMSelect(TRP):
                 self.rndNum=self.rndNum+1
                 if self.rndNum==1:
                     self.t7vol1=self.t7vol1a
-                else:
                 elif t7in[0].conc.units=='nM':
                     self.t7vol1=max(20,self.pmolesIn*1000/min([inp.conc.final for inp in t7in])) # New input volume
                 else:
@@ -139,7 +138,6 @@ class PGMSelect(TRP):
             
             if self.rndNum==1:
                 self.t7vol2=self.t7vol1a
-            else:
             elif r1[0].conc.units=='nM':
                 self.t7vol2=max(20,self.pmolesIn*1000/min([inp.conc.final for inp in r1]))
             else:
