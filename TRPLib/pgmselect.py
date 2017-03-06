@@ -191,8 +191,8 @@ class PGMSelect(TRP):
                 needDil = max([inp.conc.stock for inp in input])*1.0/self.qConc
             else:
                 print "    %s:  %.1ful@%.1f %s, use %.1f ul"%(inp.name,inp.volume,inp.conc.stock,inp.conc.units,t7vol/inp.conc.dilutionneeded())
+                needDil=100/self.qConc   # Assume 100nM
             # inp.conc.final=inp.conc.stock*self.templateDilution
-        needDil = max([inp.conc.stock for inp in input])*1.0/self.qConc
         if self.directT7 and  self.rndNum==1:
             # Just add ligands and MT7 to each well
             if not keepCleaved:
