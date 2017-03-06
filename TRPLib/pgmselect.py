@@ -12,7 +12,7 @@ from pcrgain import pcrgain
 class PGMSelect(TRP):
     '''Selection experiment'''
     
-    def __init__(self,inputs,nrounds,firstID,pmolesIn,doexo=False,doampure=False,directT7=True,templateDilution=0.3,tmplFinalConc=50,saveDil=24,qpcrWait=False,allLig=False,qpcrStages=["negative","template","ext","finalpcr"],finalPlus=True, cleaveOnly=False,t7dur=30,columnclean=False,douser=False,usertime=10,pcrdil=None,exotime=60,singlePrefix=False):
+    def __init__(self,inputs,nrounds,firstID,pmolesIn,doexo=False,doampure=False,directT7=True,templateDilution=0.3,tmplFinalConc=50,saveDil=24,qpcrWait=False,allLig=False,qpcrStages=["negative","template","ext","finalpcr"],finalPlus=True, cleaveOnly=False,t7dur=30,columnclean=False,douser=False,usertime=10,pcrdil=None,exotime=60,singlePrefix=False,noPCRCleave=False):
         # Initialize field values which will never change during multiple calls to pgm()
         for i in range(len(inputs)):
             if 'name' not in inputs[i]:
@@ -38,6 +38,7 @@ class PGMSelect(TRP):
         self.douser=douser
         self.usertime=usertime				# USER incubation time in minutes
         self.singlePrefix=singlePrefix
+        self.noPCRCleave=noPCRCleave   # Skip PCR on cleave-selection rounds
         
         # General parameters
         self.qConc = 0.025			# Target qPCR concentration in nM (corresponds to Ct ~ 10)
@@ -143,7 +144,12 @@ class PGMSelect(TRP):
                 self.t7vol2=max(20,self.pmolesIn*1000/min([inp.conc.final for inp in r1]))
             else:
                 self.t7vol2=min([(inp.volume-15)/inp.conc.dilutionneeded() for inp in r1])
+
+            if self.noPCRCleave:
+                self.dopcr=False
             r2=self.oneround(q,r1,prefixOut,prefixIn=curPrefix,keepCleaved=True,rtvol=self.rtvol2,t7vol=self.t7vol2,cycles=self.pcrcycles2,pcrdil=self.pcrdil2,pcrvol=self.pcrvol2,dolig=True)
+            if self.noPCRCleave:
+                self.dopcr=True
             # pcrvol is set to have same diversity as input = (self.t7vol2*self.templateDilution/rnagain*stopdil*rtdil*extdil*exodil*pcrdil)
             for i in range(len(self.inputs)):
                 if self.inputs[i]['ligand'] is None:
