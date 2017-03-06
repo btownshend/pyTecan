@@ -457,9 +457,12 @@ class PGMSelect(TRP):
 
             if self.pcrSave:
                 # Save samples at 1x (move all contents -- can ignore warnings)
-                if self.savedilplate:
+
+                if self.savedilplate and pcrvol<150:
                     sv=self.saveSamps(src=pcr[:len(rxs)],vol=[x.volume for x in pcr[:len(rxs)]],dil=1,plate=decklayout.DILPLATE,atEnd=True)
                 else:
+                    if self.savedilplate:
+                        print "Saving PCR products in eppendorfs since volume=%.1f ul"%pcrvol
                     sv=self.saveSamps(src=pcr[:len(rxs)],vol=[x.volume for x in pcr[:len(rxs)]],dil=1,plate=decklayout.EPPENDORFS)
                 if nsplit>1:
                     # Combine split
