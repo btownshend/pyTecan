@@ -61,13 +61,13 @@ class PGMSelect(TRP):
             self.pcrdil2=pcrdil
 
         self.t7vol1a=max(20+5.4,self.pmolesIn*1000/tmplFinalConc)  # Extra vol for first round to compensate for qPCR removals
-        self.rtvol1=max(8,self.pmolesIn*2*1e-12/1.0e-6*1e6)    # Compute volume so that full utilization of RT primers results in 2 * input diversity
+        self.rtvol1=max(8,self.pmolesIn*2*1e-12/(self.rnaConc*1e-9/4)*1e6)    # Compute volume so that full utilization of RNA results in 2 * input diversity
         self.pcrvol1=max(100,self.pmolesIn*1000/(self.rnaConc*0.9/4)*self.pcrdil1)    # Concentration up to PCR dilution is RNA concentration after EDTA addition and RT setup
         # Use at least 100ul so the evaporation of the saved sample that occurs during the run will be relatively small
         self.pcrcycles1=10
         
         self.t7vol2=max(22,self.pmolesIn*1000/self.tmplFinalConc)
-        self.rtvol2=max(9,self.pmolesIn*2*1e-12/1.0e-6*1e6)    # Compute volume so that full utilization of RT primers results in 2 * input diversity
+        self.rtvol2=max(9,self.pmolesIn*2*1e-12/(self.rnaConc*1e-9/4)*1e6)    # Compute volume so that full utilization of RNA results in 2 * input diversity
         self.pcrvol2=max(100,self.pmolesIn*1000/(self.rnaConc*0.9/4/1.25)*self.pcrdil2)  # Concentration up to PCR dilution is RNA concentration after EDTA addition and RT setup and Ligation
         self.pcrcycles2=10
 
@@ -115,7 +115,10 @@ class PGMSelect(TRP):
                 if self.rndNum==1:
                     self.t7vol1=self.t7vol1a
                 else:
+                elif t7in[0].conc.units=='nM':
                     self.t7vol1=max(20,self.pmolesIn*1000/min([inp.conc.final for inp in t7in])) # New input volume
+                else:
+                    self.t7vol1=min(150,min([(inp.volume-15)*inp.conc.dilutionneeded() for inp in t7in]))
                 r1=self.oneround(q,t7in,prefixOut,prefixIn=curPrefix,keepCleaved=False,rtvol=self.rtvol1,t7vol=self.t7vol1,cycles=self.pcrcycles1,pcrdil=self.pcrdil1,pcrvol=self.pcrvol1,dolig=self.allLig)
                 # pcrvol is set to have same diversity as input 
                 for i in range(len(r1)):
@@ -136,7 +139,10 @@ class PGMSelect(TRP):
             if self.rndNum==1:
                 self.t7vol2=self.t7vol1a
             else:
+            elif r1[0].conc.units=='nM':
                 self.t7vol2=max(20,self.pmolesIn*1000/min([inp.conc.final for inp in r1]))
+            else:
+                self.t7vol2=min([(inp.volume-15)/inp.conc.dilutionneeded() for inp in r1])
             r2=self.oneround(q,r1,prefixOut,prefixIn=curPrefix,keepCleaved=True,rtvol=self.rtvol2,t7vol=self.t7vol2,cycles=self.pcrcycles2,pcrdil=self.pcrdil2,pcrvol=self.pcrvol2,dolig=True)
             # pcrvol is set to have same diversity as input = (self.t7vol2*self.templateDilution/rnagain*stopdil*rtdil*extdil*exodil*pcrdil)
             for i in range(len(self.inputs)):
@@ -176,7 +182,11 @@ class PGMSelect(TRP):
         print "Inputs:  (t7vol=%.2f)"%t7vol
         inconc=[inp.conc.final for inp in input]
         for inp in input:
-            print "    %s:  %.1ful@%.1f nM, use %.1f ul (%.3f pmoles)"%(inp.name,inp.volume,inp.conc.stock,t7vol/inp.conc.dilutionneeded(), t7vol*inp.conc.final/1000)
+            if inp.conc.units=='nM':
+                print "    %s:  %.1ful@%.1f %s, use %.1f ul (%.3f pmoles)"%(inp.name,inp.volume,inp.conc.stock,inp.conc.units,t7vol/inp.conc.dilutionneeded(), t7vol*inp.conc.final/1000)
+                needDil = max([inp.conc.stock for inp in input])*1.0/self.qConc
+            else:
+                print "    %s:  %.1ful@%.1f %s, use %.1f ul"%(inp.name,inp.volume,inp.conc.stock,inp.conc.units,t7vol/inp.conc.dilutionneeded())
             # inp.conc.final=inp.conc.stock*self.templateDilution
         needDil = max([inp.conc.stock for inp in input])*1.0/self.qConc
         if self.directT7 and  self.rndNum==1:
