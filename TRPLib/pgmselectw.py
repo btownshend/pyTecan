@@ -455,9 +455,9 @@ class PGMSelectW(TRP):
 
             if self.pcrSave:
                 # Save samples at 1x (move all contents -- can ignore warnings)
+                maxSaveVol=self.maxDilVolume*1.0/nsplit
 
                 if self.savedilplate:
-                    maxSaveVol=self.maxDilVolume*1.0/nsplit
                     sv=self.saveSamps(src=pcr[:len(rxs)],vol=[min([maxSaveVol,x.volume]) for x in pcr[:len(rxs)]],dil=1,plate=decklayout.DILPLATE,atEnd=True)
                 else:
                     sv=self.saveSamps(src=pcr[:len(rxs)],vol=[x.volume for x in pcr[:len(rxs)]],dil=1,plate=decklayout.EPPENDORFS)
