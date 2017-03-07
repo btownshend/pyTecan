@@ -29,7 +29,7 @@ reagents.add("BeadBuffer",well="C4",conc=1)
 reagents.add("TheoX",well="C1",conc=4)
 reagents.add("TE8",well="E4",conc=None)
 reagents.add("EDTA",well="A4",conc=Concentration(20,2,'mM'),extraVol=30)
-reagents.add("BT88",well="E2",conc=Concentration(800,200,'nM'),extraVol=30)
+reagents.add("BT88",well="E2",conc=Concentration(4000,800,'nM'),extraVol=30)
 
 reagents.add("W-Stop",well="B3",conc=Concentration(4,1,'uM'),extraVol=30)
 reagents.add("T7W-Stop",well="B3",conc=Concentration(4,1,'uM'),extraVol=30)
