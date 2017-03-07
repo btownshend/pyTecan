@@ -251,7 +251,7 @@ class PGMSelectW(TRP):
         rtDur=20
 
         rxs=self.runRT(src=rxs,vol=rtvol,srcdil=rtDil,heatInactivate=True,hiTemp=hiTemp,dur=rtDur,incTemp=50,stop=[reagents.getsample(s) for s in stop])    # Heat inactivate also allows splint to fold
-        print "RT volume= ",[x.volume for x in rxs]
+        print "RT volume= [",",".join(["%.1f "%x.volume for x in rxs]),"]"
         needDil /= rtDil
         if "rt" in self.qpcrStages:
             for i in range(len(rxs)):
