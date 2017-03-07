@@ -349,7 +349,8 @@ classdef RobotSamples < handle
         elseif strncmp(primer,'BX',2)
           len=21+6+loop1len+6+17+loop2len+29;
         elseif strncmp(primer,'T7X',3)
-          len=24+mean([11,21])+6+loop1len+6+17+loop2len+29;  % Could be W,B, or A
+          %          len=24+mean([11,21])+6+loop1len+6+17+loop2len+29;  % Could be W,B, or A
+          len=24+11+6+loop1len+6+17+loop2len+29;  % Set it to be W
         elseif strncmp(primer,'T7WX',4)
           len=24+11+6+loop1len+6+17+loop2len+29;
         elseif strncmp(primer,'T7AX',4)
