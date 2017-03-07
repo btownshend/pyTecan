@@ -56,6 +56,7 @@ class PGMSelectW(TRP):
         self.userMelt=False
         self.maxDilVolume=100
         self.maxSampVolume=125
+        self.rtcopies=4    				# Number of copies maintained in RT stage
         
         # Computed parameters
         if pcrdil is None:
@@ -65,13 +66,18 @@ class PGMSelectW(TRP):
             self.pcrdilU=pcrdil
             self.pcrdilC=pcrdil
 
-        self.t7vol1a=max(20+5.4,self.pmolesIn*1000/tmplFinalConc)  # Extra vol for first round to compensate for qPCR removals
-        self.rtvolU=max(8,self.pmolesIn*2*1e-12/(self.rnaConc*1e-9/4)*1e6)    # Compute volume so that full utilization of RNA results in 2 * input diversity
+        self.t7extravols=(5.4 if 'template' in self.qpcrStages else 0)+(5.4*0.9 if 'stopped' in self.qpcrStages else 0)+(6.4*0.9 if self.saveRNA else 0)
+        print "self.t7extravols=%.1f ul\n"%self.t7extravols
+        self.t7vol1a=max(25+self.t7extravols,self.pmolesIn*1000/tmplFinalConc)  # Extra vol for first round to compensate for qPCR removals
+        self.rtvolU=max(8,self.pmolesIn*self.rtcopies*1e-12/(self.rnaConc*1e-9/4)*1e6)    # Compute volume so that full utilization of RNA results in 4 * input diversity
         self.pcrvolU=max(100,self.pmolesIn*1000/(self.rnaConc*0.9/4)*self.pcrdilU)    # Concentration up to PCR dilution is RNA concentration after EDTA addition and RT setup
         # Use at least 100ul so the evaporation of the saved sample that occurs during the run will be relatively small
         self.pcrcyclesU=10
         
-        self.rtvolC=max(9,self.pmolesIn*2*1e-12/(self.rnaConc*1e-9/4)*1e6)    # Compute volume so that full utilization of RNA results in 2 * input diversity
+        self.rtvolC=max(9,self.pmolesIn*self.rtcopies*1e-12/(self.rnaConc*1e-9/4)*1e6)    # Compute volume so that full utilization of RNA results in 2 * input diversity
+        if self.noPCRCleave:
+            self.rtvolC=max(self.rtvolC,25)	# Need to have enough for subsequent T7 reaction
+
         self.pcrvolC=max(100,self.pmolesIn*1000/(self.rnaConc*0.9/4/1.25)*self.pcrdilC)  # Concentration up to PCR dilution is RNA concentration after EDTA addition and RT setup and Ligation
         self.pcrcyclesC=10
 
@@ -117,12 +123,15 @@ class PGMSelectW(TRP):
             prefixOut=["W" if self.singlePrefix else "A" if p=="W" else "B" if p=="A" else "W" if p=="B" else "BADPREFIX" for p in curPrefix]
             self.rndNum=self.rndNum+1
             
+            t7vol=(self.rtvolU if roundType=='U' else self.rtvolC)/4+16.5+self.t7extravols
             if self.rndNum==1:
-                t7vol=self.t7vol1a
+                if self.t7vol1a<t7vol:
+                    logging.warning("Round 1 T7 volume set to %.1f, but need %.1f ul\n"%(self.t7vol1a, t7vol));
+                t7vol=max(t7vol,self.t7vol1a)
             elif r1[0].conc.units=='nM':
-                t7vol=max(20 if roundType=='U' else 22,self.pmolesIn*1000/min([inp.conc.final for inp in r1]))
+                t7vol=max(t7vol,self.pmolesIn*1000/min([inp.conc.final for inp in r1]))
             else:
-                t7vol=min(self.maxSampVolume,min([(inp.volume-15)*inp.conc.dilutionneeded() for inp in r1]))
+                t7vol=min(self.maxSampVolume,min([(inp.volume-16.4)*inp.conc.dilutionneeded() for inp in r1]))
 
             if roundType=='U':
                 r1=self.oneround(q,r1,prefixOut,prefixIn=curPrefix,keepCleaved=False,rtvol=self.rtvolU,t7vol=t7vol,cycles=self.pcrcyclesU,pcrdil=self.pcrdilU,pcrvol=self.pcrvolU,dolig=self.allLig)
