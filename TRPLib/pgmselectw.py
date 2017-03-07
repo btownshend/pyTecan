@@ -12,7 +12,7 @@ from pcrgain import pcrgain
 class PGMSelectW(TRP):
     '''Selection experiment'''
     
-    def __init__(self,inputs,rounds,firstID,pmolesIn,doexo=False,doampure=False,directT7=True,templateDilution=0.3,tmplFinalConc=50,saveDil=24,qpcrWait=False,allLig=False,qpcrStages=["negative","template","ext","finalpcr"],finalPlus=True, cleaveOnly=False,t7dur=30,columnclean=False,douser=False,usertime=10,pcrdil=None,exotime=60,singlePrefix=False,noPCRCleave=False):
+    def __init__(self,inputs,rounds,firstID,pmolesIn,doexo=False,doampure=False,directT7=True,templateDilution=0.3,tmplFinalConc=50,saveDil=24,qpcrWait=False,allLig=False,qpcrStages=["negative","template","ext","finalpcr"],finalPlus=True, cleaveOnly=False,t7dur=30,columnclean=False,douser=False,usertime=10,pcrdil=None,exotime=60,singlePrefix=False,noPCRCleave=False,saveRNA=False):
         # Initialize field values which will never change during multiple calls to pgm()
         for i in range(len(inputs)):
             if 'name' not in inputs[i]:
@@ -40,6 +40,7 @@ class PGMSelectW(TRP):
         self.usertime=usertime				# USER incubation time in minutes
         self.singlePrefix=singlePrefix
         self.noPCRCleave=noPCRCleave   # Skip PCR on cleave-selection rounds
+        self.saveRNA=saveRNA
         
         # General parameters
         self.qConc = 0.025			# Target qPCR concentration in nM (corresponds to Ct ~ 10)
@@ -218,12 +219,14 @@ class PGMSelectW(TRP):
         print "Estimate RNA concentration in T7 reaction at %.0f nM"%self.rnaConc
         
         print "######## Stop ########### %.0f min"%(clock.elapsed()/60)
-        #self.saveSamps(src=rxs,vol=5,dil=10,plate=decklayout.EPPENDORFS,dilutant=reagents.getsample("TE8"),mix=(False,False))   # Save to check [RNA] on Qubit, bioanalyzer
         self.e.lihahome()
 
         print "Have %.1f ul before stop"%rxs[0].volume
         preStopVolume=rxs[0].volume
         self.addEDTA(tgt=rxs,finalconc=2)	# Stop to 2mM EDTA final
+
+        if self.saveRNA:
+            self.saveSamps(src=rxs,vol=5,dil=10,plate=decklayout.DILPLATE,dilutant=reagents.getsample("TE8"),mix=(False,False))   # Save to check [RNA] on Qubit, bioanalyzer
         
         stop=["Unclvd-Stop" if (not dolig) else "T7W-Stop" if self.singlePrefix else "A-Stop" if n=="A" else "B-Stop" if n=="B" else "W-Stop" if n=="W" else "BADPREFIX" for n in prefixOut]
 
