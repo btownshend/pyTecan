@@ -145,14 +145,14 @@ class PGMSelectW(TRP):
 
         if "finalpcr" in self.qpcrStages:
             for i in range(len(r1)):
-                q.addSamples(src=r1[i],needDil=r1[i].conc.stock/self.qConc,primers=["T7X","T7"+prefixOut[i]+"X"])
+                q.addSamples(src=r1[i],needDil=r1[i].conc.stock/self.qConc,primers=["T7X","T7"+prefixOut[i]+"X","MX"])
             
         print "######### qPCR ########### %.0f min"%(clock.elapsed()/60)
         q.run(confirm=self.qpcrWait)
         
     def oneround(self,q,input,prefixOut,prefixIn,keepCleaved,t7vol,rtvol,pcrdil,cycles,pcrvol,dolig):
         if self.singlePrefix:
-            primerSet=[["REF","T7X","T7WX"] for i in range(len(prefixIn))]
+            primerSet=[["MX","REF","T7X","T7WX"] for i in range(len(prefixIn))]
         else:
             primerSet=[["T7"+prefixIn[i]+"X","T7"+prefixOut[i]+"X","MX","T7X","REF"] for i in range(len(prefixIn))]
         
@@ -243,7 +243,7 @@ class PGMSelectW(TRP):
         needDil /= rtDil
         if "rt" in self.qpcrStages:
             for i in range(len(rxs)):
-                q.addSamples(src=rxs[i:i+1],needDil=needDil,primers=primerSet[i]+["MX"],names=["%s.rt"%names[i]])
+                q.addSamples(src=rxs[i:i+1],needDil=needDil,primers=primerSet[i],names=["%s.rt"%names[i]])
 
         rtSaveDil=10
         rtSaveVol=3.5
