@@ -8,5 +8,10 @@ fi
 echo Syncing $files LClasses.dat
 rsync -t  $files "Admin@${HOST}:'/cygdrive/c/Program Files (x86)/Tecan/Gemini/Data'"
 rsync -t  "Admin@${HOST}:'/cygdrive/c/Users/Admin/AppData/Local/VirtualStore/Program Files (x86)/Tecan/Gemini/Data/LClasses.dat'" .
-
-
+COPYDIR=SEND_$(date "+%Y%m%d.%H%M")
+mkdir $COPYDIR
+for i in "$files"
+do
+	cp -p $(basename $i .gem).* $COPYDIR
+done
+cp -p LClasses.dat $COPYDIR
