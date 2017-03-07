@@ -467,18 +467,28 @@ class PGMSelectW(TRP):
             else:
                 return pcr[:len(rxs)]
         else:
-            if self.nopcrdil>1:
-                print "Dilution instead of PCR: %.2f"%self.nopcrdil
-                self.diluteInPlace(tgt=rxs,dil=self.nopcrdil)
+            print "Dilution instead of PCR: %.2f"%self.nopcrdil
+            # Need to add enough t7prefix to compensate for all of the Stop primer currently present, regardless of whether it is for cleaved or uncleaved
+            # Will result in some short transcripts corresponding to the stop primers that are not used for cleaved product, producing just GGG_W_GTCTGC in the next round.  These would be reverse-trancribed, but may compete for T7 yield
+            t7prefix=reagents.getsample("BT88")
+            dil=self.extpostdil*exoDil*self.exopostdil*columnDil*userDil
+            stopconc=1000.0/dil
+            bt88conc=t7prefix.conc.stock
+            relbt88=stopconc/bt88conc
+            print "Using EXT with %.0fnM of stop oligo as input to next T7, need %.2ful of BT88@%.0fnM per ul of sample"%(stopconc,relbt88,bt88conc)
+            for r in rxs:
+                vol=r.volume*relbt88
+                t7prefix.conc.final=t7prefix.conc.stock*vol/(r.volume+vol)
+                r.conc.final=r.conc.stock*r.volume/(r.volume+vol)
+                self.e.transfer(vol,t7prefix,r,mix=(False,False))
+
+            if self.nopcrdil>(1+relbt88):
+                self.diluteInPlace(tgt=rxs,dil=self.nopcrdil/(1.0+relbt88))
                 needDil=needDil/self.nopcrdil
-                # Need to add enough t7prefix to compensate for all of the Stop primer currently present, regardless of whether it is for cleaved or uncleaved
-                # Will result in some short transcripts corresponding to the stop primers that are not used for cleaved product, producing just GGG_W_GTCTGC in the next round.  These would be reverse-trancribed, but may compete for T7 yield
-                t7prefix=reagents.getsample("BT88")
-                for r in rxs:
-                    vol=r.volume/(t7prefix.conc.dilutionneeded()-1)
-                    r.conc.final=r.conc.stock*r.volume/(r.volume+vol)
-                    self.e.transfer(vol,t7prefix,r,mix=(False,False))
-                
+                print "Dilution of EXT product: %.2fx * %.2fx = %2.fx\n"%(1+relbt88,self.nopcrdil/(1+relbt88),self.nopcrdil)
+            else:
+                print "Dilution of EXT product: %.2fx\n"%(1+relbt88)
+
             return rxs
     
 
