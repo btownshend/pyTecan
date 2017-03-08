@@ -464,7 +464,7 @@ classdef RobotSamples < handle
     end
     
     function printconcs(obj,varargin)
-      defaults=struct('refprimer','REF');
+      defaults=struct('refprimer','REF','normalize',false);
       args=processargs(defaults,varargin);
 
       pT7WX=find(strcmp(obj.primers,'T7WX'));
@@ -575,6 +575,9 @@ classdef RobotSamples < handle
               concsnm(k)=concs(k)/1000/mw*1e9;
             end
             if all(isfinite(concsnm)==isfinite(concs))
+              if args.normalize
+                concsnm=concsnm/concsnm(pREF)*obj.options.refconc;
+              end
               fprintf('%-40.40s %5.1f %s nM    ',nm,scale,sprintf('%8.3f ',concsnm));
               obj.rsv(i,j,:)=concsnm;
             else
