@@ -272,9 +272,9 @@ class PGMSelectW(TRP):
             
         if dolig:
             print "######## Ligation setup  ########### %.0f min"%(clock.elapsed()/60)
-            extdil=5.0/4
+            extdil=3  # 5.0/4
             reagents.getsample("MLigase").conc=Concentration(5)
-            rxs=self.runLig(rxs,inPlace=True)
+            rxs=self.runLig(rxs,inPlace=True,srcdil=extdil)
 
             print "Ligation volume= ",[x.volume for x in rxs]
             needDil=needDil/extdil
