@@ -105,7 +105,7 @@ class PGMSelectW(TRP):
         
         if "negative" in self.qpcrStages:
             if self.singlePrefix:
-                qpcrPrimers=["REF","MX","T7X","T7WX"]
+                qpcrPrimers=["REF","MX","T7X"]
             else:
                 qpcrPrimers=["REF","MX","T7X","T7AX","T7BX","T7WX"]
             q.addSamples(decklayout.SSDDIL,1,qpcrPrimers,save=False)   # Negative controls
@@ -155,14 +155,17 @@ class PGMSelectW(TRP):
 
         if "finalpcr" in self.qpcrStages:
             for i in range(len(r1)):
-                q.addSamples(src=r1[i],needDil=r1[i].conc.stock/self.qConc,primers=["T7X","T7"+prefixOut[i]+"X","MX"])
+                if self.singlePrefix:
+                    q.addSamples(src=r1[i],needDil=r1[i].conc.stock/self.qConc,primers=["T7X","MX"])
+                else:
+                    q.addSamples(src=r1[i],needDil=r1[i].conc.stock/self.qConc,primers=["T7X","T7"+prefixOut[i]+"X","MX"])
             
         print "######### qPCR ########### %.0f min"%(clock.elapsed()/60)
         q.run(confirm=self.qpcrWait)
         
     def oneround(self,q,input,prefixOut,prefixIn,keepCleaved,t7vol,rtvol,pcrdil,cycles,pcrvol,dolig):
         if self.singlePrefix:
-            primerSet=[["MX","REF","T7X","T7WX"] for i in range(len(prefixIn))]
+            primerSet=[["MX","REF","T7X"] for i in range(len(prefixIn))]
         else:
             primerSet=[["T7"+prefixIn[i]+"X","T7"+prefixOut[i]+"X","MX","T7X","REF"] for i in range(len(prefixIn))]
         
