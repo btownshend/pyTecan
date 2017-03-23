@@ -43,7 +43,7 @@ class PGMSelectW(TRP):
         self.saveRNA=saveRNA
         
         # General parameters
-        self.qConc = 0.025			# Target qPCR concentration in nM (corresponds to Ct ~ 10)
+        self.qConc = 0.050			# Target qPCR concentration in nM (corresponds to Ct ~ 10)
        # Expected concentration of RNA (actually back-computed from MX concentration after RT)
        # Limited to [stop]*4/0.9
         self.rnaConc=min(1000*4/0.9,8314*self.tmplFinalConc/(self.tmplFinalConc+55)*self.t7dur/30)
