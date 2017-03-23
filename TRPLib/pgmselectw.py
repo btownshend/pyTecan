@@ -237,12 +237,13 @@ class PGMSelectW(TRP):
         preStopVolume=rxs[0].volume
         self.addEDTA(tgt=rxs,finalconc=2)	# Stop to 2mM EDTA final
 
+        stopDil=rxs[0].volume/preStopVolume
+
         if self.saveRNA:
             self.saveSamps(src=rxs,vol=5,dil=10,plate=decklayout.DILPLATE,dilutant=reagents.getsample("TE8"),mix=(False,False))   # Save to check [RNA] on Qubit, bioanalyzer
         
         stop=["Unclvd-Stop" if (not dolig) else "T7W-Stop" if self.singlePrefix else "A-Stop" if n=="A" else "B-Stop" if n=="B" else "W-Stop" if n=="W" else "BADPREFIX" for n in prefixOut]
 
-        stopDil=rxs[0].volume/preStopVolume
         needDil = self.rnaConc/self.qConc/stopDil
         if "stopped" in self.qpcrStages:
             for i in range(len(rxs)):
