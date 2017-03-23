@@ -53,7 +53,7 @@ reagents.add("P-REF",well="E6",conc=4)
 reagents.add("T1",well='B4',conc=Concentration(25.0,7.5,'mM'))  #Theo
 reagents.add("T2",well='C4',conc=Concentration(10.0,1.0,'mM')) # Acetyl CoA
 reagents.add("T3",well=None,conc=Concentration(3.333,1.0,'x')) # BIAs
-reagents.add("T3b",well='E3',conc=Concentration(3.333,1.0,'x')) # BIAs less S-Reticuline
+reagents.add("T3c",well='E3',conc=Concentration(3.333,1.0,'x')) # BIAs less S-Reticuline
 reagents.add("T6",well='D4',conc=Concentration(3.333,1.0,'x')) # Redox
 reagents.add("T25",well='C4',conc=Concentration(3.333,1.0,'x')) # Acetyl CoA + Trans-Zeatin
     
