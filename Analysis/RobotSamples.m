@@ -578,7 +578,7 @@ classdef RobotSamples < handle
               concsnm(k)=concs(k)/1000/mw*1e9;
             end
             if all(isfinite(concsnm)==isfinite(concs))
-              if args.normalize
+              if args.normalize && isfinite(concsnm(pREF))
                 concsnm=concsnm/concsnm(pREF)*obj.options.refconc;
               end
               fprintf('%-40.40s %5.1f %s nM    ',nm,scale,sprintf('%8.3f ',concsnm));
