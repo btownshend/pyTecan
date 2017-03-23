@@ -32,7 +32,7 @@ reagents.add("EDTA",well="A4",conc=Concentration(20,2,'mM'),extraVol=30)
 reagents.add("BT88",well="E2",conc=Concentration(4000,800,'nM'),extraVol=30)
 
 reagents.add("W-Stop",well="B3",conc=Concentration(4,1,'uM'),extraVol=30)
-reagents.add("T7W-Stop",well="B3",conc=Concentration(4,1,'uM'),extraVol=30)
+reagents.add("T7W-Stop",well="D3",conc=Concentration(4,1,'uM'),extraVol=30)
 reagents.add("A-Stop",well="C3",conc=Concentration(4,1,'uM'),extraVol=30)
 reagents.add("B-Stop",well="A3",conc=Concentration(4,1,'uM'),extraVol=30)
 reagents.add("Unclvd-Stop",well="A2",conc=Concentration(4,1,'uM'),extraVol=30)
