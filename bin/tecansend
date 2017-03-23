@@ -12,6 +12,6 @@ COPYDIR=SEND_$(date "+%Y%m%d.%H%M")
 mkdir $COPYDIR
 for i in $files
 do
-	cp -p $(basename $i .gem).* $COPYDIR
+	cp -p $(basename $i .gem).* *.py $COPYDIR
 done
 cp -p LClasses.dat $COPYDIR
