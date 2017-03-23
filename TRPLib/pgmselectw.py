@@ -44,7 +44,9 @@ class PGMSelectW(TRP):
         
         # General parameters
         self.qConc = 0.025			# Target qPCR concentration in nM (corresponds to Ct ~ 10)
-        self.rnaConc=2600		    # Expected concentration of RNA
+       # Expected concentration of RNA (actually back-computed from MX concentration after RT)
+       # Limited to [stop]*4/0.9
+        self.rnaConc=min(1000*4/0.9,8314*self.tmplFinalConc/(self.tmplFinalConc+55)*self.t7dur/30)
         self.pcrSave=True		    # Save PCR products
         self.savedilplate=True	# Save PCR products on dilutions plate
         self.rtSave=False			# True to save RT product from uncleaved round and run ligation during cleaved round
@@ -227,7 +229,6 @@ class PGMSelectW(TRP):
         
         needDil = needDil*max([inp.conc.dilutionneeded() for inp in input])
         self.runT7Pgm(dur=self.t7dur,vol=t7vol)
-        self.rnaConc=min(40,inconc)*self.t7dur*65/30
         print "Estimate RNA concentration in T7 reaction at %.0f nM"%self.rnaConc
         
         print "######## Stop ########### %.0f min"%(clock.elapsed()/60)
