@@ -18,7 +18,7 @@ classdef RobotSamples < handle
   
   methods
     function obj=RobotSamples(sampfilename,opdfilename,varargin)
-      defaults=struct('thresh',[],'doplot',true,'basecycles',2:8,'fulow',[],'fuhigh',[],'refconc',10,'remotedir',[],'showall',false,'badcycles',[]);
+      defaults=struct('thresh',[],'doplot',true,'basecycles',2:8,'fulow',[],'fuhigh',[],'refconc',10,'remotedir',[],'showall',false,'badcycles',[],'longm',false);
       args=processargs(defaults,varargin);
       if ~iscell(sampfilename)
         sampfilename={sampfilename};
@@ -342,6 +342,9 @@ classdef RobotSamples < handle
         loop2len=obj.loop2len(template);
         if strncmp(primer,'MX',2)
           len=17+loop2len+29;
+          if obj.options.longm
+            len=len+73;
+          end
         elseif strncmp(primer,'WX',2)
           len=11+6+loop1len+6+17+loop2len+29;
         elseif strncmp(primer,'AX',2)
