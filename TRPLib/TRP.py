@@ -557,22 +557,26 @@ class TRP(object):
     ########################
     # RT - Reverse Transcription
     ########################
-    def runRT(self,src,vol,srcdil,tgt=None,dur=20,heatInactivate=False,hiTemp=None,incTemp=37,stop=None):
-        result=self.runRTSetup(src,vol,srcdil,tgt,stop=stop)
+    def runRT(self,src,vol,srcdil,tgt=None,dur=20,heatInactivate=False,hiTemp=None,incTemp=37,stop=None,stopConc=1.0):
+        result=self.runRTSetup(src,vol,srcdil,tgt,stop=stop,stopConc=stopConc)
         self.runRTPgm(dur,heatInactivate=heatInactivate,hiTemp=hiTemp,incTemp=incTemp)
         return result
     
-    def runRTInPlace(self,src,vol,dur=20,heatInactivate=False,hiTemp=None,incTemp=37):
+    def runRTInPlace(self,src,vol,dur=20,heatInactivate=False,hiTemp=None,incTemp=37,stop=None,stopConc=1.0):
         'Run RT on beads in given volume'
 
         # Adjust source dilution
         for i in range(len(src)):
             src[i].conc=None
 
+        if stop is not None:
+            print 'runRTInPlace does not support adding stop'
+            assert False
+            
         self.runRxInPlace(src,vol,reagents.getsample("MPosRT"),returnPlate=False)
         self.runRTPgm(dur,heatInactivate=heatInactivate,hiTemp=hiTemp,incTemp=incTemp)
         
-    def runRTSetup(self,src,vol,srcdil,tgt=None,rtmaster=None,stop=None):
+    def runRTSetup(self,src,vol,srcdil,tgt=None,rtmaster=None,stop=None,stopConc=1.0):
         if rtmaster is None:
             rtmaster=reagents.getsample("MPosRT")
         if tgt is None:
@@ -583,6 +587,13 @@ class TRP(object):
         # Adjust source dilution
         for i in range(len(src)):
             src[i].conc=Concentration(srcdil[i],1)
+
+        for i in range(len(stop)):
+            if stop[i] is not None:
+                stop[i].conc.final=stopConc
+                
+        if any([s is not None for s in stop]):
+            print "Adding stop:  [%s]"%(",".join(["%s@%.1fuM"%(s.name,s.conc.final) for s in stop]))
             
         stopvol=[ 0 if stop[i] is None else vol[i]/stop[i].conc.dilutionneeded() for i in range(len(vol))]
         assert(min(stopvol)==max(stopvol))   # Assume all stop volumes are the same
