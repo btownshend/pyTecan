@@ -38,7 +38,7 @@ class PGMAnalytic(TRP):
         self.pcrdil=80
         self.pcrvol=50
         self.pcrcycles=10
-        self.rnaConc=min(2000,self.tmplFinalConc*self.t7dur*200/30)   # Expected concentration of RNA
+        self.rnaConc=3029*self.tmplFinalConc/(self.tmplFinalConc+54.6)*self.t7dur/60   # Expected concentration of RNA
         
         # Add templates
         if self.directT7:
