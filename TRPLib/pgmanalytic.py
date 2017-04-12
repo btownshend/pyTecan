@@ -107,6 +107,8 @@ class PGMAnalytic(TRP):
         preStopVolume=rxs[0].volume
         self.addEDTA(tgt=rxs,finalconc=2)	# Stop to 2mM EDTA final
         
+        stopDil=rxs[0].volume/preStopVolume
+
         if self.saveRNA:
             self.saveSamps(src=rxs,vol=5,dil=2,plate=decklayout.DILPLATE,dilutant=reagents.getsample("TE8"),mix=(False,False))   # Save to check [RNA] on Qubit, bioanalyzer
 
@@ -115,7 +117,6 @@ class PGMAnalytic(TRP):
         for i in range(len(rxs)):
             rxs[i].name=rxs[i].name+"."+stop[i]
 
-        stopDil=rxs[0].volume/preStopVolume
         needDil = self.rnaConc/self.qConc/stopDil
         #q.addSamples(src=rxs,needDil=needDil,primers=["T7AX","MX","T7X","REF"],names=["%s.stopped"%r.name for r in rxs])
         
