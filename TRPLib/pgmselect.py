@@ -16,7 +16,10 @@ class PGMSelect(TRP):
         # Initialize field values which will never change during multiple calls to pgm()
         for i in range(len(inputs)):
             if 'name' not in inputs[i]:
-                inputs[i]['name']='%s_%d_R%d_%s'%(inputs[i]['prefix'],inputs[i]['ID'],inputs[i]['round'],inputs[i]['ligand'])
+                if inputs[i]['ligand'] is None:
+                    inputs[i]['name']='%s_%d_R%d'%(inputs[i]['prefix'],inputs[i]['ID'],inputs[i]['round'])
+                else:
+                    inputs[i]['name']='%s_%d_R%d_%s'%(inputs[i]['prefix'],inputs[i]['ID'],inputs[i]['round'],inputs[i]['ligand'])
         self.inputs=inputs
         self.rounds=rounds
         self.nrounds=len(rounds)
