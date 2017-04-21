@@ -624,9 +624,18 @@ class Sample(object):
                 minspeed=assumeSpeed
 
         maxspeed=interpolate(self.plate.maxspeeds,self.volume)
+        if maxspeed is None:
+            assumeSpeed=1200
+            logging.warning("No shaker max speed data for volume of %.0f ul, assuming %.0f rpm"%(self.volume,assumeSpeed))
+            maxspeed=assumeSpeed
+            
         glycerol=self.glycerolfrac()
         if glycerol>0:
             gmaxspeed=interpolate(self.plate.glycerolmaxspeeds,self.volume)
+            if gmaxspeed is None:
+                logging.warning("No shaker max speed data for glycerol with volume of %.0f ul, using no-glycerol speed of  %.0f rpm"%(self.volume,maxspeed))
+                gmaxspeed=maxspeed
+
             if glycerol>self.plate.glycerol:
                 logging.notice("Sample %s contains %.1f%% Glycerol (more than tested of %.1f%%)"%(self.name,glycerol*100,self.plate.glycerol*100))
                 maxspeed=gmaxspeed
