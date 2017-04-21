@@ -12,13 +12,14 @@ from pcrgain import pcrgain
 class PGMSelect(TRP):
     '''Selection experiment'''
     
-    def __init__(self,inputs,nrounds,firstID,pmolesIn,doexo=False,doampure=False,directT7=True,templateDilution=0.3,tmplFinalConc=50,saveDil=24,qpcrWait=False,allLig=False,qpcrStages=["negative","template","ext","finalpcr"],finalPlus=True, cleaveOnly=False,t7dur=30,columnclean=False,douser=False,usertime=10,pcrdil=None,exotime=60,singlePrefix=False,noPCRCleave=False):
+    def __init__(self,inputs,rounds,firstID,pmolesIn,doexo=False,doampure=False,directT7=True,templateDilution=0.3,tmplFinalConc=50,saveDil=24,qpcrWait=False,allLig=False,qpcrStages=["negative","template","ext","finalpcr"],finalPlus=True, cleaveOnly=False,t7dur=30,columnclean=False,douser=False,usertime=10,pcrdil=None,exotime=60,singlePrefix=False,noPCRCleave=False):
         # Initialize field values which will never change during multiple calls to pgm()
         for i in range(len(inputs)):
             if 'name' not in inputs[i]:
                 inputs[i]['name']='%s_%d_R%d_%s'%(inputs[i]['prefix'],inputs[i]['ID'],inputs[i]['round'],inputs[i]['ligand'])
         self.inputs=inputs
-        self.nrounds=nrounds
+        self.rounds=rounds
+        self.nrounds=len(rounds)
         self.doexo=doexo
         self.exotime=exotime
         self.doampure=doampure
@@ -105,8 +106,11 @@ class PGMSelect(TRP):
         self.rndNum=0
         self.nextID=self.firstID
         curPrefix=[inp['prefix'] for inp in self.inputs]
+        
+        for roundType in self.rounds:
+            # Run a single round of roundType "C" or "U" with r1 as input
+            # Set r1 to new output at end
 
-        while self.rndNum<self.nrounds:
             prefixOut=["W" if self.singlePrefix else "A" if p=="W" else "B" if p=="A" else "W" if p=="B" else "BADPREFIX" for p in curPrefix]
             print "prefixIn=",curPrefix
             print "prefixOut=",prefixOut
