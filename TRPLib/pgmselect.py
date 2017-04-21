@@ -4,7 +4,7 @@ import math
 
 from Experiment.concentration import Concentration
 from Experiment.sample import Sample
-from Experiment import worklist, reagents, decklayout, logging
+from Experiment import worklist, reagents, decklayout, logging,clock
 from TRPLib.TRP import TRP
 from TRPLib.QSetup import QSetup
 from pcrgain import pcrgain
@@ -162,7 +162,7 @@ class PGMSelect(TRP):
             for i in range(len(r2)):
                 q.addSamples(src=r2[i],needDil=r2[i].conc.stock/self.qConc,primers=["T7X","T7"+prefixOut[i]+"X"])
             
-        print "######### qPCR ###########"
+        print "######### qPCR ########### %.0f min"%(clock.elapsed()/60)
         q.run(confirm=self.qpcrWait)
         
     def oneround(self,q,input,prefixOut,prefixIn,keepCleaved,t7vol,rtvol,pcrdil,cycles,pcrvol,dolig):
@@ -182,7 +182,7 @@ class PGMSelect(TRP):
             
         names=[i.name for i in input]
             
-        print "######## T7 ###########"
+        print "######## T7 ########### %.0f min"%(clock.elapsed()/60)
         print "Inputs:  (t7vol=%.2f)"%t7vol
         inconc=[inp.conc.final for inp in input]
         for inp in input:
@@ -231,10 +231,10 @@ class PGMSelect(TRP):
         self.runT7Pgm(dur=self.t7dur,vol=t7vol)
         self.rnaConc=min(40,inconc)*self.t7dur*65/30
         print "Estimate RNA concentration in T7 reaction at %.0f nM"%self.rnaConc
-
-        print "######## Stop ###########"
         #self.saveSamps(src=rxs,vol=5,dil=10,plate=decklayout.EPPENDORFS,dilutant=reagents.getsample("TE8"),mix=(False,False))   # Save to check [RNA] on Qubit, bioanalyzer
 
+        
+        print "######## Stop ########### %.0f min"%(clock.elapsed()/60)
         self.e.lihahome()
 
         print "Have %.1f ul before stop"%rxs[0].volume
@@ -249,7 +249,7 @@ class PGMSelect(TRP):
             for i in range(len(rxs)):
                 q.addSamples(src=rxs[i:i+1],needDil=needDil,primers=primerSet[i],names=["%s.stopped"%rx[i].name])
         
-        print "######## RT  Setup ###########"
+        print "######## RT  Setup ########### %.0f min"%(clock.elapsed()/60)
         rtDil=4
         hiTemp=95
         rtDur=20
@@ -272,8 +272,8 @@ class PGMSelect(TRP):
                 rxs.append(newsamp)
             
         if dolig:
-            print "######## Ligation setup  ###########"
             extdil=5.0/4
+            print "######## Ligation setup  ########### %.0f min"%(clock.elapsed()/60)
             reagents.getsample("MLigase").conc=Concentration(5)
             rxs=self.runLig(rxs,inPlace=True)
 
@@ -303,7 +303,7 @@ class PGMSelect(TRP):
                             q.addSamples(src=[rxs[isave]],needDil=needDil/rtSaveDil,primers=primerSet[isave])
 
             if self.doexo:
-                print "######## Exo ###########"
+                print "######## Exo ########### %.0f min"%(clock.elapsed()/60)
                 prevvol=rxs[0].volume
                 rxs=self.runExo(rxs,incTime=self.exotime,inPlace=True,hiTemp=95,hiTime=20)
                 print "Exo volume=[%s]"%",".join(["%.1f"%r.volume for r in rxs])
@@ -336,7 +336,7 @@ class PGMSelect(TRP):
             exoDil=1
             
         if self.doampure:
-            print "######## Ampure Cleanup ###########"
+            print "######## Ampure Cleanup ########### %.0f min"%(clock.elapsed()/60)
             ratio=1.8
             elutionVol=30
             needDil=needDil*rxs[0].volume/elutionVol
@@ -348,7 +348,7 @@ class PGMSelect(TRP):
             rxs=clean   # Use the cleaned products for PCR
 
         if self.columnclean:
-            print "######## Column Cleanup ###########"
+            print "######## Column Cleanup ########### %.0f min"%(clock.elapsed()/60)
             elutionVol=30
             cleaned=[Sample("%s.cln"%r.name,decklayout.SAMPLEPLATE,volume=elutionVol,ingredients=r.ingredients) for r in rxs]
             columnDil=elutionVol/rxs[0].volume
@@ -367,7 +367,7 @@ class PGMSelect(TRP):
             columnDil=1
             
         if self.douser:
-            print "######## User ###########"
+            print "######## User ########### %.0f min"%(clock.elapsed()/60)
             prevvol=rxs[0].volume
             if self.userMelt:
                 self.runUser(rxs,incTime=self.usertime,inPlace=True,hiTime=1,hiTemp=95)
@@ -398,7 +398,7 @@ class PGMSelect(TRP):
             prefixIn=prefixIn[0:len(input)]
             
         if self.dopcr:
-            print "######### PCR #############"
+            print "######### PCR ############# %.0f min"%(clock.elapsed()/60)
             maxvol=max([r.volume for r in rxs])
             print "PCR Volume: %.1f, Dilution: %.1f, volumes available for PCR: [%s]"%(pcrvol, pcrdil,",".join(["%.1f"%r.volume for r in rxs]))
             maxSampleVolume=100  # Maximum sample volume of each PCR reaction (thermocycler limit, and mixing limit)
