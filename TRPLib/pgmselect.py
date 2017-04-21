@@ -168,7 +168,7 @@ class PGMSelect(TRP):
         
     def oneround(self,q,input,prefixOut,prefixIn,keepCleaved,t7vol,rtvol,pcrdil,cycles,pcrvol,dolig):
         if self.singlePrefix:
-            primerSet=[["REF","T7X","T7WX"] for i in range(len(prefixIn))]
+            primerSet=[["MX","REF","T7X","T7"+prefixIn[i]+"X"] for i in range(len(prefixIn))]
         else:
             primerSet=[["T7"+prefixIn[i]+"X","T7"+prefixOut[i]+"X","MX","T7X","REF"] for i in range(len(prefixIn))]
         
