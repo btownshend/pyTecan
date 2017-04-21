@@ -59,6 +59,7 @@ class PGMSelect(TRP):
         self.maxDilVolume=100
         self.maxSampVolume=125
         self.rtcopies=4    				# Number of copies maintained in RT stage
+        self.rtHI=False				   # Heat inactive/refold after RT
         
         # Computed parameters
         if pcrdil is None:
@@ -255,7 +256,7 @@ class PGMSelect(TRP):
         hiTemp=95
         rtDur=20
 
-        rxs=self.runRT(src=rxs,vol=rtvol,srcdil=rtDil,heatInactivate=True,hiTemp=hiTemp,dur=rtDur,incTemp=50,stop=[reagents.getsample(s) for s in stop])    # Heat inactivate also allows splint to fold
+        rxs=self.runRT(src=rxs,vol=rtvol,srcdil=rtDil,heatInactivate=self.rtHI,hiTemp=hiTemp,dur=rtDur,incTemp=50,stop=[reagents.getsample(s) for s in stop])    # Heat inactivate also allows splint to fold
         print "RT volume= [",",".join(["%.1f "%x.volume for x in rxs]),"]"
         needDil /= rtDil
         if "rt" in self.qpcrStages:
