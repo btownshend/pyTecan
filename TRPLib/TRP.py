@@ -884,6 +884,7 @@ class TRP(object):
         'Actual robot code generation -- may be run multiple times to establish initial volumes.  Overridden by actual experiment'
 
     def run(self):
+        print vars(self)
         parser=argparse.ArgumentParser(description="TRP")
         parser.add_argument('-v','--verbose',help='Enable verbose output',default=False,action="store_true")
         parser.add_argument('-D','--dewpoint',type=float,help='Dew point',default=10.0)
