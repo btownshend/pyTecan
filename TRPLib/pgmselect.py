@@ -171,7 +171,7 @@ class PGMSelect(TRP):
                 r1[i].name="%s_Out_%d"%(prefixOut[i],self.nextID)
                 if self.inputs[i]['round'] is not None:
                     r1[i].name="%s_R%d%c"%(r1[i].name,self.inputs[i]['round']+self.rndNum,roundType)
-                if self.inputs[i]['ligand'] is not None:
+                if self.inputs[i]['ligand'] is not None and roundType=='U':
                     r1[i].name="%s_%s"%(r1[i].name,self.inputs[i]['ligand'])
                 print "Used ID ", self.nextID," for ", r1[i].name,": ",r1[i]
                 self.nextID+=1
@@ -221,8 +221,10 @@ class PGMSelect(TRP):
             # Just add ligands and MT7 to each well
             if not keepCleaved:
                 for i in range(len(input)):
-                    ligand=reagents.getsample(self.inputs[i]['ligand'])
-                    self.e.transfer(t7vol/ligand.conc.dilutionneeded(),ligand,input[i],mix=(False,False))
+                    if self.inputs[i]['ligand'] is not None:
+                        ligand=reagents.getsample(self.inputs[i]['ligand'])
+                        self.e.transfer(t7vol/ligand.conc.dilutionneeded(),ligand,input[i],mix=(False,False))
+                        names[i]+="+"
             mconc=reagents.getsample("MT7").conc.dilutionneeded()
             for i in range(len(input)):
                 watervol=t7vol*(1-1/mconc)-input[i].volume
