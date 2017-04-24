@@ -9,6 +9,7 @@ from TRPLib.TRP import TRP
 from TRPLib.QSetup import QSetup
 from pcrgain import pcrgain
 
+        
 class PGMSelect(TRP):
     '''Selection experiment'''
     
@@ -529,3 +530,18 @@ class PGMSelect(TRP):
             return rxs
         else:
             return rxs
+
+
+class PGMAnalytic(PGMSelect):
+    "Analytic experiment"
+
+    def __init__(self,inputs,saveRNA=False,tmplFinalConc=5,qpcrStage=["ext","negative"],templateDilution=0.6):
+        super(PGMAnalytic, self).__init__(inputs=inputs,rounds='C',firstID=1,pmolesIn=0,saveRNA=saveRNA,qpcrStages=qpcrStage,templateDilution=templateDilution,tmplFinalConc=tmplFinalConc)
+        self.dopcr=False
+        self.saveRNADilution=2
+        self.ligInPlace=False
+        self.rtvolC=8
+        self.rtpostdil=5
+        self.extpostdil=4
+        self.t7vol1a=25
+        self.saveDil=None
