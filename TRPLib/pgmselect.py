@@ -15,6 +15,10 @@ class PGMSelect(TRP):
     def __init__(self,inputs,rounds,firstID,pmolesIn,doexo=False,doampure=False,directT7=True,templateDilution=0.3,tmplFinalConc=50,saveDil=24,qpcrWait=False,allLig=False,qpcrStages=["negative","template","ext","finalpcr"],finalPlus=True, cleaveOnly=False,t7dur=30,columnclean=False,douser=False,usertime=10,pcrdil=None,exotime=60,singlePrefix=False,noPCRCleave=False,saveRNA=False):
         # Initialize field values which will never change during multiple calls to pgm()
         for i in range(len(inputs)):
+            if 'ligand' not in inputs[i]:
+                inputs[i]['ligand']=None
+            if 'round' not in inputs[i]:
+                inputs[i]['round']=None
             if 'name' not in inputs[i]:
                 if inputs[i]['ligand'] is None:
                     inputs[i]['name']='%s_%d_R%d'%(inputs[i]['prefix'],inputs[i]['ID'],inputs[i]['round'])
