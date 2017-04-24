@@ -152,11 +152,7 @@ class PGMSelect(TRP):
                 r1=self.oneround(q,r1,prefixOut,prefixIn=curPrefix,keepCleaved=False,rtvol=self.rtvolU,t7vol=t7vol,cycles=self.pcrcyclesU,pcrdil=self.pcrdilU,pcrvol=self.pcrvolU,dolig=self.allLig)
             else:
                 assert(roundType=='C')
-                if self.noPCRCleave:
-                    self.dopcr=False
                 r1=self.oneround(q,r1,prefixOut,prefixIn=curPrefix,keepCleaved=True,rtvol=self.rtvolC,t7vol=t7vol,cycles=self.pcrcyclesC,pcrdil=self.pcrdilC,pcrvol=self.pcrvolC,dolig=True)
-                if self.noPCRCleave:
-                    self.dopcr=True
 
             for i in range(len(r1)):
                 r1[i].name="%s_%d"%(prefixOut[i],self.nextID)
@@ -319,6 +315,7 @@ class PGMSelect(TRP):
                         q.addSamples(src=[ext[i]],needDil=min(maxdil,needDil/self.saveDil),primers=primerSet[i],names=["%s.ext"%names[i]],save=False)
             else:
                 if "ext" in self.qpcrStages:
+                    print "needDil=",needDil
                     for i in range(len(input)):
                         q.addSamples(src=[rxs[i]],needDil=needDil,primers=primerSet[i],names=["%s.ext"%names[i]])
                         isave=i+len(input)
@@ -421,7 +418,7 @@ class PGMSelect(TRP):
             prefixOut=prefixOut[0:len(input)]
             prefixIn=prefixIn[0:len(input)]
             
-        if self.dopcr:
+        if self.dopcr and not (keepCleaved and self.noPCRCleave):
             print "######### PCR ############# %.0f min"%(clock.elapsed()/60)
             maxvol=max([r.volume for r in rxs])
             print "PCR Volume: %.1f, Dilution: %.1f, volumes available for PCR: [%s]"%(pcrvol, pcrdil,",".join(["%.1f"%r.volume for r in rxs]))
