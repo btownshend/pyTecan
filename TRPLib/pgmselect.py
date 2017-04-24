@@ -152,6 +152,9 @@ class PGMSelect(TRP):
                         prefixOut[i]=self.inputs[i]['stop'][self.rndNum]
                     else:
                         prefixOut[i]=self.inputs[i]['stop']
+                if prefixOut[i] not in ['A','B','W','T7W']:
+                    print 'Stop for %s must be one of A,B,W,T7W, but found %s'%(self.inputs[i]['name'],prefixOut[i])
+                    assert False
             self.rndNum=self.rndNum+1
             
             t7vol=(self.t7volU if roundType=='U' else self.t7volC)
