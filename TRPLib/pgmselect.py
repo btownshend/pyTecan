@@ -267,8 +267,6 @@ class PGMSelect(TRP):
         if self.saveRNA:
             self.saveSamps(src=rxs,vol=5,dil=self.saveRNADilution,plate=decklayout.DILPLATE,dilutant=reagents.getsample("TE8"),mix=(False,False))   # Save to check [RNA] on Qubit, bioanalyzer
         
-        stop=["Unclvd-Stop" if (not dolig) else "T7W-Stop" if self.singlePrefix else "A-Stop" if n=="A" else "B-Stop" if n=="B" else "W-Stop" if n=="W" else "BADPREFIX" for n in prefixOut]
-
         needDil = self.rnaConc/self.qConc/stopDil
         if "stopped" in self.qpcrStages:
             for i in range(len(rxs)):
@@ -279,9 +277,13 @@ class PGMSelect(TRP):
         hiTemp=95
         rtDur=20
 
+        stop=["Unclvd-Stop" if (not dolig) else "T7W-Stop" if self.singlePrefix else "%s-Stop"%n for n in prefixOut]
         rxs=self.runRT(src=rxs,vol=rtvol,srcdil=rtDil,heatInactivate=self.rtHI,hiTemp=hiTemp,dur=rtDur,incTemp=50,stop=[reagents.getsample(s) for s in stop])    # Heat inactivate also allows splint to fold
         for i in range(len(rxs)):
-            rxs[i].name=names[i]+"."+stop[i]+".rt"
+            if dolig and not self.singlePrefix:
+                rxs[i].name=names[i]+"."+prefixOut[i]+".rt"
+            else:
+                rxs[i].name=names[i]+".rt"
 
         print "RT volume= [",",".join(["%.1f "%x.volume for x in rxs]),"]"
         needDil /= rtDil
