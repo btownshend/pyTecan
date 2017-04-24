@@ -506,7 +506,7 @@ class PGMSelect(TRP):
                 return sv
             else:
                 return pcr[:len(rxs)]
-        else:
+        elif self.noPCRCleave:
             print "Dilution instead of PCR: %.2f"%self.nopcrdil
             # Need to add enough t7prefix to compensate for all of the Stop primer currently present, regardless of whether it is for cleaved or uncleaved
             # Will result in some short transcripts corresponding to the stop primers that are not used for cleaved product, producing just GGG_W_GTCTGC in the next round.  These would be reverse-trancribed, but may compete for T7 yield
@@ -530,6 +530,5 @@ class PGMSelect(TRP):
                 print "Dilution of EXT product: %.2fx\n"%(1+relbt88)
 
             return rxs
-    
-
-    
+        else:
+            return rxs
