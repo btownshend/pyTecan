@@ -68,6 +68,7 @@ class PGMSelect(TRP):
         self.rtcopies=4    				# Number of copies maintained in RT stage
         self.rtHI=False				   # Heat inactive/refold after RT
         
+        self.ligInPlace=True
         self.allprimers=["REF","MX","T7X","T7WX"]    # Will get updated after first pass with all primers used
 
         # Computed parameters
@@ -289,7 +290,10 @@ class PGMSelect(TRP):
             print "######## Ligation setup  ########### %.0f min"%(clock.elapsed()/60)
             extdil=5.0/4
             reagents.getsample("MLigase").conc=Concentration(5)
-            rxs=self.runLig(rxs,inPlace=True,srcdil=extdil)
+            if self.ligInPlace:
+                rxs=self.runLig(rxs,inPlace=True,srcdil=extdil)
+            else:
+                rxs=self.runLig(rxs,inPlace=False,srcdil=extdil,vol=20)
 
             print "Ligation volume= ",[x.volume for x in rxs]
             needDil=needDil/extdil
