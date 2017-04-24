@@ -68,7 +68,7 @@ class PGMSelect(TRP):
         self.maxSampVolume=125
         self.rtcopies=4    				# Number of copies maintained in RT stage
         self.rtHI=False				   # Heat inactive/refold after RT
-        
+        self.saveRNADilution=10
         self.ligInPlace=True
         self.allprimers=["REF","MX","T7X","T7WX"]    # Will get updated after first pass with all primers used
 
@@ -256,7 +256,7 @@ class PGMSelect(TRP):
         stopDil=rxs[0].volume/preStopVolume
 
         if self.saveRNA:
-            self.saveSamps(src=rxs,vol=5,dil=10,plate=decklayout.DILPLATE,dilutant=reagents.getsample("TE8"),mix=(False,False))   # Save to check [RNA] on Qubit, bioanalyzer
+            self.saveSamps(src=rxs,vol=5,dil=self.saveRNADilution,plate=decklayout.DILPLATE,dilutant=reagents.getsample("TE8"),mix=(False,False))   # Save to check [RNA] on Qubit, bioanalyzer
         
         stop=["Unclvd-Stop" if (not dolig) else "T7W-Stop" if self.singlePrefix else "A-Stop" if n=="A" else "B-Stop" if n=="B" else "W-Stop" if n=="W" else "BADPREFIX" for n in prefixOut]
 
