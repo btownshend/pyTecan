@@ -62,7 +62,6 @@ class PGMSelect(TRP):
         self.cleavage=0.40			# Estimated cleavage (for computing dilutions of qPCRs)
         self.exopostdil=2
         self.extpostdil=2
-        self.rtpostdil=1
         self.nopcrdil=4
         self.userMelt=False
         self.maxDilVolume=100
@@ -73,6 +72,7 @@ class PGMSelect(TRP):
         self.ligInPlace=True
         self.allprimers=["REF","MX","T7X","T7WX"]    # Will get updated after first pass with all primers used
 
+        self.rtpostdil=[3.0 if r=='U' else 1.0 for r in self.rounds]
         # Computed parameters
         if pcrdil is None:
             self.pcrdilU=80.0/self.extpostdil/(self.exopostdil if self.doexo else 1)
@@ -284,10 +284,10 @@ class PGMSelect(TRP):
 
         print "RT volume= [",",".join(["%.1f "%x.volume for x in rxs]),"]"
         needDil /= rtDil
-        if self.rtpostdil>1:
-            print "Dilution after RT: %.2f"%self.rtpostdil
-            self.diluteInPlace(tgt=rxs,dil=self.rtpostdil)
-            needDil=needDil/self.rtpostdil
+        if self.rtpostdil[self.rndNum-1]>1:
+            print "Dilution after RT: %.2f"%self.rtpostdil[self.rndNum-1]
+            self.diluteInPlace(tgt=rxs,dil=self.rtpostdil[self.rndNum-1])
+            needDil=needDil/self.rtpostdil[self.rndNum-1]
 
         if "rt" in self.qpcrStages:
             for i in range(len(rxs)):
@@ -418,9 +418,9 @@ class PGMSelect(TRP):
         else:
             userDil=1
 
-        totalDil=stopDil*rtDil*self.rtpostdil*extdil*self.extpostdil*exoDil*self.exopostdil*columnDil*userDil
+        totalDil=stopDil*rtDil*self.rtpostdil[self.rndNum-1]*extdil*self.extpostdil*exoDil*self.exopostdil*columnDil*userDil
         fracRetained=rxs[0].volume/(t7vol*totalDil)
-        print "Total dilution from T7 to Pre-pcr Product = %.2f*%.2f*%.2f*%.2f*%.2f*%.2f*%.2f*%.2f*%.2f = %.2f, fraction retained=%.0f%%"%(stopDil,rtDil,self.rtpostdil,extdil,self.extpostdil,exoDil,self.exopostdil,columnDil,userDil,totalDil,fracRetained*100)
+        print "Total dilution from T7 to Pre-pcr Product = %.2f*%.2f*%.2f*%.2f*%.2f*%.2f*%.2f*%.2f*%.2f = %.2f, fraction retained=%.0f%%"%(stopDil,rtDil,self.rtpostdil[self.rndNum-1],extdil,self.extpostdil,exoDil,self.exopostdil,columnDil,userDil,totalDil,fracRetained*100)
 
         if self.rtSave and not keepCleaved:
             # Remove the extra samples
@@ -557,6 +557,6 @@ class PGMAnalytic(PGMSelect):
         self.saveRNADilution=2
         self.ligInPlace=False
         rtvolC=8
-        self.rtpostdil=5
         self.extpostdil=4
+        self.rtpostdil=[2]
         self.saveDil=None
