@@ -235,11 +235,14 @@ class PGMSelect(TRP):
             rxs=input
         elif self.rndNum==self.nrounds and self.finalPlus and keepCleaved:
             rxs = self.runT7Setup(src=input,vol=t7vol,srcdil=[inp.conc.dilutionneeded() for inp in input])
-            rxs += self.runT7Setup(ligands=[reagents.getsample(inp['ligand']) for inp in self.inputs],src=input,vol=t7vol,srcdil=[inp.conc.dilutionneeded() for inp in input])
-            prefixIn+=prefixIn
-            prefixOut+=prefixOut
-            primerSet+=primerSet
-            names+=["%s+"%n for n in names]
+            for i in range(len(input)):
+                inp=input[i]
+                if self.inputs[i]['ligand'] is not None:
+                    rxs += self.runT7Setup(ligands=[reagents.getsample(self.inputs[i]['ligand'])],src=[inp],vol=t7vol,srcdil=[inp.conc.dilutionneeded()])
+                    prefixIn+=[prefixIn[i]]
+                    prefixOut+=[prefixOut[i]]
+                    primerSet+=[primerSet[i]]
+                    names+=["%s+"%names[i]]
         elif keepCleaved:
             rxs = self.runT7Setup(src=input,vol=t7vol,srcdil=[inp.conc.dilutionneeded() for inp in input])
         else:
