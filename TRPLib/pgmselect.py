@@ -72,9 +72,7 @@ class PGMSelect(TRP):
             self.pcrdilU=pcrdil
             self.pcrdilC=pcrdil
 
-        self.t7extravols=(5.4 if 'template' in self.qpcrStages else 0)+(5.4*0.9 if 'stopped' in self.qpcrStages else 0)+(6.4*0.9 if self.saveRNA else 0)
-        print "self.t7extravols=%.1f ul\n"%self.t7extravols
-        self.t7vol1a=max(25+self.t7extravols,self.pmolesIn*1000/tmplFinalConc)  # Extra vol for first round to compensate for qPCR removals
+
         self.rtvolU=max(8,self.pmolesIn*self.rtcopies*1e-12/(self.rnaConc*1e-9/4)*1e6)    # Compute volume so that full utilization of RNA results in 4 * input diversity
         self.pcrvolU=max(100,self.pmolesIn*1000/(self.rnaConc*0.9/4)*self.pcrdilU)    # Concentration up to PCR dilution is RNA concentration after EDTA addition and RT setup
         # Use at least 100ul so the evaporation of the saved sample that occurs during the run will be relatively small
@@ -87,6 +85,17 @@ class PGMSelect(TRP):
         self.pcrvolC=max(100,self.pmolesIn*1000/(self.rnaConc*0.9/4/1.25)*self.pcrdilC)  # Concentration up to PCR dilution is RNA concentration after EDTA addition and RT setup and Ligation
         self.pcrcyclesC=10
 
+        self.t7extravols=(5.4 if 'template' in self.qpcrStages else 0)+(5.4*0.9 if 'stopped' in self.qpcrStages else 0)+(6.4*0.9 if self.saveRNA else 0)
+        print "self.t7extravols=%.1f ul\n"%self.t7extravols
+        self.t7volU=min(self.maxSampVolume,max(self.rtvolU/4+16.5+self.t7extravols,self.pmolesIn*1000/tmplFinalConc))
+        self.t7volC=min(self.maxSampVolume,max(self.rtvolC/4+16.5+self.t7extravols,self.pmolesIn*1000/tmplFinalConc))
+
+        if self.rounds[0]=='U':
+            self.t7vol1a=max(25+self.t7extravols,self.t7volU)  # Extra vol for first round to compensate for qPCR removals
+        else:
+            self.t7vol1a=max(25+self.t7extravols,self.t7volC)  # Extra vol for first round to compensate for qPCR removals
+
+
         if "rt" in self.qpcrStages:
             self.rtvolU=max(self.rtvolU,15)+5.4
             self.rtvolC=max(self.rtvolC,15)+5.4
@@ -94,11 +103,6 @@ class PGMSelect(TRP):
                 self.rtvolU+=1.4
                 self.rtvolC+=1.4
 
-        # Add templates
-        if self.directT7:
-            self.srcs = self.addTemplates([inp['name'] for inp in inputs],stockconc=tmplFinalConc/templateDilution,finalconc=tmplFinalConc,plate=decklayout.SAMPLEPLATE,looplengths=[inp['looplength'] for inp in inputs],initVol=self.t7vol1a*templateDilution,extraVol=0)
-        else:
-            self.srcs = self.addTemplates([inp['name'] for inp in inputs],stockconc=tmplFinalConc/templateDilution,finalconc=tmplFinalConc,plate=decklayout.DILPLATE,looplengths=[inp['looplength'] for inp in inputs],extraVol=15) 
         
     def setup(self):
         TRP.setup(self)
@@ -107,6 +111,13 @@ class PGMSelect(TRP):
     def pgm(self):
         q = QSetup(self,maxdil=16,debug=False,mindilvol=60)
         self.e.addIdleProgram(q.idler)
+
+        # Add templates
+        if self.directT7:
+            self.srcs = self.addTemplates([inp['name'] for inp in self.inputs],stockconc=self.tmplFinalConc/self.templateDilution,finalconc=self.tmplFinalConc,plate=decklayout.SAMPLEPLATE,looplengths=[inp['looplength'] for inp in self.inputs],initVol=self.t7vol1a*self.templateDilution,extraVol=0)
+        else:
+            self.srcs = self.addTemplates([inp['name'] for inp in self.inputs],stockconc=self.tmplFinalConc/self.templateDilution,finalconc=self.tmplFinalConc,plate=decklayout.DILPLATE,looplengths=[inp['looplength'] for inp in self.inputs],extraVol=15) 
+
         t7in = [s.getsample()  for s in self.srcs]
         
         if "negative" in self.qpcrStages:
@@ -129,15 +140,9 @@ class PGMSelect(TRP):
             prefixOut=["W" if self.singlePrefix else "A" if p=="W" else "B" if p=="A" else "W" if p=="B" else "BADPREFIX" for p in curPrefix]
             self.rndNum=self.rndNum+1
             
-            t7vol=(self.rtvolU if roundType=='U' else self.rtvolC)/4+16.5+self.t7extravols
+            t7vol=(self.t7volU if roundType=='U' else self.t7volC)
             if self.rndNum==1:
-                if self.t7vol1a<t7vol:
-                    logging.warning("Round 1 T7 volume set to %.1f, but need %.1f ul\n"%(self.t7vol1a, t7vol));
-                t7vol=max(t7vol,self.t7vol1a)
-            elif r1[0].conc.units=='nM':
-                t7vol=max(t7vol,self.pmolesIn*1000/min([inp.conc.final for inp in r1]))
-            else:
-                t7vol=min(self.maxSampVolume,min([(inp.volume-16.4)*inp.conc.dilutionneeded() for inp in r1]))
+                t7vol=self.t7vol1a
 
             if roundType=='U':
                 r1=self.oneround(q,r1,prefixOut,prefixIn=curPrefix,keepCleaved=False,rtvol=self.rtvolU,t7vol=t7vol,cycles=self.pcrcyclesU,pcrdil=self.pcrdilU,pcrvol=self.pcrvolU,dolig=self.allLig)
