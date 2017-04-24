@@ -24,7 +24,7 @@ class PGMAnalytic(TRP):
         self.saveRNA=saveRNA
         
         # General parameters
-        self.qConc = 0.025			# Target qPCR concentration in nM (corresponds to Ct ~ 10)
+        self.qConc = 0.050			# Target qPCR concentration in nM (corresponds to Ct ~ 10)
         self.pcrSave=True		    # Save PCR products
         self.savedilplate=True	# Save PCR products on dilutions plate
         self.usertime=10				# USER incubation time in minutes
