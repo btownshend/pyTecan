@@ -72,6 +72,7 @@ class PGMSelect(TRP):
         self.ligInPlace=True
         self.allprimers=["REF","MX","T7X","T7WX"]    # Will get updated after first pass with all primers used
         self.rtpostdil=[3.0 if r=='U' else 1.0 for r in self.rounds]
+        self.rtdur=20
         self.setVolumes()
         
     def setVolumes(self):
@@ -260,10 +261,9 @@ class PGMSelect(TRP):
         print "######## RT  Setup ########### %.0f min"%(clock.elapsed()/60)
         rtDil=4
         hiTemp=95
-        rtDur=20
 
         stop=["Unclvd-Stop" if (not dolig) else "T7W-Stop" if self.singlePrefix else "%s-Stop"%n for n in prefixOut]
-        rxs=self.runRT(src=rxs,vol=rtvol,srcdil=rtDil,heatInactivate=self.rtHI,hiTemp=hiTemp,dur=rtDur,incTemp=50,stop=[reagents.getsample(s) for s in stop])    # Heat inactivate also allows splint to fold
+        rt=self.runRT(src=rxs,vol=rtvol,srcdil=rtDil,heatInactivate=self.rtHI,hiTemp=hiTemp,dur=self.rtdur,incTemp=50,stop=[reagents.getsample(s) for s in stop])    # Heat inactivate also allows splint to fold
         for i in range(len(rxs)):
             if dolig and not self.singlePrefix:
                 rxs[i].name=names[i]+"."+prefixOut[i]+".rt"
