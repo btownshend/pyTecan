@@ -57,7 +57,7 @@ class PGMSelect(TRP):
         self.rnaConc=min(1000*4/0.9,8314*self.tmplFinalConc/(self.tmplFinalConc+55)*self.t7dur/30)
         self.pcrSave=True		    # Save PCR products
         self.savedilplate=True	# Save PCR products on dilutions plate
-        self.rtSave=False			# True to save RT product from uncleaved round and run ligation during cleaved round
+        self.rtCarryForward=False			# True to save RT product from uncleaved round and run ligation during cleaved round
         self.dopcr=True			    # Run PCR of samples
         self.cleavage=0.40			# Estimated cleavage (for computing dilutions of qPCRs)
         self.exopostdil=2
@@ -182,7 +182,7 @@ class PGMSelect(TRP):
         else:
             print "Starting new uncleaved round, will retain prefix: ",prefixIn
         print "prefixOut=",prefixOut,", prefixIn=",prefixIn,",t7vol=",t7vol,",rtvol=",rtvol,",pcrdil=",pcrdil,",cycles=",cycles,",dolig=",dolig
-        if self.rtSave:
+        if self.rtCarryForward:
             assert(dolig)
             
         names=[i.name for i in input]
@@ -281,10 +281,10 @@ class PGMSelect(TRP):
             for i in range(len(rxs)):
                 q.addSamples(src=rxs[i:i+1],needDil=needDil,primers=primerSet[i],names=["%s.rt"%names[i]])
 
-        rtSaveDil=10
-        rtSaveVol=3.5
+        rtCarryForwardDil=10
+        rtCarryForwardVol=3.5
 
-        if self.rtSave and not keepCleaved:
+        if self.rtCarryForward and not keepCleaved:
             # Also include RT from a prior round from here on
             for r in self.lastSaved:
                 newsamp=Sample("%s.samp"%r.name,decklayout.SAMPLEPLATE)
@@ -324,7 +324,7 @@ class PGMSelect(TRP):
                         isave=i+len(input)
                         if isave<len(rxs):
                             # samples restored
-                            q.addSamples(src=[rxs[isave]],needDil=needDil/rtSaveDil,primers=primerSet[isave])
+                            q.addSamples(src=[rxs[isave]],needDil=needDil/rtCarryForwardDil,primers=primerSet[isave])
 
             if self.doexo:
                 print "######## Exo ########### %.0f min"%(clock.elapsed()/60)
@@ -410,7 +410,7 @@ class PGMSelect(TRP):
         fracRetained=rxs[0].volume/(t7vol*totalDil)
         print "Total dilution from T7 to Pre-pcr Product = %.2f*%.2f*%.2f*%.2f*%.2f*%.2f*%.2f*%.2f*%.2f = %.2f, fraction retained=%.0f%%"%(stopDil,rtDil,self.rtpostdil[self.rndNum-1],extdil,self.extpostdil,exoDil,self.exopostdil,columnDil,userDil,totalDil,fracRetained*100)
 
-        if self.rtSave and not keepCleaved:
+        if self.rtCarryForward and not keepCleaved:
             # Remove the extra samples
             assert(len(self.lastSaved)>0)
             rxs=rxs[:len(rxs)-len(self.lastSaved)]
@@ -443,28 +443,28 @@ class PGMSelect(TRP):
             print "Split each PCR into %d reactions"%nsplit
             minsrcdil=1/(1-1.0/3-1.0/4)
             sampNeeded=pcrvol/pcrdil
-            if self.rtSave and keepCleaved:
-                sampNeeded+=rtSaveVol
+            if self.rtCarryForward and keepCleaved:
+                sampNeeded+=rtCarryForwardVol
             maxvol=max([r.volume for r in rxs]);
             minvol=min([r.volume for r in rxs]);
             predil=min(self.maxDilVolume/maxvol,(40+1.4*nsplit)/(minvol-sampNeeded))  # Dilute to have 40ul left -- keeps enough sample to allow good mixing
-            if keepCleaved and self.rtSave and predil>rtSaveDil:
-                print "Reducing predil from %.1f to %.1f (rtSaveDil)"%(predil, rtSaveDil)
-                predil=rtSaveDil
+            if keepCleaved and self.rtCarryForward and predil>rtCarryForwardDil:
+                print "Reducing predil from %.1f to %.1f (rtCarryForwardDil)"%(predil, rtCarryForwardDil)
+                predil=rtCarryForwardDil
             if pcrdil/predil<minsrcdil:
                 predil=pcrdil/minsrcdil	  # Need to dilute at least this into PCR
             if predil>1:
                 self.diluteInPlace(rxs,predil)
                 self.e.shakeSamples(rxs)
                 print "Pre-diluting by %.1fx into [%s] ul"%(predil,",".join(["%.1f"%r.volume for r in rxs]))
-            if keepCleaved and self.rtSave:
-                assert(len(rxs)==len(rtSave))
-                print "Saving %.1f ul of each pre-PCR sample (@%.1f*%.1f dilution)"%(rtSaveVol ,predil, rtSaveDil/predil)
+            if keepCleaved and self.rtCarryForward:
+                assert(len(rxs)==len(rtCarryForward))
+                print "Saving %.1f ul of each pre-PCR sample (@%.1f*%.1f dilution)"%(rtCarryForwardVol ,predil, rtCarryForwardDil/predil)
                 self.lastSaved=[Sample("%s.sv"%x.name,decklayout.DILPLATE) for x in rxs]
                 for i in range(len(rxs)):
-                    # Save with rtSaveDil dilution to reduce amount of RT consumed (will have Ct's 2-3 lower than others)
-                    self.e.transfer(rtSaveVol*predil,rxs[i],self.lastSaved[i],(False,False))
-                    self.e.transfer(rtSaveVol*(rtSaveDil/predil-1),decklayout.WATER,self.lastSaved[i],(False,True))  # Use pipette mixing -- shaker mixing will be too slow
+                    # Save with rtCarryForwardDil dilution to reduce amount of RT consumed (will have Ct's 2-3 lower than others)
+                    self.e.transfer(rtCarryForwardVol*predil,rxs[i],self.lastSaved[i],(False,False))
+                    self.e.transfer(rtCarryForwardVol*(rtCarryForwardDil/predil-1),decklayout.WATER,self.lastSaved[i],(False,True))  # Use pipette mixing -- shaker mixing will be too slow
 
             #print "NSplit=",nsplit,", PCR vol=",pcrvol/nsplit,", srcdil=",pcrdil*1.0/predil,", input vol=",pcrvol/nsplit/pcrdil*predil
             minvol=min([r.volume for r in rxs]);
