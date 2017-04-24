@@ -80,39 +80,35 @@ class PGMSelect(TRP):
         else:
             self.pcrdilU=pcrdil
             self.pcrdilC=pcrdil
-
-
-        self.rtvolU=max(8,self.pmolesIn*self.rtcopies*1e-12/(self.rnaConc*1e-9/4)*1e6)    # Compute volume so that full utilization of RNA results in 4 * input diversity
-        self.pcrvolU=max(100,self.pmolesIn*1000/(self.rnaConc*0.9/4)*self.pcrdilU)    # Concentration up to PCR dilution is RNA concentration after EDTA addition and RT setup
+        pcrvolU=max(100,self.pmolesIn*1000/(self.rnaConc*0.9/4)*self.pcrdilU)    # Concentration up to PCR dilution is RNA concentration after EDTA addition and RT setup
         # Use at least 100ul so the evaporation of the saved sample that occurs during the run will be relatively small
         self.pcrcyclesU=10
-        
-        self.rtvolC=max(9,self.pmolesIn*self.rtcopies*1e-12/(self.rnaConc*1e-9/4)*1e6)    # Compute volume so that full utilization of RNA results in 2 * input diversity
-        if self.noPCRCleave:
-            self.rtvolC=max(self.rtvolC,25)	# Need to have enough for subsequent T7 reaction
-
-        self.pcrvolC=max(100,self.pmolesIn*1000/(self.rnaConc*0.9/4/1.25)*self.pcrdilC)  # Concentration up to PCR dilution is RNA concentration after EDTA addition and RT setup and Ligation
+        pcrvolC=max(100,self.pmolesIn*1000/(self.rnaConc*0.9/4/1.25)*self.pcrdilC)  # Concentration up to PCR dilution is RNA concentration after EDTA addition and RT setup and Ligation
         self.pcrcyclesC=10
 
-        self.t7extravols=(5.4 if 'template' in self.qpcrStages else 0)+(5.4*0.9 if 'stopped' in self.qpcrStages else 0)+(6.4*0.9 if self.saveRNA else 0)
-        print "self.t7extravols=%.1f ul\n"%self.t7extravols
-        self.t7volU=min(self.maxSampVolume,max(self.rtvolU/4+16.5+self.t7extravols,self.pmolesIn*1000/tmplFinalConc))
-        self.t7volC=min(self.maxSampVolume,max(self.rtvolC/4+16.5+self.t7extravols,self.pmolesIn*1000/tmplFinalConc))
-
-        if self.rounds[0]=='U':
-            self.t7vol1a=max(25+self.t7extravols,self.t7volU)  # Extra vol for first round to compensate for qPCR removals
-        else:
-            self.t7vol1a=max(25+self.t7extravols,self.t7volC)  # Extra vol for first round to compensate for qPCR removals
-
+        rtvolU=max(8,self.pmolesIn*self.rtcopies*1e-12/(self.rnaConc*1e-9/4)*1e6)    # Compute volume so that full utilization of RNA results in rtcopies * input diversity
+        rtvolC=max(9,self.pmolesIn*self.rtcopies*1e-12/(self.rnaConc*1e-9/4)*1e6)    # Compute volume so that full utilization of RNA results in rtcopies * input diversity
+        if self.noPCRCleave:
+            rtvolC=max(rtvolC,25)	# Need to have enough for subsequent T7 reaction
 
         if "rt" in self.qpcrStages:
-            self.rtvolU=max(self.rtvolU,15)+5.4
-            self.rtvolC=max(self.rtvolC,15)+5.4
+            rtvolU=max(rtvolU,15)/self.rtpostdil+5.4
+            rtvolC=max(rtvolC,15)/self.rtpostdil+5.4
             if "ext" in self.qpcrStages:
-                self.rtvolU+=1.4
-                self.rtvolC+=1.4
+                rtvolC+=1.4
 
-        
+        self.t7extravols=((4+1.4)*0.9 if 'stopped' in self.qpcrStages else 0)+ ((5+1.4)*0.9 if self.saveRNA else 0)
+        print "self.t7extravols=%.1f ul\n"%self.t7extravols
+        t7volU=min(self.maxSampVolume,max((15.1+rtvolU/4.0+1.4)*0.9+self.t7extravols,self.pmolesIn*1000/tmplFinalConc))
+        t7volC=min(self.maxSampVolume,max((15.1+rtvolC/4.0+1.4)*0.9+self.t7extravols,self.pmolesIn*1000/tmplFinalConc))
+
+
+        self.t7vol=[t7volC if roundType=='C' else t7volU for roundType in self.rounds]
+        if 'template' in self.qpcrStages:
+            self.t7vol[0]+=5.4
+        self.rtvol=[rtvolC if roundType=='C' else rtvolU for roundType in self.rounds]
+        self.pcrvol=[pcrvolC if roundType=='C' else pcrvolU for roundType in self.rounds]
+
     def setup(self):
         TRP.setup(self)
         worklist.setOptimization(True)
@@ -123,7 +119,7 @@ class PGMSelect(TRP):
 
         # Add templates
         if self.directT7:
-            self.srcs = self.addTemplates([inp['name'] for inp in self.inputs],stockconc=self.tmplFinalConc/self.templateDilution,finalconc=self.tmplFinalConc,plate=decklayout.SAMPLEPLATE,looplengths=[inp['looplength'] for inp in self.inputs],initVol=self.t7vol1a*self.templateDilution,extraVol=0)
+            self.srcs = self.addTemplates([inp['name'] for inp in self.inputs],stockconc=self.tmplFinalConc/self.templateDilution,finalconc=self.tmplFinalConc,plate=decklayout.SAMPLEPLATE,looplengths=[inp['looplength'] for inp in self.inputs],initVol=self.t7vol[0]*self.templateDilution,extraVol=0)
         else:
             self.srcs = self.addTemplates([inp['name'] for inp in self.inputs],stockconc=self.tmplFinalConc/self.templateDilution,finalconc=self.tmplFinalConc,plate=decklayout.DILPLATE,looplengths=[inp['looplength'] for inp in self.inputs],extraVol=15) 
 
@@ -157,15 +153,11 @@ class PGMSelect(TRP):
                     assert False
             self.rndNum=self.rndNum+1
             
-            t7vol=(self.t7volU if roundType=='U' else self.t7volC)
-            if self.rndNum==1:
-                t7vol=self.t7vol1a
-
             if roundType=='U':
-                r1=self.oneround(q,r1,prefixOut,prefixIn=curPrefix,keepCleaved=False,rtvol=self.rtvolU,t7vol=t7vol,cycles=self.pcrcyclesU,pcrdil=self.pcrdilU,pcrvol=self.pcrvolU,dolig=self.allLig)
+                r1=self.oneround(q,r1,prefixOut,prefixIn=curPrefix,keepCleaved=False,rtvol=self.rtvol[self.rndNum-1],t7vol=self.t7vol[self.rndNum-1],cycles=self.pcrcyclesU,pcrdil=self.pcrdilU,pcrvol=self.pcrvol[self.rndNum-1],dolig=self.allLig)
             else:
                 assert(roundType=='C')
-                r1=self.oneround(q,r1,prefixOut,prefixIn=curPrefix,keepCleaved=True,rtvol=self.rtvolC,t7vol=t7vol,cycles=self.pcrcyclesC,pcrdil=self.pcrdilC,pcrvol=self.pcrvolC,dolig=True)
+                r1=self.oneround(q,r1,prefixOut,prefixIn=curPrefix,keepCleaved=True,rtvol=self.rtvol[self.rndNum-1],t7vol=self.t7vol[self.rndNum-1],cycles=self.pcrcyclesC,pcrdil=self.pcrdilC,pcrvol=self.pcrvol[self.rndNum-1],dolig=True)
 
             for i in range(len(r1)):
                 r1[i].name="%s_Out_%d"%(prefixOut[i],self.nextID)
@@ -564,8 +556,7 @@ class PGMAnalytic(PGMSelect):
         self.dopcr=False
         self.saveRNADilution=2
         self.ligInPlace=False
-        self.rtvolC=8
+        rtvolC=8
         self.rtpostdil=5
         self.extpostdil=4
-        self.t7vol1a=25
         self.saveDil=None
