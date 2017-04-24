@@ -71,44 +71,32 @@ class PGMSelect(TRP):
         self.saveRNADilution=10
         self.ligInPlace=True
         self.allprimers=["REF","MX","T7X","T7WX"]    # Will get updated after first pass with all primers used
-
         self.rtpostdil=[3.0 if r=='U' else 1.0 for r in self.rounds]
+        self.setVolumes()
+        
+    def setVolumes(self):
         # Computed parameters
-        if pcrdil is None:
-            self.pcrdilU=80.0/self.extpostdil/(self.exopostdil if self.doexo else 1)
-            self.pcrdilC=self.pcrdilU/2
-        else:
-            self.pcrdilU=pcrdil
-            self.pcrdilC=pcrdil
-        pcrvolU=max(100,self.pmolesIn*1000/(self.rnaConc*0.9/4)*self.pcrdilU)    # Concentration up to PCR dilution is RNA concentration after EDTA addition and RT setup
+        self.pcrdil=[(80 if r=='U' else 40)/self.extpostdil/(self.exopostdil if self.doexo else 1) for r in self.rounds]
+        self.pcrvol=[max(100,self.pmolesIn*1000/(self.rnaConc*0.9/4/self.rtpostdil[i]/(1.25*self.extpostdil if self.rounds[i]=='C' else 1.0))*self.pcrdil[i]) for i in range(len(self.rounds))]
+        # Concentration up to PCR dilution is RNA concentration after EDTA addition and RT setup
         # Use at least 100ul so the evaporation of the saved sample that occurs during the run will be relatively small
-        self.pcrcyclesU=10
-        pcrvolC=max(100,self.pmolesIn*1000/(self.rnaConc*0.9/4/1.25)*self.pcrdilC)  # Concentration up to PCR dilution is RNA concentration after EDTA addition and RT setup and Ligation
-        self.pcrcyclesC=10
+        self.pcrcycles=[10 for r in self.rounds]
 
-        rtvolU=max(8,self.pmolesIn*self.rtcopies*1e-12/(self.rnaConc*1e-9/4)*1e6)    # Compute volume so that full utilization of RNA results in rtcopies * input diversity
-        rtvolC=max(9,self.pmolesIn*self.rtcopies*1e-12/(self.rnaConc*1e-9/4)*1e6)    # Compute volume so that full utilization of RNA results in rtcopies * input diversity
-        if self.noPCRCleave:
-            rtvolC=max(rtvolC,25)	# Need to have enough for subsequent T7 reaction
-
+        # Compute volume so that full utilization of RNA results in rtcopies * input diversity
+        self.rtvol=[self.pmolesIn*self.rtcopies*1e-12/(self.rnaConc*1e-9/4)*1e6 for r in self.rounds]  # Enough diversity
         if "rt" in self.qpcrStages:
-            rtvolU=max(rtvolU,15)/self.rtpostdil+5.4
-            rtvolC=max(rtvolC,15)/self.rtpostdil+5.4
-            if "ext" in self.qpcrStages:
-                rtvolC+=1.4
-
+            self.rtvol=[self.rtvol[i]+5.4/self.rtpostdil[i] for i in range(len(self.rtvol))]  # Extra for qPCR
+        self.rtvol=[max(v,8.0) for v in self.rtvol]   # Minimum volume
+        self.rtvol=[min(v,self.maxSampVolume) for v in self.rtvol]  # Maximum volume
+        
         self.t7extravols=((4+1.4)*0.9 if 'stopped' in self.qpcrStages else 0)+ ((5+1.4)*0.9 if self.saveRNA else 0)
         print "self.t7extravols=%.1f ul\n"%self.t7extravols
-        t7volU=min(self.maxSampVolume,max((15.1+rtvolU/4.0+1.4)*0.9+self.t7extravols,self.pmolesIn*1000/tmplFinalConc))
-        t7volC=min(self.maxSampVolume,max((15.1+rtvolC/4.0+1.4)*0.9+self.t7extravols,self.pmolesIn*1000/tmplFinalConc))
-
-
-        self.t7vol=[t7volC if roundType=='C' else t7volU for roundType in self.rounds]
+        self.t7vol=[max((15.1+self.rtvol[i]/4.0+1.4)*0.9+self.t7extravols,self.pmolesIn*1000/self.tmplFinalConc) for i in range(len(self.rounds))]
+        self.t7vol=[max(18.0,v) for v in self.t7vol]   # Make sure that there's enough to add at least 2ul of stop
+        self.t7vol=[min(self.maxSampVolume,v) for v in self.t7vol]   # Make sure no tubes overflow
         if 'template' in self.qpcrStages:
             self.t7vol[0]+=5.4
-        self.rtvol=[rtvolC if roundType=='C' else rtvolU for roundType in self.rounds]
-        self.pcrvol=[pcrvolC if roundType=='C' else pcrvolU for roundType in self.rounds]
-
+        
     def setup(self):
         TRP.setup(self)
         worklist.setOptimization(True)
@@ -154,10 +142,10 @@ class PGMSelect(TRP):
             self.rndNum=self.rndNum+1
             
             if roundType=='U':
-                r1=self.oneround(q,r1,prefixOut,prefixIn=curPrefix,keepCleaved=False,rtvol=self.rtvol[self.rndNum-1],t7vol=self.t7vol[self.rndNum-1],cycles=self.pcrcyclesU,pcrdil=self.pcrdilU,pcrvol=self.pcrvol[self.rndNum-1],dolig=self.allLig)
+                r1=self.oneround(q,r1,prefixOut,prefixIn=curPrefix,keepCleaved=False,rtvol=self.rtvol[self.rndNum-1],t7vol=self.t7vol[self.rndNum-1],cycles=self.pcrcycles[self.rndNum-1],pcrdil=self.pcrdil[self.rndNum-1],pcrvol=self.pcrvol[self.rndNum-1],dolig=self.allLig)
             else:
                 assert(roundType=='C')
-                r1=self.oneround(q,r1,prefixOut,prefixIn=curPrefix,keepCleaved=True,rtvol=self.rtvol[self.rndNum-1],t7vol=self.t7vol[self.rndNum-1],cycles=self.pcrcyclesC,pcrdil=self.pcrdilC,pcrvol=self.pcrvol[self.rndNum-1],dolig=True)
+                r1=self.oneround(q,r1,prefixOut,prefixIn=curPrefix,keepCleaved=True,rtvol=self.rtvol[self.rndNum-1],t7vol=self.t7vol[self.rndNum-1],cycles=self.pcrcycles[self.rndNum-1],pcrdil=self.pcrdil[self.rndNum-1],pcrvol=self.pcrvol[self.rndNum-1],dolig=True)
 
             for i in range(len(r1)):
                 r1[i].name="%s_Out_%d"%(prefixOut[i],self.nextID)
@@ -560,3 +548,4 @@ class PGMAnalytic(PGMSelect):
         self.extpostdil=4
         self.rtpostdil=[2]
         self.saveDil=None
+        self.setVolumes()
