@@ -142,7 +142,16 @@ class PGMSelect(TRP):
             # Run a single round of roundType "C" or "U" with r1 as input
             # Set r1 to new output at end
 
+            # Computed output prefix
             prefixOut=["W" if self.singlePrefix else "A" if p=="W" else "B" if p=="A" else "W" if p=="B" else "BADPREFIX" for p in curPrefix]
+            # May be explicitly overridden
+            for i in range(len(self.inputs)):
+                if 'stop' in self.inputs[i]:
+                    if isinstance(self.inputs[i]['stop'],list):
+                        assert(len(self.inputs[i]['stop'])==len(self.rounds))
+                        prefixOut[i]=self.inputs[i]['stop'][self.rndNum]
+                    else:
+                        prefixOut[i]=self.inputs[i]['stop']
             self.rndNum=self.rndNum+1
             
             t7vol=(self.t7volU if roundType=='U' else self.t7volC)
