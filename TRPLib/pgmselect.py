@@ -543,9 +543,8 @@ class PGMAnalytic(PGMSelect):
         super(PGMAnalytic, self).__init__(inputs=inputs,rounds='C',firstID=1,pmolesIn=0,saveRNA=saveRNA,qpcrStages=qpcrStages,templateDilution=templateDilution,tmplFinalConc=tmplFinalConc)
         self.dopcr=False
         self.saveRNADilution=2
-        self.ligInPlace=False
-        rtvolC=8
-        self.extpostdil=4
+        self.ligInPlace=True
         self.rtpostdil=[2]
+        self.extpostdil=2
         self.saveDil=None
         self.setVolumes()
