@@ -193,7 +193,7 @@ class PGMSelect(TRP):
         if self.singlePrefix:
             primerSet=[["MX","REF","T7X","T7"+prefixIn[i]+"X"] for i in range(len(prefixIn))]
         else:
-            primerSet=[["T7"+prefixIn[i]+"X","T7"+prefixOut[i]+"X","MX","T7X","REF"] for i in range(len(prefixIn))]
+            primerSet=[["T7"+prefixIn[i]+"X","T7"+prefixOut[i].replace("T7","")+"X","MX","T7X","REF"] for i in range(len(prefixIn))]
         
         if keepCleaved:
             print "Starting new cleavage round, will add prefix: ",prefixOut
