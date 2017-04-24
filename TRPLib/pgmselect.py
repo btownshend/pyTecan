@@ -58,6 +58,9 @@ class PGMSelect(TRP):
         self.pcrSave=True		    # Save PCR products
         self.savedilplate=True	# Save PCR products on dilutions plate
         self.rtCarryForward=False			# True to save RT product from uncleaved round and run ligation during cleaved round
+        self.rtSave=False			# True to save RT product for gel analysis
+        self.rtSaveVol=11		   # Volume to take from RT (before dilution)
+        self.rtSaveDil=2			    # Amount to dilute RT saved volume in TE8
         self.dopcr=True			    # Run PCR of samples
         self.cleavage=0.40			# Estimated cleavage (for computing dilutions of qPCRs)
         self.exopostdil=2
@@ -85,8 +88,11 @@ class PGMSelect(TRP):
 
         # Compute volume so that full utilization of RNA results in rtcopies * input diversity
         self.rtvol=[self.pmolesIn*self.rtcopies*1e-12/(self.rnaConc*1e-9/4)*1e6 for r in self.rounds]  # Enough diversity
-        if "rt" in self.qpcrStages:
-            self.rtvol=[self.rtvol[i]+5.4/self.rtpostdil[i] for i in range(len(self.rtvol))]  # Extra for qPCR
+        if self.rtSave:
+            self.rtvol=[max(15.0/self.rtpostdil[i],self.rtvol[i])+(self.rtSaveVol+1.4)/self.rtpostdil[i] for i in range(len(self.rtvol))]  # Extra for saves
+        elif "rt" in self.qpcrStages:		# Take from save if rtSave is set
+            self.rtvol=[max(15.0/self.rtpostdil[i],self.rtvol[i])+5.4/self.rtpostdil[i] for i in range(len(self.rtvol))]  # Extra for qPCR
+        print  "self.rtvol=",self.rtvol
         self.rtvol=[max(v,8.0) for v in self.rtvol]   # Minimum volume
         self.rtvol=[min(v,self.maxSampVolume) for v in self.rtvol]  # Maximum volume
         
@@ -264,6 +270,8 @@ class PGMSelect(TRP):
 
         stop=["Unclvd-Stop" if (not dolig) else "T7W-Stop" if self.singlePrefix else "%s-Stop"%n for n in prefixOut]
         rt=self.runRT(src=rxs,vol=rtvol,srcdil=rtDil,heatInactivate=self.rtHI,hiTemp=hiTemp,dur=self.rtdur,incTemp=50,stop=[reagents.getsample(s) for s in stop])    # Heat inactivate also allows splint to fold
+        
+        rxs=rt
         for i in range(len(rxs)):
             if dolig and not self.singlePrefix:
                 rxs[i].name=names[i]+"."+prefixOut[i]+".rt"
@@ -277,9 +285,16 @@ class PGMSelect(TRP):
             self.diluteInPlace(tgt=rxs,dil=self.rtpostdil[self.rndNum-1])
             needDil=needDil/self.rtpostdil[self.rndNum-1]
 
-        if "rt" in self.qpcrStages:
-            for i in range(len(rxs)):
-                q.addSamples(src=rxs[i:i+1],needDil=needDil,primers=primerSet[i],names=["%s.rt"%names[i]])
+        if self.rtSave:
+            rtsv=self.saveSamps(src=rxs,vol=self.rtSaveVol,dil=self.rtSaveDil,plate=decklayout.DILPLATE,dilutant=reagents.getsample("TE8"),mix=(False,False))   # Save to check RT product on gel (2x dil)
+
+            if "rt" in self.qpcrStages:
+                for i in range(len(rxs)):
+                    q.addSamples(src=rtsv[i:i+1],needDil=needDil/2,primers=primerSet[i],names=["%s.rt"%names[i]])
+        else:
+            if "rt" in self.qpcrStages:
+                for i in range(len(rxs)):
+                    q.addSamples(src=rxs[i:i+1],needDil=needDil,primers=primerSet[i],names=["%s.rt"%names[i]])
 
         rtCarryForwardDil=10
         rtCarryForwardVol=3.5
