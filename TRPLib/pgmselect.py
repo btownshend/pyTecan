@@ -159,10 +159,11 @@ class PGMSelect(TRP):
                     self.dopcr=True
 
             for i in range(len(r1)):
-                if self.inputs[i]['ligand'] is None:
-                    r1[i].name="%s_%d_R%d%c"%(prefixOut[i],self.nextID,self.inputs[i]['round']+self.rndNum,roundType)
-                else:
-                    r1[i].name="%s_%d_R%d%c_%s"%(prefixOut[i],self.nextID,self.inputs[i]['round']+self.rndNum,roundType,self.inputs[i]['ligand'])
+                r1[i].name="%s_%d"%(prefixOut[i],self.nextID)
+                if self.inputs[i]['round'] is not None:
+                    r1[i].name="%s__R%d%c"%(r1[i].name,self.inputs[i]['round']+self.rndNum,roundType,self.inputs[i]['ligand'])
+                if self.inputs[i]['ligand'] is not None:
+                    r1[i].name="%s_%s"%(r1[i].name,self.inputs[i]['ligand'])
                 print "Used ID ", self.nextID," for ", r1[i].name,": ",r1[i]
                 self.nextID+=1
                 r1[i].conc.final=r1[i].conc.stock*self.templateDilution
