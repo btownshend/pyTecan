@@ -156,9 +156,9 @@ class PGMSelect(TRP):
                 r1=self.oneround(q,r1,prefixOut,prefixIn=curPrefix,keepCleaved=True,rtvol=self.rtvolC,t7vol=t7vol,cycles=self.pcrcyclesC,pcrdil=self.pcrdilC,pcrvol=self.pcrvolC,dolig=True)
 
             for i in range(len(r1)):
-                r1[i].name="%s_%d"%(prefixOut[i],self.nextID)
+                r1[i].name="%s_Out_%d"%(prefixOut[i],self.nextID)
                 if self.inputs[i]['round'] is not None:
-                    r1[i].name="%s__R%d%c"%(r1[i].name,self.inputs[i]['round']+self.rndNum,roundType,self.inputs[i]['ligand'])
+                    r1[i].name="%s_R%d%c"%(r1[i].name,self.inputs[i]['round']+self.rndNum,roundType)
                 if self.inputs[i]['ligand'] is not None:
                     r1[i].name="%s_%s"%(r1[i].name,self.inputs[i]['ligand'])
                 print "Used ID ", self.nextID," for ", r1[i].name,": ",r1[i]
@@ -231,9 +231,6 @@ class PGMSelect(TRP):
         else:
             rxs = self.runT7Setup(ligands=[reagents.getsample(inp['ligand']) for inp in self.inputs],src=input,vol=t7vol,srcdil=[inp.conc.dilutionneeded() for inp in input])
             
-        for i in range(len(rxs)):
-            rxs[i].name="%s.rx"%names[i]
-
         if self.rndNum==1 and "template" in self.qpcrStages:
             # Initial input 
             for i in range(len(rxs)):
@@ -241,6 +238,9 @@ class PGMSelect(TRP):
         
         needDil = needDil*max([inp.conc.dilutionneeded() for inp in input])
         self.runT7Pgm(dur=self.t7dur,vol=t7vol)
+        for i in range(len(rxs)):
+            rxs[i].name="%s.t7"%names[i]
+
         print "Estimate RNA concentration in T7 reaction at %.0f nM"%self.rnaConc
         
         print "######## Stop ########### %.0f min"%(clock.elapsed()/60)
@@ -268,6 +268,9 @@ class PGMSelect(TRP):
         rtDur=20
 
         rxs=self.runRT(src=rxs,vol=rtvol,srcdil=rtDil,heatInactivate=self.rtHI,hiTemp=hiTemp,dur=rtDur,incTemp=50,stop=[reagents.getsample(s) for s in stop])    # Heat inactivate also allows splint to fold
+        for i in range(len(rxs)):
+            rxs[i].name=names[i]+"."+stop[i]+".rt"
+
         print "RT volume= [",",".join(["%.1f "%x.volume for x in rxs]),"]"
         needDil /= rtDil
         if self.rtpostdil>1:
@@ -472,6 +475,8 @@ class PGMSelect(TRP):
                 pcrvol=maxpcrvol
 
             pcr=self.runPCR(src=rxs*nsplit,vol=pcrvol/nsplit,srcdil=pcrdil*1.0/predil,ncycles=cycles,primers=["T7%sX"%("" if self.singlePrefix and keepCleaved else x) for x in (prefixOut if keepCleaved else prefixIn)]*nsplit,usertime=self.usertime if keepCleaved and not self.douser else None,fastCycling=False,inPlace=False)
+            for i in range(len(pcr)):
+                pcr[i].name=names[i]+".pcr"
                 
             print "Volume remaining in PCR input source: [",",".join(["%.1f"%r.volume for r in rxs]),"]"
             needDil=finalConc/self.qConc
@@ -497,7 +502,7 @@ class PGMSelect(TRP):
 
                 if "pcr" in self.qpcrStages:
                     for i in range(len(sv)):
-                        q.addSamples(sv[i],needDil,primers=primerSet[i])
+                        q.addSamples(sv[i],needDil,primers=primerSet[i],names=["%s.pcr"%names[i]])
 
                 processEff=0.5   # Estimate of overall efficiency of process
                 print "Saved %.2f pmoles of product (%.0f ul @ %.1f nM)"%(sv[0].volume*sv[0].conc.stock/1000,sv[0].volume,sv[0].conc.stock)
