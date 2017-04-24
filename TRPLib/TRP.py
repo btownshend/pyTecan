@@ -178,6 +178,7 @@ class TRP(object):
         
     ########################
     # Save samples to another well
+    # 'vol' is amount to take from source, and then dilute by 'dil'
     ########################
     def saveSamps(self,src,vol,dil,tgt=None,dilutant=None,plate=None,mix=(True,False),atEnd=False):
         [src,vol,dil]=listify([src,vol,dil])
