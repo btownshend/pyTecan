@@ -68,6 +68,8 @@ class PGMSelect(TRP):
         self.rtcopies=4    				# Number of copies maintained in RT stage
         self.rtHI=False				   # Heat inactive/refold after RT
         
+        self.allprimers=["REF","MX","T7X","T7WX"]    # Will get updated after first pass with all primers used
+
         # Computed parameters
         if pcrdil is None:
             self.pcrdilU=80.0/self.extpostdil/(self.exopostdil if self.doexo else 1)
@@ -125,11 +127,7 @@ class PGMSelect(TRP):
         t7in = [s.getsample()  for s in self.srcs]
         
         if "negative" in self.qpcrStages:
-            if self.singlePrefix:
-                qpcrPrimers=["REF","MX","T7X","T7WX"]
-            else:
-                qpcrPrimers=["REF","MX","T7X","T7AX","T7BX","T7WX"]
-            q.addSamples(decklayout.SSDDIL,1,qpcrPrimers,save=False)   # Negative controls
+            q.addSamples(decklayout.SSDDIL,1,self.allprimers,save=False)   # Negative controls
         
         # Save RT product from first (uncleaved) round and then use it during 2nd (cleaved) round for ligation and qPCR measurements
         self.rndNum=0
@@ -177,6 +175,7 @@ class PGMSelect(TRP):
                     q.addSamples(src=r1[i],needDil=r1[i].conc.stock/self.qConc,primers=["T7X","T7"+prefixOut[i]+"X","MX"])
             
         print "######### qPCR ########### %.0f min"%(clock.elapsed()/60)
+        self.allprimers=q.allprimers()
         q.run(confirm=self.qpcrWait)
         
     def oneround(self,q,input,prefixOut,prefixIn,keepCleaved,t7vol,rtvol,pcrdil,cycles,pcrvol,dolig):
