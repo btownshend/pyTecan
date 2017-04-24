@@ -61,6 +61,7 @@ class PGMSelect(TRP):
         self.cleavage=0.40			# Estimated cleavage (for computing dilutions of qPCRs)
         self.exopostdil=2
         self.extpostdil=2
+        self.rtpostdil=1
         self.nopcrdil=4
         self.userMelt=False
         self.maxDilVolume=100
@@ -272,6 +273,11 @@ class PGMSelect(TRP):
         rxs=self.runRT(src=rxs,vol=rtvol,srcdil=rtDil,heatInactivate=self.rtHI,hiTemp=hiTemp,dur=rtDur,incTemp=50,stop=[reagents.getsample(s) for s in stop])    # Heat inactivate also allows splint to fold
         print "RT volume= [",",".join(["%.1f "%x.volume for x in rxs]),"]"
         needDil /= rtDil
+        if self.rtpostdil>1:
+            print "Dilution after RT: %.2f"%self.rtpostdil
+            self.diluteInPlace(tgt=rxs,dil=self.rtpostdil)
+            needDil=needDil/self.rtpostdil
+
         if "rt" in self.qpcrStages:
             for i in range(len(rxs)):
                 q.addSamples(src=rxs[i:i+1],needDil=needDil,primers=primerSet[i],names=["%s.rt"%names[i]])
@@ -400,9 +406,9 @@ class PGMSelect(TRP):
         else:
             userDil=1
 
-        totalDil=stopDil*rtDil*extdil*self.extpostdil*exoDil*self.exopostdil*columnDil*userDil
+        totalDil=stopDil*rtDil*self.rtpostdil*extdil*self.extpostdil*exoDil*self.exopostdil*columnDil*userDil
         fracRetained=rxs[0].volume/(t7vol*totalDil)
-        print "Total dilution from T7 to Pre-pcr Product = %.2f*%.2f*%.2f*%.2f*%.2f*%.2f*%.2f*%.2f = %.2f, fraction retained=%.0f%%"%(stopDil,rtDil,extdil,self.extpostdil,exoDil,self.exopostdil,columnDil,userDil,totalDil,fracRetained*100)
+        print "Total dilution from T7 to Pre-pcr Product = %.2f*%.2f*%.2f*%.2f*%.2f*%.2f*%.2f*%.2f*%.2f = %.2f, fraction retained=%.0f%%"%(stopDil,rtDil,self.rtpostdil,extdil,self.extpostdil,exoDil,self.exopostdil,columnDil,userDil,totalDil,fracRetained*100)
 
         if self.rtSave and not keepCleaved:
             # Remove the extra samples
