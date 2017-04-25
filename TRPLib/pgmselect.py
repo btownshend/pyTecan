@@ -322,7 +322,8 @@ class PGMSelect(TRP):
                 print "Dilution after extension: %.2f"%self.extpostdil
                 self.diluteInPlace(tgt=rxs,dil=self.extpostdil)
                 needDil=needDil/self.extpostdil
-                    
+                pcrdil=pcrdil/self.extpostdil
+                
             if self.saveDil is not None:
                 ext=self.saveSamps(src=rxs,vol=3,dil=self.saveDil,dilutant=reagents.getsample("TE8"),tgt=[Sample("%s.ext"%n,decklayout.DILPLATE) for n in names],mix=(False,True))   # Save cDNA product for subsequent NGS
                 if "ext" in self.qpcrStages:
