@@ -67,7 +67,6 @@ class PGMSelect(TRP):
         self.extpostdil=2
         self.nopcrdil=4
         self.userMelt=False
-        self.maxDilVolume=100
         self.maxSampVolume=125
         self.pcrcopies=1				# Number of copies maintained in PCR stage (propagates back to RT stage)
         self.rtHI=False				   # Heat inactive/refold after RT
@@ -503,12 +502,9 @@ class PGMSelect(TRP):
 
             if self.pcrSave:
                 # Save samples at 1x (move all contents -- can ignore warnings)
-                maxSaveVol=self.maxDilVolume*1.0/nsplit
+                maxSaveVol=(100 if self.savedilplate else 1500)*1.0/nsplit
 
-                if self.savedilplate:
-                    sv=self.saveSamps(src=pcr[:len(rxs)],vol=[min([maxSaveVol,x.volume]) for x in pcr[:len(rxs)]],dil=1,plate=decklayout.DILPLATE,atEnd=True)
-                else:
-                    sv=self.saveSamps(src=pcr[:len(rxs)],vol=[x.volume for x in pcr[:len(rxs)]],dil=1,plate=decklayout.EPPENDORFS)
+                sv=self.saveSamps(src=pcr[:len(rxs)],vol=[min([maxSaveVol,x.volume]) for x in pcr[:len(rxs)]],dil=1,plate=(decklayout.DILPLATE if self.savedilplate else decklayout.EPPENDORFS),atEnd=True)
                 if nsplit>1:
                     # Combine split
                     for i in range(len(rxs),len(rxs)*nsplit):
