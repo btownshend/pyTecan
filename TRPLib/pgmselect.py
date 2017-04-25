@@ -82,6 +82,7 @@ class PGMSelect(TRP):
         self.pcrcycles=[10 for r in self.rounds]
         self.rnaInput=False
         self.stopConc=1	   # Concentration of stop in uM
+        self.savePCRAtEnd=False
         self.setVolumes()
         
     def setVolumes(self):
@@ -512,7 +513,7 @@ class PGMSelect(TRP):
                 # Save samples at 1x (move all contents -- can ignore warnings)
                 maxSaveVol=(100 if self.savedilplate else 1500)*1.0/nsplit
 
-                sv=self.saveSamps(src=pcr[:len(rxs)],vol=[min([maxSaveVol,x.volume]) for x in pcr[:len(rxs)]],dil=1,plate=(decklayout.DILPLATE if self.savedilplate else decklayout.EPPENDORFS),atEnd=True)
+                sv=self.saveSamps(src=pcr[:len(rxs)],vol=[min([maxSaveVol,x.volume]) for x in pcr[:len(rxs)]],dil=1,plate=(decklayout.DILPLATE if self.savedilplate else decklayout.EPPENDORFS),atEnd=self.savePCRAtEnd)
                 if nsplit>1:
                     # Combine split
                     for i in range(len(rxs),len(rxs)*nsplit):
