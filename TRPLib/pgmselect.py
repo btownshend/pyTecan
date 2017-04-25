@@ -462,35 +462,25 @@ class PGMSelect(TRP):
                 sampNeeded+=rtCarryForwardVol
             maxvol=max([r.volume for r in rxs]);
             minvol=min([r.volume for r in rxs]);
-            predil=min(self.maxDilVolume/maxvol,(40+1.4*nsplit)/(minvol-sampNeeded))  # Dilute to have 40ul left -- keeps enough sample to allow good mixing
-            if keepCleaved and self.rtCarryForward and predil>rtCarryForwardDil:
-                print "Reducing predil from %.1f to %.1f (rtCarryForwardDil)"%(predil, rtCarryForwardDil)
-                predil=rtCarryForwardDil
-            if pcrdil/predil<minsrcdil:
-                predil=pcrdil/minsrcdil	  # Need to dilute at least this into PCR
-            if predil>1:
-                self.diluteInPlace(rxs,predil)
-                self.e.shakeSamples(rxs)
-                print "Pre-diluting by %.1fx into [%s] ul"%(predil,",".join(["%.1f"%r.volume for r in rxs]))
             if keepCleaved and self.rtCarryForward:
                 assert(len(rxs)==len(rtCarryForward))
-                print "Saving %.1f ul of each pre-PCR sample (@%.1f*%.1f dilution)"%(rtCarryForwardVol ,predil, rtCarryForwardDil/predil)
+                print "Saving %.1f ul of each pre-PCR sample"%(rtCarryForwardVol )
                 self.lastSaved=[Sample("%s.sv"%x.name,decklayout.DILPLATE) for x in rxs]
                 for i in range(len(rxs)):
                     # Save with rtCarryForwardDil dilution to reduce amount of RT consumed (will have Ct's 2-3 lower than others)
-                    self.e.transfer(rtCarryForwardVol*predil,rxs[i],self.lastSaved[i],(False,False))
-                    self.e.transfer(rtCarryForwardVol*(rtCarryForwardDil/predil-1),decklayout.WATER,self.lastSaved[i],(False,True))  # Use pipette mixing -- shaker mixing will be too slow
+                    self.e.transfer(rtCarryForwardVol,rxs[i],self.lastSaved[i],(False,False))
+                    self.e.transfer(rtCarryForwardVol*(rtCarryForwardDil-1),decklayout.WATER,self.lastSaved[i],(False,True))  # Use pipette mixing -- shaker mixing will be too slow
 
-            #print "NSplit=",nsplit,", PCR vol=",pcrvol/nsplit,", srcdil=",pcrdil*1.0/predil,", input vol=",pcrvol/nsplit/pcrdil*predil
+            #print "NSplit=",nsplit,", PCR vol=",pcrvol/nsplit,", srcdil=",pcrdil,", input vol=",pcrvol/nsplit/pcrdil
             minvol=min([r.volume for r in rxs]);
-            maxpcrvol=(minvol-15-1.4*nsplit)*pcrdil/predil
+            maxpcrvol=(minvol-15-1.4*nsplit)*pcrdil
             if maxpcrvol<pcrvol:
                 print "Reducing PCR volume from %.1ful to %.1ful due to limited input"%(pcrvol, maxpcrvol)
                 pcrvol=maxpcrvol
 
-            pcr=self.runPCR(src=rxs*nsplit,vol=pcrvol/nsplit,srcdil=pcrdil*1.0/predil,ncycles=cycles,primers=["T7%sX"%("" if self.singlePrefix and keepCleaved else x) for x in (prefixOut if keepCleaved else prefixIn)]*nsplit,usertime=self.usertime if keepCleaved and not self.douser else None,fastCycling=False,inPlace=False)
             for i in range(len(pcr)):
                 pcr[i].name=names[i]+".pcr"
+            pcr=self.runPCR(src=rxs*nsplit,vol=pcrvol/nsplit,srcdil=pcrdil,ncycles=cycles,primers=["T7%sX"%("" if self.singlePrefix and keepCleaved else x) for x in (prefixOut if keepCleaved else prefixIn)]*nsplit,usertime=self.usertime if keepCleaved and not self.douser else None,fastCycling=False,inPlace=False)
                 
             print "Volume remaining in PCR input source: [",",".join(["%.1f"%r.volume for r in rxs]),"]"
             needDil=finalConc/self.qConc
