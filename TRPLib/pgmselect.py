@@ -69,7 +69,7 @@ class PGMSelect(TRP):
         self.userMelt=False
         self.maxDilVolume=100
         self.maxSampVolume=125
-        self.rtcopies=4    				# Number of copies maintained in RT stage
+        self.pcrcopies=1				# Number of copies maintained in PCR stage (propagates back to RT stage)
         self.rtHI=False				   # Heat inactive/refold after RT
         self.rtDil=4
         self.saveRNADilution=10
@@ -77,19 +77,29 @@ class PGMSelect(TRP):
         self.allprimers=["REF","MX","T7X","T7WX"]    # Will get updated after first pass with all primers used
         self.rtpostdil=[3.0 if r=='U' else 1.0 for r in self.rounds]
         self.rtdur=20
+        self.pcrdil=[(80 if r=='U' else 40) for r in self.rounds]
         self.maxPCRVolume=100  # Maximum sample volume of each PCR reaction (thermocycler limit, and mixing limit)
+        self.pcrcycles=[10 for r in self.rounds]
         self.setVolumes()
         
     def setVolumes(self):
         # Computed parameters
-        self.pcrdil=[(80 if r=='U' else 40)/self.extpostdil/(self.exopostdil if self.doexo else 1) for r in self.rounds]
-        self.pcrvol=[max(100,self.pmolesIn*1000/(self.rnaConc*0.9/4/self.rtpostdil[i]/(1.25*self.extpostdil if self.rounds[i]=='C' else 1.0))*self.pcrdil[i]) for i in range(len(self.rounds))]
-        # Concentration up to PCR dilution is RNA concentration after EDTA addition and RT setup
+        stopConc=self.rnaConc*0.9
+        rtConc=stopConc/self.rtDil
+        rtdilConc=[rtConc/self.rtpostdil[i] for i in range(len(self.rounds))]
+        ligConc=[rtdilConc[i]/1.25 for i in range(len(self.rounds))]
+        ligdilConc=[ligConc[i]/self.extpostdil for i in range(len(self.rounds))]
+        pcrConc=[ligConc[i]/self.pcrdil[i] for i in range(len(self.rounds))]
+        
+        print "Concs(nM):  RNA: %.0f, Stop: %.0f, RT: %.0f, RTDil: %.0f, Lig: %.0f, LigDil: %.0f, PCRIn: %.0f"%(self.rnaConc, stopConc, rtConc, rtdilConc[0], ligConc[0], ligdilConc[0], pcrConc[0])
+        self.pcrvol=[self.pcrcopies*self.pmolesIn*1000/pcrConc[i] for i in range(len(self.rounds))]
         # Use at least 100ul so the evaporation of the saved sample that occurs during the run will be relatively small
-        self.pcrcycles=[10 for r in self.rounds]
+        self.pcrvol=[max(100,v) for v in self.pcrvol]
+        self.minligvol=[self.pcrvol[i]/self.pcrdil[i]+(1.4*math.ceil(self.pcrvol[i]/self.maxPCRVolume)+(4.4 if self.saveDil is not None else 5.4 if 'ext' in self.qpcrStages else 0)+15.1)/self.extpostdil for i in range(len(self.pcrvol))]
+        print "minligvol=%.1f"%self.minligvol[0]
 
-        # Compute volume so that full utilization of RNA results in rtcopies * input diversity
-        self.rtvol=[self.pmolesIn*self.rtcopies*1e-12/(self.rnaConc*1e-9/4)*1e6 for r in self.rounds]  # Enough diversity
+        # Compute RT volume 
+        self.rtvol=[self.minligvol[i]/1.25/self.rtpostdil[i] for i in range(len(self.rounds))]
         if self.rtSave:
             self.rtvol=[max(15.0/self.rtpostdil[i],self.rtvol[i])+(self.rtSaveVol+1.4)/self.rtpostdil[i] for i in range(len(self.rtvol))]  # Extra for saves
         elif "rt" in self.qpcrStages:		# Take from save if rtSave is set
