@@ -592,9 +592,10 @@ class TRP(object):
         for i in range(len(stop)):
             if stop[i] is not None:
                 stop[i].conc.final=stopConc
+                stop[i].conc.stock=max(stop[i].conc.stock,stopConc*4)
                 
         if any([s is not None for s in stop]):
-            print "Adding stop:  [%s]"%(",".join(["%s@%.1fuM"%(s.name,s.conc.final) for s in stop]))
+            print "Adding stop:  [%s]"%(",".join(["%s@%.1fuM (stock=%.1fuM)"%(s.name,s.conc.final,s.conc.stock) for s in stop]))
             
         stopvol=[ 0 if stop[i] is None else vol[i]/stop[i].conc.dilutionneeded() for i in range(len(vol))]
         assert(min(stopvol)==max(stopvol))   # Assume all stop volumes are the same
