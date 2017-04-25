@@ -54,7 +54,6 @@ class PGMSelect(TRP):
         self.qConc = 0.050			# Target qPCR concentration in nM (corresponds to Ct ~ 10)
        # Expected concentration of RNA (actually back-computed from MX concentration after RT)
        # Limited to [stop]*4/0.9
-        self.rnaConc=min(1000*4/0.9,8314*self.tmplFinalConc/(self.tmplFinalConc+55)*self.t7dur/30)
         self.pcrSave=True		    # Save PCR products
         self.savedilplate=True	# Save PCR products on dilutions plate
         self.rtCarryForward=False			# True to save RT product from uncleaved round and run ligation during cleaved round
@@ -87,6 +86,11 @@ class PGMSelect(TRP):
         
     def setVolumes(self):
         # Computed parameters
+        self.rnaConc=8314*self.tmplFinalConc/(self.tmplFinalConc+55)*self.t7dur/30
+        maxConc=1000*self.stopConc*4/0.9
+        if maxConc<self.rnaConc:
+            logging.warning( "Stop@%.1f uM limits usable RNA to %.0f/%.0f nM"%(self.stopConc,maxConc,self.rnaConc))
+            self.rnaConc=min(maxConc,self.rnaConc)
         stopConc=self.rnaConc*0.9
         rtConc=stopConc/self.rtDil
         rtdilConc=[rtConc/self.rtpostdil[i] for i in range(len(self.rounds))]
@@ -264,7 +268,7 @@ class PGMSelect(TRP):
             for i in range(len(rxs)):
                 rxs[i].name="%s.t7"%names[i]
 
-            print "Estimate RNA concentration in T7 reaction at %.0f nM"%self.rnaConc
+            print "Estimate usable RNA concentration in T7 reaction at %.0f nM"%self.rnaConc
 
             print "######## Stop ########### %.0f min"%(clock.elapsed()/60)
             self.e.lihahome()
