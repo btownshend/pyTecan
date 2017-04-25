@@ -81,6 +81,7 @@ class PGMSelect(TRP):
         self.maxPCRVolume=100  # Maximum sample volume of each PCR reaction (thermocycler limit, and mixing limit)
         self.pcrcycles=[10 for r in self.rounds]
         self.rnaInput=False
+        self.stopConc=1	   # Concentration of stop in uM
         self.setVolumes()
         
     def setVolumes(self):
@@ -286,7 +287,7 @@ class PGMSelect(TRP):
         hiTemp=95
 
         stop=["Unclvd-Stop" if (not dolig) else "T7W-Stop" if self.singlePrefix else "%s-Stop"%n for n in prefixOut]
-        rt=self.runRT(src=rxs,vol=rtvol,srcdil=self.rtDil,heatInactivate=self.rtHI,hiTemp=hiTemp,dur=self.rtdur,incTemp=50,stop=[reagents.getsample(s) for s in stop])    # Heat inactivate also allows splint to fold
+        rt=self.runRT(src=rxs,vol=rtvol,srcdil=self.rtDil,heatInactivate=self.rtHI,hiTemp=hiTemp,dur=self.rtdur,incTemp=50,stop=[reagents.getsample(s) for s in stop],stopConc=self.stopConc)    # Heat inactivate also allows splint to fold
         
         rxs=rt
         for i in range(len(rxs)):
