@@ -76,6 +76,7 @@ class PGMSelect(TRP):
         self.allprimers=["REF","MX","T7X","T7WX"]    # Will get updated after first pass with all primers used
         self.rtpostdil=[3.0 if r=='U' else 1.0 for r in self.rounds]
         self.rtdur=20
+        self.ligdur=15
         self.pcrdil=[(80 if r=='U' else 40) for r in self.rounds]
         self.maxPCRVolume=100  # Maximum sample volume of each PCR reaction (thermocycler limit, and mixing limit)
         self.pcrcycles=[10 for r in self.rounds]
@@ -327,9 +328,9 @@ class PGMSelect(TRP):
             extdil=5.0/4
             reagents.getsample("MLigase").conc=Concentration(5)
             if self.ligInPlace:
-                rxs=self.runLig(rxs,inPlace=True,srcdil=extdil)
+                rxs=self.runLig(rxs,inPlace=True,srcdil=extdil,incTime=self.ligdur)
             else:
-                rxs=self.runLig(rxs,inPlace=False,srcdil=extdil,vol=20)
+                rxs=self.runLig(rxs,inPlace=False,srcdil=extdil,vol=20,incTime=self.ligdur)
 
             print "Ligation volume= ",[x.volume for x in rxs]
             needDil=needDil/extdil
