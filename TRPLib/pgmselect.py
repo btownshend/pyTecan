@@ -79,6 +79,7 @@ class PGMSelect(TRP):
         self.pcrdil=[(80 if r=='U' else 40) for r in self.rounds]
         self.maxPCRVolume=100  # Maximum sample volume of each PCR reaction (thermocycler limit, and mixing limit)
         self.pcrcycles=[10 for r in self.rounds]
+        self.rnaInput=False
         self.setVolumes()
         
     def setVolumes(self):
@@ -204,73 +205,78 @@ class PGMSelect(TRP):
             
         names=[i.name for i in input]
             
-        print "######## T7 ########### %.0f min"%(clock.elapsed()/60)
-        print "Inputs:  (t7vol=%.2f)"%t7vol
-        inconc=[inp.conc.final for inp in input]
-        for inp in input:
-            if inp.conc.units=='nM':
-                print "    %s:  %.1ful@%.1f %s, use %.1f ul (%.3f pmoles)"%(inp.name,inp.volume,inp.conc.stock,inp.conc.units,t7vol/inp.conc.dilutionneeded(), t7vol*inp.conc.final/1000)
-                needDil = max([inp.conc.stock for inp in input])*1.0/self.qConc
-            else:
-                print "    %s:  %.1ful@%.1f %s, use %.1f ul"%(inp.name,inp.volume,inp.conc.stock,inp.conc.units,t7vol/inp.conc.dilutionneeded())
-                needDil=100/self.qConc   # Assume 100nM
-            # inp.conc.final=inp.conc.stock*self.templateDilution
-        if self.directT7 and  self.rndNum==1:
-            # Just add ligands and MT7 to each well
-            if not keepCleaved:
-                for i in range(len(input)):
-                    if self.inputs[i]['ligand'] is not None:
-                        ligand=reagents.getsample(self.inputs[i]['ligand'])
-                        self.e.transfer(t7vol/ligand.conc.dilutionneeded(),ligand,input[i],mix=(False,False))
-                        names[i]+="+"
-            mconc=reagents.getsample("MT7").conc.dilutionneeded()
-            for i in range(len(input)):
-                watervol=t7vol*(1-1/mconc)-input[i].volume
-                if watervol>0.1:
-                    self.e.transfer(watervol,decklayout.WATER,input[i],mix=(False,False))
-                self.e.transfer(t7vol/mconc,reagents.getsample("MT7"),input[i],mix=(False,False))
-                assert(abs(input[i].volume-t7vol)<0.1)
+        if self.rnaInput:
             rxs=input
-        elif self.rndNum==self.nrounds and self.finalPlus and keepCleaved:
-            rxs = self.runT7Setup(src=input,vol=t7vol,srcdil=[inp.conc.dilutionneeded() for inp in input])
-            for i in range(len(input)):
-                inp=input[i]
-                if self.inputs[i]['ligand'] is not None:
-                    rxs += self.runT7Setup(ligands=[reagents.getsample(self.inputs[i]['ligand'])],src=[inp],vol=t7vol,srcdil=[inp.conc.dilutionneeded()])
-                    prefixIn+=[prefixIn[i]]
-                    prefixOut+=[prefixOut[i]]
-                    primerSet+=[primerSet[i]]
-                    names+=["%s+"%names[i]]
-        elif keepCleaved:
-            rxs = self.runT7Setup(src=input,vol=t7vol,srcdil=[inp.conc.dilutionneeded() for inp in input])
+            stopDil=1
         else:
-            rxs = self.runT7Setup(ligands=[reagents.getsample(inp['ligand']) for inp in self.inputs],src=input,vol=t7vol,srcdil=[inp.conc.dilutionneeded() for inp in input])
-            
-        if self.rndNum==1 and "template" in self.qpcrStages:
-            # Initial input 
+            print "######## T7 ########### %.0f min"%(clock.elapsed()/60)
+            print "Inputs:  (t7vol=%.2f)"%t7vol
+            inconc=[inp.conc.final for inp in input]
+            for inp in input:
+                if inp.conc.units=='nM':
+                    print "    %s:  %.1ful@%.1f %s, use %.1f ul (%.3f pmoles)"%(inp.name,inp.volume,inp.conc.stock,inp.conc.units,t7vol/inp.conc.dilutionneeded(), t7vol*inp.conc.final/1000)
+                    needDil = max([inp.conc.stock for inp in input])*1.0/self.qConc
+                else:
+                    print "    %s:  %.1ful@%.1f %s, use %.1f ul"%(inp.name,inp.volume,inp.conc.stock,inp.conc.units,t7vol/inp.conc.dilutionneeded())
+                    needDil=100/self.qConc   # Assume 100nM
+                # inp.conc.final=inp.conc.stock*self.templateDilution
+            if self.directT7 and  self.rndNum==1:
+                # Just add ligands and MT7 to each well
+                if not keepCleaved:
+                    for i in range(len(input)):
+                        if self.inputs[i]['ligand'] is not None:
+                            ligand=reagents.getsample(self.inputs[i]['ligand'])
+                            self.e.transfer(t7vol/ligand.conc.dilutionneeded(),ligand,input[i],mix=(False,False))
+                            names[i]+="+"
+                mconc=reagents.getsample("MT7").conc.dilutionneeded()
+                for i in range(len(input)):
+                    watervol=t7vol*(1-1/mconc)-input[i].volume
+                    if watervol>0.1:
+                        self.e.transfer(watervol,decklayout.WATER,input[i],mix=(False,False))
+                    self.e.transfer(t7vol/mconc,reagents.getsample("MT7"),input[i],mix=(False,False))
+                    assert(abs(input[i].volume-t7vol)<0.1)
+                rxs=input
+            elif self.rndNum==self.nrounds and self.finalPlus and keepCleaved:
+                rxs = self.runT7Setup(src=input,vol=t7vol,srcdil=[inp.conc.dilutionneeded() for inp in input])
+                for i in range(len(input)):
+                    inp=input[i]
+                    if self.inputs[i]['ligand'] is not None:
+                        rxs += self.runT7Setup(ligands=[reagents.getsample(self.inputs[i]['ligand'])],src=[inp],vol=t7vol,srcdil=[inp.conc.dilutionneeded()])
+                        prefixIn+=[prefixIn[i]]
+                        prefixOut+=[prefixOut[i]]
+                        primerSet+=[primerSet[i]]
+                        names+=["%s+"%names[i]]
+            elif keepCleaved:
+                rxs = self.runT7Setup(src=input,vol=t7vol,srcdil=[inp.conc.dilutionneeded() for inp in input])
+            else:
+                rxs = self.runT7Setup(ligands=[reagents.getsample(inp['ligand']) for inp in self.inputs],src=input,vol=t7vol,srcdil=[inp.conc.dilutionneeded() for inp in input])
+
+            if self.rndNum==1 and "template" in self.qpcrStages:
+                # Initial input 
+                for i in range(len(rxs)):
+                    q.addSamples(src=rxs[i],needDil=needDil,primers=primerSet[i],names=["%s.T"%names[i]])
+
+            needDil = needDil*max([inp.conc.dilutionneeded() for inp in input])
+            self.runT7Pgm(dur=self.t7dur,vol=t7vol)
             for i in range(len(rxs)):
-                q.addSamples(src=rxs[i],needDil=needDil,primers=primerSet[i],names=["%s.T"%names[i]])
-        
-        needDil = needDil*max([inp.conc.dilutionneeded() for inp in input])
-        self.runT7Pgm(dur=self.t7dur,vol=t7vol)
-        for i in range(len(rxs)):
-            rxs[i].name="%s.t7"%names[i]
+                rxs[i].name="%s.t7"%names[i]
 
-        print "Estimate RNA concentration in T7 reaction at %.0f nM"%self.rnaConc
-        
-        print "######## Stop ########### %.0f min"%(clock.elapsed()/60)
-        self.e.lihahome()
+            print "Estimate RNA concentration in T7 reaction at %.0f nM"%self.rnaConc
 
-        print "Have %.1f ul before stop"%rxs[0].volume
-        preStopVolume=rxs[0].volume
-        self.addEDTA(tgt=rxs,finalconc=2)	# Stop to 2mM EDTA final
+            print "######## Stop ########### %.0f min"%(clock.elapsed()/60)
+            self.e.lihahome()
 
-        stopDil=rxs[0].volume/preStopVolume
+            print "Have %.1f ul before stop"%rxs[0].volume
+            preStopVolume=rxs[0].volume
+            self.addEDTA(tgt=rxs,finalconc=2)	# Stop to 2mM EDTA final
 
-        if self.saveRNA:
-            self.saveSamps(src=rxs,vol=5,dil=self.saveRNADilution,plate=decklayout.DILPLATE,dilutant=reagents.getsample("TE8"),mix=(False,False))   # Save to check [RNA] on Qubit, bioanalyzer
-        
+            stopDil=rxs[0].volume/preStopVolume
+
+            if self.saveRNA:
+                self.saveSamps(src=rxs,vol=5,dil=self.saveRNADilution,plate=decklayout.DILPLATE,dilutant=reagents.getsample("TE8"),mix=(False,False))   # Save to check [RNA] on Qubit, bioanalyzer
+
         needDil = self.rnaConc/self.qConc/stopDil
+
         if "stopped" in self.qpcrStages:
             for i in range(len(rxs)):
                 q.addSamples(src=rxs[i:i+1],needDil=needDil,primers=primerSet[i],names=["%s.stopped"%names[i]])
