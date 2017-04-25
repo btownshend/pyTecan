@@ -95,7 +95,7 @@ class PGMSelect(TRP):
         # Use at least 100ul so the evaporation of the saved sample that occurs during the run will be relatively small
         self.pcrvol=[max(100,v) for v in self.pcrvol]
         self.minligvol=[self.pcrvol[i]/self.pcrdil[i]+(1.4*math.ceil(self.pcrvol[i]/self.maxPCRVolume)+(4.4 if self.saveDil is not None else 5.4 if 'ext' in self.qpcrStages else 0)+15.1)/self.extpostdil for i in range(len(self.pcrvol))]
-        print "minligvol=%.1f"%self.minligvol[0]
+        #print "minligvol=%.1f"%self.minligvol[0]
 
         # Compute RT volume 
         self.rtvol=[self.minligvol[i]/1.25/self.rtpostdil[i] for i in range(len(self.rounds))]
@@ -103,12 +103,12 @@ class PGMSelect(TRP):
             self.rtvol=[max(15.0/self.rtpostdil[i],self.rtvol[i])+(self.rtSaveVol+1.4)/self.rtpostdil[i] for i in range(len(self.rtvol))]  # Extra for saves
         elif "rt" in self.qpcrStages:		# Take from save if rtSave is set
             self.rtvol=[max(15.0/self.rtpostdil[i],self.rtvol[i])+5.4/self.rtpostdil[i] for i in range(len(self.rtvol))]  # Extra for qPCR
-        print  "self.rtvol=",self.rtvol
+        #print  "self.rtvol=",self.rtvol
         self.rtvol=[max(v,8.0) for v in self.rtvol]   # Minimum volume
         self.rtvol=[min(v,self.maxSampVolume) for v in self.rtvol]  # Maximum volume
         
         self.t7extravols=((4+1.4)*0.9 if 'stopped' in self.qpcrStages else 0)+ ((5+1.4)*0.9 if self.saveRNA else 0)
-        print "self.t7extravols=%.1f ul\n"%self.t7extravols
+        #print "self.t7extravols=%.1f ul\n"%self.t7extravols
         self.t7vol=[max((15.1+self.rtvol[i]/4.0+1.4)*0.9+self.t7extravols,self.pmolesIn*1000/self.tmplFinalConc) for i in range(len(self.rounds))]
         self.t7vol=[max(18.0,v) for v in self.t7vol]   # Make sure that there's enough to add at least 2ul of stop
         self.t7vol=[min(self.maxSampVolume,v) for v in self.t7vol]   # Make sure no tubes overflow
@@ -494,7 +494,7 @@ class PGMSelect(TRP):
                 for i in range(len(pcr)):
                     pcr[i].name=names[i]+".pcr"
                 
-            print "Volume remaining in PCR input source: [",",".join(["%.1f"%r.volume for r in rxs]),"]"
+            #print "Volume remaining in PCR input source: [",",".join(["%.1f"%r.volume for r in rxs]),"]"
             needDil=finalConc/self.qConc
             print "Projected final concentration = %.0f nM"%(needDil*self.qConc)
             for i in range(len(pcr)):
