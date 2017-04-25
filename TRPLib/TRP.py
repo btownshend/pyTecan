@@ -766,7 +766,7 @@ class TRP(object):
             runTime=usertime
 
         if annealTemp is None:
-            annealTemp=60 if kapa else 57
+            annealTemp=60 if kapa else 55
 
         meltTemp=98 if kapa else 95
         hotTime=180 if kapa else 30
