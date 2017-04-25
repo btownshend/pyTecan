@@ -1,5 +1,6 @@
 from datetime import datetime
 from hashlib import md5
+from pprint import pprint
 
 import worklist
 from sample import Sample
@@ -77,7 +78,7 @@ class Experiment(object):
         worklist.flushQueue()
         worklist.savegem(decklayout.headerfile,filename)
 
-    def savesummary(self,filename):
+    def savesummary(self,filename,settings=None):
         # Print amount of samples needed
         fd=open(filename,"w")
         # print >>fd,"Deck layout:"
@@ -98,6 +99,8 @@ class Experiment(object):
         reagents.printprep(fd)
         Sample.printallsamples("All Samples:",fd,w=worklist)
         liquidclass.LC.printalllc(fd)
+        if settings is not None:
+            pprint (settings,stream=fd)
         fd.close()
 
     def sanitize(self,nmix=1,deepvol=20,force=False):

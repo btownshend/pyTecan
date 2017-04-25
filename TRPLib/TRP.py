@@ -1,4 +1,3 @@
-from pprint import pprint
 from Experiment.sample import Sample
 from Experiment.plate import Plate
 from Experiment.experiment import Experiment
@@ -173,7 +172,7 @@ class TRP(object):
         #e.saveworklist("trp1.gwl")
         (scriptname,ext)=os.path.splitext(sys.argv[0])
         self.e.savegem(scriptname+".gem")
-        self.e.savesummary(scriptname+".txt")
+        self.e.savesummary(scriptname+".txt",vars(self))
         Sample.savematlab(scriptname+".m")
         
     ########################
@@ -886,7 +885,6 @@ class TRP(object):
         'Actual robot code generation -- may be run multiple times to establish initial volumes.  Overridden by actual experiment'
 
     def run(self):
-        pprint(vars(self))
         parser=argparse.ArgumentParser(description="TRP")
         parser.add_argument('-v','--verbose',help='Enable verbose output',default=False,action="store_true")
         parser.add_argument('-D','--dewpoint',type=float,help='Dew point',default=10.0)
