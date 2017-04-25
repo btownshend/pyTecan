@@ -592,7 +592,9 @@ class TRP(object):
         for i in range(len(stop)):
             if stop[i] is not None:
                 stop[i].conc.final=stopConc
-                stop[i].conc.stock=max(stop[i].conc.stock,stopConc*4)
+                if stop[i].conc.stock<4*stopConc:
+                    stop[i].conc.stock=10   # Use 10uM stock (or higher)
+                    stop[i].conc.stock=max(stop[i].conc.stock,stopConc*4)
                 
         if any([s is not None for s in stop]):
             print "Adding stop:  [%s]"%(",".join(["%s@%.1fuM (stock=%.1fuM)"%(s.name,s.conc.final,s.conc.stock) for s in stop]))
