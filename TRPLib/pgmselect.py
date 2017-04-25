@@ -77,6 +77,7 @@ class PGMSelect(TRP):
         self.allprimers=["REF","MX","T7X","T7WX"]    # Will get updated after first pass with all primers used
         self.rtpostdil=[3.0 if r=='U' else 1.0 for r in self.rounds]
         self.rtdur=20
+        self.maxPCRVolume=100  # Maximum sample volume of each PCR reaction (thermocycler limit, and mixing limit)
         self.setVolumes()
         
     def setVolumes(self):
@@ -440,7 +441,6 @@ class PGMSelect(TRP):
             print "######### PCR ############# %.0f min"%(clock.elapsed()/60)
             maxvol=max([r.volume for r in rxs])
             print "PCR Volume: %.1f, Dilution: %.1f, volumes available for PCR: [%s]"%(pcrvol, pcrdil,",".join(["%.1f"%r.volume for r in rxs]))
-            maxPCRVolume=100  # Maximum sample volume of each PCR reaction (thermocycler limit, and mixing limit)
 
             initConc=needDil*self.qConc/pcrdil
             if keepCleaved:
@@ -454,7 +454,7 @@ class PGMSelect(TRP):
             gain=pcrgain(initConc,400,cycles)
             finalConc=min(200,initConc*gain)
             print "Estimated starting concentration in PCR = %.1f nM, running %d cycles -> %.0f nM\n"%(needDil*self.qConc/pcrdil,cycles,finalConc)
-            nsplit=int(math.ceil(pcrvol*1.0/maxPCRVolume))
+            nsplit=int(math.ceil(pcrvol*1.0/self.maxPCRVolume))
             print "Split each PCR into %d reactions"%nsplit
             minsrcdil=1/(1-1.0/3-1.0/4)
             sampNeeded=pcrvol/pcrdil
