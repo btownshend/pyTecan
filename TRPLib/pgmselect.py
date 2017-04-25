@@ -71,6 +71,7 @@ class PGMSelect(TRP):
         self.maxSampVolume=125
         self.rtcopies=4    				# Number of copies maintained in RT stage
         self.rtHI=False				   # Heat inactive/refold after RT
+        self.rtDil=4
         self.saveRNADilution=10
         self.ligInPlace=True
         self.allprimers=["REF","MX","T7X","T7WX"]    # Will get updated after first pass with all primers used
@@ -265,11 +266,10 @@ class PGMSelect(TRP):
                 q.addSamples(src=rxs[i:i+1],needDil=needDil,primers=primerSet[i],names=["%s.stopped"%names[i]])
         
         print "######## RT  Setup ########### %.0f min"%(clock.elapsed()/60)
-        rtDil=4
         hiTemp=95
 
         stop=["Unclvd-Stop" if (not dolig) else "T7W-Stop" if self.singlePrefix else "%s-Stop"%n for n in prefixOut]
-        rt=self.runRT(src=rxs,vol=rtvol,srcdil=rtDil,heatInactivate=self.rtHI,hiTemp=hiTemp,dur=self.rtdur,incTemp=50,stop=[reagents.getsample(s) for s in stop])    # Heat inactivate also allows splint to fold
+        rt=self.runRT(src=rxs,vol=rtvol,srcdil=self.rtDil,heatInactivate=self.rtHI,hiTemp=hiTemp,dur=self.rtdur,incTemp=50,stop=[reagents.getsample(s) for s in stop])    # Heat inactivate also allows splint to fold
         
         rxs=rt
         for i in range(len(rxs)):
@@ -279,7 +279,7 @@ class PGMSelect(TRP):
                 rxs[i].name=names[i]+".rt"
 
         print "RT volume= [",",".join(["%.1f "%x.volume for x in rxs]),"]"
-        needDil /= rtDil
+        needDil /=self.rtDil
         if self.rtpostdil[self.rndNum-1]>1:
             print "Dilution after RT: %.2f"%self.rtpostdil[self.rndNum-1]
             self.diluteInPlace(tgt=rxs,dil=self.rtpostdil[self.rndNum-1])
@@ -421,9 +421,9 @@ class PGMSelect(TRP):
         else:
             userDil=1
 
-        totalDil=stopDil*rtDil*self.rtpostdil[self.rndNum-1]*extdil*self.extpostdil*exoDil*self.exopostdil*columnDil*userDil
+        totalDil=stopDil*self.rtDil*self.rtpostdil[self.rndNum-1]*extdil*self.extpostdil*exoDil*self.exopostdil*columnDil*userDil
         fracRetained=rxs[0].volume/(t7vol*totalDil)
-        print "Total dilution from T7 to Pre-pcr Product = %.2f*%.2f*%.2f*%.2f*%.2f*%.2f*%.2f*%.2f*%.2f = %.2f, fraction retained=%.0f%%"%(stopDil,rtDil,self.rtpostdil[self.rndNum-1],extdil,self.extpostdil,exoDil,self.exopostdil,columnDil,userDil,totalDil,fracRetained*100)
+        print "Total dilution from T7 to Pre-pcr Product = %.2f*%.2f*%.2f*%.2f*%.2f*%.2f*%.2f*%.2f*%.2f = %.2f, fraction retained=%.0f%%"%(stopDil,self.rtDil,self.rtpostdil[self.rndNum-1],extdil,self.extpostdil,exoDil,self.exopostdil,columnDil,userDil,totalDil,fracRetained*100)
 
         if self.rtCarryForward and not keepCleaved:
             # Remove the extra samples
