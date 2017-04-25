@@ -479,9 +479,11 @@ class PGMSelect(TRP):
                 print "Reducing PCR volume from %.1ful to %.1ful due to limited input"%(pcrvol, maxpcrvol)
                 pcrvol=maxpcrvol
 
-            for i in range(len(pcr)):
-                pcr[i].name=names[i]+".pcr"
             pcr=self.runPCR(src=rxs*nsplit,vol=pcrvol/nsplit,srcdil=pcrdil,ncycles=cycles,primers=["T7%sX"%("" if self.singlePrefix and keepCleaved else x) for x in (prefixOut if keepCleaved else prefixIn)]*nsplit,usertime=self.usertime if keepCleaved and not self.douser else None,fastCycling=False,inPlace=False)
+            if len(pcr)==len(names):
+                # Don't relabel if we've split
+                for i in range(len(pcr)):
+                    pcr[i].name=names[i]+".pcr"
                 
             print "Volume remaining in PCR input source: [",",".join(["%.1f"%r.volume for r in rxs]),"]"
             needDil=finalConc/self.qConc
