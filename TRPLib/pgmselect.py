@@ -101,11 +101,13 @@ class PGMSelect(TRP):
         self.pcrvol=[self.pcrcopies*self.pmolesIn*1000/pcrConc[i] for i in range(len(self.rounds))]
         # Use at least 100ul so the evaporation of the saved sample that occurs during the run will be relatively small
         self.pcrvol=[max(100,v) for v in self.pcrvol]
-        self.minligvol=[self.pcrvol[i]/self.pcrdil[i]+(1.4*math.ceil(self.pcrvol[i]/self.maxPCRVolume)+(4.4 if self.saveDil is not None else 5.4 if 'ext' in self.qpcrStages else 0)+15.1)/self.extpostdil for i in range(len(self.pcrvol))]
-        #print "minligvol=%.1f"%self.minligvol[0]
+        pcrExtra=[1.4*math.ceil(v/self.maxPCRVolume) for v in self.pcrvol]
+        self.minligvol=[self.pcrvol[i]/self.pcrdil[i]+(pcrExtra[i]+ (4.4 if self.saveDil is not None else 5.4 if 'ext' in self.qpcrStages else 0)+15.1)/self.extpostdil[i] for i in range(len(self.pcrvol))]
+        print "minligvol=[%s]"%(",".join(["%.1f"%v for v in self.minligvol]))
 
         # Compute RT volume 
-        self.rtvol=[self.minligvol[i]/1.25/self.rtpostdil[i] for i in range(len(self.rounds))]
+        self.rtvol=[ (self.minligvol[i]/1.25/self.rtpostdil[i]) if self.rounds[i]=='C' else (self.pcrvol[i]*1.0/self.pcrdil[i]+(pcrExtra[i]+15.1)/self.rtpostdil[i]) for i in range(len(self.rounds))]
+        print  "self.rtvol=",self.rtvol,", rtSave=",self.rtSave
         if self.rtSave:
             self.rtvol=[max(15.0/self.rtpostdil[i],self.rtvol[i])+(self.rtSaveVol+1.4)/self.rtpostdil[i] for i in range(len(self.rtvol))]  # Extra for saves
         elif "rt" in self.qpcrStages:		# Take from save if rtSave is set
