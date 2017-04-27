@@ -360,9 +360,9 @@ class PGMSelect(TRP):
             else:
                 if "ext" in self.qpcrStages:
                     print "needDil=",needDil
-                    for i in range(len(input)):
+                    for i in range(len(names)):
                         q.addSamples(src=[rxs[i]],needDil=needDil,primers=primerSet[i],names=["%s.ext"%names[i]])
-                        isave=i+len(input)
+                        isave=i+len(names)
                         if isave<len(rxs):
                             # samples restored
                             q.addSamples(src=[rxs[isave]],needDil=needDil/rtCarryForwardDil,primers=primerSet[isave])
