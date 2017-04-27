@@ -303,6 +303,7 @@ class PGMSelect(TRP):
                 rxs[i].name=names[i]+".rt"
 
         print "RT volume= [",",".join(["%.1f "%x.volume for x in rxs]),"]"
+        
         needDil /=self.rtDil
         if self.rtpostdil[self.rndNum-1]>1:
             print "Dilution after RT: %.2f"%self.rtpostdil[self.rndNum-1]
@@ -459,6 +460,7 @@ class PGMSelect(TRP):
             self.lastSaved=[]
 
         if len(rxs)>len(input):
+            # Have extra samples due when self.finalPlus is True
             rxs=rxs[0:len(input)]    # Only keep -target products
             prefixOut=prefixOut[0:len(input)]
             prefixIn=prefixIn[0:len(input)]
