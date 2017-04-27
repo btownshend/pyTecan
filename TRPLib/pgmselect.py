@@ -62,7 +62,7 @@ class PGMSelect(TRP):
         self.dopcr=True			    # Run PCR of samples
         self.cleavage=0.40			# Estimated cleavage (for computing dilutions of qPCRs)
         self.exopostdil=2
-        self.extpostdil=2
+        self.extpostdil=[2.0 if r=='C' else 1.0 for r in self.rounds]
         self.nopcrdil=4
         self.userMelt=False
         self.maxSampVolume=125
@@ -94,7 +94,7 @@ class PGMSelect(TRP):
         rtConc=stopConc/self.rtDil
         rtdilConc=[rtConc/self.rtpostdil[i] for i in range(len(self.rounds))]
         ligConc=[rtdilConc[i]/1.25 for i in range(len(self.rounds))]
-        ligdilConc=[ligConc[i]/self.extpostdil for i in range(len(self.rounds))]
+        ligdilConc=[ligConc[i]/self.extpostdil[i] for i in range(len(self.rounds))]
         pcrConc=[ligConc[i]/self.pcrdil[i] for i in range(len(self.rounds))]
         
         print "Concs(nM):  RNA: %.0f, Stop: %.0f, RT: %.0f, RTDil: %.0f, Lig: %.0f, LigDil: %.0f, PCRIn: %.0f"%(self.rnaConc, stopConc, rtConc, rtdilConc[0], ligConc[0], ligdilConc[0], pcrConc[0])
@@ -339,11 +339,11 @@ class PGMSelect(TRP):
 
             print "Ligation volume= ",[x.volume for x in rxs]
             needDil=needDil/extdil
-            if self.extpostdil>1:
-                print "Dilution after extension: %.2f"%self.extpostdil
-                self.diluteInPlace(tgt=rxs,dil=self.extpostdil)
-                needDil=needDil/self.extpostdil
-                pcrdil=pcrdil*1.0/self.extpostdil
+            if self.extpostdil[self.rndNum-1]>1:
+                print "Dilution after extension: %.2f"%self.extpostdil[self.rndNum-1]
+                self.diluteInPlace(tgt=rxs,dil=self.extpostdil[self.rndNum-1])
+                needDil=needDil/self.extpostdil[self.rndNum-1]
+                pcrdil=pcrdil*1.0/self.extpostdil[self.rndNum-1]
                 
             if self.saveDil is not None:
                 ext=self.saveSamps(src=rxs,vol=3,dil=self.saveDil,dilutant=reagents.getsample("TE8"),tgt=[Sample("%s.ext"%n,decklayout.DILPLATE) for n in names],mix=(False,True))   # Save cDNA product for subsequent NGS
@@ -393,7 +393,7 @@ class PGMSelect(TRP):
                 exo=[]
         else:
             extdil=1
-            self.extpostdil=1
+            self.extpostdil[self.rndNum-1]=1
             self.exopostdil=1
             exoDil=1
             
@@ -444,9 +444,9 @@ class PGMSelect(TRP):
         else:
             userDil=1
 
-        totalDil=stopDil*self.rtDil*self.rtpostdil[self.rndNum-1]*extdil*self.extpostdil*exoDil*self.exopostdil*columnDil*userDil
+        totalDil=stopDil*self.rtDil*self.rtpostdil[self.rndNum-1]*extdil*self.extpostdil[self.rndNum-1]*exoDil*self.exopostdil*columnDil*userDil
         fracRetained=rxs[0].volume/(t7vol*totalDil)
-        print "Total dilution from T7 to Pre-pcr Product = %.2f*%.2f*%.2f*%.2f*%.2f*%.2f*%.2f*%.2f*%.2f = %.2f, fraction retained=%.0f%%"%(stopDil,self.rtDil,self.rtpostdil[self.rndNum-1],extdil,self.extpostdil,exoDil,self.exopostdil,columnDil,userDil,totalDil,fracRetained*100)
+        print "Total dilution from T7 to Pre-pcr Product = %.2f*%.2f*%.2f*%.2f*%.2f*%.2f*%.2f*%.2f*%.2f = %.2f, fraction retained=%.0f%%"%(stopDil,self.rtDil,self.rtpostdil[self.rndNum-1],extdil,self.extpostdil[self.rndNum-1],exoDil,self.exopostdil,columnDil,userDil,totalDil,fracRetained*100)
 
         if self.rtCarryForward and not keepCleaved:
             # Remove the extra samples
@@ -539,7 +539,7 @@ class PGMSelect(TRP):
             # Need to add enough t7prefix to compensate for all of the Stop primer currently present, regardless of whether it is for cleaved or uncleaved
             # Will result in some short transcripts corresponding to the stop primers that are not used for cleaved product, producing just GGG_W_GTCTGC in the next round.  These would be reverse-trancribed, but may compete for T7 yield
             t7prefix=reagents.getsample("BT88")
-            dil=self.extpostdil*exoDil*self.exopostdil*columnDil*userDil
+            dil=self.extpostdil[self.rndNum-1]*exoDil*self.exopostdil*columnDil*userDil
             stopconc=1000.0/dil
             bt88conc=t7prefix.conc.stock
             relbt88=stopconc/bt88conc
@@ -571,6 +571,6 @@ class PGMAnalytic(PGMSelect):
         self.saveRNADilution=2
         self.ligInPlace=True
         self.rtpostdil=[2]
-        self.extpostdil=2
+        self.extpostdil=[2]
         self.saveDil=None
         self.setVolumes()
