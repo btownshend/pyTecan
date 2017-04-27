@@ -18,6 +18,8 @@ reagents.add("MT7",well="A1",conc=2.5,extraVol=30,ingredients={'glycerol':0.5*37
 reagents.add("MPosRT",well="B1",conc=2,extraVol=30,ingredients={'Omniscript':0.5*10,'glycerol':0.5*10,'RT-ABE':90})
 reagents.add("MExo",well="C1",conc=5,extraVol=30,ingredients={'ExoI':0.5*55,'ExoIII':0.5*7,'glycerol':0.5*(55+7),'NEBuffer1':10,'Water':28})
 reagents.add("MTaq",well="D1",conc=3,ingredients={'Taq':0.5*1.5,'USER':0.5*3,'glycerol':0.5*4.5,'TAQ-ABE':51,'Water':44.5})
+reagents.add("MTaqC",well="D1",conc=2,ingredients={'Taq':0.5*1.5,'USER':0.5*3,'glycerol':0.5*4.5,'TAQ-ABE':51,'Water':44.5})
+reagents.add("MTaqU",well="C1",conc=2,ingredients={'Taq':0.5*1.5,'USER':0.5*3,'glycerol':0.5*4.5,'TAQ-ABE':51,'Water':44.5})
 reagents.add("MLigase",well="E1",conc=3,extraVol=30,ingredients={'T4DNALigase':0.5*2.50,'glycerol':0.5*2.50,'T4-ABE':97.47})
 reagents.add("MUser",well="B2",conc=5,extraVol=30,ingredients={'USER':0.5*2.5,'glycerol':0.5*2.5,'CutSmart':25,'Water':72.5})
 reagents.add("Ampure",well="C2",conc=None,hasBeads=True)
