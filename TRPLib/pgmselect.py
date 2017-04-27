@@ -398,7 +398,9 @@ class PGMSelect(TRP):
             self.extpostdil[self.rndNum-1]=1
             self.exopostdil=1
             exoDil=1
-            
+            if self.rtpostdil[self.rndNum-1]>1:
+                pcrdil=pcrdil*1.0/self.rtpostdil[self.rndNum-1]
+                
         if self.doampure:
             print "######## Ampure Cleanup ########### %.0f min"%(clock.elapsed()/60)
             ratio=1.8
