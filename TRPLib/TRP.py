@@ -929,6 +929,8 @@ class TRP(object):
         else:
             sys.stdout=open(os.devnull,'w')
         self.pgm()
+        if args.verbose:
+            print '------ Second preliminary run to set volume -----'
         self.reset()
         self.pgm()
         if args.verbose:
