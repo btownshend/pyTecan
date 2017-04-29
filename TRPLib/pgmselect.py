@@ -13,7 +13,7 @@ from pcrgain import pcrgain
 class PGMSelect(TRP):
     '''Selection experiment'''
     
-    def __init__(self,inputs,rounds,firstID,pmolesIn,doampure=False,directT7=True,templateDilution=0.3,tmplFinalConc=50,saveDil=24,qpcrWait=False,allLig=False,qpcrStages=["negative","template","ext","finalpcr"],finalPlus=True,t7dur=30,douser=False,usertime=10,singlePrefix=False,noPCRCleave=False,saveRNA=False):
+    def __init__(self,inputs,rounds,firstID,pmolesIn,directT7=True,templateDilution=0.3,tmplFinalConc=50,saveDil=24,qpcrWait=False,allLig=False,qpcrStages=["negative","template","ext","finalpcr"],finalPlus=True,t7dur=30,douser=False,usertime=10,singlePrefix=False,noPCRCleave=False,saveRNA=False):
         # Initialize field values which will never change during multiple calls to pgm()
         for i in range(len(inputs)):
             if 'ligand' not in inputs[i]:
@@ -28,7 +28,6 @@ class PGMSelect(TRP):
         self.inputs=inputs
         self.rounds=rounds
         self.nrounds=len(rounds)
-        self.doampure=doampure
         self.directT7=directT7
         self.tmplFinalConc=tmplFinalConc
         self.templateDilution=templateDilution
@@ -367,18 +366,6 @@ class PGMSelect(TRP):
             self.extpostdil[self.rndNum-1]=1
             if self.rtpostdil[self.rndNum-1]>1:
                 pcrdil=pcrdil*1.0/self.rtpostdil[self.rndNum-1]
-                
-        if self.doampure:
-            print "######## Ampure Cleanup ########### %.0f min"%(clock.elapsed()/60)
-            ratio=1.8
-            elutionVol=30
-            needDil=needDil*rxs[0].volume/elutionVol
-            print "Ampure cleanup of [%s] into %.1f ul"%(",".join(["%.1f"%r.volume for r in rxs]),elutionVol)
-            clean=self.runAmpure(src=rxs,ratio=ratio,elutionVol=elutionVol)
-            if "ampure" in self.qpcrStages:
-                for i in range(len(clean)):
-                    q.addSamples(src=[clean[i]],needDil=needDil,primers=primerSet[i],names=["%s.amp"%names[i]])
-            rxs=clean   # Use the cleaned products for PCR
 
         if self.douser:
             print "######## User ########### %.0f min"%(clock.elapsed()/60)
