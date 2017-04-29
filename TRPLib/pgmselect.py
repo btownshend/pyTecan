@@ -15,19 +15,8 @@ class PGMSelect(TRP):
     
     def __init__(self,inputs,rounds,firstID,pmolesIn,directT7=True,templateDilution=0.3,tmplFinalConc=50,saveDil=24,qpcrWait=False,allLig=False,qpcrStages=["negative","template","ext","finalpcr"],finalPlus=True,t7dur=30,usertime=10,singlePrefix=False,noPCRCleave=False,saveRNA=False):
         # Initialize field values which will never change during multiple calls to pgm()
-        for i in range(len(inputs)):
-            if 'ligand' not in inputs[i]:
-                inputs[i]['ligand']=None
-            if 'round' not in inputs[i]:
-                inputs[i]['round']=None
-            if 'name' not in inputs[i]:
-                if inputs[i]['ligand'] is None:
-                    inputs[i]['name']='%s_%d_R%d'%(inputs[i]['prefix'],inputs[i]['ID'],inputs[i]['round'])
-                else:
-                    inputs[i]['name']='%s_%d_R%d_%s'%(inputs[i]['prefix'],inputs[i]['ID'],inputs[i]['round'],inputs[i]['ligand'])
         self.inputs=inputs
-        self.rounds=rounds
-        self.nrounds=len(rounds)
+        self.rounds=rounds   # String of U or C for each round to be run
         self.directT7=directT7
         self.tmplFinalConc=tmplFinalConc
         self.templateDilution=templateDilution
@@ -125,6 +114,18 @@ class PGMSelect(TRP):
     def pgm(self):
         q = QSetup(self,maxdil=16,debug=False,mindilvol=60)
         self.e.addIdleProgram(q.idler)
+
+        # Add any missing fields to inputs
+        for i in range(len(self.inputs)):
+            if 'ligand' not in self.inputs[i]:
+                self.inputs[i]['ligand']=None
+            if 'round' not in self.inputs[i]:
+                self.inputs[i]['round']=None
+            if 'name' not in self.inputs[i]:
+                if self.inputs[i]['ligand'] is None:
+                    self.inputs[i]['name']='%s_%d_R%d'%(self.inputs[i]['prefix'],self.inputs[i]['ID'],self.inputs[i]['round'])
+                else:
+                    self.inputs[i]['name']='%s_%d_R%d_%s'%(self.inputs[i]['prefix'],self.inputs[i]['ID'],self.inputs[i]['round'],self.inputs[i]['ligand'])
 
         # Add templates
         if self.directT7:
@@ -238,7 +239,7 @@ class PGMSelect(TRP):
                     self.e.transfer(t7vol/mconc,reagents.getsample("MT7"),input[i],mix=(False,False))
                     assert(abs(input[i].volume-t7vol)<0.1)
                 rxs=input
-            elif self.rndNum==self.nrounds and self.finalPlus and keepCleaved:
+            elif self.rndNum==len(self.rounds) and self.finalPlus and keepCleaved:
                 rxs = self.runT7Setup(src=input,vol=t7vol,srcdil=[inp.conc.dilutionneeded() for inp in input])
                 for i in range(len(input)):
                     inp=input[i]
