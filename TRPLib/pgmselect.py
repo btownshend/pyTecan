@@ -13,7 +13,7 @@ from pcrgain import pcrgain
 class PGMSelect(TRP):
     '''Selection experiment'''
     
-    def __init__(self,inputs,rounds,firstID,pmolesIn,doampure=False,directT7=True,templateDilution=0.3,tmplFinalConc=50,saveDil=24,qpcrWait=False,allLig=False,qpcrStages=["negative","template","ext","finalpcr"],finalPlus=True,t7dur=30,columnclean=False,douser=False,usertime=10,singlePrefix=False,noPCRCleave=False,saveRNA=False):
+    def __init__(self,inputs,rounds,firstID,pmolesIn,doampure=False,directT7=True,templateDilution=0.3,tmplFinalConc=50,saveDil=24,qpcrWait=False,allLig=False,qpcrStages=["negative","template","ext","finalpcr"],finalPlus=True,t7dur=30,douser=False,usertime=10,singlePrefix=False,noPCRCleave=False,saveRNA=False):
         # Initialize field values which will never change during multiple calls to pgm()
         for i in range(len(inputs)):
             if 'ligand' not in inputs[i]:
@@ -40,7 +40,6 @@ class PGMSelect(TRP):
         self.qpcrStages=qpcrStages
         self.finalPlus=finalPlus
         self.t7dur=t7dur
-        self.columnclean=columnclean
         self.douser=douser
         self.usertime=usertime				# USER incubation time in minutes
         self.singlePrefix=singlePrefix
@@ -381,25 +380,6 @@ class PGMSelect(TRP):
                     q.addSamples(src=[clean[i]],needDil=needDil,primers=primerSet[i],names=["%s.amp"%names[i]])
             rxs=clean   # Use the cleaned products for PCR
 
-        if self.columnclean:
-            print "######## Column Cleanup ########### %.0f min"%(clock.elapsed()/60)
-            elutionVol=30
-            cleaned=[Sample("%s.cln"%r.name,decklayout.SAMPLEPLATE,volume=elutionVol,ingredients=r.ingredients) for r in rxs]
-            columnDil=elutionVol/rxs[0].volume
-            print "Column cleanup of [%s] into %.1f ul"%(",".join(["%.1f"%r.volume for r in rxs]),elutionVol)
-            inwells=",".join([r.plate.wellname(r.well) for r in rxs])
-            outwells=",".join([r.plate.wellname(r.well) for r in cleaned])
-            msg="Run column cleanup of wells [%s], elute in %.1f ul and put products into wells [%s]"%(inwells,elutionVol,outwells)
-            print msg
-            worklist.userprompt(msg)
-            needDil=needDil/columnDil
-            rxs=cleaned
-            if "column" in self.qpcrStages:
-                for i in range(len(rxs)):
-                    q.addSamples(src=rxs[i],needDil=needDil,primers=primerSet[i],names=["%s.cln"%names[i]])
-        else:
-            columnDil=1
-            
         if self.douser:
             print "######## User ########### %.0f min"%(clock.elapsed()/60)
             prevvol=rxs[0].volume
@@ -416,9 +396,9 @@ class PGMSelect(TRP):
         else:
             userDil=1
 
-        totalDil=stopDil*self.rtDil*self.rtpostdil[self.rndNum-1]*extdil*self.extpostdil[self.rndNum-1]*columnDil*userDil
+        totalDil=stopDil*self.rtDil*self.rtpostdil[self.rndNum-1]*extdil*self.extpostdil[self.rndNum-1]*userDil
         fracRetained=rxs[0].volume/(t7vol*totalDil)
-        print "Total dilution from T7 to Pre-pcr Product = %.2f*%.2f*%.2f*%.2f*%.2f*%.2f*%.2f = %.2f, fraction retained=%.0f%%"%(stopDil,self.rtDil,self.rtpostdil[self.rndNum-1],extdil,self.extpostdil[self.rndNum-1],columnDil,userDil,totalDil,fracRetained*100)
+        print "Total dilution from T7 to Pre-pcr Product = %.2f*%.2f*%.2f*%.2f*%.2f*%.2f = %.2f, fraction retained=%.0f%%"%(stopDil,self.rtDil,self.rtpostdil[self.rndNum-1],extdil,self.extpostdil[self.rndNum-1],userDil,totalDil,fracRetained*100)
 
         if self.rtCarryForward and not keepCleaved:
             # Remove the extra samples
@@ -512,7 +492,7 @@ class PGMSelect(TRP):
             # Need to add enough t7prefix to compensate for all of the Stop primer currently present, regardless of whether it is for cleaved or uncleaved
             # Will result in some short transcripts corresponding to the stop primers that are not used for cleaved product, producing just GGG_W_GTCTGC in the next round.  These would be reverse-trancribed, but may compete for T7 yield
             t7prefix=reagents.getsample("BT88")
-            dil=self.extpostdil[self.rndNum-1]*columnDil*userDil
+            dil=self.extpostdil[self.rndNum-1]*userDil
             stopconc=1000.0/dil
             bt88conc=t7prefix.conc.stock
             relbt88=stopconc/bt88conc
