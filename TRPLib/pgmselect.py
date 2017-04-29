@@ -13,7 +13,7 @@ from pcrgain import pcrgain
 class PGMSelect(TRP):
     '''Selection experiment'''
     
-    def __init__(self,inputs,rounds,firstID,pmolesIn,directT7=True,templateDilution=0.3,tmplFinalConc=50,saveDil=24,qpcrWait=False,allLig=False,qpcrStages=["negative","template","ext","finalpcr"],finalPlus=True,t7dur=30,douser=False,usertime=10,singlePrefix=False,noPCRCleave=False,saveRNA=False):
+    def __init__(self,inputs,rounds,firstID,pmolesIn,directT7=True,templateDilution=0.3,tmplFinalConc=50,saveDil=24,qpcrWait=False,allLig=False,qpcrStages=["negative","template","ext","finalpcr"],finalPlus=True,t7dur=30,usertime=10,singlePrefix=False,noPCRCleave=False,saveRNA=False):
         # Initialize field values which will never change during multiple calls to pgm()
         for i in range(len(inputs)):
             if 'ligand' not in inputs[i]:
@@ -39,7 +39,6 @@ class PGMSelect(TRP):
         self.qpcrStages=qpcrStages
         self.finalPlus=finalPlus
         self.t7dur=t7dur
-        self.douser=douser
         self.usertime=usertime				# USER incubation time in minutes
         self.singlePrefix=singlePrefix
         self.noPCRCleave=noPCRCleave   # Skip PCR on cleave-selection rounds
@@ -367,25 +366,9 @@ class PGMSelect(TRP):
             if self.rtpostdil[self.rndNum-1]>1:
                 pcrdil=pcrdil*1.0/self.rtpostdil[self.rndNum-1]
 
-        if self.douser:
-            print "######## User ########### %.0f min"%(clock.elapsed()/60)
-            prevvol=rxs[0].volume
-            if self.userMelt:
-                self.runUser(rxs,incTime=self.usertime,inPlace=True,hiTime=1,hiTemp=95)
-            else:
-                self.runUser(rxs,incTime=self.usertime,inPlace=True)
-            print "USER volume=[%s]"%",".join(["%.1f"%r.volume for r in rxs])
-            userDil=rxs[0].volume/prevvol
-            needDil/=userDil
-            if "user" in self.qpcrStages:
-                for i in range(len(rxs)):
-                    q.addSamples(src=rxs[i],needDil=needDil,primers=primerSet[i],names=["%s.user"%names[i]])
-        else:
-            userDil=1
-
-        totalDil=stopDil*self.rtDil*self.rtpostdil[self.rndNum-1]*extdil*self.extpostdil[self.rndNum-1]*userDil
+        totalDil=stopDil*self.rtDil*self.rtpostdil[self.rndNum-1]*extdil*self.extpostdil[self.rndNum-1]
         fracRetained=rxs[0].volume/(t7vol*totalDil)
-        print "Total dilution from T7 to Pre-pcr Product = %.2f*%.2f*%.2f*%.2f*%.2f*%.2f = %.2f, fraction retained=%.0f%%"%(stopDil,self.rtDil,self.rtpostdil[self.rndNum-1],extdil,self.extpostdil[self.rndNum-1],userDil,totalDil,fracRetained*100)
+        print "Total dilution from T7 to Pre-pcr Product = %.2f*%.2f*%.2f*%.2f*%.2f = %.2f, fraction retained=%.0f%%"%(stopDil,self.rtDil,self.rtpostdil[self.rndNum-1],extdil,self.extpostdil[self.rndNum-1],totalDil,fracRetained*100)
 
         if self.rtCarryForward and not keepCleaved:
             # Remove the extra samples
@@ -438,9 +421,9 @@ class PGMSelect(TRP):
                 pcrvol=maxpcrvol
 
             if self.singlePrefix:
-                pcr=self.runPCR(src=rxs*nsplit,vol=pcrvol/nsplit,srcdil=pcrdil,ncycles=cycles,primers=None,usertime=self.usertime if keepCleaved and not self.douser else None,fastCycling=False,inPlace=False,master=("MTaqC" if keepCleaved else "MTaqU"))
+                pcr=self.runPCR(src=rxs*nsplit,vol=pcrvol/nsplit,srcdil=pcrdil,ncycles=cycles,primers=None,usertime=self.usertime if keepCleaved else None,fastCycling=False,inPlace=False,master=("MTaqC" if keepCleaved else "MTaqU"))
             else:
-                pcr=self.runPCR(src=rxs*nsplit,vol=pcrvol/nsplit,srcdil=pcrdil,ncycles=cycles,primers=["T7%sX"%("" if self.singlePrefix and keepCleaved else x) for x in (prefixOut if keepCleaved else prefixIn)]*nsplit,usertime=self.usertime if keepCleaved and not self.douser else None,fastCycling=False,inPlace=False)
+                pcr=self.runPCR(src=rxs*nsplit,vol=pcrvol/nsplit,srcdil=pcrdil,ncycles=cycles,primers=["T7%sX"%("" if self.singlePrefix and keepCleaved else x) for x in (prefixOut if keepCleaved else prefixIn)]*nsplit,usertime=self.usertime if keepCleaved else None,fastCycling=False,inPlace=False)
             if len(pcr)==len(names):
                 # Don't relabel if we've split
                 for i in range(len(pcr)):
