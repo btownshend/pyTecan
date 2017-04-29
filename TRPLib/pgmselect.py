@@ -507,7 +507,7 @@ class PGMSelect(TRP):
                 pcrvol=maxpcrvol
 
             if self.singlePrefix:
-                pcr=self.runPCR(src=rxs*nsplit,vol=pcrvol/nsplit,srcdil=pcrdil,ncycles=cycles,primers=[[]],usertime=self.usertime if keepCleaved and not self.douser else None,fastCycling=False,inPlace=False,master=("MTaqC" if keepCleaved else "MTaqU"))
+                pcr=self.runPCR(src=rxs*nsplit,vol=pcrvol/nsplit,srcdil=pcrdil,ncycles=cycles,primers=None,usertime=self.usertime if keepCleaved and not self.douser else None,fastCycling=False,inPlace=False,master=("MTaqC" if keepCleaved else "MTaqU"))
             else:
                 pcr=self.runPCR(src=rxs*nsplit,vol=pcrvol/nsplit,srcdil=pcrdil,ncycles=cycles,primers=["T7%sX"%("" if self.singlePrefix and keepCleaved else x) for x in (prefixOut if keepCleaved else prefixIn)]*nsplit,usertime=self.usertime if keepCleaved and not self.douser else None,fastCycling=False,inPlace=False)
             if len(pcr)==len(names):
