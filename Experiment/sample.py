@@ -294,10 +294,12 @@ class Sample(object):
         'Update amount of evaporation and check for issues'
         if self.plate.name=="Samples":
             dt=clock.pipetting-self.lastevapupdate	# Assume no evaporation while in PTC
+            if dt<-0.1:
+                logging.error( "%s: clock went backwards: pipetting=%f, lastevapupdate=%f, dt=%f"%(self.name,clock.pipetting,self.lastevapupdate,dt))
         else:
             dt=clock.elapsed()-self.lastevapupdate
-        if dt<-0.1:
-            logging.error( "clock went backwards: elapsed=%f, lastevapupdate=%f, dt=%f"%(clock.elapsed(),self.lastevapupdate,dt))
+            if dt<-0.1:
+                logging.error( "%s: clock went backwards: elapsed=%f, lastevapupdate=%f, dt=%f"%(self.name, clock.elapsed(),self.lastevapupdate,dt))
         if dt<=0.1:
             return
         for i in range(10):   # Break it into smaller steps since volume affects rate
@@ -309,7 +311,7 @@ class Sample(object):
             if "evap" in __historyOptions:
                 self.history= self.history + (' [Evap: %0.1f ul]'%(self.evap))
         self.lastevapupdate+=dt
-
+        
     def amountToRemove(self,tgtVolume):
         'Calculate amount of volume to remove from sample to hit tgtVolume'
         self.evapcheck('check')
