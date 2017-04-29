@@ -7,10 +7,13 @@ import decklayout
 __allReagents={}
 
 class Reagent(object):
-    def __init__(self,name,plate=decklayout.REAGENTPLATE,well=None,conc=None,hasBeads=False,extraVol=50,initVol=0,extrainfo=[],ingredients=None):
+    def __init__(self,name,plate=None,well=None,conc=None,hasBeads=False,extraVol=50,initVol=0,extrainfo=[],ingredients=None):
         self.sample=None
         self.name=name
-        self.plate=plate
+        if plate==None:
+            self.plate=decklayout.REAGENTPLATE
+        else:
+            self.plate=plate
         self.preferredWell=well
         self.conc=conc
         self.hasBeads=hasBeads
@@ -49,7 +52,9 @@ def lookup(name):
 def __getattr__(name):
     return get(name)
 
-def add(name,plate=decklayout.REAGENTPLATE,well=None,conc=None,hasBeads=False,extraVol=50,initVol=0,extrainfo=[],ingredients=None):
+def add(name,plate=None,well=None,conc=None,hasBeads=False,extraVol=50,initVol=0,extrainfo=[],ingredients=None):
+    if plate is None:
+        plate=decklayout.REAGENTPLATE
     if name in __allReagents:
         logging.error("Attempt to add duplicate reagent, "+name)
     __allReagents[name]=Reagent(name,plate,well,conc,hasBeads,extraVol,initVol=initVol,extrainfo=extrainfo,ingredients=ingredients)

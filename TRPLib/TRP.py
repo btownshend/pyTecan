@@ -121,8 +121,10 @@ class TRP(object):
         Plate.reset()
         decklayout.initWellKnownSamples()
         
-    def addTemplates(self,names,stockconc,finalconc=None,units="nM",plate=decklayout.EPPENDORFS,looplengths=None,extraVol=30,wellnames=None,initVol=0):
+    def addTemplates(self,names,stockconc,finalconc=None,units="nM",plate=None,looplengths=None,extraVol=30,wellnames=None,initVol=0):
         'Add templates as "reagents", return the list of them'
+        if plate is None:
+            plate=decklayout.EPPENDORFS
         if finalconc is None:
             logging.warning("final concentration of template not specified, assuming 0.6x (should add to addTemplates() call")
             [names,stockconc]=listify([names,stockconc])
@@ -202,7 +204,9 @@ class TRP(object):
             
         return tgt
     
-    def distribute(self,src,dil,vol,wells,tgt=None,dilutant=None,plate=decklayout.SAMPLEPLATE):
+    def distribute(self,src,dil,vol,wells,tgt=None,dilutant=None,plate=None):
+        if plate is None:
+            plate=decklayout.SAMPLEPLATE
         if tgt is None:
             tgt=[Sample("%s.dist%d"%(src[0].name,j),plate) for j in range(wells)]
         
@@ -799,7 +803,9 @@ class TRP(object):
     ########################
     # qPCR
     ########################
-    def runQPCRDIL(self,src,vol,srcdil,tgt=None,dilPlate=False,pipMix=False,dilutant=decklayout.SSDDIL):
+    def runQPCRDIL(self,src,vol,srcdil,tgt=None,dilPlate=False,pipMix=False,dilutant=None):
+        if dilutant==None:
+            dilutant=decklayout.SSDDIL
         [src,vol,srcdil]=listify([src,vol,srcdil])
         vol=[float(v) for v in vol]
         if tgt is None:
