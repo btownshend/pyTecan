@@ -13,7 +13,7 @@ from pcrgain import pcrgain
 class PGMSelect(TRP):
     '''Selection experiment'''
     
-    def __init__(self,inputs,rounds,firstID,pmolesIn,doexo=False,doampure=False,directT7=True,templateDilution=0.3,tmplFinalConc=50,saveDil=24,qpcrWait=False,allLig=False,qpcrStages=["negative","template","ext","finalpcr"],finalPlus=True,t7dur=30,columnclean=False,douser=False,usertime=10,exotime=60,singlePrefix=False,noPCRCleave=False,saveRNA=False):
+    def __init__(self,inputs,rounds,firstID,pmolesIn,doampure=False,directT7=True,templateDilution=0.3,tmplFinalConc=50,saveDil=24,qpcrWait=False,allLig=False,qpcrStages=["negative","template","ext","finalpcr"],finalPlus=True,t7dur=30,columnclean=False,douser=False,usertime=10,singlePrefix=False,noPCRCleave=False,saveRNA=False):
         # Initialize field values which will never change during multiple calls to pgm()
         for i in range(len(inputs)):
             if 'ligand' not in inputs[i]:
@@ -28,8 +28,6 @@ class PGMSelect(TRP):
         self.inputs=inputs
         self.rounds=rounds
         self.nrounds=len(rounds)
-        self.doexo=doexo
-        self.exotime=exotime
         self.doampure=doampure
         self.directT7=directT7
         self.tmplFinalConc=tmplFinalConc
@@ -61,7 +59,6 @@ class PGMSelect(TRP):
         self.rtSaveDil=2			    # Amount to dilute RT saved volume in TE8
         self.dopcr=True			    # Run PCR of samples
         self.cleavage=0.40			# Estimated cleavage (for computing dilutions of qPCRs)
-        self.exopostdil=2
         self.extpostdil=[2.0 if r=='C' else 1.0 for r in self.rounds]
         self.nopcrdil=4
         self.userMelt=False
@@ -366,39 +363,9 @@ class PGMSelect(TRP):
                         if isave<len(rxs):
                             # samples restored
                             q.addSamples(src=[rxs[isave]],needDil=needDil/rtCarryForwardDil,primers=primerSet[isave])
-
-            if self.doexo:
-                print "######## Exo ########### %.0f min"%(clock.elapsed()/60)
-                prevvol=rxs[0].volume
-                rxs=self.runExo(rxs,incTime=self.exotime,inPlace=True,hiTemp=95,hiTime=20)
-                print "Exo volume=[%s]"%",".join(["%.1f"%r.volume for r in rxs])
-                exoDil=rxs[0].volume/prevvol
-                needDil/=exoDil
-                needDil/=7   #  Anecdotal based on Ct's -- large components (MX) reduced by exo digestion
-                if self.exopostdil>1:
-                    print "Dilution after exo: %.2f"%self.exopostdil
-                    self.diluteInPlace(tgt=rxs,dil=self.exopostdil)
-                    needDil=needDil/self.exopostdil
-
-                if self.saveDil is not None:
-                    exo=self.saveSamps(src=rxs,vol=3,dil=self.saveDil,dilutant=reagents.getsample("TE8"),tgt=[Sample("%s.exo"%n,decklayout.DILPLATE) for n in names])   # Save cDNA product
-                    if "exo" in self.qpcrStages:
-                        for i in range(len(exo)):
-                            q.addSamples(src=[exo[i]],needDil=needDil/self.saveDil,primers=primerSet[i],names=["%s.exo"%names[i]])
-                else:
-                    if "exo" in self.qpcrStages:
-                        for i in range(len(rxs)):
-                            q.addSamples(src=[rxs[i]],needDil=needDil,primers=primerSet[i],names=["%s.exo"%names[i]])
-                    
-            else:
-                exoDil=1
-                self.exopostdil=1
-                exo=[]
         else:
             extdil=1
             self.extpostdil[self.rndNum-1]=1
-            self.exopostdil=1
-            exoDil=1
             if self.rtpostdil[self.rndNum-1]>1:
                 pcrdil=pcrdil*1.0/self.rtpostdil[self.rndNum-1]
                 
@@ -449,9 +416,9 @@ class PGMSelect(TRP):
         else:
             userDil=1
 
-        totalDil=stopDil*self.rtDil*self.rtpostdil[self.rndNum-1]*extdil*self.extpostdil[self.rndNum-1]*exoDil*self.exopostdil*columnDil*userDil
+        totalDil=stopDil*self.rtDil*self.rtpostdil[self.rndNum-1]*extdil*self.extpostdil[self.rndNum-1]*columnDil*userDil
         fracRetained=rxs[0].volume/(t7vol*totalDil)
-        print "Total dilution from T7 to Pre-pcr Product = %.2f*%.2f*%.2f*%.2f*%.2f*%.2f*%.2f*%.2f*%.2f = %.2f, fraction retained=%.0f%%"%(stopDil,self.rtDil,self.rtpostdil[self.rndNum-1],extdil,self.extpostdil[self.rndNum-1],exoDil,self.exopostdil,columnDil,userDil,totalDil,fracRetained*100)
+        print "Total dilution from T7 to Pre-pcr Product = %.2f*%.2f*%.2f*%.2f*%.2f*%.2f*%.2f = %.2f, fraction retained=%.0f%%"%(stopDil,self.rtDil,self.rtpostdil[self.rndNum-1],extdil,self.extpostdil[self.rndNum-1],columnDil,userDil,totalDil,fracRetained*100)
 
         if self.rtCarryForward and not keepCleaved:
             # Remove the extra samples
@@ -472,10 +439,7 @@ class PGMSelect(TRP):
 
             initConc=needDil*self.qConc/pcrdil
             if keepCleaved:
-                if self.doexo:
-                    initConc=initConc*7*self.cleavage		# Back out 7x dilution in exo step, but only use cleaved as input conc
-                else:
-                    initConc=initConc*self.cleavage		# Only use cleaved as input conc
+                initConc=initConc*self.cleavage		# Only use cleaved as input conc
             else:
                 initConc=initConc*(1-self.cleavage)
                 
@@ -548,7 +512,7 @@ class PGMSelect(TRP):
             # Need to add enough t7prefix to compensate for all of the Stop primer currently present, regardless of whether it is for cleaved or uncleaved
             # Will result in some short transcripts corresponding to the stop primers that are not used for cleaved product, producing just GGG_W_GTCTGC in the next round.  These would be reverse-trancribed, but may compete for T7 yield
             t7prefix=reagents.getsample("BT88")
-            dil=self.extpostdil[self.rndNum-1]*exoDil*self.exopostdil*columnDil*userDil
+            dil=self.extpostdil[self.rndNum-1]*columnDil*userDil
             stopconc=1000.0/dil
             bt88conc=t7prefix.conc.stock
             relbt88=stopconc/bt88conc
