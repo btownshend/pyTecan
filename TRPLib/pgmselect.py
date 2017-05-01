@@ -170,10 +170,10 @@ class PGMSelect(TRP):
                 r1=self.oneround(q,r1,prefixOut,prefixIn=curPrefix,keepCleaved=True,rtvol=self.rtvol[self.rndNum-1],t7vol=self.t7vol[self.rndNum-1],cycles=self.pcrcycles[self.rndNum-1],pcrdil=self.pcrdil[self.rndNum-1],pcrvol=self.pcrvol[self.rndNum-1],dolig=True)
 
             for i in range(len(r1)):
-                r1[i].name="%s_Out_%d"%(prefixOut[i],self.nextID)
+                r1[i].name="%s_%d"%(prefixOut[i],self.nextID)
                 if self.inputs[i]['round'] is not None:
                     r1[i].name="%s_R%d%c"%(r1[i].name,self.inputs[i]['round']+self.rndNum,roundType)
-                if self.inputs[i]['ligand'] is not None and roundType=='U':
+                if self.inputs[i]['ligand'] is not None:
                     r1[i].name="%s_%s"%(r1[i].name,self.inputs[i]['ligand'])
                 print "Used ID ", self.nextID," for ", r1[i].name,": ",r1[i]
                 self.nextID+=1
@@ -425,7 +425,7 @@ class PGMSelect(TRP):
                 pcr=self.runPCR(src=rxs*nsplit,vol=pcrvol/nsplit,srcdil=pcrdil,ncycles=cycles,primers=None,usertime=self.usertime if keepCleaved else None,fastCycling=False,inPlace=False,master=("MTaqC" if keepCleaved else "MTaqU"))
             else:
                 pcr=self.runPCR(src=rxs*nsplit,vol=pcrvol/nsplit,srcdil=pcrdil,ncycles=cycles,primers=["T7%sX"%("" if self.singlePrefix and keepCleaved else x) for x in (prefixOut if keepCleaved else prefixIn)]*nsplit,usertime=self.usertime if keepCleaved else None,fastCycling=False,inPlace=False)
-            if len(pcr)==len(names):
+            if len(pcr)<=len(names):
                 # Don't relabel if we've split
                 for i in range(len(pcr)):
                     pcr[i].name=names[i]+".pcr"
