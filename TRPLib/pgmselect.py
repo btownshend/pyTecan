@@ -64,6 +64,7 @@ class PGMSelect(TRP):
         self.rnaInput=False
         self.stopConc=1	   # Concentration of stop in uM
         self.savePCRAtEnd=False
+        self.barcoding=False   # True to use unique barcode primers in cleaved rounds
         self.setVolumes()
         
     def setVolumes(self):
@@ -422,7 +423,15 @@ class PGMSelect(TRP):
                 pcrvol=maxpcrvol
 
             if self.singlePrefix:
-                pcr=self.runPCR(src=rxs*nsplit,vol=pcrvol/nsplit,srcdil=pcrdil,ncycles=cycles,primers=None,usertime=self.usertime if keepCleaved else None,fastCycling=False,inPlace=False,master=("MTaqC" if keepCleaved else "MTaqU"))
+                if self.barcoding and keepCleaved:
+                    primers=["BC-%s-R%d_T7"%(inp['ligand'],self.rndNum) for inp in self.inputs]
+                    for p in ["P-%s"%pp for pp in primers]:
+                        if not reagents.isReagent(p):
+                            print "Adding %s to reagents"%p
+                            reagents.add(name=p,conc=4,extraVol=30,plate=decklayout.DILPLATE)
+                else:
+                    primers=None
+                pcr=self.runPCR(src=rxs*nsplit,vol=pcrvol/nsplit,srcdil=pcrdil,ncycles=cycles,primers=primers,usertime=self.usertime if keepCleaved else None,fastCycling=False,inPlace=False,master=("MTaqC" if keepCleaved else "MTaqU"))
             else:
                 pcr=self.runPCR(src=rxs*nsplit,vol=pcrvol/nsplit,srcdil=pcrdil,ncycles=cycles,primers=["T7%sX"%("" if self.singlePrefix and keepCleaved else x) for x in (prefixOut if keepCleaved else prefixIn)]*nsplit,usertime=self.usertime if keepCleaved else None,fastCycling=False,inPlace=False)
             if len(pcr)<=len(names):
