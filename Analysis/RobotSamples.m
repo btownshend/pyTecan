@@ -18,7 +18,7 @@ classdef RobotSamples < handle
   
   methods
     function obj=RobotSamples(sampfilename,opdfilename,varargin)
-      defaults=struct('thresh',[],'doplot',true,'basecycles',2:8,'fulow',[],'fuhigh',[],'refconc',10,'remotedir',[],'showall',false,'badcycles',[],'longm',false);
+      defaults=struct('thresh',[],'doplot',true,'basecycles',2:8,'fulow',[],'fuhigh',[],'refconc',10,'remotedir',[],'showall',false,'badcycles',[],'longm',true);
       args=processargs(defaults,varargin);
       if ~iscell(sampfilename)
         sampfilename={sampfilename};
