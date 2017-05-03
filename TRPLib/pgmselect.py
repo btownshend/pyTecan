@@ -116,6 +116,18 @@ class PGMSelect(TRP):
         q = QSetup(self,maxdil=16,debug=False,mindilvol=60)
         self.e.addIdleProgram(q.idler)
 
+        if self.barcoding:
+            # Setup barcode primers for cleaved rounds only
+            self.bcprimers=[["BC-%s-R%d_T7"%(inp['ligand'],r+1) for inp in self.inputs] if self.rounds[r]=='C' else None for r in range(len(self.rounds))]
+            for bcp in self.bcprimers:
+                if bcp is not None:
+                    for p in ["P-%s"%pp for pp in bcp]:
+                        if not reagents.isReagent(p):
+                            reagents.add(name=p,conc=4,extraVol=30,plate=decklayout.DILPLATE)
+                        s=reagents.getsample(p)   # Force allocation of a well
+                        print "Adding %s to reagents at well %s"%(p,s.plate.wellname(s.well))
+            print "BC primers=", self.bcprimers
+            
         # Add any missing fields to inputs
         for i in range(len(self.inputs)):
             if 'ligand' not in self.inputs[i]:
@@ -423,12 +435,8 @@ class PGMSelect(TRP):
                 pcrvol=maxpcrvol
 
             if self.singlePrefix:
-                if self.barcoding and keepCleaved:
-                    primers=["BC-%s-R%d_T7"%(inp['ligand'],self.rndNum) for inp in self.inputs]
-                    for p in ["P-%s"%pp for pp in primers]:
-                        if not reagents.isReagent(p):
-                            print "Adding %s to reagents"%p
-                            reagents.add(name=p,conc=4,extraVol=30,plate=decklayout.DILPLATE)
+                if self.barcoding:
+                    primers=self.bcprimers[self.rndNum-1]
                 else:
                     primers=None
                 pcr=self.runPCR(src=rxs*nsplit,vol=pcrvol/nsplit,srcdil=pcrdil,ncycles=cycles,primers=primers,usertime=self.usertime if keepCleaved else None,fastCycling=False,inPlace=False,master=("MTaqC" if keepCleaved else "MTaqU"))
