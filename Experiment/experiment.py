@@ -464,8 +464,10 @@ class Experiment(object):
         for x in samps:
             (a,b)=x.getmixspeeds()
             minspeed=max([a,minspeed])
+        for x in allsamps:
+            (a,b)=x.getmixspeeds()
             maxspeed=min([b,maxspeed])
-
+            
         if speed is None:
             if minspeed<maxspeed:
                 speed=max((maxspeed+minspeed)/2,maxspeed-50)    # Mix as fast as safely possible (but always above minspeed)
