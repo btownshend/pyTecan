@@ -154,7 +154,7 @@ class QSetup(object):
         if self.debug:
             print "Idler done with ",endTime-clock.elapsed()," seconds remaining"
 
-    def run(self,confirm=False):
+    def run(self,confirm=False,enzName="EvaUSER"):
         'Run the dilutions and QPCR setup'
         # Setup qPCRs
         #self.jobq.dump()
@@ -175,4 +175,4 @@ class QSetup(object):
         for p in self.allprimers():
             # Build list of relevant entries
             ind=[ i for i in range(len(self.dilProds)) if p in self.primers[i]]
-            self.trp.runQPCR(src=[self.dilProds[i] for i in ind],vol=self.volume,primers=[p],nreplicates=[self.nreplicates[i] for i in ind])
+            self.trp.runQPCR(src=[self.dilProds[i] for i in ind],vol=self.volume,primers=[p],nreplicates=[self.nreplicates[i] for i in ind],enzName=enzName)

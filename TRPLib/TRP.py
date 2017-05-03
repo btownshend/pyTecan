@@ -40,6 +40,7 @@ reagents.add("A-Stop",well="C3",conc=Concentration(4,1,'uM'),extraVol=30)
 reagents.add("B-Stop",well="A3",conc=Concentration(4,1,'uM'),extraVol=30)
 reagents.add("Unclvd-Stop",well="A2",conc=Concentration(4,1,'uM'),extraVol=30)
 
+reagents.add("EvaGreen",well="A5",conc=2)
 reagents.add("EvaUSER",well="A5",conc=2)
 reagents.add("P-TR",well="B5",conc=4)
 reagents.add("P-T7BX",well="C5",conc=4)
