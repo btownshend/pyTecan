@@ -612,7 +612,7 @@ class Sample(object):
         if not 'glycerol' in self.ingredients:
             return 0.0
         total=sum([v for v in self.ingredients.values()])
-        return self.ingredients['glycerol']/total
+        return self.ingredients['glycerol']*1.0/total
 
     def getmixspeeds(self):
         'Get minimum, maximum speed for mixing this sample'
@@ -646,7 +646,6 @@ class Sample(object):
             if maxspeed<minspeed:
                 logging.notice("%s with %.1ful and %.1f%% glycerol has minspeed of %.0f greater than maxspeed of %.0f"%(self.name,self.volume,glycerol*100,minspeed,maxspeed))
                 minspeed=maxspeed	# Glycerol presence should also reduce minspeed
-
         return (minspeed,maxspeed)
     
     def chooseLC(self,aspirateVolume=0):
