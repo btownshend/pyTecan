@@ -422,7 +422,7 @@ classdef RobotSamples < handle
             if ~havedata
               continue;
             end
-            title([obj.templates{j},' - ',obj.primers(i)]);
+            title([obj.templates{j},' - ',obj.primers(i)],'Interpreter','None');
           end
         end
         return;
