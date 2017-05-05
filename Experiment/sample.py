@@ -104,6 +104,8 @@ class Sample(object):
             for s in __allsamples:
                 if s.well==well and s.plate==plate:
                     logging.warning("Attempt to assign sample %s to plate %s, well %s that already contains %s"%(name,str(plate),plate.wellname(well),s.name))
+                    if firstWell is None:
+                        firstWell=well
                     well=None
                     break
 
