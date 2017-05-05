@@ -123,7 +123,7 @@ class PGMSelect(TRP):
                 if bcp is not None:
                     for p in ["P-%s"%pp for pp in bcp]:
                         if not reagents.isReagent(p):
-                            reagents.add(name=p,conc=4,extraVol=30,plate=decklayout.DILPLATE)
+                            reagents.add(name=p,conc=4,extraVol=30,plate=decklayout.REAGENTPLATE,well="B2")
                         s=reagents.getsample(p)   # Force allocation of a well
                         print "Adding %s to reagents at well %s"%(p,s.plate.wellname(s.well))
             print "BC primers=", self.bcprimers
