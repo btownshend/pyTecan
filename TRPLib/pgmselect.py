@@ -519,6 +519,6 @@ class PGMAnalytic(PGMSelect):
         self.saveRNADilution=2
         self.ligInPlace=True
         self.rtpostdil=[2]
-        self.extpostdil=[2]
+        self.extpostdil=[5]
         self.saveDil=None
         self.setVolumes()
