@@ -198,7 +198,7 @@ class PGMSelect(TRP):
                 if self.singlePrefix:
                     q.addSamples(src=r1[i],needDil=r1[i].conc.stock/self.qConc,primers=["T7X","MX"])
                 else:
-                    q.addSamples(src=r1[i],needDil=r1[i].conc.stock/self.qConc,primers=["T7X","T7"+prefixOut[i].replace("T7","")+"X","MX"])
+                    q.addSamples(src=r1[i],needDil=r1[i].conc.stock/self.qConc,primers=["T7X",("T7"+prefixOut[i]+"X").replace("T7T7","T7"),"MX"])
             
         print "######### qPCR ########### %.0f min"%(clock.elapsed()/60)
         self.allprimers=q.allprimers()
@@ -208,7 +208,7 @@ class PGMSelect(TRP):
         if self.singlePrefix:
             primerSet=[["MX","REF","T7X","T7"+prefixIn[i]+"X"] for i in range(len(prefixIn))]
         else:
-            primerSet=[["T7"+prefixIn[i]+"X","T7"+prefixOut[i].replace("T7","")+"X","MX","T7X","REF"] for i in range(len(prefixIn))]
+            primerSet=[["T7"+prefixIn[i]+"X",("T7"+prefixOut[i]+"X").replace("T7T7","T7"),"MX","T7X","REF"] for i in range(len(prefixIn))]
         
         if keepCleaved:
             print "Starting new cleavage round, will add prefix: ",prefixOut
@@ -448,7 +448,7 @@ class PGMSelect(TRP):
                     master="MTaqBar"
                 pcr=self.runPCR(src=rxs*nsplit,vol=pcrvol/nsplit,srcdil=pcrdil,ncycles=cycles,primers=primers,usertime=self.usertime if keepCleaved else None,fastCycling=False,inPlace=False,master=master)
             else:
-                pcr=self.runPCR(src=rxs*nsplit,vol=pcrvol/nsplit,srcdil=pcrdil,ncycles=cycles,primers=["T7%sX"%("" if self.singlePrefix and keepCleaved else x.replace("T7","")) for x in (prefixOut if keepCleaved else prefixIn)]*nsplit,usertime=self.usertime if keepCleaved else None,fastCycling=False,inPlace=False)
+                pcr=self.runPCR(src=rxs*nsplit,vol=pcrvol/nsplit,srcdil=pcrdil,ncycles=cycles,primers=[("T7%sX"%("" if self.singlePrefix and keepCleaved else x)).replace("T7T7","T7") for x in (prefixOut if keepCleaved else prefixIn)]*nsplit,usertime=self.usertime if keepCleaved else None,fastCycling=False,inPlace=False)
             if len(pcr)<=len(names):
                 # Don't relabel if we've split
                 for i in range(len(pcr)):
