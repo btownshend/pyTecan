@@ -771,7 +771,7 @@ class TRP(object):
                 # Multiple primers
                 if inPlace:
                     assert len(primers[0])==2
-                    self.runRxInPlace(src,vol,reagents.getsample(master),master2=[reagents.getsample("P-%s"%p[0]) for p in primers],master3=[reagents.getsample("P-%s"%p[1]) for p in primers],returnPlate=False)
+                    self.runRxInPlace(src,vol,reagents.getsample(master),master2=[reagents.getsample("P-%s"%p[0]) for p in primers],master3=[(reagents.getsample("P-%s"%p[1]) if p[1] is not None else None) for p in primers],returnPlate=False)
                 else:
                     for i in range(len(primers)):
                         self.e.stage('PCR%d'%i,[reagents.getsample(master)]+[reagents.getsample("P-%s"%s) for s in primers[i]],src[i:i+1] ,tgt[i:i+1],vol[i:i+1],destMix=False)
