@@ -416,8 +416,8 @@ class PGMSelect(TRP):
             sampNeeded=pcrvol/pcrdil
             if self.rtCarryForward and keepCleaved:
                 sampNeeded+=rtCarryForwardVol
-            maxvol=max([r.volume for r in rxs]);
-            minvol=min([r.volume for r in rxs]);
+            maxvol=max([r.volume for r in rxs])
+            minvol=min([r.volume for r in rxs])
             if keepCleaved and self.rtCarryForward:
                 assert(len(rxs)==len(rtCarryForward))
                 print "Saving %.1f ul of each pre-PCR sample"%(rtCarryForwardVol )
@@ -428,7 +428,7 @@ class PGMSelect(TRP):
                     self.e.transfer(rtCarryForwardVol*(rtCarryForwardDil-1),decklayout.WATER,self.lastSaved[i],(False,True))  # Use pipette mixing -- shaker mixing will be too slow
 
             #print "NSplit=",nsplit,", PCR vol=",pcrvol/nsplit,", srcdil=",pcrdil,", input vol=",pcrvol/nsplit/pcrdil
-            minvol=min([r.volume for r in rxs]);
+            minvol=min([r.volume for r in rxs])
             maxpcrvol=(minvol-15-1.4*nsplit)*pcrdil
             if maxpcrvol<pcrvol:
                 print "Reducing PCR volume from %.1ful to %.1ful due to limited input"%(pcrvol, maxpcrvol)

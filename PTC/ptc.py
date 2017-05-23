@@ -76,7 +76,7 @@ class PTC:
         pass
     
     def __init__(self,to=1):
-        fname=time.strftime("PTC-%Y%m%d.log");
+        fname=time.strftime("PTC-%Y%m%d.log")
         logging.basicConfig(filename=fname, level=logging.INFO,format='%(asctime)s %(levelname)s:\t %(message)s')
         logging.captureWarnings(True)
         console = logging.StreamHandler()

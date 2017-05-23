@@ -373,7 +373,7 @@ class Sample(object):
         worklist.detectLiquid(tipMask,well,self.inliquidLC,self.plate)
         doneLabel=worklist.getlabel()
         worklist.condition(volvar,">",gemvolwarn,doneLabel)
-        ptmp=clock.pipetting;
+        ptmp=clock.pipetting
         warnLabel=worklist.getlabel()
         worklist.condition(volvar,">",gemvolcrit,warnLabel)
         worklist.moveliha(worklist.WASHLOC)	# Get LiHa out of the way

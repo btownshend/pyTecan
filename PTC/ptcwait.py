@@ -19,8 +19,8 @@ while True:
     if stat.bsr&stat.RUNNING == 0:
         pgmstatus="NOT RUNNING"
     etime=stat.etime-stat.stime
-    minutes=int(etime/60);
-    seconds=etime-minutes*60;
+    minutes=int(etime/60)
+    seconds=etime-minutes*60
 
     print  "%s %s step %d cycle %d/%d: '%s', T=%.1f, Lid=%.1f, step elapsed=%.0f seconds, total remaining=%d:%02d"%(pgmstatus,stat.pgm,stat.step,stat.cycle,stat.cycles,stat.cmd,stat.calctemp,stat.lidtemp,stat.stime,minutes,seconds)
     if stat.bsr&stat.RUNNING == 0:

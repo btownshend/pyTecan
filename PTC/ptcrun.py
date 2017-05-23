@@ -21,8 +21,8 @@ else:
 	hl="ON"
 	
 
-res=p.execute('VESSEL "Plate"');
-res=p.execute("VOLUME %s"%sys.argv[4]);
+res=p.execute('VESSEL "Plate"')
+res=p.execute("VOLUME %s"%sys.argv[4])
 res=p.execute('RUN "%s",%s,%s'%(sys.argv[1],sys.argv[2],hl))
 status=p.getstatus()
 if (status.bsr & status.RUNNING) == 0:

@@ -58,15 +58,15 @@ for k in range(max(nreplicates)):
             srcprefixes=srcprefixes+[srcprefix[i]]
             if srcprefix[i]=='A':
                 ligmaster=ligmaster+["MLigB"+stem1[i]]
-                pcr=pcr+[("A","B")];
+                pcr=pcr+[("A","B")]
                 stop=stop+['MStpNoTheo']
             elif  srcprefix[i]=='W':
                 ligmaster=ligmaster+["MLigA"+stem1[i]]
-                pcr=pcr+[("AW","W")];
+                pcr=pcr+[("AW","W")]
                 stop=stop+['MStpW']
             elif srcprefix[i]=='B':
                 ligmaster=ligmaster+["MLigA"+stem1[i]]
-                pcr=pcr+[("A","B")];
+                pcr=pcr+[("A","B")]
                 stop=stop+['MStpNoTheo']
             else:
                 assert(False)

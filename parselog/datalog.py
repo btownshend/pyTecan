@@ -94,7 +94,7 @@ class Datalog(object):
     def logmeasure(self,tip,height,submerge,zmax,zadd):
         sample=self.lastSample[tip]
         if sample.plate.zmax is not None:
-            curzmax=2100-sample.plate.zmax-390+TIPOFFSETS[tip-1];
+            curzmax=2100-sample.plate.zmax-390+TIPOFFSETS[tip-1]
             if zmax!=curzmax:
                 print "ZMax for plate %s, tip %d at time of run was %.0f, currently at %.0f"%(sample.plate.name, tip, zmax, curzmax)
                 zmax=curzmax
