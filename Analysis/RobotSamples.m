@@ -105,7 +105,7 @@ classdef RobotSamples < handle
     
     function setupQPCR(obj,varargin)
     % Scan sample data to setup qPCR 
-      defaults=struct('refname','QPCRREF','refconc',50,'refstrands',2,'qpcrdil',2.5,'minct',7,'processWells',false,'units','pM','cal',[],'primers',{{}});
+      defaults=struct('refname','QPCRREF','refconc',50,'refstrands',2,'qpcrdil',4,'minct',7,'processWells',false,'units','pM','cal',[],'primers',{{}});
       args=processargs(defaults,varargin);
 
       ctgrid=obj.opd{1}.ctgrid;
@@ -145,7 +145,8 @@ classdef RobotSamples < handle
     end
     
     function addQPCRRef(obj,refname,varargin)
-      defaults=struct('refconc',50,'refstrands',2,'qpcrdil',2.5,'units','pM');
+      fprintf('addQPCRRef(%s,...)',refname);
+      defaults=struct('refconc',50,'refstrands',2,'qpcrdil',4,'units','pM');
       args=processargs(defaults,varargin);
 
       ss=getrelative(obj.samps,refname);
@@ -153,7 +154,7 @@ classdef RobotSamples < handle
       for i=1:length(ss)
         s=ss(i);
         for j=1:length(s.ingredients)
-          if strncmp(s.ingredients{j},'MQ',2)
+          if strncmp(s.ingredients{j},'MQ',2) || strncmp(s.ingredients{j},'P-',2)
             primers{end+1}=s.ingredients{j}(3:end);
           end
         end
@@ -161,15 +162,13 @@ classdef RobotSamples < handle
       primers=unique(primers);
       for i=1:length(primers)
         p=primers{i};
-        fprintf('WARNING: This code needs to be revised to handle using EvaUSER+P-xx instead of MQxx\n');
-        ss=getrelative(obj.samps,refname,{['MQ',p],'Water'},true);
-        water=getrelative(obj.samps,['MQ',p],{'Water'},true);
-        if isempty(ss)
-          ss=getrelative(obj.samps,refname,{['MQ',p],'SSDDil'},true);
-          water=getrelative(obj.samps,['MQ',p],{'SSDDil'},true);
+        ss=getrelative(obj.samps,refname,{['P-',p]},false);
+        water=getrelative(obj.samps,['P-',p],{'EvaGreen','Water'},true);
+        if isempty(water)
+          water=getrelative(obj.samps,['P-',p],{'EvaGreen','SSDDil'},true);
         end
         % Also include undiluted one if present
-        ss=[ss,getrelative(obj.samps,refname,{['MQ',p]},true)];
+        ss=[ss,getrelative(obj.samps,refname,{['P-',p]},true)];
         if isempty(ss)
           fprintf('No wells found for reference %s with primer %s\n', refname, p);
           continue;
