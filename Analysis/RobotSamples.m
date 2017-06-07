@@ -298,7 +298,7 @@ classdef RobotSamples < handle
         entry.wells{pindex}=well;
         entry.ct(pindex)=obj.q.getct(well);
         entry.dilution(pindex)=dilution;
-        entry.conc(pindex)=obj.q.getconc(primer,well,{},{},{},'dilution',dilution);
+        entry.conc(pindex)=obj.q.getconc(primer,well,{},{},{},'dilution',dilution,'strands',2);
         wellindex=obj.q.parsewells(well);
         entry.order=min([entry.order,wellindex]);
       end
