@@ -442,6 +442,8 @@ class PGMSelect(TRP):
             if self.singlePrefix:
                 if self.barcoding:
                     primers=self.bcprimers[self.rndNum-1]
+                    if primers is not None and nsplit>1:
+                        primers=primers*nsplit
                 else:
                     primers=None
                 if primers==None:
