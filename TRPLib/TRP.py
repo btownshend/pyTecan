@@ -53,6 +53,16 @@ reagents.add("P-BX",well="C6",conc=4)
 reagents.add("P-MX",well="D6",conc=4)
 reagents.add("P-REF",well="E6",conc=4)
 
+reagents.add("P-BC-T25-R2_T7",well="B2",conc=4)
+reagents.add("P-BC-T3c-R2_T7",well="C2",conc=4)
+reagents.add("P-BC-T6-R2_T7",well="D2",conc=4)
+reagents.add("P-BC-T25-R4_T7",well="E2",conc=4)
+reagents.add("P-BC-T3c-R4_T7",well="A3",conc=4)
+reagents.add("P-BC-T6-R4_T7",well="B3",conc=4)
+reagents.add("P-BC-T25-R6_T7",well="C3",conc=4)
+reagents.add("P-BC-T3c-R6_T7",well="B4",conc=4)
+reagents.add("P-BC-T6-R6_T7",well="E4",conc=4)
+
 # Targets
 reagents.add("T1",well='B4',conc=Concentration(25.0,7.5,'mM'))  #Theo
 reagents.add("T2",well='C4',conc=Concentration(10.0,1.0,'mM')) # Acetyl CoA
