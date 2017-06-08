@@ -58,6 +58,7 @@ class PGMSelect(TRP):
         self.rtpostdil=[3.0 if r=='U' else 1.0 for r in self.rounds]
         self.rtdur=20
         self.ligdur=15
+        self.maxdilstep=16   # Maximum dilute per qPCR dilution step
         self.pcrdil=[(80 if r=='U' else 40) for r in self.rounds]
         self.maxPCRVolume=100  # Maximum sample volume of each PCR reaction (thermocycler limit, and mixing limit)
         self.pcrcycles=[10 for r in self.rounds]
@@ -114,7 +115,7 @@ class PGMSelect(TRP):
         worklist.setOptimization(True)
 
     def pgm(self):
-        q = QSetup(self,maxdil=16,debug=False,mindilvol=60)
+        q = QSetup(self,maxdil=self.maxdilstep,debug=False,mindilvol=60)
         self.e.addIdleProgram(q.idler)
 
         if self.barcoding:
