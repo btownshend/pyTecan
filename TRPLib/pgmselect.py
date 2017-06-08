@@ -325,11 +325,11 @@ class PGMSelect(TRP):
 
             if "rt" in self.qpcrStages:
                 for i in range(len(rxs)):
-                    q.addSamples(src=rtsv[i:i+1],needDil=needDil/2,primers=primerSet[i],names=["%s.rt"%names[i]])
+                    q.addSamples(src=rtsv[i:i+1],needDil=needDil/2,primers=self.rtprimers if hasattr(self,'rtprimers') else primerSet[i],names=["%s.rt"%names[i]])
         else:
             if "rt" in self.qpcrStages:
                 for i in range(len(rxs)):
-                    q.addSamples(src=rxs[i:i+1],needDil=needDil,primers=primerSet[i],names=["%s.rt"%names[i]])
+                    q.addSamples(src=rxs[i:i+1],needDil=needDil,primers=self.rtprimers if hasattr(self,'rtprimers') else primerSet[i],names=["%s.rt"%names[i]])
 
         rtCarryForwardDil=10
         rtCarryForwardVol=3.5
