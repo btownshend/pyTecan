@@ -9,6 +9,7 @@ from TRPLib.TRP import TRP
 from TRPLib.QSetup import QSetup
 from pcrgain import pcrgain
 
+reagents.add("BT5310",well="D1",conc=Concentration(20,20,"pM"))
         
 class PGMSelect(TRP):
     '''Selection experiment'''
@@ -152,7 +153,9 @@ class PGMSelect(TRP):
         
         if "negative" in self.qpcrStages:
             q.addSamples(decklayout.SSDDIL,1,self.allprimers,save=False)   # Negative controls
-        
+        if "reference" in self.qpcrStages:
+            q.addReferences(dstep=10,nsteps=5,primers=["WX"],ref=reagents.getsample("BT5310"))
+
         # Save RT product from first (uncleaved) round and then use it during 2nd (cleaved) round for ligation and qPCR measurements
         self.rndNum=0
         self.nextID=self.firstID
