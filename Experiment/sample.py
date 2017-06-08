@@ -310,7 +310,8 @@ class Sample(object):
         if self.plate.name=="Samples":
             dt=clock.pipetting-self.lastevapupdate	# Assume no evaporation while in PTC
             if dt<-0.1:
-                logging.error( "%s: clock went backwards: pipetting=%f, lastevapupdate=%f, dt=%f"%(self.name,clock.pipetting,self.lastevapupdate,dt))
+                # This may happen during thermocycler operation since pipetting while thermocycling is moved to pipthermotime after waitpgm() is called
+                logging.notice( "%s: clock went backwards: pipetting=%f, lastevapupdate=%f, dt=%f -- probably OK due to counting pipetting time during PTC operation"%(self.name, clock.pipetting,self.lastevapupdate,dt))
         else:
             dt=clock.elapsed()-self.lastevapupdate
             if dt<-0.1:
