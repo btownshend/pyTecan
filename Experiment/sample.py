@@ -95,63 +95,76 @@ class Sample(object):
         __historyOptions=opts
         
     def __init__(self,name,plate,well=None,conc=None,volume=0,hasBeads=False,extraVol=50,mixLC=liquidclass.LCMixBottom,firstWell=None,extrainfo=[],ingredients=None,atEnd=False):
-        # If firstWell is not None, then it is a hint of the first well position that should be used
-        if well!=None and well!=-1:
-            if not isinstance(well,int):
-                well=plate.wellnumber(well)
-            if well not in plate.wells:
-                logging.warning("Attempt to assign sample %s to well %d (%s) which is not legal on plate %s"%(name,well,plate.wellname(well),plate.name))
-            for s in __allsamples:
-                if s.well==well and s.plate==plate:
-                    logging.warning("Attempt to assign sample %s to plate %s, well %s that already contains %s"%(name,str(plate),plate.wellname(well),s.name))
-                    if firstWell is None:
-                        firstWell=well
+        while True:
+            # wrap with a loop to allow use of backupPlate
+            # If firstWell is not None, then it is a hint of the first well position that should be used
+            if well!=None and well!=-1:
+                if not isinstance(well,int):
+                    well=plate.wellnumber(well)
+                if well not in plate.wells:
+                    logging.warning("Attempt to assign sample %s to well %d (%s) which is not legal on plate %s"%(name,well,plate.wellname(well),plate.name))
+                for s in __allsamples:
+                    if s.well==well and s.plate==plate:
+                        logging.warning("Attempt to assign sample %s to plate %s, well %s that already contains %s"%(name,str(plate),plate.wellname(well),s.name))
+                        if firstWell is None:
+                            firstWell=well
+                        well=None
+                        break
+
+            if well is None:
+                # Find first unused well
+                found=False
+                if firstWell is not None:
+                    # First check only wells>=firstWell
+                    for well in plate.wells:
+                        if well<firstWell:
+                            continue
+                        found=True
+                        for s in __allsamples:
+                            if s.plate==plate and s.well==well:
+                                well=well+1
+                                found=False
+                                break
+                        if found:
+                            break
+
+                if not found:
+                    well=max(plate.wells) if atEnd else min(plate.wells) 
+                    while (well>=0) if atEnd else (well<=max(plate.wells)):
+                        found=True
+                        for s in __allsamples:
+                            if s.plate==plate and s.well==well:
+                                well=well+(-1 if atEnd else 1)
+                                found=False
+                                break
+                        if found:
+                            break
+            elif well==-1:
+                well=None
+
+            if well>=plate.nx*plate.ny:
+                # Overflow
+                if plate.backupPlate is not None:
+                    # Overflow onto backup plate
+                    logging.warning("Overflow of %s plate, moving %s to %s plate -- verify carefully!"%(plate.name,name,plate.backupPlate.name))
+                    plate=plate.backupPlate
                     well=None
-                    break
+                    continue
+                else:
+                    logging.error("Overflow of plate %s while adding %s"%(str(plate),name))
 
-        if well is None:
-            # Find first unused well
-            found=False
-            if firstWell is not None:
-                # First check only wells>=firstWell
-                for well in plate.wells:
-                    if well<firstWell:
-                        continue
-                    found=True
-                    for s in __allsamples:
-                        if s.plate==plate and s.well==well:
-                            well=well+1
-                            found=False
-                            break
-                    if found:
-                        break
-
-            if not found:
-                well=max(plate.wells) if atEnd else min(plate.wells) 
-                while (well>=0) if atEnd else (well<=max(plate.wells)):
-                    found=True
-                    for s in __allsamples:
-                        if s.plate==plate and s.well==well:
-                            well=well+(-1 if atEnd else 1)
-                            found=False
-                            break
-                    if found:
-                        break
-        elif well==-1:
-            well=None
+            break
 
         for s in __allsamples:
             if s.plate==plate and s.well==well:
                 logging.error("Attempt to assign sample %s to plate %s, well %s that already contains %s"%(name,str(plate),plate.wellname(well),s.name))
+
         if name in [s.name for s in __allsamples]:
             while name in [s.name for s in __allsamples]:
                 name=name+"#"
             logging.notice("renaming sample to %s"%name)
         self.name=name
         self.plate=plate
-        if well>=plate.nx*plate.ny:
-            logging.error("Overflow of plate %s while adding %s"%(str(plate),name))
-
         self.well=well
         if isinstance(conc,Concentration) or conc is None:
             self.conc=conc
