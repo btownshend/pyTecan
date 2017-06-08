@@ -65,6 +65,7 @@ class PGMSelect(TRP):
         self.stopConc=1	   # Concentration of stop in uM
         self.savePCRAtEnd=False
         self.barcoding=False   # True to use unique barcode primers in cleaved rounds
+        self.enrich=math.sqrt(2.0)   # Estimate of enrichment/round -- scales number of pmoles needed to carry
         self.setVolumes()
         
     def setVolumes(self):
@@ -82,7 +83,7 @@ class PGMSelect(TRP):
         pcrConc=[ligConc[i]/self.pcrdil[i] for i in range(len(self.rounds))]
         
         print "Concs(nM):  RNA: %.0f, Stop: %.0f, RT: %.0f, RTDil: %.0f, Lig: %.0f, LigDil: %.0f, PCRIn: %.0f"%(self.rnaConc, stopConc, rtConc, rtdilConc[0], ligConc[0], ligdilConc[0], pcrConc[0])
-        self.pcrvol=[self.pcrcopies*self.pmolesIn*1000/pcrConc[i] for i in range(len(self.rounds))]
+        self.pcrvol=[self.pcrcopies*self.pmolesIn*1000/pcrConc[i]/math.pow(self.enrich,i*1.0) for i in range(len(self.rounds))]
         # Use at least 100ul so the evaporation of the saved sample that occurs during the run will be relatively small
         self.pcrvol=[max(100,v) for v in self.pcrvol]
         pcrExtra=[1.4*math.ceil(v/self.maxPCRVolume) for v in self.pcrvol]
@@ -102,7 +103,7 @@ class PGMSelect(TRP):
         
         self.t7extravols=((4+1.4)*0.9 if 'stopped' in self.qpcrStages else 0)+ ((5+1.4)*0.9 if self.saveRNA else 0)
         #print "self.t7extravols=%.1f ul\n"%self.t7extravols
-        self.t7vol=[max((15.1+self.rtvol[i]/4.0+1.4)*0.9+self.t7extravols,self.pmolesIn*1000/self.tmplFinalConc) for i in range(len(self.rounds))]
+        self.t7vol=[max((15.1+self.rtvol[i]/4.0+1.4)*0.9+self.t7extravols,self.pmolesIn*1000/self.tmplFinalConc/math.pow(self.enrich,i*1.0)) for i in range(len(self.rounds))]
         self.t7vol=[max(18.0,v) for v in self.t7vol]   # Make sure that there's enough to add at least 2ul of stop
         self.t7vol=[min(self.maxSampVolume,v) for v in self.t7vol]   # Make sure no tubes overflow
         if 'template' in self.qpcrStages:
@@ -209,7 +210,7 @@ class PGMSelect(TRP):
             primerSet=[["MX","REF","T7X","T7"+prefixIn[i]+"X"] for i in range(len(prefixIn))]
         else:
             primerSet=[["T7"+prefixIn[i]+"X",("T7"+prefixOut[i]+"X").replace("T7T7","T7"),"MX","T7X","REF"] for i in range(len(prefixIn))]
-        
+
         if keepCleaved:
             print "Starting new cleavage round, will add prefix: ",prefixOut
             assert(dolig)
