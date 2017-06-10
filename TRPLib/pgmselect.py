@@ -9,7 +9,7 @@ from TRPLib.TRP import TRP
 from TRPLib.QSetup import QSetup
 from pcrgain import pcrgain
 
-reagents.add("BT5310",well="D1",conc=Concentration(20,20,"pM"))
+reagents.add("BT5310",well="B5",conc=Concentration(20,20,"pM"))
         
 class PGMSelect(TRP):
     '''Selection experiment'''
