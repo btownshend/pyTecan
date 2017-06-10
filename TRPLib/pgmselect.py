@@ -154,7 +154,7 @@ class PGMSelect(TRP):
         if "negative" in self.qpcrStages:
             q.addSamples(decklayout.SSDDIL,1,self.allprimers,save=False)   # Negative controls
         if "reference" in self.qpcrStages:
-            q.addReferences(dstep=10,nsteps=5,primers=["WX"],ref=reagents.getsample("BT5310"))
+            q.addReferences(dstep=10,nsteps=5,primers=["T7WX"],ref=reagents.getsample("BT5310"))
 
         # Save RT product from first (uncleaved) round and then use it during 2nd (cleaved) round for ligation and qPCR measurements
         self.rndNum=0
