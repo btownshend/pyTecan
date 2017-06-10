@@ -724,7 +724,7 @@ class TRP(object):
     ########################
     # PCR
     ########################
-    def runPCR(self,primers,src,srcdil,vol=None,tgt=None,ncycles=20,usertime=None,fastCycling=False,inPlace=False,master="MTaq",annealTemp=None,kapa=False):
+    def runPCR(self,primers,src,srcdil,vol=None,tgt=None,ncycles=20,usertime=None,fastCycling=False,inPlace=False,master="MTaq",annealTemp=None,kapa=False,lowhi=False):
         ## PCR
         if inPlace:
             if vol!=None:
@@ -809,7 +809,12 @@ class TRP(object):
         hotTime=180 if kapa else 30
         extTemp=72 if kapa else 68
         
-        if fastCycling:
+        if lowhi:
+            # First cycle at normal anneal, others at 66
+            hotAnnealTemp=66
+            cycling='TEMP@37,%d TEMP@95,%d TEMP@%.1f,30 TEMP@%.1f,30 TEMP@%.1f,30 TEMP@%.1f,30 TEMP@%.1f,30 TEMP@%.1f,30 GOTO@6,%d TEMP@%.1f,60 TEMP@25,2'%(1 if usertime is None else usertime*60,hotTime,meltTemp,annealTemp,extTemp,meltTemp,hotAnnealTemp,extTemp,ncycles-2,extTemp)
+            runTime+=hotTime/60+2.8+3.0*ncycles
+        elif fastCycling:
             cycling='TEMP@37,%d TEMP@95,%d TEMP@%.1f,10 TEMP@%.1f,10 TEMP @%.1f,1 GOTO@3,%d TEMP@%.1f,60 TEMP@25,2'%(1 if usertime is None else usertime*60,hotTime,meltTemp,annealTemp,extTemp,ncycles-1,extTemp)
             runTime+=hotTime/60+2.8+1.65*ncycles
         else:

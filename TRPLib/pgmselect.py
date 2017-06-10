@@ -453,7 +453,7 @@ class PGMSelect(TRP):
                         master="MTaqU"
                 else:
                     master="MTaqBar"
-                pcr=self.runPCR(src=rxs*nsplit,vol=pcrvol/nsplit,srcdil=pcrdil,ncycles=cycles,primers=primers,usertime=self.usertime if keepCleaved else None,fastCycling=False,inPlace=False,master=master)
+                pcr=self.runPCR(src=rxs*nsplit,vol=pcrvol/nsplit,srcdil=pcrdil,ncycles=cycles,primers=primers,usertime=self.usertime if keepCleaved else None,fastCycling=False,inPlace=False,master=master,lowhi=True)
             else:
                 pcr=self.runPCR(src=rxs*nsplit,vol=pcrvol/nsplit,srcdil=pcrdil,ncycles=cycles,primers=[("T7%sX"%("" if self.singlePrefix and keepCleaved else x)).replace("T7T7","T7") for x in (prefixOut if keepCleaved else prefixIn)]*nsplit,usertime=self.usertime if keepCleaved else None,fastCycling=False,inPlace=False)
             if len(pcr)<=len(names):
@@ -471,14 +471,18 @@ class PGMSelect(TRP):
                 # Save samples at 1x (move all contents -- can ignore warnings)
                 maxSaveVol=(100 if self.savedilplate else 1500)*1.0/nsplit
 
-                sv=self.saveSamps(src=pcr[:len(rxs)],vol=[min([maxSaveVol,x.volume]) for x in pcr[:len(rxs)]],dil=1,plate=(decklayout.DILPLATE if self.savedilplate else decklayout.EPPENDORFS),atEnd=self.savePCRAtEnd)
-                if nsplit>1:
-                    # Combine split
-                    for i in range(len(rxs),len(rxs)*nsplit):
-                        self.e.transfer(min([maxSaveVol,pcr[i].volume]),pcr[i],sv[i%len(sv)],mix=(False,i>=len(rxs)*(nsplit-1)))
-                    # Correct concentration (above would've assumed it was diluted)
-                    for i in range(len(sv)):
-                        sv[i].conc=pcr[i].conc
+                if self.finalRound and nsplit==1 and self.savedilplate:
+                    print "Skipping save of final PCR"
+                    sv=pcr
+                else:
+                    sv=self.saveSamps(src=pcr[:len(rxs)],vol=[min([maxSaveVol,x.volume]) for x in pcr[:len(rxs)]],dil=1,plate=(decklayout.DILPLATE if self.savedilplate else decklayout.EPPENDORFS),atEnd=self.savePCRAtEnd)
+                    if nsplit>1:
+                        # Combine split
+                        for i in range(len(rxs),len(rxs)*nsplit):
+                            self.e.transfer(min([maxSaveVol,pcr[i].volume]),pcr[i],sv[i%len(sv)],mix=(False,i>=len(rxs)*(nsplit-1)))
+                        # Correct concentration (above would've assumed it was diluted)
+                        for i in range(len(sv)):
+                            sv[i].conc=pcr[i].conc
 
                 if "pcr" in self.qpcrStages:
                     for i in range(len(sv)):
