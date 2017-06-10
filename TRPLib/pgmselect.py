@@ -180,7 +180,8 @@ class PGMSelect(TRP):
                     print 'Stop for %s must be one of A,B,W,T7W, but found %s'%(self.inputs[i]['name'],prefixOut[i])
                     assert False
             self.rndNum=self.rndNum+1
-            
+            self.finalRound=self.rndNum==len(self.rounds)
+                
             if roundType=='U':
                 r1=self.oneround(q,r1,prefixOut,prefixIn=curPrefix,keepCleaved=False,rtvol=self.rtvol[self.rndNum-1],t7vol=self.t7vol[self.rndNum-1],cycles=self.pcrcycles[self.rndNum-1],pcrdil=self.pcrdil[self.rndNum-1],pcrvol=self.pcrvol[self.rndNum-1],dolig=self.allLig)
             else:
@@ -492,6 +493,7 @@ class PGMSelect(TRP):
                 print "Saved %.2f pmoles of product (%.0f ul @ %.1f nM)"%(sv[0].volume*sv[0].conc.stock/1000,sv[0].volume,sv[0].conc.stock)
                 return sv
             else:
+                assert "pcr" not in self.qpcrStages   ## Not implemented
                 return pcr[:len(rxs)]
         elif self.noPCRCleave:
             print "Dilution instead of PCR: %.2f"%self.nopcrdil
