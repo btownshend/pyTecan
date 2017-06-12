@@ -185,6 +185,8 @@ class Sample(object):
             self.ingredients={}
             self.lastvolcheck=0   # Assume that it has already been checked for 0 (since it can't be any less...)
 
+        self.checkingredients()
+
         if plate.pierce:
             self.bottomLC=liquidclass.LCWaterPierce
             self.bottomSideLC=self.bottomLC  # Can't use side with piercing
@@ -466,16 +468,25 @@ class Sample(object):
                 logging.warning("Removing all contents (%.1f from %.1ful) from %s"%(remove,self.volume,self.name))
                 remove=self.volume-0.1   # Leave residual
 
-        for k in self.ingredients:
-            self.ingredients[k] *= (self.volume-remove)/self.volume
-
-        self.volume=self.volume-remove
+        self.removeVolume(remove)
         if self.volume+.001<self.plate.unusableVolume and self.volume+remove>0 and not (self.hasBeads and self.plate.curloc=='Magnet') and not removeAll:
             logging.warning("Aspiration of %.1ful from %s brings volume down to %.1ful which is less than its unusable volume of %.1f ul"%(remove,self.name,self.volume,self.plate.unusableVolume))
             
         self.addhistory("",-remove,tipMask)
         #self.addhistory("[%06x]"%(self.getHash(w)&0xffffff),-remove,tipMask)
 
+    def removeVolume(self,remove):
+        ' Remove volume and update ingredients'
+        if not self.ingredients:
+            # No ingredients, but removing something -- happens during initial passes
+            self.ingredients[self.name]=-remove
+        else:
+            for k in self.ingredients:
+                self.ingredients[k] *= (self.volume-remove)/self.volume
+
+        self.volume=self.volume-remove
+        self.checkingredients()
+        
     def aspirateAir(self,tipMask,volume):
         'Aspirate air over a well'
         worklist.aspirateNC(tipMask,[self.well],self.airLC,volume,self.plate)
@@ -611,6 +622,14 @@ class Sample(object):
                 # Don't set wellMixed to false though -- if it was well mixed before, then any shaking will bring down condensation and it should be well mixed
                 #s.wellMixed=False
 
+    def checkingredients(self):
+        total=0.0
+        for k in self.ingredients:
+            total=total+self.ingredients[k]
+        if abs(total-self.volume)>0.01:
+            print "Ingredients of %s add up to %.2f ul, but volume=%.2f"%(self.name,total, self.volume)
+            assert(False)
+            
     def addingredients(self,src,vol):
         'Update ingredients by adding ingredients from src'
         for k in src.ingredients:
@@ -622,6 +641,7 @@ class Sample(object):
                     self.ingredients[k]+=addition
                 else:
                     self.ingredients[k]=addition
+        self.checkingredients()
 
     def glycerolfrac(self):
         'Return fraction of sample that is Glycerol'
@@ -730,7 +750,7 @@ class Sample(object):
                 self.aspirateAir(tipMask,5)
             if False:		# this results in losing mixprefillvol of sample which was not mixed; remainder has different concentration than planned
                 worklist.aspirateNC(tipMask,well,self.inliquidLC,mixprefillvol,self.plate)
-                self.volume-=mixprefillvol
+                self.removeVolume(mixprefillvol)
                 self.addhistory("(PRE)",-mixprefillvol,tipMask)
                 worklist.mix(tipMask,well,self.mixLC,mixvol,self.plate,nmix)
                 mstr="(MB)"
@@ -763,7 +783,7 @@ class Sample(object):
                         worklist.dispense(tipMask,well,blowoutLC,blowvol,self.plate)
                         worklist.dispense(tipMask,well,liquidclass.LCDip,0.1,self.plate)
 
-            self.volume-=MIXLOSS
+            self.removeVolume(MIXLOSS)
             self.addhistory(mstr,-MIXLOSS,tipMask)
             self.lastMixed=clock.elapsed()
             self.wellMixed=True
