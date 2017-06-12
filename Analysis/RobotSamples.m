@@ -95,7 +95,7 @@ classdef RobotSamples < handle
       if nargin<4
         frac=1;
       end
-      fprintf('%s%8.0f %s\n',blanks(level*2),1/frac,name);
+      fprintf('%s%-10.2f %s\n',blanks(level*2),1/frac,name);
       if isKey(obj.sampmap,name)
         s=obj.sampmap(name);
         for i=1:length(s.ingredients)
@@ -593,10 +593,10 @@ classdef RobotSamples < handle
               if args.normalize && isfinite(concsnm(pREF))
                 concsnm=concsnm/concsnm(pREF)*obj.options.refconc;
               end
-              fprintf('%-40.40s %5.1f %s nM    ',nm,scale,sprintf('%8.3f ',concsnm));
+              fprintf('%-40.40s %6.2f %s nM    ',nm,scale,sprintf('%8.3f ',concsnm));
               obj.rsv(i,j,:)=concsnm;
             else
-              fprintf('%-40.40s %5.1f %s ng/ul ',nm,scale,sprintf('%8.3f ',concs));
+              fprintf('%-40.40s %6.2f %s ng/ul ',nm,scale,sprintf('%8.3f ',concs));
               obj.rsv(i,j,:)=concs;
             end
             if ~isempty(ref) && printRefScale
