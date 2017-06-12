@@ -115,6 +115,16 @@ classdef RobotSamples < handle
       obj.q=QPCR(ctgrid,'minct',args.minct);
       if isempty(args.cal)
         obj.addQPCRRef(args.refname,'units',args.units,'refconc',args.refconc,'refstrands',args.refstrands,'qpcrdil',args.qpcrdil);
+        haveRefs=obj.q.refs.keys;
+        if isempty(haveRefs)
+          error('No %s refs for any primer\n', args.refname);
+        end
+        for p=1:length(args.primers)
+          if ~obj.q.refs.isKey(args.primers{p})
+            fprintf('No reference for %s -- duplicating %s\n',args.primers{p},haveRefs{1});
+            obj.q.dupref(haveRefs{1},args.primers{p});
+          end
+        end
       elseif ~isempty(args.primers)
         for i=1:length(args.primers)
           obj.q.addmanualref(args.primers{i},2.0,args.cal,'units','ng/ul','ctlod',obj.getWaterCt(args.primers{i}));
@@ -191,7 +201,7 @@ classdef RobotSamples < handle
           end
         end
         fprintf('\n');
-        obj.q.addref(p,wells,concs,'units',args.units,'strands',args.refstrands);
+        obj.q.addref(p,wells,concs,'units',args.units,'strands',args.refstrands,'ctlod',24);
       end
     end
 
