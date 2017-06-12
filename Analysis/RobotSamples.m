@@ -80,6 +80,9 @@ classdef RobotSamples < handle
     % Build a map from sample name to samp entry
       obj.sampmap=containers.Map();
       for i=1:length(obj.samps)
+        if isKey(obj.sampmap,obj.samps(i).name)
+          error('Duplicate sample name: %s', obj.samps(i).name);
+        end
         obj.sampmap(obj.samps(i).name)=obj.samps(i);
       end
     end
