@@ -68,6 +68,7 @@ class PGMSelect(TRP):
         self.savePCRAtEnd=False
         self.barcoding=False   # True to use unique barcode primers in cleaved rounds
         self.enrich=math.sqrt(2.0)   # Estimate of enrichment/round -- scales number of pmoles needed to carry
+        self.lowhi=True
         self.setVolumes()
         
     def setVolumes(self):
@@ -454,7 +455,7 @@ class PGMSelect(TRP):
                         master="MTaqU"
                 else:
                     master="MTaqBar"
-                pcr=self.runPCR(src=rxs*nsplit,vol=pcrvol/nsplit,srcdil=pcrdil,ncycles=cycles,primers=primers,usertime=self.usertime if keepCleaved else None,fastCycling=False,inPlace=False,master=master,lowhi=True)
+                pcr=self.runPCR(src=rxs*nsplit,vol=pcrvol/nsplit,srcdil=pcrdil,ncycles=cycles,primers=primers,usertime=self.usertime if keepCleaved else None,fastCycling=False,inPlace=False,master=master,lowhi=self.lowhi)
             else:
                 pcr=self.runPCR(src=rxs*nsplit,vol=pcrvol/nsplit,srcdil=pcrdil,ncycles=cycles,primers=[("T7%sX"%("" if self.singlePrefix and keepCleaved else x)).replace("T7T7","T7") for x in (prefixOut if keepCleaved else prefixIn)]*nsplit,usertime=self.usertime if keepCleaved else None,fastCycling=False,inPlace=False)
             if len(pcr)<=len(names):
