@@ -69,6 +69,9 @@ class PGMSelect(TRP):
         self.barcoding=False   # True to use unique barcode primers in cleaved rounds
         self.enrich=math.sqrt(2.0)   # Estimate of enrichment/round -- scales number of pmoles needed to carry
         self.lowhi=True
+        self.regenPCRCycles=None
+        self.regenPCRVolume=100
+        self.regenPCRDilution=10
         self.setVolumes()
         
     def setVolumes(self):
@@ -457,7 +460,13 @@ class PGMSelect(TRP):
                     master="MTaqBar"
                 pcr=self.runPCR(src=rxs*nsplit,vol=pcrvol/nsplit,srcdil=pcrdil,ncycles=cycles,primers=primers,usertime=self.usertime if keepCleaved else None,fastCycling=False,inPlace=False,master=master,lowhi=self.lowhi)
             else:
-                pcr=self.runPCR(src=rxs*nsplit,vol=pcrvol/nsplit,srcdil=pcrdil,ncycles=cycles,primers=[("T7%sX"%("" if self.singlePrefix and keepCleaved else x)).replace("T7T7","T7") for x in (prefixOut if keepCleaved else prefixIn)]*nsplit,usertime=self.usertime if keepCleaved else None,fastCycling=False,inPlace=False)
+                pcr=self.runPCR(src=rxs*nsplit,vol=pcrvol/nsplit,srcdil=pcrdil,ncycles=cycles,primers=[("T7%sX"%x).replace("T7T7","T7") for x in (prefixOut if keepCleaved else prefixIn)]*nsplit,usertime=self.usertime if keepCleaved else None,fastCycling=False,inPlace=False)
+
+            if keepCleaved and self.regenPCRCycles is not None:
+                # Regenerate prefix
+                pcr2=self.runPCR(src=pcr,vol=self.regenPCRVolume,srcdil=self.regenPCRDilution,ncycles=self.regenPCRCycles,primers=["T7WX"],usertime=None,fastCycling=False,inPlace=False,master="MTaqU",lowhi=self.lowhi)
+                pcr=pcr2	# Use 2nd PCR as actual output
+
             if len(pcr)<=len(names):
                 # Don't relabel if we've split
                 for i in range(len(pcr)):
