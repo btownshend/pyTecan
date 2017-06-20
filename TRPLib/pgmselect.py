@@ -171,26 +171,26 @@ class PGMSelect(TRP):
             # Set r1 to new output at end
 
             # Computed output prefix
-            prefixOut=["W" if self.singlePrefix else "A" if p=="W" else "B" if p=="A" else "W" if p=="B" else "BADPREFIX" for p in curPrefix]
+            stop=["A" if p=="W" else "B" if p=="A" else "W" if p=="B" else "BADPREFIX" for p in curPrefix]
             # May be explicitly overridden
             for i in range(len(self.inputs)):
                 if 'stop' in self.inputs[i]:
                     if isinstance(self.inputs[i]['stop'],list):
                         assert(len(self.inputs[i]['stop'])==len(self.rounds))
-                        prefixOut[i]=self.inputs[i]['stop'][self.rndNum]
+                        stop[i]=self.inputs[i]['stop'][self.rndNum]
                     else:
-                        prefixOut[i]=self.inputs[i]['stop']
-                if prefixOut[i] not in ['A','B','W','T7W']:
-                    print 'Stop for %s must be one of A,B,W,T7W, but found %s'%(self.inputs[i]['name'],prefixOut[i])
+                        stop[i]=self.inputs[i]['stop']
+                if stop[i] not in ['A','B','W','T7W']:
+                    print 'Stop for %s must be one of A,B,W,T7W, but found %s'%(self.inputs[i]['name'],stop[i])
                     assert False
             self.rndNum=self.rndNum+1
             self.finalRound=self.rndNum==len(self.rounds)
                 
             if roundType=='U':
-                r1=self.oneround(q,r1,prefixOut,prefixIn=curPrefix,keepCleaved=False,rtvol=self.rtvol[self.rndNum-1],t7vol=self.t7vol[self.rndNum-1],cycles=self.pcrcycles[self.rndNum-1],pcrdil=self.pcrdil[self.rndNum-1],pcrvol=self.pcrvol[self.rndNum-1],dolig=self.allLig)
+                r1=self.oneround(q,r1,prefixOut=prefixOut,stop=["Unclvd" for s in stop],prefixIn=curPrefix,keepCleaved=False,rtvol=self.rtvol[self.rndNum-1],t7vol=self.t7vol[self.rndNum-1],cycles=self.pcrcycles[self.rndNum-1],pcrdil=self.pcrdil[self.rndNum-1],pcrvol=self.pcrvol[self.rndNum-1],dolig=self.allLig)
             else:
                 assert(roundType=='C')
-                r1=self.oneround(q,r1,prefixOut,prefixIn=curPrefix,keepCleaved=True,rtvol=self.rtvol[self.rndNum-1],t7vol=self.t7vol[self.rndNum-1],cycles=self.pcrcycles[self.rndNum-1],pcrdil=self.pcrdil[self.rndNum-1],pcrvol=self.pcrvol[self.rndNum-1],dolig=True)
+                r1=self.oneround(q,r1,prefixOut=prefixOut,stop=stop,prefixIn=curPrefix,keepCleaved=True,rtvol=self.rtvol[self.rndNum-1],t7vol=self.t7vol[self.rndNum-1],cycles=self.pcrcycles[self.rndNum-1],pcrdil=self.pcrdil[self.rndNum-1],pcrvol=self.pcrvol[self.rndNum-1],dolig=True)
 
             for i in range(len(r1)):
                 r1[i].name="%s_%d"%(prefixOut[i],self.nextID)
@@ -214,18 +214,18 @@ class PGMSelect(TRP):
         self.allprimers=q.allprimers()
         q.run(confirm=self.qpcrWait)
         
-    def oneround(self,q,input,prefixOut,prefixIn,keepCleaved,t7vol,rtvol,pcrdil,cycles,pcrvol,dolig):
+    def oneround(self,q,input,prefixOut,stop,prefixIn,keepCleaved,t7vol,rtvol,pcrdil,cycles,pcrvol,dolig):
         if self.singlePrefix:
-            primerSet=[["MX","REF","T7X","T7"+prefixIn[i]+"X"] for i in range(len(prefixIn))]
+            primerSet=[set(["MX","REF","T7X","T7"+prefixIn[i]+"X","T7"+stop[i]+"X"]) for i in range(len(prefixIn))]
         else:
-            primerSet=[["T7"+prefixIn[i]+"X",("T7"+prefixOut[i]+"X").replace("T7T7","T7"),"MX","T7X","REF"] for i in range(len(prefixIn))]
+            primerSet=[["T7"+prefixIn[i]+"X",("T7"+stop[i]+"X").replace("T7T7","T7"),"MX","T7X","REF"] for i in range(len(prefixIn))]
 
         if keepCleaved:
             print "Starting new cleavage round, will add prefix: ",prefixOut
             assert(dolig)
         else:
             print "Starting new uncleaved round, will retain prefix: ",prefixIn
-        print "prefixOut=",prefixOut,", prefixIn=",prefixIn,",t7vol=",t7vol,",rtvol=",rtvol,",pcrdil=",pcrdil,",cycles=",cycles,",dolig=",dolig
+        print "stop=",stop,"prefixOut=",prefixOut,", prefixIn=",prefixIn,",t7vol=",t7vol,",rtvol=",rtvol,",pcrdil=",pcrdil,",cycles=",cycles,",dolig=",dolig
         if self.rtCarryForward:
             assert(dolig)
             
@@ -270,6 +270,7 @@ class PGMSelect(TRP):
                         rxs += self.runT7Setup(ligands=[reagents.getsample(self.inputs[i]['ligand'])],src=[inp],vol=t7vol,srcdil=[inp.conc.dilutionneeded()])
                         prefixIn+=[prefixIn[i]]
                         prefixOut+=[prefixOut[i]]
+                        stop+=[stop[i]]
                         primerSet+=[primerSet[i]]
                         names+=["%s+"%names[i]]
             elif keepCleaved:
@@ -310,7 +311,7 @@ class PGMSelect(TRP):
         print "######## RT  Setup ########### %.0f min"%(clock.elapsed()/60)
         hiTemp=95
 
-        stop=["Unclvd-Stop" if (not dolig) else "T7W-Stop" if self.singlePrefix else "%s-Stop"%n for n in prefixOut]
+        stop=["%s-Stop"%n for n in stop]
         rt=self.runRT(src=rxs,vol=rtvol,srcdil=self.rtDil,heatInactivate=self.rtHI,hiTemp=hiTemp,dur=self.rtdur,incTemp=50,stop=[reagents.getsample(s) for s in stop],stopConc=self.stopConc)    # Heat inactivate also allows splint to fold
         
         rxs=rt
@@ -405,6 +406,7 @@ class PGMSelect(TRP):
             rxs=rxs[0:len(input)]    # Only keep -target products
             prefixOut=prefixOut[0:len(input)]
             prefixIn=prefixIn[0:len(input)]
+            stop=stop[0:len(input)]
             
         if self.dopcr and not (keepCleaved and self.noPCRCleave):
             print "######### PCR ############# %.0f min"%(clock.elapsed()/60)
