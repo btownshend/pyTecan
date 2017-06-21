@@ -463,13 +463,13 @@ class PGMSelect(TRP):
                         master="MTaqU"
                 else:
                     master="MTaqBar"
-                pcr=self.runPCR(src=rxs*nsplit,vol=pcrvol/nsplit,srcdil=pcrdil,ncycles=cycles,primers=primers,usertime=self.usertime if keepCleaved else None,fastCycling=False,inPlace=False,master=master,lowhi=self.lowhi)
+                pcr=self.runPCR(src=rxs*nsplit,vol=pcrvol/nsplit,srcdil=pcrdil,ncycles=cycles,primers=primers,usertime=self.usertime if keepCleaved else None,fastCycling=False,inPlace=False,master=master,lowhi=self.lowhi,annealTemp=57)
             else:
-                pcr=self.runPCR(src=rxs*nsplit,vol=pcrvol/nsplit,srcdil=pcrdil,ncycles=cycles,primers=[("T7%sX"%x).replace("T7T7","T7") for x in (prefixOut if keepCleaved else prefixIn)]*nsplit,usertime=self.usertime if keepCleaved else None,fastCycling=False,inPlace=False)
+                pcr=self.runPCR(src=rxs*nsplit,vol=pcrvol/nsplit,srcdil=pcrdil,ncycles=cycles,primers=[("T7%sX"%x).replace("T7T7","T7") for x in (prefixOut if keepCleaved else prefixIn)]*nsplit,usertime=self.usertime if keepCleaved else None,fastCycling=False,inPlace=False,annealTemp=57)
 
             if keepCleaved and self.regenPCRCycles is not None:
                 # Regenerate prefix
-                pcr2=self.runPCR(src=pcr,vol=self.regenPCRVolume,srcdil=self.regenPCRDilution,ncycles=self.regenPCRCycles,primers=["T7WX"],usertime=None,fastCycling=False,inPlace=False,master="MTaqU",lowhi=self.lowhi)
+                pcr2=self.runPCR(src=pcr,vol=self.regenPCRVolume,srcdil=self.regenPCRDilution,ncycles=self.regenPCRCycles,primers=["T7WX" for x in pcr],usertime=None,fastCycling=False,inPlace=False,master="MTaqU",lowhi=self.lowhi,annealTemp=57)
                 pcr=pcr2	# Use 2nd PCR as actual output
 
             if len(pcr)<=len(names):
