@@ -593,10 +593,10 @@ classdef RobotSamples < handle
               if args.normalize && isfinite(concsnm(pREF))
                 concsnm=concsnm/concsnm(pREF)*obj.options.refconc;
               end
-              fprintf('%-40.40s %6.2f %s nM    ',nm,scale,sprintf('%8.3f ',concsnm));
+              fprintf('%-40.40s %6.2f %s nM    ',nm,scale,sprintf('%8.1f ',concsnm));
               obj.rsv(i,j,:)=concsnm;
             else
-              fprintf('%-40.40s %6.2f %s ng/ul ',nm,scale,sprintf('%8.3f ',concs));
+              fprintf('%-40.40s %6.2f %s ng/ul ',nm,scale,sprintf('%8.1f ',concs));
               obj.rsv(i,j,:)=concs;
             end
             if ~isempty(ref) && printRefScale
