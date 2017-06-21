@@ -149,7 +149,7 @@ classdef RobotSamples < handle
       if isempty(water)
         ct=nan;
       else
-        ct=obj.q.getct(water.well);
+        ct=nanmean(obj.q.getct({water.well}));
       end
       if isnan(ct)
         ct=22;
