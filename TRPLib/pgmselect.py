@@ -469,7 +469,7 @@ class PGMSelect(TRP):
 
             if keepCleaved and self.regenPCRCycles is not None:
                 # Regenerate prefix
-                pcr2=self.runPCR(src=pcr,vol=self.regenPCRVolume,srcdil=self.regenPCRDilution,ncycles=self.regenPCRCycles,primers=["T7WX" for x in pcr],usertime=None,fastCycling=False,inPlace=False,master="MTaqU",lowhi=self.lowhi,annealTemp=57)
+                pcr2=self.runPCR(src=pcr,vol=self.regenPCRVolume,srcdil=self.regenPCRDilution,ncycles=self.regenPCRCycles,primers=None,usertime=None,fastCycling=False,inPlace=False,master="MTaqU",lowhi=self.lowhi,annealTemp=55)
                 pcr=pcr2	# Use 2nd PCR as actual output
 
             if len(pcr)<=len(names):
