@@ -89,7 +89,7 @@ class PGMSelect(TRP):
         pcrConc=[ligConc[i]/self.pcrdil[i] for i in range(len(self.rounds))]
         
         print "Concs(nM):  RNA: %.0f, Stop: %.0f, RT: %.0f, RTDil: %.0f, Lig: %.0f, LigDil: %.0f, PCRIn: %.0f"%(self.rnaConc, stopConc, rtConc, rtdilConc[0], ligConc[0], ligdilConc[0], pcrConc[0])
-        self.pcrvol=[self.pcrcopies*self.pmolesIn*1000/pcrConc[i]/math.pow(self.enrich,i*1.0) for i in range(len(self.rounds))]
+        self.pcrvol=[self.pcrcopies*self.pmolesIn*1000/pcrConc[i]/math.pow(self.enrich,(i+1.0)) for i in range(len(self.rounds))]
         # Use at least 100ul so the evaporation of the saved sample that occurs during the run will be relatively small
         self.pcrvol=[max(100,v) for v in self.pcrvol]
         pcrExtra=[1.4*math.ceil(v/self.maxPCRVolume) for v in self.pcrvol]
