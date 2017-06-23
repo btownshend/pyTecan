@@ -613,11 +613,21 @@ classdef RobotSamples < handle
               elseif isempty(pBX) && ~isempty(pAX)
                 pCLV=pAX; pUNCLV=pT7WX;
               end
+              tval=concsnm(pT7X)/concsnm(pREF)*obj.options.refconc;
+              if isfinite(tval)
+                fprintf(' T=%4.2f',tval);
+              end
+              rgain=concsnm(pMX)/concsnm(pT7X);
+              if isfinite(rgain)
+                fprintf(' R=%3.1fx',rgain);
+              end
               cleavage=100*concsnm(pCLV)/sum(concsnm([pCLV,pUNCLV]));
               if isfinite(cleavage)
-                fprintf('T=%4.2f Clv=%4.1f%% ABW/M=%.2f',concsnm(pT7X)/concsnm(pREF)*obj.options.refconc, cleavage,nansum(concsnm([pAX,pBX,pT7WX]))/concsnm(pMX));
-              else
-                fprintf('T=%4.2f',concsnm(pT7X)/concsnm(pREF)*obj.options.refconc);
+                fprintf(' Clv=%4.1f%%',cleavage);
+              end
+              abw=nansum(concsnm([pAX,pBX,pT7WX]))/concsnm(pMX);
+              if isfinite(abw) && abw>0
+                fprintf(' ABW/M=%4.2f',abw);
               end
             end
             fprintf('\n');
