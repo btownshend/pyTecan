@@ -505,7 +505,7 @@ class PGMSelect(TRP):
                         q.addSamples(sv[i],needDil,primers=primerSet[i],names=["%s.pcr"%names[i]])
 
                 processEff=0.5   # Estimate of overall efficiency of process
-                print "Saved %.2f pmoles of product (%.0f ul @ %.1f nM)"%(sv[0].volume*sv[0].conc.stock/1000,sv[0].volume,sv[0].conc.stock)
+                print "Have %.2f pmoles of product (%.0f ul @ %.1f nM)"%(sv[0].volume*sv[0].conc.stock/1000,sv[0].volume,sv[0].conc.stock)
                 return sv
             else:
                 assert "pcr" not in self.qpcrStages   ## Not implemented
