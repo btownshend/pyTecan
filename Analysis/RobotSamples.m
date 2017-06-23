@@ -264,8 +264,8 @@ classdef RobotSamples < handle
             stage='';
           end
           %fprintf('%s -> %s & %s\n', root, template, stage);
-          obj.templates=union(obj.templates,template,'stable');
-          obj.suffixes=union(obj.suffixes,stage,'stable');
+          obj.templates=union(obj.templates,template,'sorted');
+          obj.suffixes=union(obj.suffixes,stage,'sorted');
         end        
       end
       obj.wellsProcessed=true;
