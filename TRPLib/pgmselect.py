@@ -170,31 +170,48 @@ class PGMSelect(TRP):
         r1=t7in
         
         for roundType in self.rounds:
-            # Run a single round of roundType "C" or "U" with r1 as input
+            # Run a single round of roundType with r1 as input
+            # roundType is either "U" for uncleaved, or a new prefix for a cleaved round (with "T" being a T7 prepend)
             # Set r1 to new output at end
 
             # Computed output prefix
-            stop=["A" if p=="W" else "B" if p=="A" else "W" if p=="B" else "BADPREFIX" for p in curPrefix]
+            if roundType=='U':
+                prefixOut=curPrefix;
+                stop=["Unclvd" for p in curPrefix]
+            else:
+                if roundType=='T':
+                    stop=['T7%s'%p for p in curPrefix]
+                    prefixOut=curPrefix
+                elif any([p==roundType for p in curPrefix]):
+                    logging.error( "Round %d is a cleaved round but goes to %s without changing prefix"%(self.rndNum, roundType))
+                    assert(False)
+                else:
+                    prefixOut=[roundType for p in curPrefix]                
+                    stop=prefixOut
+
             # May be explicitly overridden
             for i in range(len(self.inputs)):
                 if 'stop' in self.inputs[i]:
                     if isinstance(self.inputs[i]['stop'],list):
                         assert(len(self.inputs[i]['stop'])==len(self.rounds))
-                        stop[i]=self.inputs[i]['stop'][self.rndNum]
+                        t=self.inputs[i]['stop'][self.rndNum]
                     else:
-                        stop[i]=self.inputs[i]['stop']
-                if stop[i] not in ['A','B','W','T7W']:
-                    print 'Stop for %s must be one of A,B,W,T7W, but found %s'%(self.inputs[i]['name'],stop[i])
-                    assert False
-            prefixOut=["W" if self.singlePrefix else s for s in stop]
+                        t=self.inputs[i]['stop']
+                    if (roundType=='U') != (t=='U'):
+                        print "Attempt to override round %d (type %s) with a input-specific round type of %s"%(self.rndNum, roundType, t)
+                        assert(False)
+                    if roundType!='U':
+                        if t=='T':
+                            stop[i]='T7%s'%curPrefix[i]
+                            prefixOut[i]=curPrefix[i]
+                        else:
+                            stop[i]=t
+                            prefixOut[i]=t
+
             self.rndNum=self.rndNum+1
             self.finalRound=self.rndNum==len(self.rounds)
                 
-            if roundType=='U':
-                r1=self.oneround(q,r1,prefixOut=prefixOut,stop=["Unclvd" for s in stop],prefixIn=curPrefix,keepCleaved=False,rtvol=self.rtvol[self.rndNum-1],t7vol=self.t7vol[self.rndNum-1],cycles=self.pcrcycles[self.rndNum-1],pcrdil=self.pcrdil[self.rndNum-1],pcrvol=self.pcrvol[self.rndNum-1],dolig=self.allLig)
-            else:
-                assert(roundType=='C')
-                r1=self.oneround(q,r1,prefixOut=prefixOut,stop=stop,prefixIn=curPrefix,keepCleaved=True,rtvol=self.rtvol[self.rndNum-1],t7vol=self.t7vol[self.rndNum-1],cycles=self.pcrcycles[self.rndNum-1],pcrdil=self.pcrdil[self.rndNum-1],pcrvol=self.pcrvol[self.rndNum-1],dolig=True)
+            r1=self.oneround(q,r1,prefixOut=prefixOut,stop=stop,prefixIn=curPrefix,keepCleaved=(roundType!='U'),rtvol=self.rtvol[self.rndNum-1],t7vol=self.t7vol[self.rndNum-1],cycles=self.pcrcycles[self.rndNum-1],pcrdil=self.pcrdil[self.rndNum-1],pcrvol=self.pcrvol[self.rndNum-1],dolig=self.allLig or (roundType!='U'))
 
             for i in range(len(r1)):
                 r1[i].name="%s_%d"%(prefixOut[i],self.nextID)
@@ -219,10 +236,7 @@ class PGMSelect(TRP):
         q.run(confirm=self.qpcrWait)
         
     def oneround(self,q,input,prefixOut,stop,prefixIn,keepCleaved,t7vol,rtvol,pcrdil,cycles,pcrvol,dolig):
-        if self.singlePrefix:
-            primerSet=[set(["MX","REF","T7X","T7"+prefixIn[i]+"X","T7"+stop[i]+"X"]) for i in range(len(prefixIn))]
-        else:
-            primerSet=[["T7"+prefixIn[i]+"X",("T7"+stop[i]+"X").replace("T7T7","T7"),"MX","T7X","REF"] for i in range(len(prefixIn))]
+        primerSet=[set(["MX","REF","T7X","T7"+prefixIn[i]+"X","T7"+prefixOut[i]+"X"]) for i in range(len(prefixIn))]
 
         if keepCleaved:
             print "Starting new cleavage round, will add prefix: ",prefixOut
@@ -450,24 +464,26 @@ class PGMSelect(TRP):
                 print "Reducing PCR volume from %.1ful to %.1ful due to limited input"%(pcrvol, maxpcrvol)
                 pcrvol=maxpcrvol
 
-            if self.singlePrefix:
-                if self.barcoding:
-                    primers=self.bcprimers[self.rndNum-1]
-                    if primers is not None and nsplit>1:
-                        primers=primers*nsplit
-                else:
-                    primers=None
-                if primers==None:
-                    if keepCleaved:
-                        master="MTaqC"
-                    else:
-                        master="MTaqU"
-                else:
-                    master="MTaqBar"
-                pcr=self.runPCR(src=rxs*nsplit,vol=pcrvol/nsplit,srcdil=pcrdil,ncycles=cycles,primers=primers,usertime=self.usertime if keepCleaved else None,fastCycling=False,inPlace=False,master=master,lowhi=self.lowhi,annealTemp=57)
+            if keepCleaved:
+                master="MTaqC"
             else:
-                pcr=self.runPCR(src=rxs*nsplit,vol=pcrvol/nsplit,srcdil=pcrdil,ncycles=cycles,primers=[("T7%sX"%x).replace("T7T7","T7") for x in (prefixOut if keepCleaved else prefixIn)]*nsplit,usertime=self.usertime if keepCleaved else None,fastCycling=False,inPlace=False,annealTemp=57)
+                master="MTaqU"
 
+            if self.barcoding:
+                primers=self.bcprimers[self.rndNum-1]
+                if primers is not None and nsplit>1:
+                    primers=primers*nsplit
+            else:
+                primers=None
+
+            if primers is None:
+                if keepCleaved:
+                    primers=[("T7%sX"%x).replace("T7T7","T7") for x in prefixOut]*nsplit
+                else:
+                    primers=[("T7%sXlong"%x).replace("T7T7","T7") for x in prefixOut]*nsplit
+
+            print "Running PCR with master=",master,", primers=",primers
+            pcr=self.runPCR(src=rxs*nsplit,vol=pcrvol/nsplit,srcdil=pcrdil,ncycles=cycles,primers=primers,usertime=self.usertime if keepCleaved else None,fastCycling=False,inPlace=False,master=master,lowhi=self.lowhi,annealTemp=57)
             if keepCleaved and self.regenPCRCycles is not None:
                 # Regenerate prefix
                 pcr2=self.runPCR(src=pcr,vol=self.regenPCRVolume,srcdil=self.regenPCRDilution,ncycles=self.regenPCRCycles,primers=None,usertime=None,fastCycling=False,inPlace=False,master="MTaqR",lowhi=self.lowhi,annealTemp=55)
