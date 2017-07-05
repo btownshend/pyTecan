@@ -24,7 +24,7 @@ reagents.add("MTaqBar",well="D1",conc=2,ingredients={'Taq':0.5*1,'glycerol':0.5*
 reagents.add("MTaqR",well="C2",conc=2,ingredients={'Taq':0.5*1,'glycerol':0.5*1,'TAQ-ABE':51,'Water':48})
 reagents.add("MLigase",well="E1",conc=5,extraVol=50,ingredients={'T4DNALigase':0.5*2.50,'glycerol':0.5*2.50,'T4-ABE':97.47})
 
-reagents.add("Unclvd-Stop",well="A2",conc=Concentration(4,1,'uM'),extraVol=30)
+reagents.add("Unclvd-Stop",well="A2",conc=Concentration(10,1,'uM'),extraVol=30)
 reagents.add("MUser",well="B2",conc=5,extraVol=30,ingredients={'USER':0.5*2.5,'glycerol':0.5*2.5,'CutSmart':25,'Water':72.5})
 reagents.add("Ampure",well="C2",conc=None,hasBeads=True)
 reagents.add("EtOH80",well="D2")
