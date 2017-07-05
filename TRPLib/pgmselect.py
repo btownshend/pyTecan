@@ -160,7 +160,7 @@ class PGMSelect(TRP):
         if "negative" in self.qpcrStages:
             q.addSamples(decklayout.SSDDIL,1,self.allprimers,save=False)   # Negative controls
         if "reference" in self.qpcrStages:
-            q.addReferences(dstep=10,nsteps=5,primers=["T7WX"],ref=reagents.getsample("BT5310"))
+            q.addReferences(dstep=10,nsteps=5,primers=["T7WX","MX","T7X"],ref=reagents.getsample("BT5310"),nreplicates=2)
 
         # Save RT product from first (uncleaved) round and then use it during 2nd (cleaved) round for ligation and qPCR measurements
         self.rndNum=0
@@ -470,6 +470,13 @@ class PGMSelect(TRP):
             if keepCleaved and self.regenPCRCycles is not None:
                 # Regenerate prefix
                 pcr2=self.runPCR(src=pcr,vol=self.regenPCRVolume,srcdil=self.regenPCRDilution,ncycles=self.regenPCRCycles,primers=None,usertime=None,fastCycling=False,inPlace=False,master="MTaqR",lowhi=self.lowhi,annealTemp=55)
+                # Add BT575p for 1 more cycle
+                for p in pcr2:
+                    self.e.transfer(p.volume*0.5/10,reagents.getsample("Unclvd-Stop"),p,(False,False))
+                # One more cycle
+                cycling=' TEMP@95,30 TEMP@55,30 TEMP@68,30 TEMP@25,2'
+                worklist.pyrun('PTC\\ptcsetpgm.py rfin %s'%(cycling))
+                self.e.runpgm("rfin",5.0,False,max([p.volume for p in pcr2]),hotlidmode="CONSTANT",hotlidtemp=100)
                 pcr=pcr2	# Use 2nd PCR as actual output
 
             if len(pcr)<=len(names):
