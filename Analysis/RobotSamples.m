@@ -622,7 +622,7 @@ classdef RobotSamples < handle
               obj.sv(i,j,:)=obj.rsv(i,j,:)/obj.rsv(i,j,ref)*obj.options.refconc;
               fprintf('%6.1f ',obj.sv(i,j,[1:ref-1,ref+1:end]));
             end
-            if (length(nm)>4 && strcmp(nm(end-3:end),'.ext')) || (length(nm)>3 && strcmp(nm(end-2:end),'.rt'))
+            if (length(nm)>4 && strcmp(nm(end-3:end),'.ext')) || (length(nm)>3 && strcmp(nm(end-2:end),'.rt')) || (length(nm)>2 && strcmp(nm(end-1:end),'.T'))
               if nm(1)=='A'
                 pCLV=pBX; pUNCLV=pAX;
               elseif nm(1)=='B'
@@ -658,7 +658,11 @@ classdef RobotSamples < handle
               end
               cleavage=100*concsnm(pCLV)/sum(concsnm([pCLV,pUNCLV]));
               if isfinite(cleavage)
-                fprintf(' Clv=%4.1f%%',cleavage);
+                if strcmp(obj.suffixes{j},'.ext')
+                  fprintf(' Clv=%.1f%%',cleavage);
+                else
+                  fprintf(' Leak=%.1f%%',cleavage);
+                end
               end
               abw=nansum(concsnm([pAX,pBX,pWX,pT7WX,pZX]))/concsnm(pMX);
               if isfinite(abw) && abw>0
