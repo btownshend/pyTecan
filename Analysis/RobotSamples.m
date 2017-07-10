@@ -375,6 +375,8 @@ classdef RobotSamples < handle
           len=24+11+6+loop1len+6+17+loop2len+29;  % Set it to be W
         elseif strncmp(primer,'T7WX',4)
           len=24+11+6+loop1len+6+17+loop2len+29;
+        elseif strncmp(primer,'T7ZX',4)
+          len=24+11+6+loop1len+6+17+loop2len+29;
         elseif strncmp(primer,'T7AX',4)
           len=24+21+6+loop1len+6+17+loop2len+29;
         elseif strncmp(primer,'T7BX',4)
@@ -499,6 +501,10 @@ classdef RobotSamples < handle
       if isempty(pBX)
         pBX=find(strcmp(obj.primers,'BX'));
       end
+      pZX=find(strcmp(obj.primers,'T7ZX'));
+      if isempty(pZX)
+        pZX=find(strcmp(obj.primers,'ZX'));
+      end
       pMX=find(strcmp(obj.primers,'MX'));
       pT7X=find(strcmp(obj.primers,'T7X'));
       pREF=find(strcmp(obj.primers,'REF'));
@@ -622,7 +628,23 @@ classdef RobotSamples < handle
               elseif nm(1)=='B'
                 pCLV=pT7WX; pUNCLV=pBX;
               elseif nm(1)=='W'
-                pCLV=pAX; pUNCLV=pT7WX;
+                pUNCLV=pT7WX;
+                if ~isempty(pZX)
+                  pCLV=pZX; 
+                elseif ~isempty(pAX)
+                  pCLV=pAX; 
+                elseif ~isempty(pBX)
+                  pCLV=pBX; 
+                end
+              elseif nm(1)=='Z'
+                pUNCLV=pZX;
+                if ~isempty(pT7WX)
+                  pCLV=pT7WX; 
+                elseif ~isempty(pAX)
+                  pCLV=pAX; 
+                elseif ~isempty(pBX)
+                  pCLV=pBX; 
+                end
               elseif isempty(pBX) && ~isempty(pAX)
                 pCLV=pAX; pUNCLV=pT7WX;
               end
@@ -638,9 +660,9 @@ classdef RobotSamples < handle
               if isfinite(cleavage)
                 fprintf(' Clv=%4.1f%%',cleavage);
               end
-              abw=nansum(concsnm([pAX,pBX,pT7WX]))/concsnm(pMX);
+              abw=nansum(concsnm([pAX,pBX,pWX,pT7WX,pZX]))/concsnm(pMX);
               if isfinite(abw) && abw>0
-                fprintf(' ABW/M=%4.2f',abw);
+                fprintf(' ABWZ/M=%4.2f',abw);
               end
             end
             fprintf('\n');
