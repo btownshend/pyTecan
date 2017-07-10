@@ -264,10 +264,17 @@ classdef RobotSamples < handle
             stage='';
           end
           %fprintf('%s -> %s & %s\n', root, template, stage);
-          obj.templates=union(obj.templates,template,'sorted');
-          obj.suffixes=union(obj.suffixes,stage,'sorted');
+          obj.templates=union(obj.templates,template,'stable');
+          obj.suffixes=union(obj.suffixes,stage,'stable');
         end        
       end
+      % suffixOrder={'.T','.rt','.ext',''};
+      % for i=1:length(suffixOrder)
+      %   sel=find(strcmp(obj.suffixes,suffixOrder(i)));
+      %   if ~isempty(sel)
+      %     obj.suffixes=obj.suffixes([1:i-1,sel,i:sel-1,sel+1:end]);
+      %   end
+      % end
       obj.wellsProcessed=true;
     end
   
@@ -503,8 +510,14 @@ classdef RobotSamples < handle
         fprintf('%4s ', qkeys{i});
       end
       fprintf('\n');
+      ord=[];
       for i=1:length(keys)
-        ord(i)=obj.qsamps(keys{i}).order;
+        otmp=obj.qsamps(keys{i}).order;
+        if isempty(otmp)
+          ord(i)=1000;
+        else
+          ord(i)=otmp;
+        end
       end
       [~,sortorder]=sort(ord);
       for i=sortorder
