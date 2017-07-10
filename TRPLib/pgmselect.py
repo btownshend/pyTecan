@@ -477,10 +477,7 @@ class PGMSelect(TRP):
                 primers=None
 
             if primers is None:
-                if keepCleaved:
-                    primers=[("T7%sX"%x).replace("T7T7","T7") for x in prefixOut]*nsplit
-                else:
-                    primers=[("T7%sXlong"%x).replace("T7T7","T7") for x in prefixOut]*nsplit
+                primers=[("T7%sX"%x).replace("T7T7","T7") for x in prefixOut]*nsplit
 
             print "Running PCR with master=",master,", primers=",primers
             pcr=self.runPCR(src=rxs*nsplit,vol=pcrvol/nsplit,srcdil=pcrdil,ncycles=cycles,primers=primers,usertime=self.usertime if keepCleaved else None,fastCycling=False,inPlace=False,master=master,lowhi=self.lowhi,annealTemp=57)
