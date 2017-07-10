@@ -55,7 +55,7 @@ class PGMSelect(TRP):
         self.rtDil=4
         self.saveRNADilution=10
         self.ligInPlace=True
-        self.allprimers=["REF","MX","T7X","T7WX"]    # Will get updated after first pass with all primers used
+        self.allprimers=["REF","MX","T7X","WX","ZX"]    # Will get updated after first pass with all primers used
         self.rtpostdil=[3.0 if r=='U' else 1.0 for r in self.rounds]
         self.rtdur=20
         self.ligdur=15
@@ -229,14 +229,14 @@ class PGMSelect(TRP):
                 if self.singlePrefix:
                     q.addSamples(src=r1[i],needDil=r1[i].conc.stock/self.qConc,primers=["T7X","MX"])
                 else:
-                    q.addSamples(src=r1[i],needDil=r1[i].conc.stock/self.qConc,primers=["T7X",("T7"+prefixOut[i]+"X").replace("T7T7","T7"),"MX"])
+                    q.addSamples(src=r1[i],needDil=r1[i].conc.stock/self.qConc,primers=["T7X",prefixOut[i]+"X","MX"])
             
         print "######### qPCR ########### %.0f min"%(clock.elapsed()/60)
         self.allprimers=q.allprimers()
         q.run(confirm=self.qpcrWait)
         
     def oneround(self,q,input,prefixOut,stop,prefixIn,keepCleaved,t7vol,rtvol,pcrdil,cycles,pcrvol,dolig):
-        primerSet=[set(["MX","REF","T7X","T7"+prefixIn[i]+"X","T7"+prefixOut[i]+"X"]) for i in range(len(prefixIn))]
+        primerSet=[set(["MX","REF","T7X",prefixIn[i]+"X",prefixOut[i]+"X"]) for i in range(len(prefixIn))]
 
         if keepCleaved:
             print "Starting new cleavage round, will add prefix: ",prefixOut
