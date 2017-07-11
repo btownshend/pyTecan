@@ -14,6 +14,7 @@ classdef RobotSamples < handle
     loop2len;
     rsv; % Saved data 
     sv;	% Saved data (scaled by ref)
+    cleavage;   % Index by template, suffix
   end
   
   methods
@@ -366,6 +367,8 @@ classdef RobotSamples < handle
           end
         elseif strncmp(primer,'WX',2)
           len=11+6+loop1len+6+17+loop2len+29;
+        elseif strncmp(primer,'ZX',2)
+          len=12+6+loop1len+6+17+loop2len+29;
         elseif strncmp(primer,'AX',2)
           len=21+6+loop1len+6+17+loop2len+29;
         elseif strncmp(primer,'BX',2)
@@ -376,7 +379,7 @@ classdef RobotSamples < handle
         elseif strncmp(primer,'T7WX',4)
           len=24+11+6+loop1len+6+17+loop2len+29;
         elseif strncmp(primer,'T7ZX',4)
-          len=24+11+6+loop1len+6+17+loop2len+29;
+          len=24+12+6+loop1len+6+17+loop2len+29;
         elseif strncmp(primer,'T7AX',4)
           len=24+21+6+loop1len+6+17+loop2len+29;
         elseif strncmp(primer,'T7BX',4)
@@ -629,6 +632,9 @@ classdef RobotSamples < handle
                 pCLV=pT7WX; pUNCLV=pBX;
               elseif nm(1)=='W'
                 pUNCLV=pT7WX;
+                if isempty(pUNCLV)
+                  pUNCLV=pWX;
+                end
                 if ~isempty(pZX)
                   pCLV=pZX; 
                 elseif ~isempty(pAX)
@@ -640,6 +646,8 @@ classdef RobotSamples < handle
                 pUNCLV=pZX;
                 if ~isempty(pT7WX)
                   pCLV=pT7WX; 
+                elseif ~isempty(pWX)
+                  pCLV=pWX; 
                 elseif ~isempty(pAX)
                   pCLV=pAX; 
                 elseif ~isempty(pBX)
@@ -656,7 +664,8 @@ classdef RobotSamples < handle
               if isfinite(rgain)
                 fprintf(' R=%3.1fx',rgain);
               end
-              cleavage=100*concsnm(pCLV)/sum(concsnm([pCLV,pUNCLV]));
+              obj.cleavage(i,j)=concsnm(pCLV)/sum(concsnm([pCLV,pUNCLV]));
+              cleavage=100.0*obj.cleavage(i,j);
               if isfinite(cleavage)
                 if strcmp(obj.suffixes{j},'.ext')
                   fprintf(' Clv=%.1f%%',cleavage);
@@ -665,7 +674,7 @@ classdef RobotSamples < handle
                 end
               end
               abw=nansum(concsnm([pAX,pBX,pWX,pT7WX,pZX]))/concsnm(pMX);
-              if isfinite(abw) && abw>0
+              if isfinite(abw) && abw>0 && strcmp(nm(end-3:end),'.ext')
                 fprintf(' ABWZ/M=%4.2f',abw);
               end
             end
