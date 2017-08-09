@@ -368,11 +368,12 @@ class Sample(object):
             logging.warning( "No volume equation for %s, skipping initial volume check"%self.name)
             return
 
-        volwarn=self.volume*0.80
+        volcrit=self.plate.unusableVolume*0.8+volToRemove
+        volwarn=min(volcrit,self.volume*0.80)
+        
         heightwarn=min(self.plate.getliquidheight(volwarn),height-1.0)	# threshold is lower of 1mm or 80%
         gemvolwarn=self.plate.getgemliquidvolume(heightwarn)	# Volume that would be reported by Gemini for this height
 
-        volcrit=self.plate.unusableVolume*0.8+volToRemove
         heightcrit=self.plate.getliquidheight(volcrit)
         gemvolcrit=self.plate.getgemliquidvolume(heightcrit)	# Volume that would be reported by Gemini for this height
     
