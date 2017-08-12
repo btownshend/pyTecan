@@ -702,7 +702,7 @@ class Sample(object):
                 finalgemvolume=initgemvolume-aspirateVolume
                 finalgemheight=self.plate.getgemliquidheight(finalgemvolume)
                 finaltipdepth=self.inliquidLC.submerge-(finalgemheight-finalheight)
-                msg="Aspirate %.1f ul from %.1f ul:  height goes from %.1f to %.1f mm, gem will think initial volume is %.1ful and final height %.1f mm"%(aspirateVolume,self.volume,initheight,finalheight,initgemvolume,finalgemheight)
+                msg="Aspirate %.1f ul from %.1f ul in %s:  height goes from %.1f to %.1f mm, gem will think initial volume is %.1ful and final height %.1f mm"%(aspirateVolume,self.volume,self.name,initheight,finalheight,initgemvolume,finalgemheight)
                 if finalgemheight-0.1<self.inliquidLC.submerge:
                     # Gemini won't be able to submerge as much as requested
                     logging.notice(msg+": Gemini would think there's not enough liquid to submerge %.1f mm - not using LD"%self.inliquidLC.submerge)
