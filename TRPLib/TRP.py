@@ -839,6 +839,83 @@ class TRP(object):
             t.lastMixed=clock.elapsed()
         #self.e.shakeSamples(tgt,returnPlate=True)
         return tgt
+    
+    
+    def runBCSetup(self,src,vol,srcdil,BC1=None,BC2=None,tgt=None,rlist=["MT7"]):
+        if isinstance(BC1,bool):
+            if not BC1:
+                BC1=None
+            else:
+                assert('runBCSetup:  ligands arg should be ligand samples or None, not True')
+                
+        [BC1,BC2,src,tgt,srcdil]=listify([BC1,BC2,src,tgt,srcdil])
+        for i in range(len(src)):
+            if tgt[i] is None:
+                if BC1[i] is not None:
+                    tgt[i]=Sample("%s.%s-%s"%(src[i].name,BC1[i].name,BC2[i].name),decklayout.SAMPLEPLATE)
+                else:
+                    tgt[i]=Sample("%s.T-"%src[i].name,decklayout.SAMPLEPLATE)
+
+        worklist.comment("runBC: source=%s"%[str(s) for s in src])
+
+        rvols=[reagents.getsample(x).conc.volneeded(vol) for x in rlist]
+        rtotal=sum(rvols)
+        sourcevols=[vol*1.0/s for s in srcdil]
+        BC1vols=[0 for s in srcdil]
+        BC2vols=[0 for s in srcdil]
+        watervols=[0 for s in srcdil]
+        for i in range(len(srcdil)):
+            if BC1[i] is not None:
+                BC1vols[i]=vol*1.0/BC1[i].conc.dilutionneeded()
+                BC2vols[i]=vol*1.0/BC2[i].conc.dilutionneeded()
+                watervols[i]=vol-BC1vols[i]-BC2vols[i]-sourcevols[i]-rtotal
+            else:
+                watervols[i]=vol-sourcevols[i]-rtotal
+
+        if any([w<-.1 for w in watervols]):
+            logging.error("runT7Setup: Negative amount of water required: "+str(watervols))
+
+        if sum(watervols)>0.01:
+            self.e.multitransfer(watervols,decklayout.WATER,tgt)
+        for ir in range(len(rlist)):
+            self.e.multitransfer([rvols[ir] for s in tgt],reagents.getsample(rlist[ir]),tgt)
+        for i in range(len(BC1)):
+            if BC1vols[i] > 0.01:
+                self.e.transfer(BC1vols[i],BC1[i],tgt[i])
+            if BC2vols[i] > 0.01:
+                self.e.transfer(BC2vols[i],BC2[i],tgt[i])
+        for i in range(len(src)):
+            self.e.transfer(sourcevols[i],src[i],tgt[i])
+        # self.e.shakeSamples(tgt,returnPlate=True)
+        for t in tgt:
+            t.ingredients['BIND']=1e-20*sum(t.ingredients.values())
+        return tgt
+    
+    def runBCPCR(self,ncycles,vol,usertime=None,kapa=True,annealTemp=None,fastCycling=False):
+        pgm="PCR%d"%ncycles
+
+        if usertime is None:
+            runTime=0
+        else:
+            runTime=usertime
+
+        if annealTemp is None:
+            annealTemp=54 if kapa else 57
+
+        meltTemp=98 if kapa else 95
+        hotTime=180 if kapa else 30
+        extTemp=72 if kapa else 68
+        
+        if fastCycling:
+            cycling='TEMP@37,%d TEMP@95,%d TEMP@%.1f,10 TEMP@%.1f,10 TEMP @%.1f,1 GOTO@3,%d TEMP@%.1f,60 TEMP@25,2'%(1 if usertime is None else usertime*60,hotTime,meltTemp,annealTemp,extTemp,ncycles-1,extTemp)
+            runTime+=hotTime/60+2.8+1.65*ncycles
+        else:
+            cycling='TEMP@37,%d TEMP@95,%d TEMP@%.1f,30 TEMP@%.1f,30 TEMP@%.1f,30 GOTO@3,%d TEMP@%.1f,60 TEMP@25,2'%(1 if usertime is None else usertime*60,hotTime,meltTemp,annealTemp,extTemp,ncycles-1,extTemp)
+            runTime+=hotTime/60+2.8+3.0*ncycles
+            
+        worklist.pyrun('PTC\\ptcsetpgm.py %s %s'%(pgm,cycling))
+        self.e.runpgm(pgm,runTime,False,max(vol),hotlidmode="CONSTANT",hotlidtemp=100)
+    
 
     ########################
     # qPCR
