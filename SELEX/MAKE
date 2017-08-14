@@ -1,2 +1,0 @@
-export PYTHONPATH=..
-python "$1.py"  && python "$1.py">"$1.log"
