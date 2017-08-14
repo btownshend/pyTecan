@@ -708,7 +708,7 @@ class Sample(object):
                     logging.notice(msg+": Gemini would think there's not enough liquid to submerge %.1f mm - not using LD"%self.inliquidLC.submerge)
                 elif finaltipdepth<0.1:
                     # Tracking is off so much that tip will break surface of water during operation 
-                    logging.notice(msg+": tip will not be submerged enough (depth=%.1f mm) - not using LD"%finaltipdepth)
+                    logging.warning(msg+": tip will not be submerged enough (depth=%.1f mm) - not using LD"%finaltipdepth)
                 else:
                     # Should be good
                     #logging.notice(msg)
