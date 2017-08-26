@@ -77,7 +77,7 @@ reagents.add("T3",well=None,conc=Concentration(3.333,1.0,'x')) # BIAs
 reagents.add("T3d",well='E3',conc=Concentration(3.333,1.0,'x'),extraVol=30) # BIAs less S-Reticuline
 reagents.add("T6",well='D4',conc=Concentration(3.333,1.0,'x'),extraVol=30) # Redox
 reagents.add("T25",well='C4',conc=Concentration(3.333,1.0,'x'),extraVol=30) # Acetyl CoA + Trans-Zeatin
-reagents.add("T25T6",conc=Concentration(2.222,1.0,'x'),extraVol=30) # Acetyl CoA + Trans-Zeatin +Redox
+reagents.add("T25T6",well='E2',conc=Concentration(2.222,1.0,'x'),extraVol=30) # Acetyl CoA + Trans-Zeatin +Redox
     
 def listify(x):
     'Convert a list of (lists or scalars) into a list of equal length lists'
