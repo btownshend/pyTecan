@@ -33,6 +33,7 @@ class PGMSelect(TRP):
         self.singlePrefix=singlePrefix
         self.noPCRCleave=noPCRCleave   # Skip PCR on cleave-selection rounds
         self.saveRNA=saveRNA
+        self.extraQPCRPrimers=None
         
         # General parameters
         self.qConc = 0.050			# Target qPCR concentration in nM (corresponds to Ct ~ 10)
@@ -242,7 +243,10 @@ class PGMSelect(TRP):
         
     def oneround(self,q,input,prefixOut,stop,prefixIn,keepCleaved,t7vol,rtvol,pcrdil,cycles,pcrvol,dolig):
         primerSet=[set(["MX","REF","T7X",prefixIn[i]+"X",prefixOut[i]+"X"]) for i in range(len(prefixIn))]
-
+        if self.extraQPCRPrimers is not None:
+            primerSet=[set(list(p) + self.extraQPCRPrimers) for p in primerSet]
+            print "primerSet=",primerSet
+            
         if keepCleaved:
             print "Starting new cleavage round, will add prefix: ",prefixOut
             assert(dolig)
