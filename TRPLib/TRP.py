@@ -2,7 +2,7 @@ from Experiment.sample import Sample
 from Experiment.plate import Plate
 from Experiment.experiment import Experiment
 from Experiment.concentration import Concentration
-from Experiment import worklist, reagents, decklayout, clock, logging
+from Experiment import worklist, reagents, decklayout, clock, logging, thermocycler
 from Experiment import globals
 
 import os
@@ -340,7 +340,7 @@ class TRP(object):
             pgm="TRP37-%d"%dur
         else:
             pgm="T37-%d"%dur
-        worklist.pyrun('PTC\\ptcsetpgm.py %s TEMP@37,%d TEMP@25,2'%(pgm,dur*60))
+        thermocycler.setpgm('%s TEMP@37,%d TEMP@25,2'%(pgm,dur*60))
         print "Running T7 at 37C for %d minutes"%dur
         self.e.runpgm(pgm,dur, False,vol)
 
@@ -523,7 +523,7 @@ class TRP(object):
                 self.e.shake(plate,dur=eluteTime,returnPlate=returnPlate,force=True)
         else:
             self.e.shakeSamples(src,dur=30,returnPlate=False)
-            worklist.pyrun('PTC\\ptcsetpgm.py elute TEMP@%d,%d TEMP@25,2'%(temp,eluteTime))
+            thermocycler.setpgm('elute TEMP@%d,%d TEMP@25,2'%(temp,eluteTime))
             self.e.runpgm("elute",eluteTime/60,False,elutionVol[0])
             if returnPlate:
                 self.e.moveplate(src[0].plate,"Home")
@@ -643,11 +643,11 @@ class TRP(object):
                 print "Assuming RT heat inactivation temperature of ",hiTemp
             hidur=2
 
-            worklist.pyrun('PTC\\ptcsetpgm.py %s TEMP@%d,%d TEMP@%d,%d TEMP@25,2 RATE@0.5'%(pgm,incTemp,dur*60,hiTemp,hidur*60))
+            thermocycler.setpgm('%s TEMP@%d,%d TEMP@%d,%d TEMP@25,2 RATE@0.5'%(pgm,incTemp,dur*60,hiTemp,hidur*60))
             self.e.runpgm(pgm,dur+hidur+2.5,False,100)		# Volume doesn't matter since it's just an incubation, use 100ul
             print "Running RT at %dC for %d min, followed by heat inactivation/refold at %dC for %d minutes"%(incTemp,dur,hiTemp,hidur)
         else:
-            worklist.pyrun('PTC\\ptcsetpgm.py %s TEMP@%d,%d TEMP@25,2'%(pgm,incTemp,dur*60))
+            thermocycler.setpgm('%s TEMP@%d,%d TEMP@25,2'%(pgm,incTemp,dur*60))
             self.e.runpgm(pgm,dur,False,100)		# Volume doesn't matter since it's just an incubation, use 100ul
             print "Running RT at %dC for %d min without heat inactivation"%(incTemp,dur)
  
@@ -687,12 +687,12 @@ class TRP(object):
             print "Setup only of incubation with %s"%enzymes[0].name
         else:
             if hiTemp is None:
-                worklist.pyrun('PTC\\ptcsetpgm.py INC TEMP@%.0f,%.0f TEMP@25,30'%(incTemp,incTime*60))
+                thermocycler.setpgm('INC TEMP@%.0f,%.0f TEMP@25,30'%(incTemp,incTime*60))
                 print "Incubating at %dC for %d minutes without heat inactivation"%(incTemp, incTime)
                 hiTime=0
             else:
                 assert(hiTime>0)
-                worklist.pyrun('PTC\\ptcsetpgm.py INC TEMP@%.0f,%.0f TEMP@%.0f,%.0f TEMP@25,30'%(incTemp,incTime*60,hiTemp,hiTime*60))
+                thermocycler.setpgm('INC TEMP@%.0f,%.0f TEMP@%.0f,%.0f TEMP@25,30'%(incTemp,incTime*60,hiTemp,hiTime*60))
                 print "Incubating at %dC for %d minutes followed by heat inactivate at %dC for %d minutes"%(incTemp,incTime,hiTemp,hiTime)
             self.e.runpgm("INC",incTime+hiTime+2,False,max(vol),hotlidmode="TRACKING",hotlidtemp=10)
 
@@ -832,7 +832,7 @@ class TRP(object):
             
         print "PCR volume=[",",".join(["%.1f"%t.volume for t in tgt]), "], srcdil=[",",".join(["%.1fx"%s for s in srcdil]),"], program: %s"%cycling
 
-        worklist.pyrun('PTC\\ptcsetpgm.py %s %s'%(pgm,cycling))
+        thermocycler.setpmg('%s %s'%(pgm,cycling))
         self.e.runpgm(pgm,runTime,False,max(vol),hotlidmode="CONSTANT",hotlidtemp=100)
         # Mark samples as mixed (by thermal convection)
         print "Marking samples as mixed (by thermal convection)"
@@ -915,7 +915,7 @@ class TRP(object):
             cycling='TEMP@37,%d TEMP@95,%d TEMP@%.1f,30 TEMP@%.1f,30 TEMP@%.1f,30 GOTO@3,%d TEMP@%.1f,60 TEMP@25,2'%(1 if usertime is None else usertime*60,hotTime,meltTemp,annealTemp,extTemp,ncycles-1,extTemp)
             runTime+=hotTime/60+2.8+3.0*ncycles
             
-        worklist.pyrun('PTC\\ptcsetpgm.py %s %s'%(pgm,cycling))
+        thermocycler.setpgm('%s %s'%(pgm,cycling))
         self.e.runpgm(pgm,runTime,False,max(vol),hotlidmode="CONSTANT",hotlidtemp=100)
     
 

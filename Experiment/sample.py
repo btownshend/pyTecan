@@ -21,7 +21,7 @@ MIXLOSS=3.26		# Amount of sample lost during mixes  (in addition to any prefill 
 BEADSETTLINGTIME=10*60 	# Time (in seconds) after which beads should be remixed before use
 
 _Sample__allsamples = []
-_Sample__historyOptions =["normal","shake","detect","ptc","evap"]
+_Sample__historyOptions =["normal","shake","detect","tc","evap"]
 tiphistory={}
 
 #Updated LC's:
@@ -310,10 +310,10 @@ class Sample(object):
     def evapcheck(self,op,thresh=0.20):
         'Update amount of evaporation and check for issues'
         if self.plate.name=="Samples":
-            dt=clock.pipetting-self.lastevapupdate	# Assume no evaporation while in PTC
+            dt=clock.pipetting-self.lastevapupdate	# Assume no evaporation while in TC
             if dt<-0.1:
                 # This may happen during thermocycler operation since pipetting while thermocycling is moved to pipthermotime after waitpgm() is called
-                logging.notice( "%s: clock went backwards: pipetting=%f, lastevapupdate=%f, dt=%f -- probably OK due to counting pipetting time during PTC operation"%(self.name, clock.pipetting,self.lastevapupdate,dt))
+                logging.notice( "%s: clock went backwards: pipetting=%f, lastevapupdate=%f, dt=%f -- probably OK due to counting pipetting time during TC operation"%(self.name, clock.pipetting,self.lastevapupdate,dt))
         else:
             dt=clock.elapsed()-self.lastevapupdate
             if dt<-0.1:
@@ -418,8 +418,8 @@ class Sample(object):
 
     def aspirate(self,tipMask,volume,multi=False):
         self.evapcheck('aspirate')
-        if self.plate.curloc=='PTC':
-            logging.error( "Aspirate from PTC!, loc=%d,%d"%(self.plate.grid,self.plate.pos))
+        if self.plate.curloc=='TC':
+            logging.error( "Aspirate from TC!, loc=%d,%d"%(self.plate.grid,self.plate.pos))
 
         removeAll=volume==self.volume
         if removeAll:
@@ -494,8 +494,8 @@ class Sample(object):
 
     def dispense(self,tipMask,volume,src):
         self.evapcheck('dispense')
-        if self.plate.curloc=='PTC':
-            logging.error("Dispense to PTC!, loc=(%d,%d)"%(self.plate.grid,self.plate.pos))
+        if self.plate.curloc=='TC':
+            logging.error("Dispense to TC!, loc=(%d,%d)"%(self.plate.grid,self.plate.pos))
 
         if volume<0.1:
             logging.warning("attempt to dispense only %.1f ul to %s ignored"%(volume,self.name))

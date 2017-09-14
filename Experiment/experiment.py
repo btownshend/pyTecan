@@ -3,6 +3,7 @@ from hashlib import md5
 from pprint import pprint
 
 import worklist
+import thermocycler
 from sample import Sample
 import liquidclass
 import reagents
@@ -44,15 +45,17 @@ class Experiment(object):
         self.cleanTips=0
         # self.sanitize()  # Not needed, TRP does it, also first use of tips will do this
         self.useDiTis=False
-        self.ptcrunning=False
+        self.tcrunning=False
         self.overrideSanitize=False
         self.pgmStartTime=None
         self.pgmEndTime=None
 
-        # Access PTC and RIC early to be sure they are working
-        worklist.pyrun("PTC\\ptctest.py")
+        # Access TC and RIC early to be sure they are working
+        thermocycler.test()
+
         #        worklist.periodicWash(15,4)
-        worklist.userprompt("Verify that PTC thermocycler lid pressure is set to '2'.")
+        if thermocycler.cycler=='PTC200':
+            worklist.userprompt("Verify that PTC thermocycler lid pressure is set to '2'.")
         self.idlePgms=[]
         self.timerStartTime=[None]*8
 
@@ -139,7 +142,7 @@ class Experiment(object):
     def multitransfer(self, volumes, src, dests,mix=(True,False),getDITI=True,dropDITI=True,ignoreContents=False,extraFrac=0.05):
         'Multi pipette from src to multiple dest.  mix is (src,dest) mixing -- only mix src if needed though'
         #print "multitransfer(",volumes,",",src,",",dests,",",mix,",",getDITI,",",dropDITI,")"
-        if self.ptcrunning and (src.plate==decklayout.SAMPLEPLATE or len([1 for d in dests if d.plate==decklayout.SAMPLEPLATE])>0):
+        if self.tcrunning and (src.plate==decklayout.SAMPLEPLATE or len([1 for d in dests if d.plate==decklayout.SAMPLEPLATE])>0):
             self.waitpgm()
 
         if isinstance(volumes,(int,long,float)):
@@ -203,7 +206,7 @@ class Experiment(object):
                     self.transfer(volumes[i],src,dests[i],(mix[0] and i==0,mix[1]),getDITI,dropDITI)
 
     def transfer(self, volume, src, dest, mix=(True,False), getDITI=True, dropDITI=True):
-        if self.ptcrunning and (src.plate==decklayout.SAMPLEPLATE or dest.plate==decklayout.SAMPLEPLATE)>0:
+        if self.tcrunning and (src.plate==decklayout.SAMPLEPLATE or dest.plate==decklayout.SAMPLEPLATE)>0:
             self.waitpgm()
 
         if volume>self.MAXVOLUME:
@@ -257,7 +260,7 @@ class Experiment(object):
 
     # Mix
     def mix(self, src, nmix=4):
-        if self.ptcrunning and src.plate==decklayout.SAMPLEPLATE:
+        if self.tcrunning and src.plate==decklayout.SAMPLEPLATE:
             self.waitpgm()
 
         cmt="Mix %s"%(src.name)
@@ -268,7 +271,7 @@ class Experiment(object):
 
     def dispose(self, volume, src,  mix=False, getDITI=True, dropDITI=True):
         'Dispose of a given volume by aspirating and not dispensing (will go to waste during next wash)'
-        if self.ptcrunning and src.plate==decklayout.SAMPLEPLATE:
+        if self.tcrunning and src.plate==decklayout.SAMPLEPLATE:
             self.waitpgm()
         if volume>self.MAXVOLUME:
             reuseTip=False   # Since we need to wash to get rid of it
@@ -364,38 +367,38 @@ class Experiment(object):
         worklist.moveliha(decklayout.WASHLOC)
 
     def runpgm(self,pgm,duration,waitForCompletion=True,volume=10,hotlidmode="TRACKING",hotlidtemp=1):
-        if self.ptcrunning:
-            logging.error("Attempt to start a progam on PTC when it is already running")
+        if self.tcrunning:
+            logging.error("Attempt to start a progam on TC when it is already running")
         if len(pgm)>8:
-            logging.error("PTC program name (%s) too long (max is 8 char)"%pgm)
+            logging.error("TC program name (%s) too long (max is 8 char)"%pgm)
         # move to thermocycler
         worklist.flushQueue()
         self.lihahome()
         cmt="run %s"%pgm
         worklist.comment(cmt)
         #print "*",cmt
-        worklist.pyrun("PTC\\ptclid.py OPEN")
-        self.moveplate(decklayout.SAMPLEPLATE,"PTC")
+        thermocycler.lid(1)
+        self.moveplate(decklayout.SAMPLEPLATE,"TC")
         worklist.vector("Hotel 1 Lid",decklayout.HOTELPOS,worklist.SAFETOEND,True,worklist.DONOTMOVE,worklist.CLOSE)
-        worklist.vector("PTC200lid",decklayout.PTCPOS,worklist.SAFETOEND,True,worklist.DONOTMOVE,worklist.OPEN)
+        worklist.vector("%slid"%thermocycler.cycler,decklayout.TCPOS,worklist.SAFETOEND,True,worklist.DONOTMOVE,worklist.OPEN)
         worklist.romahome()
-        worklist.pyrun("PTC\\ptclid.py CLOSE")
+        thermocycler.lid(0)
         #        pgm="PAUSE30"  # For debugging
         assert hotlidmode=="TRACKING" or hotlidmode=="CONSTANT"
         assert (hotlidmode=="TRACKING" and hotlidtemp>=0 and hotlidtemp<=45) or (hotlidmode=="CONSTANT" and hotlidtemp>30)
-        worklist.pyrun('PTC\\ptcrun.py %s CALC %s,%d %d'%(pgm,hotlidmode,hotlidtemp,volume))
+        thermocycler.run(pgm,hotlidmode,hotlidtemp,volume)
         self.pgmStartTime=clock.pipetting
         self.pgmEndTime=duration*60+clock.pipetting
-        self.ptcrunning=True
-        Sample.addallhistory("{%s}"%pgm,addToEmpty=False,onlyplate=decklayout.SAMPLEPLATE.name,type="ptc")
+        self.tcrunning=True
+        Sample.addallhistory("{%s}"%pgm,addToEmpty=False,onlyplate=decklayout.SAMPLEPLATE.name,type="tc")
         if waitForCompletion:
             self.waitpgm()
 
     def moveplate(self,plate,dest="Home",returnHome=True):
-        if self.ptcrunning and plate==decklayout.SAMPLEPLATE:
+        if self.tcrunning and plate==decklayout.SAMPLEPLATE:
             self.waitpgm()
 
-        # move to given destination (one of "Home","Magnet","Shaker","PTC" )
+        # move to given destination (one of "Home","Magnet","Shaker","TC" )
         if plate!=decklayout.SAMPLEPLATE and plate!=decklayout.DILPLATE:
             logging.error("Only able to move %s or %s plates, not %s"%(decklayout.SAMPLEPLATE.name,decklayout.DILPLATE.name,plate.name))
 
@@ -414,8 +417,8 @@ class Experiment(object):
             worklist.vector("Magplate",decklayout.MAGPLATELOC,worklist.SAFETOEND,True,worklist.DONOTMOVE,worklist.CLOSE)
         elif plate.curloc=="Shaker":
             worklist.vector("Shaker",decklayout.SHAKERPLATELOC,worklist.SAFETOEND,True,worklist.DONOTMOVE,worklist.CLOSE)
-        elif plate.curloc=="PTC":
-            worklist.vector("PTC200",decklayout.PTCPOS,worklist.SAFETOEND,True,worklist.DONOTMOVE,worklist.CLOSE)
+        elif plate.curloc=="TC":
+            worklist.vector(thermocycler.cycler,decklayout.TCPOS,worklist.SAFETOEND,True,worklist.DONOTMOVE,worklist.CLOSE)
         else:
             logging.error("Plate %s is in unknown location: %s"%(plate.name,plate.curloc))
 
@@ -428,9 +431,9 @@ class Experiment(object):
         elif dest=="Shaker":
             plate.movetoloc(dest,decklayout.SHAKERPLATELOC)
             worklist.vector("Shaker",decklayout.SHAKERPLATELOC,worklist.SAFETOEND,True,worklist.DONOTMOVE,worklist.OPEN)
-        elif dest=="PTC":
-            plate.movetoloc(dest,decklayout.PTCPOS)
-            worklist.vector("PTC200",decklayout.PTCPOS,worklist.SAFETOEND,True,worklist.DONOTMOVE,worklist.OPEN)
+        elif dest=="TC":
+            plate.movetoloc(dest,decklayout.TCPOS)
+            worklist.vector(thermocycler.cycler,decklayout.TCPOS,worklist.SAFETOEND,True,worklist.DONOTMOVE,worklist.OPEN)
         else:
             logging.error("Attempt to move plate %s to unknown location: %s"%(plate.name,dest))
 
@@ -440,7 +443,7 @@ class Experiment(object):
 
     def shakeSamples(self,samples,dur=60,speed=None,accel=5,returnPlate=True):
         "Shake plates if any of the given samples are on that plate and  needs mixing"
-        if self.ptcrunning and any([s.plate==decklayout.SAMPLEPLATE for s in samples]):
+        if self.tcrunning and any([s.plate==decklayout.SAMPLEPLATE for s in samples]):
             self.waitpgm()
 
         for p in set([s.plate for s in samples if not s.isMixed()  ]):
@@ -448,7 +451,7 @@ class Experiment(object):
                 self.shake(p,returnPlate=returnPlate,speed=speed,samps=[s for s in samples if s.plate==p],dur=dur,accel=accel)
 
     def shake(self,plate,dur=60,speed=None,accel=5,returnPlate=True,samps=None,force=False):
-        if self.ptcrunning and plate==decklayout.SAMPLEPLATE:
+        if self.tcrunning and plate==decklayout.SAMPLEPLATE:
             self.waitpgm()
 
         # Move the plate to the shaker, run for the given time, and bring plate back
@@ -529,12 +532,12 @@ class Experiment(object):
         Sample.addallhistory("(%ds)"%duration,type="pause")
 
     def waitpgm(self, sanitize=True):
-        if not self.ptcrunning:
+        if not self.tcrunning:
             return
-        #print "* Wait for PTC to finish"
+        #print "* Wait for TC to finish"
         if sanitize:
             self.sanitize()   # Sanitize tips before waiting for this to be done
-        worklist.comment("Wait for PTC")
+        worklist.comment("Wait for TC")
         while self.pgmEndTime-clock.pipetting > 120:
             # Run any idle programs
             oldElapsed=clock.pipetting
@@ -551,31 +554,32 @@ class Experiment(object):
         clock.thermotime+=(self.pgmEndTime-clock.pipetting)
         clock.pipetting=self.pgmStartTime
 
-        #print "Waiting for PTC with %.0f seconds expected to remain"%(self.pgmEndTime-clock.pipetting)
+        #print "Waiting for TC with %.0f seconds expected to remain"%(self.pgmEndTime-clock.pipetting)
         self.lihahome()
-        worklist.pyrun('PTC\\ptcwait.py')
-        worklist.pyrun("PTC\\ptclid.py OPEN")
+        thermocycler.wait()
+        thermocycler.lid(1)
         #        worklist.pyrun('PTC\\ptcrun.py %s CALC ON'%"COOLDOWN")
-        #        worklist.pyrun('PTC\\ptcwait.py')
-        worklist.vector("PTC200lid",decklayout.PTCPOS,worklist.SAFETOEND,True,worklist.DONOTMOVE,worklist.CLOSE)
+        #        thermocycler.wait()
+        worklist.vector("%slid"%thermocycler.cycler,decklayout.TCPOS,worklist.SAFETOEND,True,worklist.DONOTMOVE,worklist.CLOSE)
         worklist.vector("Hotel 1 Lid",decklayout.HOTELPOS,worklist.SAFETOEND,True,worklist.DONOTMOVE,worklist.OPEN)
 
-        worklist.vector("PTC200WigglePos",decklayout.PTCPOS,worklist.SAFETOEND,False,worklist.DONOTMOVE,worklist.DONOTMOVE)
-        worklist.vector("PTC200Wiggle",decklayout.PTCPOS,worklist.SAFETOEND,False,worklist.DONOTMOVE,worklist.CLOSE,True)
-        worklist.vector("PTC200Wiggle",decklayout.PTCPOS,worklist.ENDTOSAFE,False,worklist.DONOTMOVE,worklist.OPEN,True)
-        worklist.vector("PTC200WigglePos",decklayout.PTCPOS,worklist.ENDTOSAFE,False,worklist.DONOTMOVE,worklist.DONOTMOVE)
+        if thermocycler.cycler=='PTC200':
+            worklist.vector("PTC200WigglePos",decklayout.TCPOS,worklist.SAFETOEND,False,worklist.DONOTMOVE,worklist.DONOTMOVE)
+            worklist.vector("PTC200Wiggle",decklayout.TCPOS,worklist.SAFETOEND,False,worklist.DONOTMOVE,worklist.CLOSE,True)
+            worklist.vector("PTC200Wiggle",decklayout.TCPOS,worklist.ENDTOSAFE,False,worklist.DONOTMOVE,worklist.OPEN,True)
+            worklist.vector("PTC200WigglePos",decklayout.TCPOS,worklist.ENDTOSAFE,False,worklist.DONOTMOVE,worklist.DONOTMOVE)
 
-        worklist.vector("PTC200Wiggle2Pos",decklayout.PTCPOS,worklist.SAFETOEND,False,worklist.DONOTMOVE,worklist.DONOTMOVE)
-        worklist.vector("PTC200Wiggle2",decklayout.PTCPOS,worklist.SAFETOEND,False,worklist.DONOTMOVE,worklist.CLOSE,True)
-        worklist.vector("PTC200Wiggle2",decklayout.PTCPOS,worklist.ENDTOSAFE,False,worklist.DONOTMOVE,worklist.OPEN,True)
-        worklist.vector("PTC200Wiggle2Pos",decklayout.PTCPOS,worklist.ENDTOSAFE,False,worklist.DONOTMOVE,worklist.DONOTMOVE)
+            worklist.vector("PTC200Wiggle2Pos",decklayout.TCPOS,worklist.SAFETOEND,False,worklist.DONOTMOVE,worklist.DONOTMOVE)
+            worklist.vector("PTC200Wiggle2",decklayout.TCPOS,worklist.SAFETOEND,False,worklist.DONOTMOVE,worklist.CLOSE,True)
+            worklist.vector("PTC200Wiggle2",decklayout.TCPOS,worklist.ENDTOSAFE,False,worklist.DONOTMOVE,worklist.OPEN,True)
+            worklist.vector("PTC200Wiggle2Pos",decklayout.TCPOS,worklist.ENDTOSAFE,False,worklist.DONOTMOVE,worklist.DONOTMOVE)
 
-        worklist.vector("PTC200WigglePos",decklayout.PTCPOS,worklist.SAFETOEND,False,worklist.DONOTMOVE,worklist.DONOTMOVE)
-        worklist.vector("PTC200Wiggle",decklayout.PTCPOS,worklist.SAFETOEND,False,worklist.DONOTMOVE,worklist.CLOSE,True)
-        worklist.vector("PTC200Wiggle",decklayout.PTCPOS,worklist.ENDTOSAFE,False,worklist.DONOTMOVE,worklist.OPEN,True)
-        worklist.vector("PTC200WigglePos",decklayout.PTCPOS,worklist.ENDTOSAFE,False,worklist.DONOTMOVE,worklist.DONOTMOVE)
+            worklist.vector("PTC200WigglePos",decklayout.TCPOS,worklist.SAFETOEND,False,worklist.DONOTMOVE,worklist.DONOTMOVE)
+            worklist.vector("PTC200Wiggle",decklayout.TCPOS,worklist.SAFETOEND,False,worklist.DONOTMOVE,worklist.CLOSE,True)
+            worklist.vector("PTC200Wiggle",decklayout.TCPOS,worklist.ENDTOSAFE,False,worklist.DONOTMOVE,worklist.OPEN,True)
+            worklist.vector("PTC200WigglePos",decklayout.TCPOS,worklist.ENDTOSAFE,False,worklist.DONOTMOVE,worklist.DONOTMOVE)
 
-        self.ptcrunning=False
+        self.tcrunning=False
         self.moveplate(decklayout.SAMPLEPLATE,"Home")
         # Mark all samples on plate as unmixed (due to condensation)
         Sample.notMixed(decklayout.SAMPLEPLATE.name)
@@ -584,7 +588,7 @@ class Experiment(object):
         worklist.vector(decklayout.SAMPLEPLATE.vectorName,decklayout.SAMPLEPLATE,worklist.ENDTOSAFE,False,worklist.OPEN,worklist.DONOTMOVE)
         worklist.romahome()
         #worklist.userprompt("Plate should be back on deck. Press return to continue")
-        # Wash tips again to remove any drips that may have formed while waiting for PTC
+        # Wash tips again to remove any drips that may have formed while waiting for TC
         worklist.wash(15,1,5,True)
 
 

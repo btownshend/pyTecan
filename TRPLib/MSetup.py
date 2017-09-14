@@ -160,7 +160,7 @@ class MSetup(object):
         # Setup qPCRs
         #self.jobq.dump()
         self.idler(100000)
-        self.trp.e.waitpgm()		# May still need to wait for PTC to complete before able to do final jobs
+        self.trp.e.waitpgm()		# May still need to wait for TC to complete before able to do final jobs
         self.idler(100000)
         
         if self.jobq.len()>0:

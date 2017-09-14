@@ -38,7 +38,7 @@ DILPLATE=Plate("Dilutions",4,2,12,8,False,unusableVolume=15,maxVolume=200,
 SSDDILLOC=Plate("SSDDil",3,1,1,4,False,100,100000,zmax=1367,gemDepth=0,gemArea=1232,gemShape='flat')
 WATERLOC=Plate("Water",3,2,1,4,False,100,100000,zmax=1367,gemDepth=0,gemArea=1232,gemShape='flat')
 BLEACHLOC=Plate("Bleach",3,3,1,4,False,0,100000,zmax=1367,gemDepth=0,gemArea=1232,gemShape='flat')
-PTCPOS=Plate("PTC",25,1,1,1)
+TCPOS=Plate("TC",25,1,1,1)
 HOTELPOS=Plate("Hotel",25,0,1,1)
 WASTE=Plate("Waste",20,3,1,1)
 EPPENDORFS=Plate("Eppendorfs",13,1,1,16,False,unusableVolume=30,maxVolume=1500,zmax=1337,angle=17.5,h1=17.56,r1=4.42,v0=29.6,gemDepth=3.15,gemArea=31.4,gemShape='v-shaped')

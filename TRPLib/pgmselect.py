@@ -498,7 +498,7 @@ class PGMSelect(TRP):
                     self.e.transfer(p.volume*0.5/10,reagents.getsample("Unclvd-Stop"),p,(False,False))
                 # One more cycle
                 cycling=' TEMP@95,30 TEMP@55,30 TEMP@68,30 TEMP@25,2'
-                worklist.pyrun('PTC\\ptcsetpgm.py rfin %s'%(cycling))
+                thermocycler.setpgm('rfin %s'%(cycling))
                 self.e.runpgm("rfin",5.0,False,max([p.volume for p in pcr2]),hotlidmode="CONSTANT",hotlidtemp=100)
                 pcr=pcr2	# Use 2nd PCR as actual output
 
