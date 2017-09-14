@@ -156,21 +156,19 @@ class TRobot:
         self.ser.flush()
         res=self.readline()
         res=res.strip()
-        parts=res.split('\r')
-        for p in parts:
-            if len(p)>0:
-                if self.debug:
-                    logging.debug( "response: <"+p+">")
-                if len(res)>0 and res[0]=='!':
-                    logging.error("Got error %s in response to %s: %s "%(res[1:],cmd,self.errorstr(res[1:])))
-                    raise ValueError(res)
-                shortcmd=cmd[0]
-                if shortcmd==":":
-                    shortcmd=cmd[1]
-                if shortcmd.upper()!=res[0].upper():
-                    logging.error("Sent cmd <%s>, but response was <%s>"%(cmd,res))
-                else:
-                    res=res[2:]
+        if len(res)>0:
+            if self.debug:
+                logging.debug( "response: <"+res+">")
+            if res[0]=='!':
+                logging.error("Got error %s in response to %s: %s "%(res[1:],cmd,self.errorstr(res[1:])))
+                raise ValueError(res)
+            shortcmd=cmd[0]
+            if shortcmd==":":
+                shortcmd=cmd[1]
+            if shortcmd.upper()!=res.upper():
+                logging.error("Sent cmd <%s>, but response was <%s>"%(cmd,res))
+            else:
+                res=res[2:]
         return res
 
     def gettemp(self):

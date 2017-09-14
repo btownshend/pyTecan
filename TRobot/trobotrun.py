@@ -2,4 +2,8 @@ import debughook
 import trobot
 
 p=trobot.TRobot()
-p.run()
+try:
+    p.run()
+except:
+    sys.exit(1)
+    
