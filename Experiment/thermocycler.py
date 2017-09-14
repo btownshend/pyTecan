@@ -1,7 +1,8 @@
 import worklist
 
-#cycler="PTC200"
-cycler="TROBOT"
+cycler="PTC200"
+#cycler="TROBOT"
+hotlidtemp=100
 
 if cycler=='PTC200':
     tc_prefix="PTC\\ptc"
@@ -20,8 +21,11 @@ def lid(open):
 def test():
     worklist.pyrun(tc_prefix+"test.py")
 
-def run(pgm,hotlidmode,hotlidtemp,volume):
+def run(pgm,volume):
+    global hotlidtemp
     if cycler=='PTC200':
+        hotlidmode='CONSTANT'
+        assert(hotlidtemp>30)
         worklist.pyrun(tc_prefix+'run.py %s CALC %s,%d %d'%(pgm,hotlidmode,hotlidtemp,volume))
     else:
         worklist.pyrun(tc_prefix+'run.py')
@@ -29,5 +33,13 @@ def run(pgm,hotlidmode,hotlidtemp,volume):
 def wait():
     worklist.pyrun(tc_prefix+'wait.py')
 
-def setpgm(str):
-    worklist.pyrun(tc_prefix+'setpgm.py %s'%(str))
+def setpgm(name,lidtemp,steps):
+    global hotlidtemp
+    if cycler=='PTC200':
+        hotlidtemp=lidtemp
+        worklist.pyrun(tc_prefix+'setpgm.py %s %s'%(name,steps))
+    else:
+        if lidtemp>99:
+            logger.warning("Lidtemp of %f above max; reducing to 99"%lidtemp)
+            lidtemp=99
+        worklist.pyrun(tc_prefix+'setpgm.py %s %.0f %s'%(name,lidtemp,steps))

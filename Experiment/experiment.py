@@ -366,7 +366,7 @@ class Experiment(object):
         'Move LiHa to left of deck'
         worklist.moveliha(decklayout.WASHLOC)
 
-    def runpgm(self,pgm,duration,waitForCompletion=True,volume=10,hotlidmode="TRACKING",hotlidtemp=1):
+    def runpgm(self,pgm,duration,waitForCompletion=True,volume=10):
         if self.tcrunning:
             logging.error("Attempt to start a progam on TC when it is already running")
         if len(pgm)>8:
@@ -384,9 +384,7 @@ class Experiment(object):
         worklist.romahome()
         thermocycler.lid(0)
         #        pgm="PAUSE30"  # For debugging
-        assert hotlidmode=="TRACKING" or hotlidmode=="CONSTANT"
-        assert (hotlidmode=="TRACKING" and hotlidtemp>=0 and hotlidtemp<=45) or (hotlidmode=="CONSTANT" and hotlidtemp>30)
-        thermocycler.run(pgm,hotlidmode,hotlidtemp,volume)
+        thermocycler.run(pgm,volume)
         self.pgmStartTime=clock.pipetting
         self.pgmEndTime=duration*60+clock.pipetting
         self.tcrunning=True
