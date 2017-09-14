@@ -33,7 +33,6 @@ try:
 
     print "pgm=",pgm,", lidtemp=",lidtemp,", steps=[",steps,"]"
     p.program(pgm,lidtemp,["c "+",".join(x) for x in steps])
-    print "Done program"
 except Exception as err:
     print "Abnormal exit: ",err
     sys.exit(-1)
