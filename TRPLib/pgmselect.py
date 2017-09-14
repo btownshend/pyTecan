@@ -14,7 +14,7 @@ reagents.add("BT5310",well="B5",conc=Concentration(20,20,"pM"))
 class PGMSelect(TRP):
     '''Selection experiment'''
     
-    def __init__(self,inputs,rounds,firstID,pmolesIn,directT7=True,templateDilution=0.3,tmplFinalConc=50,saveDil=24,qpcrWait=False,allLig=False,qpcrStages=["negative","template","ext","finalpcr"],finalPlus=True,t7dur=30,usertime=10,singlePrefix=False,noPCRCleave=False,saveRNA=False):
+    def __init__(self,inputs,rounds,firstID,pmolesIn,directT7=True,templateDilution=0.3,tmplFinalConc=50,saveDil=24,qpcrWait=False,allLig=False,qpcrStages=["negative","template","ext","finalpcr"],finalPlus=True,t7dur=30,usertime=10,singlePrefix=False,noPCRCleave=False,saveRNA=False,useMX=True):
         # Initialize field values which will never change during multiple calls to pgm()
         self.inputs=inputs
         self.rounds=rounds   # String of U or C for each round to be run
@@ -34,6 +34,7 @@ class PGMSelect(TRP):
         self.noPCRCleave=noPCRCleave   # Skip PCR on cleave-selection rounds
         self.saveRNA=saveRNA
         self.extraQPCRPrimers=None
+        self.useMX=useMX
         
         # General parameters
         self.qConc = 0.050			# Target qPCR concentration in nM (corresponds to Ct ~ 10)
@@ -56,7 +57,9 @@ class PGMSelect(TRP):
         self.rtDil=4
         self.saveRNADilution=10
         self.ligInPlace=True
-        self.allprimers=["REF","MX","T7X","WX","ZX"]    # Will get updated after first pass with all primers used
+        self.allprimers=["REF","T7X","WX","ZX"]    # Will get updated after first pass with all primers used
+        if self.useMX:
+            self.allprimers+="MX"
         self.rtpostdil=[3.0 if r=='U' else 1.0 for r in self.rounds]
         self.rtdur=20
         self.ligdur=15
@@ -166,8 +169,7 @@ class PGMSelect(TRP):
         if "negative" in self.qpcrStages:
             q.addSamples(decklayout.SSDDIL,1,self.allprimers,save=False)   # Negative controls
         if "reference" in self.qpcrStages:
-            q.addReferences(dstep=10,nsteps=5,primers=["T7WX","MX","T7X"],ref=reagents.getsample("BT5310"),nreplicates=1)
-            q.addReferences(dstep=10,nsteps=5,primers=["T7WX","MX","T7X"],ref=reagents.getsample("BT5310"),nreplicates=1)
+            q.addReferences(dstep=10,nsteps=5,primers=["WX","MX","T7X"] if self.useMX else ["WX","T7X"],ref=reagents.getsample("BT5310"),nreplicates=1)
 
         # Save RT product from first (uncleaved) round and then use it during 2nd (cleaved) round for ligation and qPCR measurements
         self.rndNum=0
@@ -233,16 +235,16 @@ class PGMSelect(TRP):
         if "finalpcr" in self.qpcrStages:
             for i in range(len(r1)):
                 if self.singlePrefix:
-                    q.addSamples(src=r1[i],needDil=r1[i].conc.stock/self.qConc,primers=["T7X","MX"])
+                    q.addSamples(src=r1[i],needDil=r1[i].conc.stock/self.qConc,primers=["T7X","MX"] if self.useMX else ["T7X"])
                 else:
-                    q.addSamples(src=r1[i],needDil=r1[i].conc.stock/self.qConc,primers=["T7X",prefixOut[i]+"X","MX"])
+                    q.addSamples(src=r1[i],needDil=r1[i].conc.stock/self.qConc,primers=["T7X",prefixOut[i]+"X"]+(["MX"] if self.useMX else []))
             
         print "######### qPCR ########### %.0f min"%(clock.elapsed()/60)
         self.allprimers=q.allprimers()
         q.run(confirm=self.qpcrWait)
         
     def oneround(self,q,input,prefixOut,stop,prefixIn,keepCleaved,t7vol,rtvol,pcrdil,cycles,pcrvol,dolig):
-        primerSet=[set(["MX","REF","T7X",prefixIn[i]+"X",prefixOut[i]+"X"]) for i in range(len(prefixIn))]
+        primerSet=[set(["REF","T7X",prefixIn[i]+"X",prefixOut[i]+"X"]+(["MX"] if self.useMX else [])) for i in range(len(prefixIn))]
         if self.extraQPCRPrimers is not None:
             primerSet=[set(list(p) + self.extraQPCRPrimers) for p in primerSet]
             print "primerSet=",primerSet
