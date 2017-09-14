@@ -832,7 +832,7 @@ class TRP(object):
             
         print "PCR volume=[",",".join(["%.1f"%t.volume for t in tgt]), "], srcdil=[",",".join(["%.1fx"%s for s in srcdil]),"], program: %s"%cycling
 
-        thermocycler.setpmg('%s %s'%(pgm,cycling))
+        thermocycler.setpgm('%s %s'%(pgm,cycling))
         self.e.runpgm(pgm,runTime,False,max(vol),hotlidmode="CONSTANT",hotlidtemp=100)
         # Mark samples as mixed (by thermal convection)
         print "Marking samples as mixed (by thermal convection)"
