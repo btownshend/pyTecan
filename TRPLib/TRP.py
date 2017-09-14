@@ -642,7 +642,8 @@ class TRP(object):
                 hiTemp=95
                 print "Assuming RT heat inactivation temperature of ",hiTemp
             hidur=2
-            worklist.pyrun('PTC\\ptcsetpgm.py %s TEMP@%d,%d TEMP@%d,%d TEMP@25,2 RATE 0.5'%(pgm,incTemp,dur*60,hiTemp,hidur*60))
+
+            worklist.pyrun('PTC\\ptcsetpgm.py %s TEMP@%d,%d TEMP@%d,%d TEMP@25,2 RATE@0.5'%(pgm,incTemp,dur*60,hiTemp,hidur*60))
             self.e.runpgm(pgm,dur+hidur+2.5,False,100)		# Volume doesn't matter since it's just an incubation, use 100ul
             print "Running RT at %dC for %d min, followed by heat inactivation/refold at %dC for %d minutes"%(incTemp,dur,hiTemp,hidur)
         else:
