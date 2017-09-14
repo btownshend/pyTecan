@@ -8,28 +8,28 @@ if len(sys.argv)!=2 or ( sys.argv[1]!="OPEN" and sys.argv[1]!="CLOSE"):
     exit(2)
 cmd=sys.argv[1]
 p=trobot.TRobot()
+
+lidstatus=p.getlidstatus()
 if cmd=="OPEN":
+    if lidstatus.isopen():
+        print "Already open"
+        exit(0)
     p.lidopen()
 elif cmd=="CLOSE":
+    if lidstatus.isclosed():
+        print "Already closed"
+        exit(0)
     p.lidclose()
 
 for i in range(100):
     lidstatus=p.getlidstatus()
-    logging.info( "Lid is %s"%lidstatus)
+    logging.info( "Lid status: %s"%str(lidstatus))
     if cmd=="OPEN":
-        if lidstatus=="OPEN":
+        if lidstatus.isopen():
             exit(0)
-        elif lidstatus=="ER_TIMEOUT":
-            logging.warning("Got ER_TIMEOUT, continuing wait")
-        elif lidstatus!="OPENING":
-            logging.error( "Unexpected lid status: %s"%lidstatus)
     else:
-        if lidstatus=="CLOSED":
+        if lidstatus.isclosed():
             exit(0)
-        elif lidstatus=="ER_TIMEOUT":
-            logging.warning("Got ER_TIMEOUT, continuing wait")
-        elif lidstatus!="CLOSING":
-            logging.error( "Unexpected lid status: %s"%lidstatus)
 
     time.sleep(2)
 

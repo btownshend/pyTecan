@@ -64,7 +64,13 @@ class LidStatus:
         if len(s)>=1:
             s=s[1:]
         return s
-        
+
+    def isopen(self):
+        return (self.status&0x100)!=0
+
+    def isclosed(self):
+        return (self.status&0x200)!=0
+
 class RunStatus:
     # Construct status from TRobot- reply to RUNS stored in 'm' as a sequence
     
@@ -95,7 +101,7 @@ class RunStatus:
                  )
     
 class TRobot:
-    debug=True
+    debug=False
     ser=None
     #PORT=3
     PORT="/dev/cu.KeySerial1"
@@ -105,21 +111,19 @@ class TRobot:
         logging.basicConfig(filename=fname, level=logging.DEBUG,format='%(asctime)s %(levelname)s:\t %(message)s')
         logging.captureWarnings(True)
         console = logging.StreamHandler()
-        console.setLevel(logging.DEBUG)
+        console.setLevel(logging.DEBUG if self.debug else logging.INFO)
         formatter=logging.Formatter('%(message)s')
         console.setFormatter(formatter)
         logging.getLogger('').addHandler(console)
         
         logging.info("Running: %s"," ".join(sys.argv))
-        if self.debug:
-            logging.debug( "About to open serial port "+self.PORT)
+        logging.debug( "About to open serial port "+self.PORT)
         try:
             self.ser = serial.Serial(self.PORT,baudrate=9600,timeout=to)
         except serial.SerialException as e:
-            logging.error("Failed to initialize serial port: "+e)
+            logging.error("Failed to initialize serial port: "+str(e))
             sys.exit(1)
-        if self.debug:
-            logging.debug(self.ser.portstr)
+        logging.debug(self.ser.portstr)
 
     def __del__(self):
         self.close()
@@ -150,25 +154,32 @@ class TRobot:
             for c in cmds:
                 res=self.execute(c)
             return res
-        if self.debug:
-            logging.debug( "Sending command: "+cmd)
+        logging.debug( "Sending command: "+cmd)
         self.ser.write(cmd+"\r")
         self.ser.flush()
         res=self.readline()
         res=res.strip()
-        if len(res)>0:
-            if self.debug:
-                logging.debug( "response: <"+res+">")
+        logging.debug( "response: <"+res+">")
+        if len(res)==0:
+            logging.error("Empty response to %s: %s "%(cmd,self.errorstr(res[1:])))
+            raise ValueError("Empty response")
+        if res[0]=='!':
+            logging.error("Got error %s in response to %s: %s "%(res[1:],cmd,self.errorstr(res[1:])))
+            raise ValueError(res[1:])
+        shortcmd=cmd[0]
+        if shortcmd==":":
+            shortcmd=cmd[1]
+        if shortcmd.upper()!=res[0].upper():
+            logging.error("Sent cmd <%s>, but response was <%s>"%(cmd,res))
+            raise ValueError("Mismatched response")
+        elif len(res)>2:
+            res=res[2:]
             if res[0]=='!':
                 logging.error("Got error %s in response to %s: %s "%(res[1:],cmd,self.errorstr(res[1:])))
-                raise ValueError(res)
-            shortcmd=cmd[0]
-            if shortcmd==":":
-                shortcmd=cmd[1]
-            if shortcmd.upper()!=res.upper():
-                logging.error("Sent cmd <%s>, but response was <%s>"%(cmd,res))
-            else:
-                res=res[2:]
+                raise ValueError(res[1:])
+        else:
+            res=None        
+
         return res
 
     def gettemp(self):
@@ -204,13 +215,17 @@ class TRobot:
         return remt
     
     def run(self,prognr=0):  
-        self.execute(":b;h 1,%d"%(prognr))
+        self.execute(":b;h 0,%d"%(prognr))
         
     def getlidstatus(self):
         response=self.execute(":b;d") # HSTT
         #logging.debug("getlidstatus: got <%s>"%response)
         return LidStatus(int(response,16))
 
+    def getloopcounters(self):
+        resp=self.execute(":b;p") # LOOP
+        return resp
+        
     def lidopen(self):
         res=self.execute(":b;f") # OPEN
 
@@ -230,15 +245,21 @@ class TRobot:
                 s=self.execute(":c;d %04x"%dirnr)
             else:
                 s=self.execute(":c;d")
-            if s=="":
+            if s==None:
                 break
             p.append(s)
         return p
 
     def erase(self, prognr):  
         dirnr=0
-        res = self.execute(':c;b %04x,%04x'%(dirnr,prognr))
-        return res
+        try:
+            res = self.execute(':c;b %04x,%04x'%(dirnr,prognr))
+        except ValueError as err:
+            print "err=<",err,">,args=",err.args[0]
+            if err.args[0]=='105':
+                print "Ignoring error from erase"
+            else:
+                raise
 
     def program(self,name,lidtemp,steps):
         # Always use 0,0 slot

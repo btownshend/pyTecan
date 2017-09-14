@@ -1,10 +1,9 @@
 import debughook
 import trobot
-import sys
 
 p=trobot.TRobot()
 try:
-    p.run()
+    p.cancel()
 except:
     sys.exit(1)
     

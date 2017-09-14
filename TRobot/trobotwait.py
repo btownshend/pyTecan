@@ -15,11 +15,12 @@ while True:
         lidtemp=p.getlidtemp()
         bstatus=p.getstatus()
         lstatus=p.getlidstatus()
+        loopcntrs=p.getloopcounters()
     except ValueError:
         print "error"
         break
 
-    print "%s: [%s] LID=%.1f/%.1f [%s], step=%d, temp=%.1f/%.1f, time=%d, loop=%d, loop#=%d, remt=%d min"%(status.progname, str(bstatus),lidtemp,status.lidtemp,str(lstatus),status.stepnr,blocktemp,status.bltemp,status.htime,status.loop,status.numloop,remt)
+    print "%s: [%s] LID=%.1f/%.1f [%s], step=%d, temp=%.1f/%.1f, time=%d, loop=%d, loop#=%s/%d, remt=%d min"%(status.progname, str(bstatus),lidtemp,status.lidtemp,str(lstatus),status.stepnr,blocktemp,status.bltemp,status.htime,status.loop,loopcntrs,status.numloop,remt)
     if remt==0:
         break
     time.sleep(min(5,remt*60))
