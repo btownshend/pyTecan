@@ -286,7 +286,10 @@ class PGMSelect(TRP):
                 mconc=reagents.getsample("MT7").conc.dilutionneeded()
                 for i in range(len(input)):
                     watervol=t7vol*(1-1/mconc)-input[i].volume
-                    if watervol>0.1:
+                    if watervol<-0.1:
+                        print "Negative amount of water (%.1f ul) needed for T7 setup"%watervol
+                        assert(False)
+                    elif watervol>0.1:
                         self.e.transfer(watervol,decklayout.WATER,input[i],mix=(False,False))
                     self.e.transfer(t7vol/mconc,reagents.getsample("MT7"),input[i],mix=(False,False))
                     assert(abs(input[i].volume-t7vol)<0.1)
