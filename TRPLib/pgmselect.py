@@ -320,11 +320,12 @@ class PGMSelect(TRP):
             for i in range(len(rxs)):
                 rxs[i].name="%s.t7"%names[i]
 
+            self.e.lihahome()
             print "Estimate usable RNA concentration in T7 reaction at %.0f nM"%self.rnaConc
 
+            self.e.waitpgm()   # So elapsed time will be updated
             print "######## Stop ########### %.0f min"%(clock.elapsed()/60)
-            self.e.lihahome()
-
+            
             print "Have %.1f ul before stop"%rxs[0].volume
             preStopVolume=rxs[0].volume
             self.addEDTA(tgt=rxs,finalconc=2)	# Stop to 2mM EDTA final
