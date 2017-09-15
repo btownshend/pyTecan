@@ -59,7 +59,7 @@ class PGMSelect(TRP):
         self.ligInPlace=True
         self.allprimers=["REF","T7X","WX","ZX"]    # Will get updated after first pass with all primers used
         if self.useMX:
-            self.allprimers+="MX"
+            self.allprimers.append("MX")
         self.rtpostdil=[3.0 if r=='U' else 1.0 for r in self.rounds]
         self.rtdur=20
         self.ligdur=15
