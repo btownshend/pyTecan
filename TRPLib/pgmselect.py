@@ -238,6 +238,15 @@ class PGMSelect(TRP):
                     q.addSamples(src=r1[i],needDil=r1[i].conc.stock/self.qConc,primers=["T7X","MX"] if self.useMX else ["T7X"])
                 else:
                     q.addSamples(src=r1[i],needDil=r1[i].conc.stock/self.qConc,primers=["T7X",prefixOut[i]+"X"]+(["MX"] if self.useMX else []))
+
+        # Add TRefs if needed
+        for i in range(len(r1)):
+            if 'tref' in self.inputs[i]:
+                trefname='TRef%d'%self.inputs[i]['tref']
+                if not reagents.isReagent(trefname):
+                    reagents.add(name=trefname,conc=10,extraVol=30)
+                tref=reagents.getsample(trefname)
+                self.e.transfer(r1[i].volume/(tref.conc.dilutionneeded()-1),tref,r1[i],mix=(False,False))
             
         print "######### qPCR ########### %.0f min"%(clock.elapsed()/60)
         self.allprimers=q.allprimers()
