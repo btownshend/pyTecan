@@ -61,6 +61,7 @@ reagents.add("P-MX",well="D6",conc=4)
 reagents.add("P-REF",well="E6",conc=4)
 
 reagents.add("P-BC-T25-R2_T7",well="B2",conc=8)
+
 reagents.add("P-BC-T3c-R2_T7",well="C2",conc=8)
 reagents.add("P-BC-T6-R2_T7",well="D2",conc=8)
 reagents.add("P-BC-T25-R4_T7",well="E2",conc=8)
@@ -71,13 +72,15 @@ reagents.add("P-BC-T3c-R6_T7",well="B4",conc=8)
 reagents.add("P-BC-T6-R6_T7",well="E4",conc=8)
 
 # Targets
-reagents.add("T1",well='B4',conc=Concentration(25.0,7.5,'mM'))  #Theo
+reagents.add("T1",well='B4',conc=Concentration(25.0,7.5,'mM'))  # New targets (9/2017)
 reagents.add("T2",well='C4',conc=Concentration(10.0,1.0,'mM')) # Acetyl CoA
 reagents.add("T3",well=None,conc=Concentration(3.333,1.0,'x')) # BIAs
 reagents.add("T3d",well='E3',conc=Concentration(3.333,1.0,'x'),extraVol=30) # BIAs less S-Reticuline
+reagents.add("T3e",well='E3',conc=Concentration(3.333,1.0,'x'),extraVol=30) # BIAs less S-Reticuline, reduced Noscapine (9/17)
 reagents.add("T6",well='D4',conc=Concentration(3.333,1.0,'x'),extraVol=30) # Redox
 reagents.add("T25",well='C4',conc=Concentration(3.333,1.0,'x'),extraVol=30) # Acetyl CoA + Trans-Zeatin
-reagents.add("T25T6",well='E2',conc=Concentration(2.222,1.0,'x'),extraVol=30) # Acetyl CoA + Trans-Zeatin +Redox
+reagents.add("T2b",well='C4',conc=Concentration(3.333,1.0,'x'),extraVol=30) # Acetyl CoA + Trans-Zeatin + Redox
+#reagents.add("T25T6",well='E2',conc=Concentration(2.222,1.0,'x'),extraVol=30) # Acetyl CoA + Trans-Zeatin +Redox
     
 def listify(x):
     'Convert a list of (lists or scalars) into a list of equal length lists'
