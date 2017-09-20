@@ -42,7 +42,7 @@ class QSetup(object):
                 if needDil/saveDil>1 and needDil/saveDil<2:
                     saveDil=math.sqrt(needDil)
             elif saveDil>needDil:
-                logging.warning("addSamples: saveDil=",saveDil, ", but needDil is only ", needDil)
+                logging.warning("addSamples: saveDil="+saveDil+ ", but needDil is only "+ needDil)
                 saveDil=needDil
     
             if saveVol is None:
