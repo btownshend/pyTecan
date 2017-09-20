@@ -351,22 +351,22 @@ def aspirateDispense(op,tipMask,wells, liquidClass, volume, loc, cycles=None,all
     ws=wellSelection(loc.nx,loc.ny,pos)
     if op=='Aspirate':
         if allvols[0]>0:
-            volstr="%.2f"%(allvols[0]+2)
+            volstr="%.3f"%(allvols[0]+2)
             condvol="2"
         else:
-            volstr="%.2f"%(allvols[0])
+            volstr="%.3f"%(allvols[0])
             condvol="0"
         for i in range(1,12):
             if allvols[i]>0:
                 c=2
             else:
                 c=0
-            volstr="%s,%.2f"%(volstr,allvols[i]+c)
-            condvol="%s,%.2f"%(condvol,c)
+            volstr="%s,%.3f"%(volstr,allvols[i]+c)
+            condvol="%s,%.3f"%(condvol,c)
     else:
-        volstr="%.2f"%allvols[0]
+        volstr="%.3f"%allvols[0]
         for i in range(1,12):
-            volstr="%s,%.2f"%(volstr,allvols[i])
+            volstr="%s,%.3f"%(volstr,allvols[i])
 
     if op=="Mix":
         wlist.append( '%s(%d,"%s",%s,%d,%d,%d,"%s",%d,0)'%(op,tipMask,liquidClass,volstr,loc.grid,loc.pos-1,spacing,ws,cycles))
