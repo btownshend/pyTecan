@@ -12,7 +12,7 @@ from Experiment import worklist, reagents, decklayout,clock,logging
 class QSetup(object):
     TGTINVOL=4
     
-    def __init__(self,trp,vol=15,maxdil=16,mindilvol=50,maxdilvol=100,debug=False):
+    def __init__(self,trp,vol=15,maxdil=16,mindilvol=50.0,maxdilvol=100.0,debug=False):
         'Create a new QPCR setup structure'
         self.volume=vol
         self.samples=[]

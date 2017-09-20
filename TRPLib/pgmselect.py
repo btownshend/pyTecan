@@ -54,7 +54,7 @@ class PGMSelect(TRP):
         self.extpostdil=[2.0 if r=='C' else 1.0 for r in self.rounds]
         self.nopcrdil=4
         self.userMelt=False
-        self.maxSampVolume=125
+        self.maxSampVolume=125.0
         self.pcrcopies=1				# Number of copies maintained in PCR stage (propagates back to RT stage)
         self.rtHI=False				   # Heat inactive/refold after RT
         self.rtDil=4

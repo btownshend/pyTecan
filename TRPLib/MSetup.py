@@ -83,7 +83,7 @@ class MSetup(object):
                 if i>0:
                     vol=self.MAXDILVOL
                 else:
-                    vol=min(self.MAXDILVOL,max(self.MINDILVOL,dil*self.TGTINVOL))
+                    vol=min(self.MAXDILVOL,max((float)self.MINDILVOL,dil*self.TGTINVOL))
                 if intermed.plate==decklayout.DILPLATE:
                     firstWell=intermed.well+4   # Skip by 4 wells at a time to optimize multi-tip movements
                 else:
@@ -119,7 +119,7 @@ class MSetup(object):
             ref=reagents.getsample("QPCRREF")
         if primers is None:
             primers=self.allprimers()
-        dils=[1]
+        dils=[1.0]
         for i in range(nsteps):
             needDil=mindil*math.pow(dstep,i)
             srcDil=1
