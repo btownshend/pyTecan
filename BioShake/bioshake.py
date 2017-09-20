@@ -11,7 +11,7 @@ class BioShake:
     PORT=3
     
     def __init__(self,to=1):
-        fname=time.strftime("BioShake-%Y%m%d.log");
+        fname=time.strftime("BioShake-%Y%m%d.log")
         logging.basicConfig(filename=fname, level=logging.DEBUG,format='%(asctime)s %(levelname)s:\t %(message)s')
         logging.captureWarnings(True)
         console = logging.StreamHandler()

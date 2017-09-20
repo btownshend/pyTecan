@@ -184,7 +184,7 @@ class PGMSelect(TRP):
 
             # Computed output prefix
             if roundType=='U':
-                prefixOut=curPrefix;
+                prefixOut=curPrefix
                 stop=["Unclvd" for p in curPrefix]
             else:
                 if roundType=='T':

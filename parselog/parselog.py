@@ -337,7 +337,7 @@ while True:
                 code=prevcode
           else:
                 print "Blank code, previous=D, assuming new one is F"
-                code='F';
+                code='F'
     if len(gtime)<1 or gtime[0]==' ':
         gtime=prevtime
     prevcode=code
