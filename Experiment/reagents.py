@@ -7,7 +7,9 @@ import decklayout
 __allReagents={}
 
 class Reagent(object):
-    def __init__(self,name,plate=None,well=None,conc=None,hasBeads=False,extraVol=50,initVol=0,extrainfo=[],ingredients=None):
+    def __init__(self, name, plate=None, well=None, conc=None, hasBeads=False, extraVol=50, initVol=0, extrainfo=None, ingredients=None):
+        if extrainfo is None:
+            extrainfo = []
         self.sample=None
         self.name=name
         if plate==None:
@@ -52,7 +54,9 @@ def lookup(name):
 def __getattr__(name):
     return get(name)
 
-def add(name,plate=None,well=None,conc=None,hasBeads=False,extraVol=50,initVol=0,extrainfo=[],ingredients=None):
+def add(name, plate=None, well=None, conc=None, hasBeads=False, extraVol=50, initVol=0, extrainfo=None, ingredients=None):
+    if extrainfo is None:
+        extrainfo = []
     if plate is None:
         plate=decklayout.REAGENTPLATE
     if name in __allReagents:

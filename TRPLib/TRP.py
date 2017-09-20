@@ -291,7 +291,9 @@ class TRP(object):
     ########################
     # T7 - Transcription
     ########################
-    def runT7Setup(self,src,vol,srcdil,ligands=None,tgt=None,rlist=["MT7"]):
+    def runT7Setup(self, src, vol, srcdil, ligands=None, tgt=None, rlist=None):
+        if rlist is None:
+            rlist = ["MT7"]
         if isinstance(ligands,bool):
             if not ligands:
                 ligands=None
@@ -846,7 +848,9 @@ class TRP(object):
         return tgt
     
     
-    def runBCSetup(self,src,vol,srcdil,BC1=None,BC2=None,tgt=None,rlist=["MT7"]):
+    def runBCSetup(self, src, vol, srcdil, BC1=None, BC2=None, tgt=None, rlist=None):
+        if rlist is None:
+            rlist = ["MT7"]
         if isinstance(BC1,bool):
             if not BC1:
                 BC1=None

@@ -14,8 +14,11 @@ reagents.add("BT5310",well="B5",conc=Concentration(20,20,"pM"))
 class PGMSelect(TRP):
     '''Selection experiment'''
     
-    def __init__(self,inputs,rounds,firstID,pmolesIn,directT7=True,templateDilution=0.3,tmplFinalConc=50,saveDil=24,qpcrWait=False,allLig=False,qpcrStages=["negative","template","ext","finalpcr"],finalPlus=True,t7dur=30,usertime=10,singlePrefix=False,noPCRCleave=False,saveRNA=False,useMX=True):
+    def __init__(self, inputs, rounds, firstID, pmolesIn, directT7=True, templateDilution=0.3, tmplFinalConc=50, saveDil=24, qpcrWait=False, allLig=False,
+                 qpcrStages=None, finalPlus=True, t7dur=30, usertime=10, singlePrefix=False, noPCRCleave=False, saveRNA=False, useMX=True):
         # Initialize field values which will never change during multiple calls to pgm()
+        if qpcrStages is None:
+            qpcrStages = ["negative", "template", "ext", "finalpcr"]
         self.inputs=inputs
         self.rounds=rounds   # String of U or C for each round to be run
         self.directT7=directT7
@@ -586,8 +589,10 @@ class PGMSelect(TRP):
 class PGMAnalytic(PGMSelect):
     "Analytic experiment"
 
-    def __init__(self,inputs,saveRNA=False,tmplFinalConc=5,qpcrStages=["ext","negative"],templateDilution=0.6):
+    def __init__(self, inputs, saveRNA=False, tmplFinalConc=5, qpcrStages=None, templateDilution=0.6):
         super(PGMAnalytic, self).__init__(inputs=inputs,rounds='C',firstID=1,pmolesIn=0,saveRNA=saveRNA,qpcrStages=qpcrStages,templateDilution=templateDilution,tmplFinalConc=tmplFinalConc)
+        if qpcrStages is None:
+            qpcrStages = ["ext", "negative"]
         self.dopcr=False
         self.saveRNADilution=2
         self.ligInPlace=True

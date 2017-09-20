@@ -33,21 +33,27 @@ class JobQueue(object):
         #print 'Adding prior dependences for sample ', sample,': ',priors
         return priors
 
-    def addTransfer(self,volume,src,dest,prereqs=[]):
+    def addTransfer(self, volume, src, dest, prereqs=None):
         'Add a transfer operation to the queue, return the ID of the job (for use in prereqs)'
+        if prereqs is None:
+            prereqs = []
         id=self.getID()
         priors=self.findPriors(src,prereqs)
         self.jobs[id]={'type':'transfer','volume':volume,'src':src,'dest':dest,'prereqs':set(prereqs).union(priors)}
         return id
 
-    def addMultiTransfer(self,volume,src,dest,prereqs=[]):
+    def addMultiTransfer(self, volume, src, dest, prereqs=None):
         'Add a transfer operation to the queue, return the ID of the job (for use in prereqs)'
+        if prereqs is None:
+            prereqs = []
         id=self.getID()
         priors=self.findPriors(src,prereqs)
         self.jobs[id]={'type':'multitransfer','volume':volume,'src':src,'dest':dest,'prereqs':set(prereqs).union(priors)}
         return id
 
-    def addShake(self,sample,prereqs=[]):
+    def addShake(self, sample, prereqs=None):
+        if prereqs is None:
+            prereqs = []
         id=self.getID()
         priors=self.findPriors(sample,prereqs)
         self.jobs[id]={'type':'shake','sample':sample,'prereqs':set(prereqs).union(priors)}

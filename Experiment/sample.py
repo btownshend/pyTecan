@@ -94,7 +94,10 @@ class Sample(object):
         global __historyOptions
         __historyOptions=opts
         
-    def __init__(self,name,plate,well=None,conc=None,volume=0,hasBeads=False,extraVol=50,mixLC=liquidclass.LCMixBottom,firstWell=None,extrainfo=[],ingredients=None,atEnd=False):
+    def __init__(self, name, plate, well=None, conc=None, volume=0, hasBeads=False, extraVol=50, mixLC=liquidclass.LCMixBottom, firstWell=None,
+                 extrainfo=None, ingredients=None, atEnd=False):
+        if extrainfo is None:
+            extrainfo = []
         while True:
             # wrap with a loop to allow use of backupPlate
             # If firstWell is not None, then it is a hint of the first well position that should be used
