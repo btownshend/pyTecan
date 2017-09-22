@@ -66,10 +66,12 @@ class BioShake:
         res=self.execute(cmd)
         if res!="ok":
             logging.error( "BioShake: Unexpected response to cmd '%s': %s",cmd, res)
+        return res
 
     def getErrorList(self):
         res=self.execute("getErrorList")
-        
+        return res
+
     def version(self):
         res=self.execute("getVersion")
         return res

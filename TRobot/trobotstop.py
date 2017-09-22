@@ -1,4 +1,5 @@
 import debughook
+import sys
 import trobot
 
 p=trobot.TRobot()

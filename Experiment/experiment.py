@@ -180,7 +180,7 @@ class Experiment(object):
                 tipMask=4
                 if  getDITI:
                     ditivol=sum(volumes)*(1+extraFrac)+src.inliquidLC.multicond+src.inliquidLC.multiexcess
-                    worklist.getDITI(tipMask&self.DITIMASK,min(self.MAXVOLUME,ditivol),True,True)
+                    worklist.getDITI(tipMask&self.DITIMASK,min(self.MAXVOLUME,ditivol),True)
             else:
                 tipMask=self.cleantip()
 

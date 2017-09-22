@@ -29,7 +29,7 @@ class RIC:
 	def gettemp(self):
 		res=self.execute("p")
 		temp=float(res)
-	return temp
+		return temp
 
 	def settemp(self,temp):
 		res=self.execute("n%.1f"%temp)

@@ -84,7 +84,7 @@ class Gemini(object):
 		resp=self.execute("START_PIPETTING")
 
 	def close(self):
-	pass
+		pass
 
 	def open(self):
 		pipeName= "\\\\.\\pipe\\gemini"

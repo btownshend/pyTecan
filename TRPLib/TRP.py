@@ -188,7 +188,7 @@ class TRP(object):
             elif s.volume<2.5 and s.conc is not None and not s.emptied:
                 logging.warning("Low final volume for "+ s.name)
             elif s.volume>s.plate.maxVolume:
-                logging.erorr("Excess final volume  (%.1f) for %s: maximum is %.1f ul"%(s.volume,s.name,s.plate.maxVolume),fatal=False)
+                logging.error("Excess final volume  (%.1f) for %s: maximum is %.1f ul"%(s.volume,s.name,s.plate.maxVolume),fatal=False)
                 hasError=True
                 
         if hasError:
@@ -405,7 +405,7 @@ class TRP(object):
         beadDil=[beads[i].conc.stock/(beads[i].conc.final if beadConc[i] is None else beadConc[i]) if beadDil[i] is None else beadDil[i] for i in range(len(beads))]
 
         if addBuffer:
-            totalvol=[s.volume/(1-1.0/beadDil-1.0/bbuffer[i].conc.dilutionneeded()) for s in src]
+            totalvol=[src[i].volume/(1-1.0/beadDil[i]-1.0/bbuffer[i].conc.dilutionneeded()) for i in range(len(src))]
             buffervol=[totalvol[i]/bbuffer[i].conc.dilutionneeded() for i in range(len(src))]
             # Add binding buffer to bring to 1x (beads will already be in 1x, so don't need to provide for them)
             for i in range(len(src)):
@@ -445,7 +445,7 @@ class TRP(object):
             if washTgt is None:
                 washTgt=[]
                 for i in range(len(src)):
-                    if s[i].volume-residualVolume+numWashes*(washVol-residualVolume) > decklayout.DILPLATE.maxVolume-20:
+                    if src[i].volume-residualVolume+numWashes*(washVol-residualVolume) > decklayout.DILPLATE.maxVolume-20:
                         logging.notice("Saving %.1f ul of wash in eppendorfs"%(numWashes*washVol))
                         washTgt.append(Sample("%s.Wash"%src[i].name,decklayout.EPPENDORFS))
                     else:
@@ -998,7 +998,7 @@ class TRP(object):
             mq=reagents.getsample(mname)
             t=[a[1] for a in torun if a[2]==p]
             v=[a[3]/mq.conc.dilutionneeded() for a in torun if a[2]==p]
-            assert(v>0)
+            assert all([x>0 for x in v])
             self.e.multitransfer(v,mq,t,(False,False))
             dil[p]=1.0/(1-1/e.conc.dilutionneeded()-1/mq.conc.dilutionneeded())
             

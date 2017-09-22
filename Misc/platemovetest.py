@@ -1,12 +1,11 @@
 import os
 
-from Experiment.sample import Sample
 from Experiment.experiment import Experiment
-from Experiment.experiment import Concentration
+from Experiment import worklist
 
 e=Experiment()
 
-e.w.pyrun('PTC\\ptcsetpgm.py TEST TEMP@95,1  TEMP@25,1')
+worklist.pyrun('PTC\\ptcsetpgm.py TEST TEMP@95,1  TEMP@25,1')
 e.runpgm("TEST",0,waitForCompletion=False)
 e.waitpgm(sanitize=False)
 

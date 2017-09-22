@@ -40,7 +40,7 @@ class Scale:
 		else:
 			print "Command not executed: ",res
 
-	return -1
+		return -1
 
 	def zero(self):
 		res=self.execute("Z")

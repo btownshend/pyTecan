@@ -139,7 +139,7 @@ class PTC:
         return res
 
     def run(self,name):
-        res=self.execute("RUN \"%s\",CALC,ON",name)
+        res=self.execute("RUN \"%s\",CALC,ON"%name)
 
     def getlidstatus(self):
         res=self.execute("LID?")

@@ -319,6 +319,8 @@ lastgeminitime=None
 geminicmdtimes={}
 geminicmdcnt={}
 tipcmd=""
+lasttime=0
+
 while True:
     line=fd.readline()
     if len(line)==0:

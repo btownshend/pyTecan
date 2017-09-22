@@ -282,11 +282,18 @@ class PGMSelect(TRP):
             for inp in input:
                 if inp.conc.units=='nM':
                     print "    %s:  %.1ful@%.1f %s, use %.1f ul (%.3f pmoles)"%(inp.name,inp.volume,inp.conc.stock,inp.conc.units,t7vol/inp.conc.dilutionneeded(), t7vol*inp.conc.final/1000)
-                    needDil = max([inp.conc.stock for inp in input])*1.0/self.qConc
                 else:
                     print "    %s:  %.1ful@%.1f %s, use %.1f ul"%(inp.name,inp.volume,inp.conc.stock,inp.conc.units,t7vol/inp.conc.dilutionneeded())
-                    needDil=100/self.qConc   # Assume 100nM
                 # inp.conc.final=inp.conc.stock*self.templateDilution
+            units=list(set([inp.conc.units for inp in inputs]))
+            if len(units)>1:
+                print "Inputs have inconsistent concentration units: ",units
+                assert False
+            if units[0]=='nM':
+                needDil = max([inp.conc.stock for inp in inputs]) * 1.0 / self.qConc
+            else:
+                needDil = 100 / self.qConc  # Assume 100nM
+
             if self.directT7 and  self.rndNum==1:
                 # Just add ligands and MT7 to each well
                 if not keepCleaved:
@@ -563,7 +570,7 @@ class PGMSelect(TRP):
             # Need to add enough t7prefix to compensate for all of the Stop primer currently present, regardless of whether it is for cleaved or uncleaved
             # Will result in some short transcripts corresponding to the stop primers that are not used for cleaved product, producing just GGG_W_GTCTGC in the next round.  These would be reverse-trancribed, but may compete for T7 yield
             t7prefix=reagents.getsample("BT88")
-            dil=self.extpostdil[self.rndNum-1]*userDil
+            dil=self.extpostdil[self.rndNum-1]  # FIXME: Is this correct?  Used to have a 'userDil' term
             stopconc=1000.0/dil
             bt88conc=t7prefix.conc.stock
             relbt88=stopconc/bt88conc
@@ -591,8 +598,6 @@ class PGMAnalytic(PGMSelect):
 
     def __init__(self, inputs, saveRNA=False, tmplFinalConc=5, qpcrStages=None, templateDilution=0.6):
         super(PGMAnalytic, self).__init__(inputs=inputs,rounds='C',firstID=1,pmolesIn=0,saveRNA=saveRNA,qpcrStages=qpcrStages,templateDilution=templateDilution,tmplFinalConc=tmplFinalConc)
-        if qpcrStages is None:
-            qpcrStages = ["ext", "negative"]
         self.dopcr=False
         self.saveRNADilution=2
         self.ligInPlace=True

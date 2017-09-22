@@ -252,7 +252,7 @@ def mix(tipMask,wells, liquidClass, volume, loc, cycles=3, allowDelay=True):
     aspirateDispense('Mix',tipMask,wells, liquidClass, volume, loc, cycles, allowDelay)
 
 def detectLiquid(tipMask,wells,liquidClass,loc):
-    aspirateDispense('Detect_Liquid',tipMask,wells, liquidClass, 0, loc,allowDelay=False)
+    aspirateDispense('Detect_Liquid',tipMask,wells, liquidClass, [0.0 for _ in wells], loc,allowDelay=False)
 
 def aspirateDispense(op,tipMask,wells, liquidClass, volume, loc, cycles=None,allowDelay=True):
     'Execute or queue liquid handling operation'
