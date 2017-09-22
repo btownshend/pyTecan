@@ -150,10 +150,10 @@ class Experiment(object):
             volumes=[volumes for i in range(len(dests))]
         assert len(volumes)==len(dests)
         #        if len([d.volume for d in dests if d.conc!=None])==0:
-        if len([dests[i].volume for i in range(0,len(dests)) if dests[i].conc != None and volumes[i]>0.01])==0:
+        if len([dests[i].volume for i in range(0,len(dests)) if dests[i].conc is not None and volumes[i]>0.01])==0:
             maxval=0
         else:
-            maxval=max([dests[i].volume for i in range(0,len(dests)) if dests[i].conc != None and volumes[i]>0.01])
+            maxval=max([dests[i].volume for i in range(0,len(dests)) if dests[i].conc is not None and volumes[i] > 0.01])
             #         maxval=max([d.volume for d in dests if d.conc != None])
         #print "volumes=",[d.volume for d in dests],", conc=",[str(d.conc) for d in dests],", maxval=",maxval
         if not mix[1] and len(volumes)>1 and ( maxval<.01 or ignoreContents):
@@ -330,6 +330,7 @@ class Experiment(object):
             volume[i]=float(volume[i])
 
         reagentvols=[1.0/x.conc.dilutionneeded()*finalx for x in reagents]
+        sourcevols=[]
         if len(sources)>0:
             sourcevols=[volume[i]*1.0/sources[i].conc.dilutionneeded()*finalx for i in range(len(sources))]
             while len(sourcevols)<len(samples):
@@ -388,7 +389,7 @@ class Experiment(object):
         self.pgmStartTime=clock.pipetting
         self.pgmEndTime=duration*60+clock.pipetting
         self.tcrunning=True
-        Sample.addallhistory("{%s}"%pgm,addToEmpty=False,onlyplate=decklayout.SAMPLEPLATE.name,type="tc")
+        Sample.addallhistory("{%s}" % pgm, addToEmpty=False, onlyplate=decklayout.SAMPLEPLATE.name, htype="tc")
         if waitForCompletion:
             self.waitpgm()
 
@@ -498,7 +499,7 @@ class Experiment(object):
         worklist.pyrun("BioShake\\bioexec.py shakeOn")
         self.starttimer()
         Sample.shaken(plate.name,speed)
-        Sample.addallhistory("(S%d@%.0f)"%(dur,speed),onlyplate=plate.name,type="shake")
+        Sample.addallhistory("(S%d@%.0f)" % (dur,speed), onlyplate=plate.name, htype="shake")
         self.waittimer(dur)
         worklist.pyrun("BioShake\\bioexec.py shakeOff")
         self.starttimer()
@@ -527,7 +528,7 @@ class Experiment(object):
     def pause(self,duration):
         self.starttimer()
         self.waittimer(duration)
-        Sample.addallhistory("(%ds)"%duration,type="pause")
+        Sample.addallhistory("(%ds)" % duration, htype="pause")
 
     def waitpgm(self, sanitize=True):
         if not self.tcrunning:

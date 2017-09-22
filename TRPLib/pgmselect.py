@@ -1,22 +1,25 @@
 # Generic selection progam
-import debughook
 import math
 
+from Experiment import worklist, reagents, decklayout, logging, clock, thermocycler
 from Experiment.concentration import Concentration
 from Experiment.sample import Sample
-from Experiment import worklist, reagents, decklayout, logging,clock
-from TRPLib.TRP import TRP
 from TRPLib.QSetup import QSetup
+from TRPLib.TRP import TRP
 from pcrgain import pcrgain
 
 reagents.add("BT5310",well="B5",conc=Concentration(20,20,"pM"))
-        
+
+
+# noinspection PyAttributeOutsideInit
 class PGMSelect(TRP):
-    '''Selection experiment'''
+    """Selection experiment"""
     
-    def __init__(self, inputs, rounds, firstID, pmolesIn, directT7=True, templateDilution=0.3, tmplFinalConc=50, saveDil=24, qpcrWait=False, allLig=False,
-                 qpcrStages=None, finalPlus=True, t7dur=30, usertime=10, singlePrefix=False, noPCRCleave=False, saveRNA=False, useMX=True):
+    def __init__(self, inputs, rounds, firstID, pmolesIn, directT7=True, templateDilution=0.3, tmplFinalConc=50,
+                 saveDil=24, qpcrWait=False, allLig=False, qpcrStages=None, finalPlus=True, t7dur=30, usertime=10,
+                 singlePrefix=False, noPCRCleave=False, saveRNA=False, useMX=True):
         # Initialize field values which will never change during multiple calls to pgm()
+        super(PGMSelect, self).__init__()
         if qpcrStages is None:
             qpcrStages = ["negative", "template", "ext", "finalpcr"]
         self.inputs=inputs
@@ -69,7 +72,7 @@ class PGMSelect(TRP):
         self.maxdilstep=16   # Maximum dilute per qPCR dilution step
         self.pcrdil=[(80 if r=='U' else 40) for r in self.rounds]
         self.maxPCRVolume=100  # Maximum sample volume of each PCR reaction (thermocycler limit, and mixing limit)
-        self.pcrcycles=[10 for r in self.rounds]
+        self.pcrcycles=[10 for _ in self.rounds]
         self.rnaInput=False
         self.stopConc=1	   # Concentration of stop in uM
         self.savePCRAtEnd=False
@@ -188,16 +191,16 @@ class PGMSelect(TRP):
             # Computed output prefix
             if roundType=='U':
                 prefixOut=curPrefix
-                stop=["Unclvd" for p in curPrefix]
+                stop=["Unclvd" for _ in curPrefix]
             else:
                 if roundType=='T':
                     stop=['T7%s'%p for p in curPrefix]
                     prefixOut=curPrefix
                 elif any([p==roundType for p in curPrefix]):
                     logging.error( "Round %d is a cleaved round but goes to %s without changing prefix"%(self.rndNum, roundType))
-                    assert(False)
+                    assert False
                 else:
-                    prefixOut=[roundType for p in curPrefix]                
+                    prefixOut=[roundType for _ in curPrefix]
                     stop=prefixOut
 
             # May be explicitly overridden
@@ -210,7 +213,7 @@ class PGMSelect(TRP):
                         t=self.inputs[i]['stop']
                     if (roundType=='U') != (t=='U'):
                         print "Attempt to override round %d (type %s) with a input-specific round type of %s"%(self.rndNum, roundType, t)
-                        assert(False)
+                        assert False
                     if roundType!='U':
                         if t=='T':
                             stop[i]='T7%s'%curPrefix[i]
@@ -240,6 +243,7 @@ class PGMSelect(TRP):
                 if self.singlePrefix:
                     q.addSamples(src=r1[i],needDil=r1[i].conc.stock/self.qConc,primers=["T7X","MX"] if self.useMX else ["T7X"])
                 else:
+                    # noinspection PyUnboundLocalVariable
                     q.addSamples(src=r1[i],needDil=r1[i].conc.stock/self.qConc,primers=["T7X",prefixOut[i]+"X"]+(["MX"] if self.useMX else []))
 
         # Add TRefs if needed
@@ -255,7 +259,7 @@ class PGMSelect(TRP):
         self.allprimers=q.allprimers()
         q.run(confirm=self.qpcrWait)
         
-    def oneround(self,q,input,prefixOut,stop,prefixIn,keepCleaved,t7vol,rtvol,pcrdil,cycles,pcrvol,dolig):
+    def oneround(self, q, inputs, prefixOut, stop, prefixIn, keepCleaved, t7vol, rtvol, pcrdil, cycles, pcrvol, dolig):
         primerSet=[set(["REF","T7X",prefixIn[i]+"X",prefixOut[i]+"X"]+(["MX"] if self.useMX else [])) for i in range(len(prefixIn))]
         if self.extraQPCRPrimers is not None:
             primerSet=[set(list(p) + self.extraQPCRPrimers) for p in primerSet]
@@ -263,23 +267,22 @@ class PGMSelect(TRP):
             
         if keepCleaved:
             print "Starting new cleavage round, will add prefix: ",prefixOut
-            assert(dolig)
+            assert dolig
         else:
             print "Starting new uncleaved round, will retain prefix: ",prefixIn
         print "stop=",stop,"prefixOut=",prefixOut,", prefixIn=",prefixIn,",t7vol=",t7vol,",rtvol=",rtvol,",pcrdil=",pcrdil,",cycles=",cycles,",dolig=",dolig
         if self.rtCarryForward:
-            assert(dolig)
+            assert dolig
             
-        names=[i.name for i in input]
+        names=[i.name for i in inputs]
             
         if self.rnaInput:
-            rxs=input
+            rxs=inputs
             stopDil=1
         else:
             print "######## T7 ########### %.0f min"%(clock.elapsed()/60)
             print "Inputs:  (t7vol=%.2f)"%t7vol
-            inconc=[inp.conc.final for inp in input]
-            for inp in input:
+            for inp in inputs:
                 if inp.conc.units=='nM':
                     print "    %s:  %.1ful@%.1f %s, use %.1f ul (%.3f pmoles)"%(inp.name,inp.volume,inp.conc.stock,inp.conc.units,t7vol/inp.conc.dilutionneeded(), t7vol*inp.conc.final/1000)
                 else:
@@ -297,26 +300,26 @@ class PGMSelect(TRP):
             if self.directT7 and  self.rndNum==1:
                 # Just add ligands and MT7 to each well
                 if not keepCleaved:
-                    for i in range(len(input)):
+                    for i in range(len(inputs)):
                         if self.inputs[i]['ligand'] is not None:
                             ligand=reagents.getsample(self.inputs[i]['ligand'])
-                            self.e.transfer(t7vol/ligand.conc.dilutionneeded(),ligand,input[i],mix=(False,False))
+                            self.e.transfer(t7vol / ligand.conc.dilutionneeded(), ligand, inputs[i], mix=(False, False))
                             names[i]+="+"
                 mconc=reagents.getsample("MT7").conc.dilutionneeded()
-                for i in range(len(input)):
-                    watervol=t7vol*(1-1/mconc)-input[i].volume
+                for i in range(len(inputs)):
+                    watervol=t7vol*(1-1/mconc) - inputs[i].volume
                     if watervol<-0.1:
                         print "Negative amount of water (%.1f ul) needed for T7 setup"%watervol
-                        assert(False)
+                        assert False
                     elif watervol>0.1:
-                        self.e.transfer(watervol,decklayout.WATER,input[i],mix=(False,False))
-                    self.e.transfer(t7vol/mconc,reagents.getsample("MT7"),input[i],mix=(False,False))
-                    assert(abs(input[i].volume-t7vol)<0.1)
-                rxs=input
+                        self.e.transfer(watervol, decklayout.WATER, inputs[i], mix=(False, False))
+                    self.e.transfer(t7vol / mconc, reagents.getsample("MT7"), inputs[i], mix=(False, False))
+                    assert(abs(inputs[i].volume - t7vol) < 0.1)
+                rxs=inputs
             elif self.rndNum==len(self.rounds) and self.finalPlus and keepCleaved:
-                rxs = self.runT7Setup(src=input,vol=t7vol,srcdil=[inp.conc.dilutionneeded() for inp in input])
-                for i in range(len(input)):
-                    inp=input[i]
+                rxs = self.runT7Setup(src=inputs, vol=t7vol, srcdil=[inp.conc.dilutionneeded() for inp in inputs])
+                for i in range(len(inputs)):
+                    inp=inputs[i]
                     if self.inputs[i]['ligand'] is not None:
                         rxs += self.runT7Setup(ligands=[reagents.getsample(self.inputs[i]['ligand'])],src=[inp],vol=t7vol,srcdil=[inp.conc.dilutionneeded()])
                         prefixIn+=[prefixIn[i]]
@@ -325,16 +328,15 @@ class PGMSelect(TRP):
                         primerSet+=[primerSet[i]]
                         names+=["%s+"%names[i]]
             elif keepCleaved:
-                rxs = self.runT7Setup(src=input,vol=t7vol,srcdil=[inp.conc.dilutionneeded() for inp in input])
+                rxs = self.runT7Setup(src=inputs, vol=t7vol, srcdil=[inp.conc.dilutionneeded() for inp in inputs])
             else:
-                rxs = self.runT7Setup(ligands=[reagents.getsample(inp['ligand']) for inp in self.inputs],src=input,vol=t7vol,srcdil=[inp.conc.dilutionneeded() for inp in input])
+                rxs = self.runT7Setup(ligands=[reagents.getsample(inp['ligand']) for inp in self.inputs], src=inputs, vol=t7vol, srcdil=[inp.conc.dilutionneeded() for inp in inputs])
 
             if self.rndNum==1 and "template" in self.qpcrStages:
                 # Initial input 
                 for i in range(len(rxs)):
                     q.addSamples(src=rxs[i],needDil=needDil,primers=primerSet[i],names=["%s.T"%names[i]])
 
-            needDil = needDil*max([inp.conc.dilutionneeded() for inp in input])
             self.runT7Pgm(dur=self.t7dur,vol=t7vol)
             for i in range(len(rxs)):
                 rxs[i].name="%s.t7"%names[i]
@@ -453,16 +455,15 @@ class PGMSelect(TRP):
             rxs=rxs[:len(rxs)-len(self.lastSaved)]
             self.lastSaved=[]
 
-        if len(rxs)>len(input):
+        if len(rxs)>len(inputs):
             # Have extra samples due when self.finalPlus is True
-            rxs=rxs[0:len(input)]    # Only keep -target products
-            prefixOut=prefixOut[0:len(input)]
-            prefixIn=prefixIn[0:len(input)]
-            stop=stop[0:len(input)]
+            rxs= rxs[0:len(inputs)]    # Only keep -target products
+            prefixOut= prefixOut[0:len(inputs)]
+            prefixIn= prefixIn[0:len(inputs)]
+            stop= stop[0:len(inputs)]
             
         if self.dopcr and not (keepCleaved and self.noPCRCleave):
             print "######### PCR ############# %.0f min"%(clock.elapsed()/60)
-            maxvol=max([r.volume for r in rxs])
             print "PCR Volume: %.1f, Dilution: %.1f, volumes available for PCR: [%s]"%(pcrvol, pcrdil,",".join(["%.1f"%r.volume for r in rxs]))
 
             initConc=needDil*self.qConc/pcrdil
@@ -476,15 +477,11 @@ class PGMSelect(TRP):
             print "Estimated starting concentration in PCR = %.1f nM, running %d cycles -> %.0f nM\n"%(needDil*self.qConc/pcrdil,cycles,finalConc)
             nsplit=int(math.ceil(pcrvol*1.0/self.maxPCRVolume))
             print "Split each PCR into %d reactions"%nsplit
-            minsrcdil=1/(1-1.0/3-1.0/4)
             sampNeeded=pcrvol/pcrdil
             if self.rtCarryForward and keepCleaved:
                 sampNeeded+=rtCarryForwardVol
-            maxvol=max([r.volume for r in rxs])
-            minvol=min([r.volume for r in rxs])
             if keepCleaved and self.rtCarryForward:
-                assert(len(rxs)==len(rtCarryForward))
-                print "Saving %.1f ul of each pre-PCR sample"%(rtCarryForwardVol )
+                print "Saving %.1f ul of each pre-PCR sample" % rtCarryForwardVol
                 self.lastSaved=[Sample("%s.sv"%x.name,decklayout.DILPLATE) for x in rxs]
                 for i in range(len(rxs)):
                     # Save with rtCarryForwardDil dilution to reduce amount of RT consumed (will have Ct's 2-3 lower than others)
@@ -559,7 +556,6 @@ class PGMSelect(TRP):
                     for i in range(len(sv)):
                         q.addSamples(sv[i],needDil,primers=primerSet[i],names=["%s.pcr"%names[i]])
 
-                processEff=0.5   # Estimate of overall efficiency of process
                 print "Have %.2f pmoles of product (%.0f ul @ %.1f nM)"%(sv[0].volume*sv[0].conc.stock/1000,sv[0].volume,sv[0].conc.stock)
                 return sv
             else:
@@ -594,7 +590,7 @@ class PGMSelect(TRP):
 
 
 class PGMAnalytic(PGMSelect):
-    "Analytic experiment"
+    """Analytic experiment"""
 
     def __init__(self, inputs, saveRNA=False, tmplFinalConc=5, qpcrStages=None, templateDilution=0.6):
         super(PGMAnalytic, self).__init__(inputs=inputs,rounds='C',firstID=1,pmolesIn=0,saveRNA=saveRNA,qpcrStages=qpcrStages,templateDilution=templateDilution,tmplFinalConc=tmplFinalConc)

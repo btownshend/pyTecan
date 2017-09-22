@@ -316,7 +316,7 @@ def aspirateDispense(op,tipMask,wells, liquidClass, volume, loc, cycles=None,all
         else:
             col=int(well[1:])
             row=ord(well[0])-ord('A')+1
-        assert row>=1 and row<=loc.ny and col>=1 and col<=loc.nx
+        assert 1 <= row <= loc.ny and col >= 1 and col <= loc.nx
         pos[i]=(row-1)+loc.ny*(col-1)
         if i>0:
             assert col==prevcol
@@ -349,6 +349,7 @@ def aspirateDispense(op,tipMask,wells, liquidClass, volume, loc, cycles=None,all
         print "spacing=",spacing
 
     ws=wellSelection(loc.nx,loc.ny,pos)
+    condvol=""  # Initialize to avoid warnings below
     if op=='Aspirate':
         if allvols[0]>0:
             volstr="%.3f"%(allvols[0]+2)
@@ -430,8 +431,8 @@ def getDITI( tipMask, volume, retry=True):
     MAXVOL10=10
     MAXVOL200=200
 
-    assert tipMask>=1 and tipMask<=15
-    assert volume>0 and volume<=MAXVOL200
+    assert 1 <= tipMask <= 15
+    assert 0 < volume <= MAXVOL200
     if retry:
         options=1
     else:
@@ -458,9 +459,9 @@ def getDITIcnt():
 def dropDITI( tipMask, loc, airgap=10, airgapSpeed=70):
     'Drop DITI, airgap is in ul, speed in ul/sec'
     flushQueue()
-    assert tipMask>=1 and tipMask<=15
-    assert airgap>=0 and airgap<=100
-    assert airgapSpeed>=1 and airgapSpeed<1000
+    assert 1 <= tipMask <= 15
+    assert 0 <= airgap <= 100
+    assert 1 <= airgapSpeed < 1000
     wlist.append('DropDITI(%d,%d,%d,%f,%d)'%(tipMask,loc.grid,loc.pos-1,airgap,airgapSpeed))
     clock.pipetting+=2
 
@@ -534,6 +535,7 @@ def email(dest,subject,body='',profile='cdsrobot',onerror=0,attachscreen=1):
 def condition(varname,cond,value,dest):
     'Conditional - jump to given label (comment) if (variable cond value) is true'
     flushQueue()
+    condval=None
     if cond=='==':
         condval=0
     elif cond=='!=':
@@ -588,7 +590,7 @@ def userprompt( text,timeout=-1):
         clock.pipetting+=timeout
 
 def variable(varname,default,userprompt=None,minval=None,maxval=None):
-    if minval!=None or maxval!=None:
+    if minval is not None or maxval is not None:
         limitrange=1
     else:
         limitrange=0
@@ -620,7 +622,7 @@ def execute( command, wait=True, resultvar=None):
     flags=0
     if wait:
         flags=flags | 2
-    if resultvar!=None and resultvar!="":
+    if resultvar is not None and resultvar!= "":
         flags=flags | 4
     else:
         resultvar=""

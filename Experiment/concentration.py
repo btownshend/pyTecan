@@ -30,6 +30,7 @@ class Concentration(object):
 
     def dilute(self,factor):
         if self.stock is None:
+            # noinspection PyTypeChecker
             return Concentration(None,None,'x')
         else:
             return Concentration(self.stock/factor,self.final,self.units)

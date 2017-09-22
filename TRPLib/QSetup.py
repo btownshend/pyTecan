@@ -1,13 +1,11 @@
 # Setup QPCR experiments
-import TRP
-import os
-import sys
 import math
-from Experiment.experiment import Experiment
-from Experiment.sample import Sample
+
+from Experiment import worklist, reagents, decklayout, clock, logging
 from Experiment.JobQueue import JobQueue
-from TRPLib.TRP import  diluteName
-from Experiment import worklist, reagents, decklayout,clock,logging
+from Experiment.sample import Sample
+from TRPLib.TRP import diluteName
+
 
 class QSetup(object):
     TGTINVOL=4
@@ -39,7 +37,7 @@ class QSetup(object):
             # saveVol is total amount (after dilution) to be immediately saved
             if saveDil is None:
                 saveDil=min(needDil,self.MAXDIL)
-                if needDil/saveDil>1 and needDil/saveDil<2:
+                if 1 < needDil/saveDil < 2:
                     saveDil=math.sqrt(needDil)
             elif saveDil>needDil:
                 logging.warning("addSamples: saveDil="+saveDil+ ", but needDil is only "+ needDil)
@@ -118,7 +116,7 @@ class QSetup(object):
             ref=reagents.getsample("QPCRREF")
         if primers is None:
             primers=self.allprimers()
-        dils=[1]
+        dils=[1.0]
         for i in range(nsteps):
             needDil=mindil*math.pow(dstep,i)
             srcDil=1

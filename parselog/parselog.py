@@ -170,14 +170,14 @@ def gemtip(tipcmd,line2):
     assert(len(g)==10)
     tip=int(g[0])
     op=g[1]
-    if g[2]==None:
+    if g[2] is None:
         vol=0
     else:
         vol=float(g[2])
     units=g[3]
     if units=='nl':
         vol=vol/1000.0
-    if g[4]!=None:
+    if g[4] is not None:
         nmix=int(g[4])
     else:
         nmix=None
@@ -192,7 +192,7 @@ def gemtip(tipcmd,line2):
     match=parser2.match(line2)
     g=match.groups()
     assert(len(g)==6)
-    if g[0]==None:
+    if g[0] is None:
         vol2=0
     else:
         vol2=float(g[0])
@@ -381,7 +381,7 @@ while True:
                 year=time.strftime("%Y")  # Use current year since log doesn't contain year
                 tdata=time.strptime(year+" "+gtime,"%Y %H:%M:%S")
                 t=time.mktime(tdata)
-                if lastgeminicmd!=None:
+                if lastgeminicmd is not None:
                     if t-lasttime > 30:
                         print  "Skipping long pause of %d seconds for %s"%(t-lasttime,lastgeminicmd)
                     elif t<lasttime:

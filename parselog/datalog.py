@@ -1,6 +1,6 @@
-import sys
 import os
-import math
+import sys
+
 sys.path.append(os.path.join(os.path.dirname(__file__),'../Experiment'))
 print "path=",sys.path
 import sample
@@ -15,12 +15,12 @@ sample.SHOWTIPS=True
 
 def getSample(wellx,welly,rack,grid,pos):
         plate=Plate.lookup(grid,pos)
-        if plate==None:
+        if plate is None:
             plate=Plate(rack,grid,pos)
         wellname="%c%d"%(ord('A')+welly-1,wellx)
         well=plate.wellnumber(wellname)
         sample=Sample.lookupByWell(plate,well)
-        if sample==None:
+        if sample is None:
             sample=Sample("%s.%d.%d.%d"%(rack,grid,pos,well),plate,well)
             if grid==3:
                 sample.volume=20000   # Troughs
@@ -101,7 +101,7 @@ class Datalog(object):
         prevol=sample.volume-sample.lastadd		# Liquid height is measured before next op, whose volume effect has already been added to sample.volume
         if height==-1:
             vol=sample.plate.getliquidvolume((zadd+submerge)/10.0)
-            if vol!=None:
+            if vol is not None:
                 if prevol<vol and prevol!=0:
                     # The liquid measure failed, but based on the previous volume estimate, it was guaranteed to fail since the submerge depth would've been below bottom
                     # But if we don't know the volume (ie a prefilled tube -> prevol=0), then log this as a fail
@@ -113,7 +113,7 @@ class Datalog(object):
                 h=" @[FAIL <%.1f#%d]"%((zadd+submerge)/10.0,tip)
         else:
             vol=sample.plate.getliquidvolume((height+submerge-zmax)/10.0)
-            if vol==None:
+            if vol is None:
                 h=" @[%.1fmm,%.1fmm#%d]"%((height-zmax)/10.0,submerge/10.0,tip)
             else:
                 if prevol==0:

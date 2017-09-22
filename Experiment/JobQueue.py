@@ -67,7 +67,7 @@ class JobQueue(object):
     def getJob(self):
         'Return the next job on the queue to execute, removing it from queue'
 
-        if self.runningJob!=None:
+        if self.runningJob is not None:
             logging.warning("Call of getJob() while a job is running - returning None")
             return None
 

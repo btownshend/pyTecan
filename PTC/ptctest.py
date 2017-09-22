@@ -1,6 +1,6 @@
-import ptc
-import time
 import logging
+
+import ptc
 
 p=ptc.PTC()
 logging.info( "PTC Version=%s",p.version())

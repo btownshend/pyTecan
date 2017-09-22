@@ -17,13 +17,13 @@ else:
 	if len(ss)!=2 or (ss[0]!="TRACKING" and ss[0]!="CONSTANT"):
 		logging.error( "Bad lid setting: %s"%sys.argv[3])
 		exit(1)
-	res=p.execute('HOTLID "%s",%s,25'%(ss[0],ss[1]))
+	p.execute('HOTLID "%s",%s,25'%(ss[0],ss[1]))
 	hl="ON"
 	
 
-res=p.execute('VESSEL "Plate"')
-res=p.execute("VOLUME %s"%sys.argv[4])
-res=p.execute('RUN "%s",%s,%s'%(sys.argv[1],sys.argv[2],hl))
+p.execute('VESSEL "Plate"')
+p.execute("VOLUME %s"%sys.argv[4])
+p.execute('RUN "%s",%s,%s'%(sys.argv[1],sys.argv[2],hl))
 status=p.getstatus()
 if (status.bsr & status.RUNNING) == 0:
 	logging.error("Failed to start program %s: status=%s"%(sys.argv[1],str(status)))

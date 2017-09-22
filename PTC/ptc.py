@@ -103,7 +103,7 @@ class PTC:
         self.debug=True
         
     def close(self):
-        if self.ser!=None and self.ser.isOpen():
+        if self.ser is not None and self.ser.isOpen():
             logging.debug( "Closing port")
             self.ser.close()
 

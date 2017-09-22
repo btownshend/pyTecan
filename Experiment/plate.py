@@ -86,7 +86,7 @@ class Plate(object):
             self.pos=self.homepos
             self.unusableVolume=self.homeUnusableVolume
         else:
-            assert newloc!=None
+            assert newloc is not None
             self.grid=newloc.grid
             self.pos=newloc.pos
             self.unusableVolume=newloc.unusableVolume

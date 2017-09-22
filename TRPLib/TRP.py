@@ -1,14 +1,13 @@
-from Experiment.sample import Sample
-from Experiment.plate import Plate
-from Experiment.experiment import Experiment
-from Experiment.concentration import Concentration
-from Experiment import worklist, reagents, decklayout, clock, logging, thermocycler
-from Experiment import globals
-
+import argparse
 import os
 import sys
-import math
-import argparse
+
+from Experiment import globals
+from Experiment import worklist, reagents, decklayout, clock, logging, thermocycler
+from Experiment.concentration import Concentration
+from Experiment.experiment import Experiment
+from Experiment.plate import Plate
+from Experiment.sample import Sample
 
 maxVolumePerWell=150
 
@@ -668,7 +667,7 @@ class TRP(object):
         elif tgt is None:
             tgt=[Sample("%s.%s"%(src[i].name,enzymes[0].name),decklayout.SAMPLEPLATE) for i in range(len(src))]
 
-        if srcdil==None:
+        if srcdil is None:
             # Minimum dilution (no water)
             srcdil=1/(1-sum([1/e.conc.dilutionneeded() for e in enzymes]))
 
@@ -741,10 +740,10 @@ class TRP(object):
     def runPCR(self,primers,src,srcdil,vol=None,tgt=None,ncycles=20,usertime=None,fastCycling=False,inPlace=False,master="MTaq",annealTemp=None,kapa=False,lowhi=False):
         ## PCR
         if inPlace:
-            if vol!=None:
+            if vol is not None:
                 print "runPCR: cannot specify volume when using inPlace=True, srcdil and input volume determine reaction volume"
                 assert(False)
-            if tgt!=None:
+            if tgt is not None:
                 print "runPCR: cannot specify tgt when using inPlace=True"
                 assert(False)
             if primers is None:
@@ -930,7 +929,7 @@ class TRP(object):
     # qPCR
     ########################
     def runQPCRDIL(self,src,vol,srcdil,tgt=None,dilPlate=False,pipMix=False,dilutant=None):
-        if dilutant==None:
+        if dilutant is None:
             dilutant=decklayout.SSDDIL
         [src,vol,srcdil]=listify([src,vol,srcdil])
         vol=[float(v) for v in vol]
@@ -954,7 +953,7 @@ class TRP(object):
                 #print "Aligning tips"
                 self.e.sanitize()
             self.e.transfer(srcvol[i],src[i],tgt[i],(not src[i].isMixed(),pipMix))
-            if tgt[i].conc != None:
+            if tgt[i].conc is not None:
                 tgt[i].conc.final=None	# Final conc are meaningless now
             
         return tgt

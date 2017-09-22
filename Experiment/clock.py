@@ -16,7 +16,8 @@ def elapsed():
     return pipetting+pipandthermotime+thermotime
 
 def statusString():
-    if totalTime!=None:
+    if totalTime is not None:
+        # noinspection PyTypeChecker
         return "Estimated elapsed: %d minutes, remaining run time: %d minutes"%(elapsed()/60,(totalTime-elapsed())/60)
     else:
         return "Estimated elapsed: %d minutes"%(elapsed()/60)

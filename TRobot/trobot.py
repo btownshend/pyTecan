@@ -1,6 +1,5 @@
 # Module to interface to TRobot
 import serial
-import string
 import logging
 import sys
 import time
@@ -95,9 +94,9 @@ class RunStatus:
     def __str__(self):
         return (
                  "pgm:"+self.progname+
-                 ", lid:"+self.lidtemp+
-                 ", blocktemp:"+self.bltemp+
-                 ", step:"+str(self.step)
+                 ", lid:"+str(self.lidtemp)+
+                 ", blocktemp:"+str(self.bltemp)+
+                 ", step:"+str(self.stepnr)
                  )
     
 class TRobot:
@@ -132,7 +131,7 @@ class TRobot:
         self.debug=True
         
     def close(self):
-        if self.ser!=None and self.ser.isOpen():
+        if self.ser is not None and self.ser.isOpen():
             logging.debug( "Closing port")
             self.ser.close()
 
@@ -151,6 +150,7 @@ class TRobot:
     def execute(self,cmd):
         cmds=cmd.split(";")   # Split it
         if len(cmds)>1:
+            res=None
             for c in cmds:
                 res=self.execute(c)
             return res
@@ -245,7 +245,7 @@ class TRobot:
                 s=self.execute(":c;d %04x"%dirnr)
             else:
                 s=self.execute(":c;d")
-            if s==None:
+            if s is None:
                 break
             p.append(s)
         return p

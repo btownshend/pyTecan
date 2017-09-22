@@ -27,6 +27,7 @@ while True:
         if firstpass:
             logging.warning( "No program running")
         break
+    # noinspection PyRedeclaration
     firstpass=False
     if etime<=0.0:
         logging.info( "Proceeding to next step")

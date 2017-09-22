@@ -43,8 +43,13 @@ HOTELPOS=Plate("Hotel",25,0,1,1)
 WASTE=Plate("Waste",20,3,1,1)
 EPPENDORFS=Plate("Eppendorfs",13,1,1,16,False,unusableVolume=30,maxVolume=1500,zmax=1337,angle=17.5,h1=17.56,r1=4.42,v0=29.6,gemDepth=3.15,gemArea=31.4,gemShape='v-shaped')
 TIPOFFSETS=[390, 390, 394, 386]
-    
+
+
 ############ Well-known samples  #############
+WATER=None
+SSDDIL=None
+BLEACH=None
+
 def initWellKnownSamples():
     global WATER, SSDDIL, BLEACH
     WATER=Sample("Water",WATERLOC,-1,None,50000)
