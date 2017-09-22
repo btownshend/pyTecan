@@ -41,6 +41,6 @@ def setpgm(name,lidtemp,steps):
         worklist.pyrun(tc_prefix+'setpgm.py %s %s'%(name,steps))
     else:
         if lidtemp>99:
-            logger.warning("Lidtemp of %f above max; reducing to 99"%lidtemp)
+            logging.warning("Lidtemp of %f above max; reducing to 99"%lidtemp)
             lidtemp=99
         worklist.pyrun(tc_prefix+'setpgm.py %s %.0f %s'%(name,lidtemp,steps))

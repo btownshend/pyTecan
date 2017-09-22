@@ -116,10 +116,10 @@ class BioShake:
         if speed<0 or speed>3000:
             logging.error( "BioShake: Bad speed: %d",speed)
             return
-        executeAndCheck("setShakeTargetSpeed"+speed)
+        self.executeAndCheck("setShakeTargetSpeed"+speed)
 
     def setAcceleration(self,acceleration):
         if acceleration<0 or acceleration>10:
             logging.error("BioShake: Bad acceleration: %d seconds",acceleration)
             return
-        executeAndCheck("setShakeAcceleration"+acceleration)
+        self.executeAndCheck("setShakeAcceleration"+acceleration)
