@@ -10,7 +10,7 @@ from worklist import WASHLOC, QPCRLOC
 # Use dimensional data from Robot/Calibration/20150302-LiquidHeights
 #REAGENTPLATE=Plate("Reagents",18,1,6,5,False,unusableVolume=20,maxVolume=1700,zmax=569,angle=17.5,r1=4.062,h1=17.75,v0=13.7,slopex=-0.022,slopey=-0.038,gemDepth=24.45,gemArea=51.61,gemHOffset=-7.15,gemShape='v-shaped')  
 #REAGENTPLATE=Plate("Reagents",18,1,6,5,False,unusableVolume=20,maxVolume=1700,zmax=569,angle=17.5,r1=4.062,h1=17.75,v0=13.7,slopex=-0.022,slopey=-0.038,gemDepth=13.83,gemArea=51.84,gemHOffset=0,gemShape='v-shaped')
-REAGENTPLATE=Plate("Reagents",18,1,6,5,False,unusableVolume=20,maxVolume=1700,zmax=569,angle=17.5,r1=4.062,h1=17.75,v0=13.7,slopex=-0.022,slopey=-0.038,gemDepth=9.59,gemArea=43.03,gemHOffset=0,gemShape='v-shaped')  
+REAGENTPLATE=Plate("Reagents",18,1,6,5,False,unusableVolume=20,maxVolume=1700,zmax=569,angle=17.5,r1=4.062,h1=17.75,v0=13.7,slopex=-0.022,slopey=-0.038,gemDepth=9.59,gemArea=43.03,gemShape='v-shaped')
 MAGPLATELOC=Plate("MagPlate",18,2,12,8,False,unusableVolume=9,maxVolume=200,zmax=1459,angle=17.5,r1=2.80,h1=10.04,v0=10.8)   # HSP9601 on magnetic plate  (Use same well dimensions as SAMPLE)
 hspmaxspeeds={200:1400,150:1600,100:1850,50:2000,20:2200}	# From shaketest experiment
 grenmaxspeeds={150:1750,125:1900,100:1950,75:2200,50:2200}	# From shaketest experiment
