@@ -24,25 +24,30 @@ class IDPrep(TRP):
         self.qprimers = ["End"]
 
         self.bc1_inputvol = 2  # ul into PCR1
-        self.bc_pcr2prodconc = 100e-9  # Estimated final concentration of PCR2
-        self.bc_finalconc = None  # Filled in later
 
         self.mix_conc = 100e-9  # Concentration of mixdown
 
         self.con_dilvol = 100  # Volume to use for constriction dilutions
-        self.con_maxdilperstage = 33  # Maximum dilution/stage
+        self.con_maxdilperstage = 100/3.0  # Maximum dilution/stage
         self.con_pcr1vol = 100
         self.con_pcr1inputvol = 2
         self.con_pcr1tgtconc = self.qconc*4  # Enough to take qPCR without dilutiojn
-        self.con_pcr2dil = 10
+        self.con_pcr2dil = 4
         self.con_pcr2vol = 50
         self.con_pcr2tgtconc = 100e-9
 
         self.regen_predilvol = 100
-        self.regen_predil = 50
-        self.regen_dil = 50
+        self.regen_predil = 25
+        self.regen_dil = 25
         self.regen_vol = 100
-        self.regen_cycles = 12
+        self.regen_cycles = 10
+
+        used=[]
+        for inp in inputs:
+            bc="%s-%s"%(inp['left'],inp['right'])
+            if bc in used:
+                logging.error("Barcode %s is being reused for %s"%(bc,inp['name']))
+            used.append(bc)
 
         self.rsrc = [reagents.add("%s-%s-%s" % (inputs[i]['name'], inputs[i]['left'], inputs[i]['right']),
                                   decklayout.SAMPLEPLATE,
@@ -67,7 +72,7 @@ class IDPrep(TRP):
         print "### Regeneration #### (%.0f min)" % (clock.elapsed() / 60.0)
         self.regenerate(constricted * len(prefixes), [p for p in prefixes for _ in constricted])
         print "### qPCR #### (%.0f min)" % (clock.elapsed() / 60.0)
-        #self.q.run(confirm=False, enzName='EvaGreen')
+        self.q.run(confirm=False, enzName='EvaGreen')
         print "***NOTE: Use EvaGreen, not EvaUSER for qPCR"
 
     def mix(self, inp, weights):
@@ -97,15 +102,13 @@ class IDPrep(TRP):
     def idbarcoding(self, rsrc, left, right):
         """Perform barcoding of the given inputs;  rsrsc,left,right should all be equal length"""
         pcrcycles = [4]
-        pcr1inputconc = 0.1  # PCR1 concentration final in reaction
+        pcr1inputconc = 0.2  # PCR1 concentration final in reaction
         pcr1inputdil = 10
         pcr1vol = 30
-        pcr1postdil = 150.0 / pcr1vol
+        pcr1postdil = 100.0 / pcr1vol
 
         pcr2dil = 50
         pcr2minvol = 50.0
-
-        qpcrdil = 10000
 
         samps = [s.getsample() for s in rsrc]
         print "Inputs:"
@@ -147,7 +150,7 @@ class IDPrep(TRP):
         for x in pcr1:
             x.conc = Concentration(stock=pcr1finalconc,units='nM')
 
-        self.q.addSamples(src=pcr1, needDil=pcr1finalconc/self.qconc, primers=self.qprimers, save=True, nreplicates=1)
+        self.q.addSamples(src=pcr1, needDil=pcr1finalconc/(self.qconc*1e9), primers=self.qprimers, save=True, nreplicates=1)
 
         if len(pcrcycles)>1:
             # Second PCR with 235p/236p on mixture (use at least 4ul of prior)
@@ -160,8 +163,6 @@ class IDPrep(TRP):
                 print "Post-dilute PCR2 by %.1fx" % d2
                 self.diluteInPlace(tgt=pcr2, dil=d2)
                 self.e.shakeSamples(pcr2)
-            else:
-                d2 = 1
 
             pcr2finalconc=min(200,pcr1finalconc/(pcr2dil/pcr1postdil)*2**pcrcycles[1])
             for x in pcr2:
@@ -171,9 +172,6 @@ class IDPrep(TRP):
             res=pcr2
         else:
             res=pcr1
-
-        # self.q.addSamples(src=pcr2, needDil=qpcrdil / d2, primers=self.qprimers, save=False, nreplicates=2)
-        print "Elapsed time for barcoding part = %d minutes" % (clock.elapsed() / 60)
 
         return res
 
@@ -188,8 +186,6 @@ class IDPrep(TRP):
         print "Diluting by %.0fx in %.0f stages of %.1f" % (dil, nstages, dilperstage)
 
         s = [constrictin] * self.nconstrict + [decklayout.SSDDIL]
-
-        self.q.addReferences(dstep=10, primers=self.qprimers, ref=reagents.getsample("BT5310"))
 
         for j in range(nstages):
             print "Stage ", j, ", conc=", conc
