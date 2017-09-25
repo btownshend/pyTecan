@@ -133,7 +133,8 @@ class Plate(object):
         #print "%s,vol=%.1f, radius=%.1f, area=%.1f"%(self.name,volume,radius,area)
         return area
 
-    def mixingratio(self,dewpoint):
+    @staticmethod
+    def mixingratio(dewpoint):
         B=0.6219907  # kg/kg
         Tn=240.7263
         m=7.591386

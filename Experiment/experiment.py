@@ -60,7 +60,8 @@ class Experiment(object):
     def addIdleProgram(self,pgm):
         self.idlePgms.append(pgm)
 
-    def setreagenttemp(self,temp=None):
+    @staticmethod
+    def setreagenttemp(temp=None):
         if temp is None:
             worklist.pyrun("RIC\\ricset.py IDLE")
             decklayout.REAGENTPLATE.liquidTemp=22.7
@@ -71,7 +72,8 @@ class Experiment(object):
             decklayout.REAGENTPLATE.liquidTemp=temp+2   # Assumes that temp is the one used
 #            worklist.pyrun("RIC\\ricset.py %s"%temp)
 
-    def saveworklist(self,filename):
+    @staticmethod
+    def saveworklist(filename):
         worklist.saveworklist(filename)
 
     def savegem(self,filename):
@@ -361,7 +363,8 @@ class Experiment(object):
                 self.transfer(sourcevols[i],sources[i],samples[i],(True,destMix))
 
 
-    def lihahome(self):
+    @staticmethod
+    def lihahome():
         'Move LiHa to left of deck'
         worklist.moveliha(decklayout.WASHLOC)
 
@@ -588,7 +591,8 @@ class Experiment(object):
         worklist.wash(15,1,5,True)
 
 
-    def dilute(self,samples,factor):
+    @staticmethod
+    def dilute(samples, factor):
         if isinstance(factor,list):
             assert len(samples)==len(factor)
             for i in range(len(samples)):

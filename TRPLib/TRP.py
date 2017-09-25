@@ -144,7 +144,8 @@ class TRP(object):
         Plate.reset()
         decklayout.initWellKnownSamples()
         
-    def addTemplates(self,names,stockconc,finalconc=None,units="nM",plate=None,looplengths=None,extraVol=30,wellnames=None,initVol=0):
+    @staticmethod
+    def addTemplates(names, stockconc, finalconc=None, units="nM", plate=None, looplengths=None, extraVol=30, wellnames=None, initVol=0):
         'Add templates as "reagents", return the list of them'
         if plate is None:
             plate=decklayout.EPPENDORFS
