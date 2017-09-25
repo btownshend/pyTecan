@@ -4,7 +4,7 @@ import logging
 
 
 def interpolate(dictionary, x0):
-    'Interpolate a dictionary of x:y values at given x0 value using linear interpolation'
+    """Interpolate a dictionary of x:y values at given x0 value using linear interpolation"""
     lowbound=None
     highbound=None
     for x,y in dictionary.iteritems():
@@ -25,7 +25,7 @@ def interpolate(dictionary, x0):
 
 
 class Plate(object):
-    "An object representing a microplate or other container on the deck; includes a name, location, and size"
+    """An object representing a microplate or other container on the deck; includes a name, location, and size"""
     __allplates = []
 
     def __init__(self,name, grid, pos, nx=12, ny=8,pierce=False,unusableVolume=5,maxVolume=200,zmax=None,angle=None,r1=None,h1=None,v0=None,gemDepth=None,gemArea=None,gemShape=None,vectorName=None,maxspeeds=None,glycerolmaxspeeds=None,glycerol=None,minspeeds=None,liquidTemp=22.7,slopex=0,slopey=0,backupPlate=None):
@@ -90,7 +90,7 @@ class Plate(object):
             self.unusableVolume=newloc.unusableVolume
 
     def getliquidheight(self,volume):
-        'Get liquid height in mm above ZMax'
+        """Get liquid height in mm above ZMax"""
         if self.angle is None:
             if self.gemShape=='flat':
                 return volume/self.gemArea
@@ -111,7 +111,7 @@ class Plate(object):
         return height
 
     def getliquidarea(self,volume):
-        'Get surface area of liquid in mm^2 when filled to given volume'
+        """Get surface area of liquid in mm^2 when filled to given volume"""
         if self.angle is None:
             if self.gemShape=='flat':
                 return self.gemArea
@@ -145,7 +145,7 @@ class Plate(object):
         return mr
 
     def getevaprate(self,volume,vel=0):
-        'Get rate of evaporation of well in ul/min with given volume at specified self.dewpoint'
+        """Get rate of evaporation of well in ul/min with given volume at specified self.dewpoint"""
         assert volume>=0
         EVAPFUDGE=0.69		# Fudge factor -- makes computed evaporation match up with observed
         area=self.getliquidarea(volume)
@@ -160,7 +160,7 @@ class Plate(object):
         return evaprate*EVAPFUDGE
 
     def getliquidvolume(self,height):
-        'Compute liquid volume given height above zmax in mm'
+        """Compute liquid volume given height above zmax in mm"""
         if self.angle is None:
             if self.gemShape=='flat':
                 return self.gemArea*height
@@ -176,7 +176,7 @@ class Plate(object):
         return volume
 
     def getgemliquidvolume(self,height):
-        'Compute liquid volume given height above zmax in mm the way Gemini will do it'
+        """Compute liquid volume given height above zmax in mm the way Gemini will do it"""
         if height is None:
             volume=None
         elif self.gemShape=='flat':
@@ -194,7 +194,7 @@ class Plate(object):
         return volume
 
     def getgemliquidheight(self,volume):
-        'Compute liquid height above zmax in mm given volume the way Gemini will do it'
+        """Compute liquid height above zmax in mm given volume the way Gemini will do it"""
         if volume is None:
             height=None
         elif self.gemShape=='flat':
@@ -219,7 +219,7 @@ class Plate(object):
         return "%c%d"%(chr(65+row),col+1)
 
     def wellnumber(self,wellname):
-        'Convert a wellname, such as "A3" to a well index -- inverse of wellname()'
+        """Convert a wellname, such as "A3" to a well index -- inverse of wellname()"""
         for i in range(self.nx*self.ny):
             if self.wellname(i)==wellname:
                 return i

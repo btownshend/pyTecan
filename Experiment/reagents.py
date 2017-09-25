@@ -34,7 +34,7 @@ class Reagent(object):
         return self.sample
 
     def reset(self):
-        'Reset reagent: clear sample, adjust initial volume to make current volume equal to extraVol'
+        """Reset reagent: clear sample, adjust initial volume to make current volume equal to extraVol"""
         if self.sample is not None:
             adj=self.extraVol-self.sample.volume
             if adj>0:

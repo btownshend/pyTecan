@@ -1,4 +1,4 @@
-"Module for generating a worklist from a set of commands"
+"""Module for generating a worklist from a set of commands"""
 import math
 import string
 import shutil
@@ -55,7 +55,7 @@ def setOptimization(onoff):
     delayEnabled=onoff
 
 def wellSelection(nx,ny,pos):
-    'Build a well selection string'
+    """Build a well selection string"""
     s="%02x%02x"%(nx,ny)
     vals=[0] * (7*((nx*ny+6)/7))
     for i in pos:
@@ -78,7 +78,7 @@ def getline():
     return len(wlist)+1
 
 def moveliha( loc):
-    'Move LiHa to specified location'
+    """Move LiHa to specified location"""
     flushQueue()
     tipMask=15
     speed=10   # 0.1-400 (mm/s)
@@ -87,7 +87,7 @@ def moveliha( loc):
     clock.pipetting+=1.05
 
 def optimizeQueue():
-    'Optimize operations in queue'
+    """Optimize operations in queue"""
     global opQueue
     optimizeDebug=False
 
@@ -252,7 +252,7 @@ def detectLiquid(tipMask,wells,liquidClass,loc):
     aspirateDispense('Detect_Liquid',tipMask,wells, liquidClass, [0.0 for _ in wells], loc,allowDelay=False)
 
 def aspirateDispense(op,tipMask,wells, liquidClass, volume, loc, cycles=None,allowDelay=True):
-    'Execute or queue liquid handling operation'
+    """Execute or queue liquid handling operation"""
     assert isinstance(loc,Plate)
 
     if loc.pos==0 or loc.grid>=25:
@@ -456,7 +456,7 @@ def getDITIcnt():
     return "10ul: %d, 200ul: %d"%(diticnt[DITI10],diticnt[DITI200])
 
 def dropDITI( tipMask, loc, airgap=10, airgapSpeed=70):
-    'Drop DITI, airgap is in ul, speed in ul/sec'
+    """Drop DITI, airgap is in ul, speed in ul/sec"""
     flushQueue()
     assert 1 <= tipMask <= 15
     assert 0 <= airgap <= 100
@@ -465,7 +465,7 @@ def dropDITI( tipMask, loc, airgap=10, airgapSpeed=70):
     clock.pipetting+=2
 
 def wash( tipMask,wasteVol=1,cleanerVol=2,deepClean=False):
-    'Wash tips'
+    """Wash tips"""
     flushQueue()
     #comment("*Wash with tips=%d, wasteVol=%d, cleanerVol=%d, deep=%s"%(tipMask,wasteVol,cleanerVol,"Y" if deepClean else "N"))
     wasteLoc=(1,1)
@@ -510,7 +510,7 @@ def periodicWash(tipMask,period):
     wlist.append('Periodic_Wash(%d,%d,%d,%d,%d,%.1f,%d,%.1f,%d,%.1f,%d,%d,%d,%d,%d,%d)'%(tipMask,wasteLoc[0],wasteLoc[1],cleanerLoc[0],cleanerLoc[1],wasteVol,wasteDelay,cleanerVol,cleanerDelay,airgap, airgapSpeed, retractSpeed, fastWash, lowVolume, period, atFreq))
 
 def vector(vec, loc, direction, andBack, initialAction, finalAction, slow=False):
-    'Move ROMA.  Gripper actions=0 (open), 1 (close), 2 (do not move).'
+    """Move ROMA.  Gripper actions=0 (open), 1 (close), 2 (do not move)."""
     #comment("*ROMA Vector %s"%vector)
     if slow:
         speed=1
@@ -532,7 +532,7 @@ def email(dest,subject,body='',profile='cdsrobot',onerror=0,attachscreen=1):
     wlist.append('Notification(%d,"%s","%s","%s","%s",%d)'%(attachscreen,profile,dest,subject,body,onerror))
 
 def condition(varname,cond,value,dest):
-    'Conditional - jump to given label (comment) if (variable cond value) is true'
+    """Conditional - jump to given label (comment) if (variable cond value) is true"""
     flushQueue()
     condval=None
     if cond=='==':
@@ -549,7 +549,7 @@ def condition(varname,cond,value,dest):
     wlist.append('If("%s",%d,"%s","%s")'%(varname,condval,value,dest))
 
 def goto(dest):
-    'Unconditional goto'
+    """Unconditional goto"""
     variable('dummy',0)
     condition('dummy','==',0,dest)
         
@@ -616,7 +616,7 @@ def endloop():
     wlist.append('EndLoop()')
         
 def execute( command, wait=True, resultvar=None):
-    'Execute an external command'
+    """Execute an external command"""
     flushQueue()
     flags=0
     if wait:
@@ -644,7 +644,7 @@ def getlabel():
     return label
 
 def testvar(var,op,value,msg=None):
-    'Test if a variable pass test'
+    """Test if a variable pass test"""
     label=getlabel()
     condition(var,op,value,label)
     if msg is None:
@@ -655,19 +655,19 @@ def testvar(var,op,value,msg=None):
     comment(label)
 
 def dump():
-    'Dump current worklist'
+    """Dump current worklist"""
     flushQueue()
     for i in range(len(wlist)):
         print wlist[i]
 
 def dumpvols():
-    'Dump final volumes'
+    """Dump final volumes"""
     for loc in volumes:
         for well in volumes[loc]:
             print "%-14s\t%s\t%6.1f"%(str(loc),str(well),volumes[loc][well])
 
 def saveworklist(filename):
-    'Save worklist in a file in format that Gemini can load as a worklist'
+    """Save worklist in a file in format that Gemini can load as a worklist"""
     flushQueue()
     fd=open(filename,'w')
     for i in range(len(wlist)):
@@ -675,7 +675,7 @@ def saveworklist(filename):
     fd.close()
 
 def savegem(headerfile,filename):
-    'Save worklist in a file in format that Gemini can load as an experiment'
+    """Save worklist in a file in format that Gemini can load as an experiment"""
     flushQueue()
     shutil.copy(headerfile,filename)
     fd=open(filename,'a')

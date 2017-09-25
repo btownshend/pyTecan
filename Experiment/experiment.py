@@ -30,7 +30,7 @@ class Experiment(object):
     MAXVOLUME=200  # Maximum volume for pipetting in ul
 
     def __init__(self):
-        'Create a new experiment with given sample locations for water and WASTE;  totalTime is expected run time in seconds, if known'
+        """Create a new experiment with given sample locations for water and WASTE;  totalTime is expected run time in seconds, if known"""
         self.checksum=md5sum(sys.argv[0])
         self.checksum=self.checksum[-4:]
         pyTecan=os.path.dirname(os.path.realpath(__file__))
@@ -107,7 +107,7 @@ class Experiment(object):
         fd.close()
 
     def sanitize(self,nmix=1,deepvol=20,force=False):
-        'Deep wash including RNase-Away treatment'
+        """Deep wash including RNase-Away treatment"""
         fixedTips=(~self.DITIMASK)&15
         worklist.flushQueue()
         if not force and fixedTips==self.cleanTips:
@@ -129,7 +129,7 @@ class Experiment(object):
         worklist.comment(clock.statusString())
 
     def cleantip(self):
-        'Get the mask for a clean tip, washing if needed'
+        """Get the mask for a clean tip, washing if needed"""
         if self.cleanTips==0:
             #worklist.wash(self.cleanTips)
             self.sanitize()
@@ -140,7 +140,7 @@ class Experiment(object):
         return tipMask
 
     def multitransfer(self, volumes, src, dests,mix=(True,False),getDITI=True,dropDITI=True,ignoreContents=False,extraFrac=0.05):
-        'Multi pipette from src to multiple dest.  mix is (src,dest) mixing -- only mix src if needed though'
+        """Multi pipette from src to multiple dest.  mix is (src,dest) mixing -- only mix src if needed though"""
         #print "multitransfer(",volumes,",",src,",",dests,",",mix,",",getDITI,",",dropDITI,")"
         if self.tcrunning and (src.plate==decklayout.SAMPLEPLATE or len([1 for d in dests if d.plate==decklayout.SAMPLEPLATE])>0):
             self.waitpgm()
@@ -270,7 +270,7 @@ class Experiment(object):
         src.mix(tipMask,False,nmix=nmix)
 
     def dispose(self, volume, src,  mix=False, getDITI=True, dropDITI=True):
-        'Dispose of a given volume by aspirating and not dispensing (will go to waste during next wash)'
+        """Dispose of a given volume by aspirating and not dispensing (will go to waste during next wash)"""
         if self.tcrunning and src.plate==decklayout.SAMPLEPLATE:
             self.waitpgm()
         if volume>self.MAXVOLUME:
@@ -365,7 +365,7 @@ class Experiment(object):
 
     @staticmethod
     def lihahome():
-        'Move LiHa to left of deck'
+        """Move LiHa to left of deck"""
         worklist.moveliha(decklayout.WASHLOC)
 
     def runpgm(self,pgm,duration,waitForCompletion=True,volume=10):
@@ -442,7 +442,7 @@ class Experiment(object):
             worklist.romahome()
 
     def shakeSamples(self,samples,dur=60,speed=None,accel=5,returnPlate=True):
-        "Shake plates if any of the given samples are on that plate and  needs mixing"
+        """Shake plates if any of the given samples are on that plate and  needs mixing"""
         if self.tcrunning and any([s.plate==decklayout.SAMPLEPLATE for s in samples]):
             self.waitpgm()
 

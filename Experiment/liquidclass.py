@@ -1,4 +1,4 @@
-'A liquid class'
+"""A liquid class"""
 import sys
 
 SURFACEREMOVE=0.4	# Extra removed from wells due to tip wetting (assuming liquid detecting, aspirating 3.5mm below surface)

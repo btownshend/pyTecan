@@ -1,11 +1,11 @@
-'''Queue of jobs to be executed during idle times'''
+"""Queue of jobs to be executed during idle times"""
 from Experiment.experiment import Experiment
 import logging
 
 
 # noinspection PyShadowingBuiltins
 class JobQueue(object):
-    '''Queue of jobs to be executed during idle times'''
+    """Queue of jobs to be executed during idle times"""
     def __init__(self):
         self.nextID=1
         self.jobs={}
@@ -21,7 +21,7 @@ class JobQueue(object):
         return id
 
     def findPriors(self,sample,known):
-        'Return any prior job entries that affect sample'
+        """Return any prior job entries that affect sample"""
         priors=[]
         for i,j in self.jobs.iteritems():
             if j['type']=='transfer' and j['dest']==sample:
@@ -36,7 +36,7 @@ class JobQueue(object):
         return priors
 
     def addTransfer(self, volume, src, dest, prereqs=None):
-        'Add a transfer operation to the queue, return the ID of the job (for use in prereqs)'
+        """Add a transfer operation to the queue, return the ID of the job (for use in prereqs)"""
         if prereqs is None:
             prereqs = []
         id=self.getID()
@@ -45,7 +45,7 @@ class JobQueue(object):
         return id
 
     def addMultiTransfer(self, volume, src, dest, prereqs=None):
-        'Add a transfer operation to the queue, return the ID of the job (for use in prereqs)'
+        """Add a transfer operation to the queue, return the ID of the job (for use in prereqs)"""
         if prereqs is None:
             prereqs = []
         id=self.getID()
@@ -62,12 +62,12 @@ class JobQueue(object):
         return id
 
     def dump(self):
-        'Dump queue'
+        """Dump queue"""
         for id,j in self.jobs.iteritems():
             print id,j
 
     def getJob(self):
-        'Return the next job on the queue to execute, removing it from queue'
+        """Return the next job on the queue to execute, removing it from queue"""
 
         if self.runningJob is not None:
             logging.warning("Call of getJob() while a job is running - returning None")

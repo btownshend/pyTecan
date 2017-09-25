@@ -82,7 +82,7 @@ reagents.add("T2b",well='C4',conc=Concentration(10.0/3,1.0,'x'),extraVol=30) # A
 #reagents.add("T25T6",well='E2',conc=Concentration(2.222,1.0,'x'),extraVol=30) # Acetyl CoA + Trans-Zeatin +Redox
     
 def listify(x):
-    'Convert a list of (lists or scalars) into a list of equal length lists'
+    """Convert a list of (lists or scalars) into a list of equal length lists"""
     n=1
     for i in x:
         if isinstance(i,list):
@@ -127,11 +127,11 @@ def diluteName(name,dilution):
 
 class TRP(object):
     def __init__(self):
-        'Create a new TRP run'
+        """Create a new TRP run"""
         self.e=None  # Placeholder
             
     def reset(self):
-        'Reset this experiment so we can generate it again after adjusting the reagent initial volumes and total time'
+        """Reset this experiment so we can generate it again after adjusting the reagent initial volumes and total time"""
         totalTime=clock.elapsed()
         clock.reset(totalTime)
         #print "After reset, elapsed=%d"%clock.elapsed()
@@ -146,7 +146,7 @@ class TRP(object):
         
     @staticmethod
     def addTemplates(names, stockconc, finalconc=None, units="nM", plate=None, looplengths=None, extraVol=30, wellnames=None, initVol=0):
-        'Add templates as "reagents", return the list of them'
+        """Add templates as "reagents", return the list of them"""
         if plate is None:
             plate=decklayout.EPPENDORFS
         if finalconc is None:
@@ -264,7 +264,7 @@ class TRP(object):
     # Run a reaction in place
     ########################
     def runRxInPlace(self,src,vol,master,master2=None,master3=None,returnPlate=True,finalx=1.0):
-        'Run reaction on beads in given total volume'
+        """Run reaction on beads in given total volume"""
         [vol,src,master,master2,master3]=listify([vol,src,master,master2,master3])
         mastervol=[vol[i]*finalx/master[i].conc.dilutionneeded() for i in range(len(vol))]
         master2vol=[0 if master2[i] is None else vol[i]*finalx/master2[i].conc.dilutionneeded() for i in range(len(vol))]
@@ -557,7 +557,7 @@ class TRP(object):
         return tgt
 
     def beadCombine(self,src,residualVolume=0.1,suspendVolume=150,sepTime=None):
-        'Combine everything in the src wells into a the first well; assumes that there are enough beads in that well for all the combination'
+        """Combine everything in the src wells into a the first well; assumes that there are enough beads in that well for all the combination"""
         tgt=src[0]
         for s in src[1:]:
             # Combine s with tgt
@@ -599,7 +599,7 @@ class TRP(object):
         return result
     
     def runRTInPlace(self,src,vol,dur=20,heatInactivate=False,hiTemp=None,incTemp=37,stop=None):
-        'Run RT on beads in given volume'
+        """Run RT on beads in given volume"""
 
         # Adjust source dilution
         for i in range(len(src)):
@@ -1017,11 +1017,11 @@ class TRP(object):
         return [a[1] for a in torun]
 
     def setup(self):
-        'Setup for experiment -- run once.  Usually overridden by actual experiment'
+        """Setup for experiment -- run once.  Usually overridden by actual experiment"""
         worklist.setOptimization(True)
 
     def pgm(self):
-        'Actual robot code generation -- may be run multiple times to establish initial volumes.  Overridden by actual experiment'
+        """Actual robot code generation -- may be run multiple times to establish initial volumes.  Overridden by actual experiment"""
 
     def run(self):
         parser=argparse.ArgumentParser(description="TRP")

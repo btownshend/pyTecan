@@ -1,4 +1,4 @@
-'''Keep track of elapsed time of run'''
+"""Keep track of elapsed time of run"""
 
 pipetting=0
 pipandthermotime=0

@@ -35,10 +35,10 @@ class Concentration(object):
         else:
             return Concentration(self.stock/factor,self.final,self.units)
     def dilutionneeded(self):
-        'Return dilution factor needed to dilute from stock to final'
+        """Return dilution factor needed to dilute from stock to final"""
         return self.stock*1.0/self.final
 
     def volneeded(self,totalvol):
-        'Return volume needed into totalvol'
+        """Return volume needed into totalvol"""
         return totalvol*self.final*1.0/self.stock
 

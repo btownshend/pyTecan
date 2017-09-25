@@ -11,7 +11,7 @@ class QSetup(object):
     TGTINVOL=4
     
     def __init__(self,trp,vol=15,maxdil=16,mindilvol=50.0,maxdilvol=100.0,debug=False):
-        'Create a new QPCR setup structure'
+        """Create a new QPCR setup structure"""
         self.volume=vol
         self.samples=[]
         self.needDil=[]
@@ -29,7 +29,7 @@ class QSetup(object):
         self.jobq=JobQueue()
         
     def addSamples(self, src, needDil, primers,nreplicates=1,names=None,saveVol=None,saveDil=None,save=True):
-        'Add sample(s) to list of qPCRs to do'
+        """Add sample(s) to list of qPCRs to do"""
         #print "addSamples(%s)"%src
         if not isinstance(src,list):
             src=[src]
@@ -109,7 +109,7 @@ class QSetup(object):
         return set([p for sublist in self.primers for p in sublist])
 
     def addReferences(self,mindil=1,nsteps=6,dstep=4,nreplicates=1,ref=None,primers=None):
-        'Add all needed references'
+        """Add all needed references"""
         #print "addReferences(mindil=",mindil,", nsteps=",nsteps,", dstep=",dstep,", nrep=", nreplicates, ", ref=",ref,")"
         # Make sure the ref reagent is loaded
         if ref is None:
@@ -153,7 +153,7 @@ class QSetup(object):
             print "Idler done with ",endTime-clock.elapsed()," seconds remaining"
 
     def run(self,confirm=False,enzName="EvaUSER"):
-        'Run the dilutions and QPCR setup'
+        """Run the dilutions and QPCR setup"""
         # Setup qPCRs
         #self.jobq.dump()
         self.idler(100000)
