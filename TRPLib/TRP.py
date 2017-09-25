@@ -234,8 +234,8 @@ class TRP(object):
         
         if dilutant is None:
             dilutant=decklayout.WATER
-        self.e.multitransfer([vol*(dil-1) for i in range(wells)],dilutant,tgt)
-        self.e.multitransfer([vol for i in range(wells)],src[0],tgt)
+        self.e.multitransfer([vol*(dil-1) for _ in range(wells)],dilutant,tgt)
+        self.e.multitransfer([vol for _ in range(wells)],src[0],tgt)
         return tgt
 
 
@@ -313,8 +313,8 @@ class TRP(object):
         rvols=[reagents.getsample(x).conc.volneeded(vol) for x in rlist]
         rtotal=sum(rvols)
         sourcevols=[vol*1.0/s for s in srcdil]
-        ligandvols=[0 for s in srcdil]
-        watervols=[0 for s in srcdil]
+        ligandvols=[0 for _ in srcdil]
+        watervols=[0 for _ in srcdil]
         for i in range(len(srcdil)):
             if ligands[i] is not None:
                 ligandvols[i]=vol*1.0/ligands[i].conc.dilutionneeded()
@@ -869,9 +869,9 @@ class TRP(object):
         rvols=[reagents.getsample(x).conc.volneeded(vol) for x in rlist]
         rtotal=sum(rvols)
         sourcevols=[vol*1.0/s for s in srcdil]
-        BC1vols=[0 for s in srcdil]
-        BC2vols=[0 for s in srcdil]
-        watervols=[0 for s in srcdil]
+        BC1vols=[0 for _ in srcdil]
+        BC2vols=[0 for _ in srcdil]
+        watervols=[0 for _ in srcdil]
         for i in range(len(srcdil)):
             if BC1[i] is not None:
                 BC1vols[i]=vol*1.0/BC1[i].conc.dilutionneeded()
@@ -886,7 +886,7 @@ class TRP(object):
         if sum(watervols)>0.01:
             self.e.multitransfer(watervols,decklayout.WATER,tgt)
         for ir in range(len(rlist)):
-            self.e.multitransfer([rvols[ir] for s in tgt],reagents.getsample(rlist[ir]),tgt)
+            self.e.multitransfer([rvols[ir] for _ in tgt],reagents.getsample(rlist[ir]),tgt)
         for i in range(len(BC1)):
             if BC1vols[i] > 0.01:
                 self.e.transfer(BC1vols[i],BC1[i],tgt[i])

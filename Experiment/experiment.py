@@ -147,7 +147,7 @@ class Experiment(object):
 
         if isinstance(volumes,(int,long,float)):
             # Same volume for each dest
-            volumes=[volumes for i in range(len(dests))]
+            volumes=[volumes for _ in range(len(dests))]
         assert len(volumes)==len(dests)
         #        if len([d.volume for d in dests if d.conc!=None])==0:
         if len([dests[i].volume for i in range(0,len(dests)) if dests[i].conc is not None and volumes[i]>0.01])==0:
@@ -324,7 +324,7 @@ class Experiment(object):
 
         worklist.comment("Stage: "+stagename)
         if not isinstance(volume,list):
-            volume=[volume for i in range(len(samples))]
+            volume=[volume for _ in range(len(samples))]
         for i in range(len(volume)):
             assert volume[i]>0
             volume[i]=float(volume[i])

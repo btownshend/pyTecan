@@ -269,9 +269,9 @@ def fwparse(dev,send,reply,error):
         sml=[int(r) if len(r)>0 else 0 for r in args]
     if op=='MET' or op=='MDT':
         if len(args[1])>0:
-            sbl=[int(args[1]) for x in [0,1,2,3]]
+            sbl=[int(args[1]) for _ in [0,1,2,3]]
         if len(args[3])>0:
-            sml=[int(args[3]) for x in [0,1,2,3]]
+            sml=[int(args[3]) for _ in [0,1,2,3]]
         zadd=[int(x) for x in args[4:8]]
         tipSelect=int(args[0])
         if replyecode==0:
