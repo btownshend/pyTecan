@@ -69,6 +69,7 @@ def printprep(fd=sys.stdout):
     for p in sorted(set([r.plate for r in Reagent.allReagents.itervalues()])):
         print >>fd,"\nPlate %s:"%p.name
         total=0
+        extras=0
         for r in sorted(Reagent.allReagents.itervalues(), key=lambda x:x.sample.well if x.sample is not None else None):
             s=r.sample
             if s is None:
@@ -87,7 +88,8 @@ def printprep(fd=sys.stdout):
             elif r.initVol>0:
                 print >>fd,"%s%s in %s.%s consume %.1f ul, provide %.1f ul"%(s.name,c,s.plate.name,s.plate.wellname(s.well),r.initVol-s.volume,r.initVol)
             total+=round((r.initVol-s.volume)*10)/10.0
+            extras+=r.extraVol
             if r.initVol>s.plate.maxVolume:
                 logging.error("Excess initial volume (%.1f) for %s, maximum is %.1f"%(r.initVol,s.name,s.plate.maxVolume))
-        print >>fd,"Total %s volume = %.1f ul"%(p.name,total)
+        print >>fd,"Total %s volume = %.1f ul (%.1f ul with extras)"%(p.name,total,total+extras)
 
