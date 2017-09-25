@@ -3,9 +3,10 @@ import sys
 
 SURFACEREMOVE=0.4	# Extra removed from wells due to tip wetting (assuming liquid detecting, aspirating 3.5mm below surface)
 
-_LC__alllc = []
 
 class LC(object):
+    __alllc = []
+
     def __init__(self,name,singletag=0,singlelag=0,multicond=0,multiexcess=0,multitag=0,wetvolume=SURFACEREMOVE,ldetect=False,submerge=None):
         self.name=name
         self.multicond=multicond
@@ -17,12 +18,12 @@ class LC(object):
         self.ldetect=ldetect
         self.submerge=submerge
         self.used={}
-        __alllc.append(self)
+        LC.__alllc.append(self)
 
     @staticmethod
     def printalllc(fd=sys.stdout):
         print >>fd, "Liquid classes used:"
-        for lc in sorted(__alllc, key=lambda p:p.name.upper()):
+        for lc in sorted(LC.__alllc, key=lambda p:p.name.upper()):
             ops=lc.used.keys()
             if len(ops)>0:
                 print >>fd,lc.fullstr()

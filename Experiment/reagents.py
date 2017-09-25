@@ -4,9 +4,9 @@ from Experiment.sample import Sample
 import logging
 import decklayout
 
-__allReagents={}
-
 class Reagent(object):
+    allReagents={}
+
     def __init__(self, name, plate=None, well=None, conc=None, hasBeads=False, extraVol=50, initVol=0, extrainfo=None, ingredients=None):
         if extrainfo is None:
             extrainfo = []
@@ -43,13 +43,13 @@ class Reagent(object):
             self.sample=None
 
 def isReagent(name):
-    return name in __allReagents
+    return name in Reagent.allReagents
 
 def getsample(name):
-    return __allReagents[name].getsample()
+    return Reagent.allReagents[name].getsample()
 
 def lookup(name):
-    return __allReagents[name]
+    return Reagent.allReagents[name]
 
 def __getattr__(name):
     return get(name)
@@ -59,20 +59,20 @@ def add(name, plate=None, well=None, conc=None, hasBeads=False, extraVol=50, ini
         extrainfo = []
     if plate is None:
         plate=decklayout.REAGENTPLATE
-    if name in __allReagents:
+    if name in Reagent.allReagents:
         logging.error("Attempt to add duplicate reagent, "+name)
-    __allReagents[name]=Reagent(name,plate,well,conc,hasBeads,extraVol,initVol=initVol,extrainfo=extrainfo,ingredients=ingredients)
-    return __allReagents[name]
+    Reagent.allReagents[name]=Reagent(name,plate,well,conc,hasBeads,extraVol,initVol=initVol,extrainfo=extrainfo,ingredients=ingredients)
+    return Reagent.allReagents[name]
 
 def reset():
-    for r in __allReagents:
-        __allReagents[r].reset()
+    for r in Reagent.allReagents:
+        Reagent.allReagents[r].reset()
 
 def printprep(fd=sys.stdout):
-    for p in sorted(set([r.plate for r in __allReagents.itervalues()])):
+    for p in sorted(set([r.plate for r in Reagent.allReagents.itervalues()])):
         print >>fd,"\nPlate %s:"%p.name
         total=0
-        for r in sorted(__allReagents.itervalues(), key=lambda p:p.sample.well if p.sample is not None else None):
+        for r in sorted(Reagent.allReagents.itervalues(), key=lambda p:p.sample.well if p.sample is not None else None):
             s=r.sample
             if s is None:
                 continue

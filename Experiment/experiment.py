@@ -16,8 +16,6 @@ import subprocess
 import os
 from string import strip
 
-_Experiment__shakerActive = False
-
 def md5sum(filename):
     hash = md5()
     with open(filename, "rb") as f:
@@ -26,6 +24,7 @@ def md5sum(filename):
     return hash.hexdigest()
 
 class Experiment(object):
+    __shakerActive = False
     DITIMASK=0   # Which tips are DiTis
 
     RPTEXTRA=0   # Extra amount when repeat pipetting
@@ -491,8 +490,7 @@ class Experiment(object):
             
         oldloc=plate.curloc
         self.moveplate(plate,"Shaker",returnHome=False)
-        global __shakerActive
-        __shakerActive=True
+        Experiment.__shakerActive=True
         worklist.pyrun("BioShake\\bioexec.py setElmLockPos")
         worklist.pyrun("BioShake\\bioexec.py setShakeTargetSpeed%d"%speed)
         worklist.pyrun("BioShake\\bioexec.py setShakeAcceleration%d"%accel)
@@ -505,13 +503,13 @@ class Experiment(object):
         self.starttimer()
         self.waittimer(accel+4)
         worklist.pyrun("BioShake\\bioexec.py setElmUnlockPos")
-        __shakerActive=False
+        Experiment.__shakerActive=False
         if returnPlate:
             self.moveplate(plate,oldloc)
 
     @staticmethod
     def shakerIsActive():
-        return __shakerActive
+        return Experiment.__shakerActive
 
     def starttimer(self,timer=1):
         self.timerStartTime[timer]=clock.pipetting

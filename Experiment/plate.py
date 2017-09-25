@@ -2,7 +2,6 @@ import math
 import globals
 import logging
 
-_Plate__allplates=[]
 
 def interpolate(dict,x0):
     'Interpolate a dictionary of x:y values at given x0 value using linear interpolation'
@@ -27,7 +26,9 @@ def interpolate(dict,x0):
 
 class Plate(object):
     "An object representing a microplate or other container on the deck; includes a name, location, and size"
-    def __init__(self,name, grid, pos, nx=12, ny=8,pierce=False,unusableVolume=5,maxVolume=200,zmax=None,angle=None,r1=None,h1=None,v0=None,gemDepth=None,gemArea=None,gemHOffset=None,gemShape=None,vectorName=None,maxspeeds=None,glycerolmaxspeeds=None,glycerol=None,minspeeds=None,liquidTemp=22.7,slopex=0,slopey=0,backupPlate=None):
+    __allplates = []
+
+    def __init__(self,name, grid, pos, nx=12, ny=8,pierce=False,unusableVolume=5,maxVolume=200,zmax=None,angle=None,r1=None,h1=None,v0=None,gemDepth=None,gemArea=None,gemShape=None,vectorName=None,maxspeeds=None,glycerolmaxspeeds=None,glycerol=None,minspeeds=None,liquidTemp=22.7,slopex=0,slopey=0,backupPlate=None):
         self.name=name
         self.grid=grid
         self.pos=pos
@@ -62,21 +63,18 @@ class Plate(object):
         self.minspeeds=minspeeds
         self.liquidTemp=liquidTemp
         self.backupPlate=backupPlate	   # Backup plate to use when this one is full
-        global __allplates
-        __allplates.append(self)
+        Plate.__allplates.append(self)
 
     @classmethod
     def lookup(cls,grid,pos):
-        global __allplates
-        for p in __allplates:
+        for p in Plate.__allplates:
             if p.grid==grid and p.pos==pos:
                 return p
         return None
 
     @classmethod
     def reset(cls):
-        global __allplates
-        for p in __allplates:
+        for p in Plate.__allplates:
             p.movetoloc("Home")
 
     def movetoloc(self,dest,newloc=None):
