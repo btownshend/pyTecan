@@ -579,7 +579,7 @@ class PGMSelect(TRP):
 
             if self.nopcrdil>(1+relbt88):
                 self.diluteInPlace(tgt=rxs,dil=self.nopcrdil/(1.0+relbt88))
-                needDil=needDil/self.nopcrdil
+                #needDil=needDil/self.nopcrdil  # needDil not used subsequently
                 print "Dilution of EXT product: %.2fx * %.2fx = %2.fx\n"%(1+relbt88,self.nopcrdil/(1+relbt88),self.nopcrdil)
             else:
                 print "Dilution of EXT product: %.2fx\n"%(1+relbt88)

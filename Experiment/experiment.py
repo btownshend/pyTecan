@@ -306,6 +306,7 @@ class Experiment(object):
         if self.useDiTis and dropDITI:
             worklist.dropDITI(tipMask&self.DITIMASK,decklayout.WASTE)
 
+    # noinspection PyShadowingNames
     def stage(self,stagename,reagents,sources,samples,volume,finalx=1.0,destMix=True,dilutant=None):
         # Add water to sample wells as needed (multi)
         # Pipette reagents into sample wells (multi)

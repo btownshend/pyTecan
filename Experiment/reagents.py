@@ -51,9 +51,6 @@ def getsample(name):
 def lookup(name):
     return Reagent.allReagents[name]
 
-def __getattr__(name):
-    return get(name)
-
 def add(name, plate=None, well=None, conc=None, hasBeads=False, extraVol=50, initVol=0, extrainfo=None, ingredients=None):
     if extrainfo is None:
         extrainfo = []

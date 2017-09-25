@@ -588,6 +588,8 @@ def userprompt( text,timeout=-1):
     if timeout>0:
         clock.pipetting+=timeout
 
+
+# noinspection PyShadowingNames
 def variable(varname,default,userprompt=None,minval=None,maxval=None):
     if minval is not None or maxval is not None:
         limitrange=1
@@ -599,6 +601,8 @@ def variable(varname,default,userprompt=None,minval=None,maxval=None):
     else:
         wlist.append('Variable(%s,"%s",1,"%s",%d,%f,%f)'%(varname,default,userprompt,limitrange,minval,maxval))
 
+
+# noinspection PyShadowingNames
 def stringvariable(varname,default,userprompt=None):
     if userprompt is None:
         wlist.append('String-Variable(%s,"%s",0," ")'%(varname,default))
