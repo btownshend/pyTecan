@@ -9,7 +9,6 @@ import liquidclass
 import reagents
 import decklayout
 import clock
-import globals
 import logging
 import sys
 import subprocess
