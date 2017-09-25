@@ -316,7 +316,7 @@ def aspirateDispense(op,tipMask,wells, liquidClass, volume, loc, cycles=None,all
         else:
             col=int(well[1:])
             row=ord(well[0])-ord('A')+1
-        assert 1 <= row <= loc.ny and col >= 1 and col <= loc.nx
+        assert 1 <= row <= loc.ny and 1 <= col <= loc.nx
         pos[i]=(row-1)+loc.ny*(col-1)
         if i>0:
             assert col==prevcol

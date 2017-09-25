@@ -206,7 +206,7 @@ def gemtip(tipcmd,line2):
     if op=="mix":
         op="%s%d"%(op,nmix)
     msg1="tip=%d, op=%s, vol=%.2f/%.2f, wellx=%d, welly=%d, rack=%s, grid=%d, pos=%d, lc=%s, pytpe=%s"%(tip,op,vol,vol2,wellx,welly,rack,grid,pos,lc,ptype)
-    msg2="tip=%d, wellx=%d, welly=%d, rack=%s, grid=%d, pos=%d, lc=%s"%(tip,wellx,welly,rack,grid,pos,lc)
+    #msg2="tip=%d, wellx=%d, welly=%d, rack=%s, grid=%d, pos=%d, lc=%s"%(tip,wellx,welly,rack,grid,pos,lc)
     if debug:
         print "XFR",msg1
     dl.logop(op,tip,vol,wellx,welly,rack,grid,pos,lc,std,volset,ptype=='Multi')

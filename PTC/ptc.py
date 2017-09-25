@@ -144,6 +144,7 @@ class PTC:
     def getlidstatus(self):
         res=self.execute("LID?")
         return res
+
     def lidopen(self):
         res=self.execute("LID OPEN")
     def lidclose(self,force):
