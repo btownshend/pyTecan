@@ -12,8 +12,8 @@ elif cycler=='TROBOT':
 else:
     logging.error("Bad cycler type: %s"%cycler)
 
-def lid(open):
-    if open:
+def lid(doopen):
+    if doopen:
         worklist.pyrun(tc_prefix+"lid.py OPEN")
     else:
         worklist.pyrun(tc_prefix+"lid.py CLOSE")

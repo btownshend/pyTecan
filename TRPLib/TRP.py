@@ -350,7 +350,8 @@ class TRP(object):
         print "Running T7 at 37C for %d minutes"%dur
         self.e.runpgm(pgm,dur, False,vol)
 
-    def runT7Stop(self,theo,tgt,stopmaster=None,srcdil=2):
+    def runT7Stop(self,theo,tgt,stopmaster=None):
+        del theo # Unused
         [tgt,stopmaster]=listify([tgt,stopmaster])
         assert( stopmaster is not None)
             

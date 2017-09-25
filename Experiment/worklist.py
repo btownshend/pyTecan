@@ -509,7 +509,7 @@ def periodicWash(tipMask,period):
     atFreq=1000  # Hz, For Active tip
     wlist.append('Periodic_Wash(%d,%d,%d,%d,%d,%.1f,%d,%.1f,%d,%.1f,%d,%d,%d,%d,%d,%d)'%(tipMask,wasteLoc[0],wasteLoc[1],cleanerLoc[0],cleanerLoc[1],wasteVol,wasteDelay,cleanerVol,cleanerDelay,airgap, airgapSpeed, retractSpeed, fastWash, lowVolume, period, atFreq))
 
-def vector( vector,loc, direction, andBack, initialAction, finalAction, slow=False):
+def vector(vec, loc, direction, andBack, initialAction, finalAction, slow=False):
     'Move ROMA.  Gripper actions=0 (open), 1 (close), 2 (do not move).'
     #comment("*ROMA Vector %s"%vector)
     if slow:
