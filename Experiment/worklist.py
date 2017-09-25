@@ -227,7 +227,7 @@ def optimizeQueue():
             print "POST-OPT %s:  %s:\tTip %d, Loc (%d,%d) Wells %s"%(d[7],d[0],d[1],d[5].grid,d[5].pos,str(d[2]))
 
 def flushQueue():
-    global delayEnable,opQueue
+    global delayEnabled,opQueue
     if not delayEnabled or len(opQueue)==0:
         return
     #comment('*Flush queue')
