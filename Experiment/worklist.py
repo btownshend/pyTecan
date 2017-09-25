@@ -520,7 +520,7 @@ def vector(vec, loc, direction, andBack, initialAction, finalAction, slow=False)
         andBack=1
     else:
         andBack=0
-    wlist.append('Vector("%s",%d,%d,%d,%d,%d,%d,%d,0)'%(vector,loc.grid,loc.pos,direction,andBack,initialAction, finalAction, speed))
+    wlist.append('Vector("%s",%d,%d,%d,%d,%d,%d,%d,0)' % (vec, loc.grid, loc.pos, direction, andBack, initialAction, finalAction, speed))
     clock.pipetting+=5.04
 
 def romahome():
