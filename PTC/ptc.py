@@ -123,6 +123,7 @@ class PTC:
 
     def cancel(self):
         res=self.execute("CANCEL")
+        return res
 
     def version(self):
         res=self.execute("BOOTVERSION?")
@@ -140,6 +141,7 @@ class PTC:
 
     def run(self,name):
         res=self.execute("RUN \"%s\",CALC,ON"%name)
+        return res
 
     def getlidstatus(self):
         res=self.execute("LID?")
@@ -147,12 +149,17 @@ class PTC:
 
     def lidopen(self):
         res=self.execute("LID OPEN")
-    def lidclose(self,force):
+        return res
+
+    def lidclose(self):
         res=self.execute("LID CLOSE")
+        return res
+
     def setlidforce(self,force):
         if force not in [0,0.5,1,2]:
             raise self.CmdError("Bad force value")
         res=self.execute("LIDFORCE %f"%force)
+        return res
 
     def folders(self):
         self.execute("FOLDERS?")

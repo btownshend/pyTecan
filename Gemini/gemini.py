@@ -79,9 +79,11 @@ class Gemini(object):
 		except self.CmdError,ecode:
 			print "Error setting %s to %f: %s"%(name,value,str(ecode))
 			raise
+		return resp
 
 	def start_pipetting(self):
 		resp=self.execute("START_PIPETTING")
+		return resp
 
 	def close(self):
 		pass

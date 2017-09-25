@@ -194,6 +194,7 @@ class TRobot:
 
     def cancel(self): 
         res=self.execute(":b;i")   # STOP
+        return res
 
     def version(self):
         res=self.execute(":d;c")
@@ -228,9 +229,11 @@ class TRobot:
         
     def lidopen(self):
         res=self.execute(":b;f") # OPEN
+        return res
 
     def lidclose(self):
         res=self.execute(":b;g") #CLOS
+        return res
 
     def folders(self):
         dirnames=[]
@@ -252,6 +255,7 @@ class TRobot:
 
     def erase(self, prognr):  
         dirnr=0
+        res=None
         try:
             res = self.execute(':c;b %04x,%04x'%(dirnr,prognr))
         except ValueError as err:
@@ -260,6 +264,7 @@ class TRobot:
                 print "Ignoring error from erase"
             else:
                 raise
+        return res
 
     def program(self,name,lidtemp,steps):
         # Always use 0,0 slot
