@@ -10,8 +10,7 @@ if cycler=='PTC200':
 elif cycler=='TROBOT':
     tc_prefix="TRobot\\trobot"
 else:
-    print "Bad cycler type: ",cycler
-    assert(False)
+    logging.error("Bad cycler type: %s"%cycler)
 
 def lid(open):
     if open:

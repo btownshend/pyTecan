@@ -298,7 +298,7 @@ class TRP(object):
             if not ligands:
                 ligands=None
             else:
-                assert('runT7Setup:  ligands arg should be ligand samples or None, not True')
+                logging.error('runT7Setup:  ligands arg should be ligand samples or None, not True')
                 
         [ligands,src,tgt,srcdil]=listify([ligands,src,tgt,srcdil])
         for i in range(len(src)):
@@ -744,11 +744,9 @@ class TRP(object):
         ## PCR
         if inPlace:
             if vol is not None:
-                print "runPCR: cannot specify volume when using inPlace=True, srcdil and input volume determine reaction volume"
-                assert(False)
+                logging.error("runPCR: cannot specify volume when using inPlace=True, srcdil and input volume determine reaction volume")
             if tgt is not None:
-                print "runPCR: cannot specify tgt when using inPlace=True"
-                assert(False)
+                logging.error("runPCR: cannot specify tgt when using inPlace=True")
             if primers is None:
                 [src,srcdil]=listify([src,srcdil])
             else:
@@ -857,7 +855,7 @@ class TRP(object):
             if not BC1:
                 BC1=None
             else:
-                assert('runBCSetup:  ligands arg should be ligand samples or None, not True')
+                logging.error('runBCSetup:  ligands arg should be ligand samples or None, not True')
                 
         [BC1,BC2,src,tgt,srcdil]=listify([BC1,BC2,src,tgt,srcdil])
         for i in range(len(src)):
