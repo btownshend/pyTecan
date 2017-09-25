@@ -1,6 +1,6 @@
 import math
 
-from Experiment import decklayout, reagents, clock
+from Experiment import decklayout, reagents, clock, logging
 from Experiment.concentration import Concentration
 from Experiment.sample import Sample
 from TRPLib.QSetup import QSetup
@@ -33,10 +33,10 @@ class IDPrep(TRP):
         self.con_maxdilperstage = 33  # Maximum dilution/stage
         self.con_pcr1vol = 100
         self.con_pcr1inputvol = 2
-        self.con_pcr1tgtconc = 100e-12  # pM
+        self.con_pcr1tgtconc = self.qconc*4  # Enough to take qPCR without dilutiojn
         self.con_pcr2dil = 10
         self.con_pcr2vol = 50
-        self.con_pcr2tgtconc = 200e-9
+        self.con_pcr2tgtconc = 100e-9
 
         self.regen_predilvol = 100
         self.regen_predil = 50
@@ -47,7 +47,8 @@ class IDPrep(TRP):
         self.rsrc = [reagents.add("%s-%s-%s" % (inputs[i]['name'], inputs[i]['left'], inputs[i]['right']),
                                   decklayout.SAMPLEPLATE,
                                   well=inputs[i]['well'] if 'well' in inputs[i] else None,
-                                  initVol=self.bc1_inputvol)
+                                  conc=Concentration(stock=inputs[i]['conc'],units="nM"),
+                                  initVol=self.bc1_inputvol,extraVol=0)
                      for i in range(len(inputs))]
         self.q = None  # Defined in pgm()
 
@@ -66,7 +67,7 @@ class IDPrep(TRP):
         print "### Regeneration #### (%.0f min)" % (clock.elapsed() / 60.0)
         self.regenerate(constricted * len(prefixes), [p for p in prefixes for _ in constricted])
         print "### qPCR #### (%.0f min)" % (clock.elapsed() / 60.0)
-        # self.q.run(confirm=True, enzName='EvaGreen')
+        #self.q.run(confirm=False, enzName='EvaGreen')
         print "***NOTE: Use EvaGreen, not EvaUSER for qPCR"
 
     def mix(self, inp, weights):
@@ -75,6 +76,7 @@ class IDPrep(TRP):
         relvol = [weights[i] / inp[i].conc.stock for i in range(len(inp))]
         vol = [x * 4.0 / min(relvol) for x in relvol]  # Mix to include 4ul in smallest
         watervol = mixvol - sum(vol)
+        print "Mixdown: vols=",vol,", water=",watervol,", total=",mixvol," ul"
         mixdown = Sample('mixdown', plate=decklayout.SAMPLEPLATE)
 
         if watervol < -0.1:
@@ -89,18 +91,27 @@ class IDPrep(TRP):
         self.e.shakeSamples([mixdown])
         mixdown.conc = Concentration(stock=sum([inp[i].conc.stock * vol[i] for i in range(len(inp))]) / mixvol,
                                      final=None, units='nM')
-        print "Mixdown final concentration = %.2f nM" % mixdown.conc.stock
+        print "Mixdown final concentration = %.0f pM" % (mixdown.conc.stock*1000)
         return mixdown
 
     def idbarcoding(self, rsrc, left, right):
         """Perform barcoding of the given inputs;  rsrsc,left,right should all be equal length"""
-        pcrcycles = [8, 15]
-        inputdil = 10
+        pcrcycles = [4]
+        pcr1inputconc = 0.1  # PCR1 concentration final in reaction
+        pcr1inputdil = 10
+        pcr1vol = 30
+        pcr1postdil = 150.0 / pcr1vol
+
         pcr2dil = 50
         pcr2minvol = 50.0
+
         qpcrdil = 10000
 
         samps = [s.getsample() for s in rsrc]
+        print "Inputs:"
+        for i in range(len(samps)):
+            print "%2s %-10s %8s-%-8s  %s" % (
+                samps[i].plate.wellname(samps[i].well), self.inputs[i]['name'], left[i], right[i],str(samps[i].conc))
 
         wellnum = 5
         for s in left + right:
@@ -109,47 +120,62 @@ class IDPrep(TRP):
                 reagents.add(primer, conc=Concentration(2.67, 0.4, 'uM'), extraVol=30, plate=decklayout.REAGENTPLATE,
                              well=decklayout.REAGENTPLATE.wellname(wellnum))
                 wellnum += 1
-        # srcdil=[inp.conc.dilutionneeded() for inp in input]
+        for s in samps:
+            # Dilute down to desired conc
+            dil=s.conc.stock/pcr1inputconc/pcr1inputdil
+            if dil<1.0:
+                logging.error("Input %s requires dilution of %.2f"%(s.name,dil))
+            elif dil>1.0:
+                dilvol=s.volume*dil
+                if dilvol > 150.0:
+                    logging.error("Dilution of input %s (%.1f ul) by %.2f would require %.1f ul"%(s.name,s.volume,dil,dilvol))
+                self.diluteInPlace(tgt=[s],dil=dil)
+                print "Diluting %s by %.1f"%(s.name,dil)
 
-        print "Inputs:"
-        for i in range(len(samps)):
-            print "%2s %-10s %8s-%-8s" % (
-                samps[i].plate.wellname(samps[i].well), self.inputs[i]['name'], left[i], right[i])
 
-        # Dilute all inputs inputdil/2
-        pcr = self.runPCR(src=samps, srcdil=inputdil, ncycles=pcrcycles[0],
+        pcr1 = self.runPCR(src=samps, srcdil=pcr1inputdil, ncycles=pcrcycles[0], vol=pcr1vol,
                           primers=[[left[i], right[i]] for i in range(len(left))], usertime=0, fastCycling=False,
-                          inPlace=True, master="MKapa", kapa=True)
+                          inPlace=False, master="MKapa", kapa=True)
+        pcr1finalconc=pcr1inputconc*2**pcrcycles[0]
+        print "PCR1 output concentration = %.1f nM"%pcr1finalconc
 
-        # Dilute product
-        pcrsrcdil2 = 1 / (1 - 1.0 / 4 - 1.0 / 4)
-        d1 = min(pcr2dil / pcrsrcdil2, 150.0 / max([p.volume for p in pcr]))
-        if d1 > 1:
-            print "Post dilute PCR1 by %.2fx " % d1
-            self.diluteInPlace(tgt=pcr, dil=d1)
+        if pcr1postdil > 1:
+            print "Post dilute PCR1 by %.2fx " % pcr1postdil
+            self.diluteInPlace(tgt=pcr1, dil=pcr1postdil)
+            pcr1finalconc/=pcr1postdil
 
-        self.q.addSamples(src=pcr, needDil=qpcrdil / d1, primers=self.qprimers, save=True, nreplicates=1)
+        for x in pcr1:
+            x.conc = Concentration(stock=pcr1finalconc,units='nM')
 
-        # Second PCR with 235p/236p on mixture (use at least 4ul of prior)
-        pcr2 = self.runPCR(src=pcr, srcdil=pcr2dil / d1, vol=max(pcr2minvol, pcr2dil / d1 * 4),
-                           ncycles=pcrcycles[1],
-                           primers="End", fastCycling=False, master="MKapa", kapa=True)
+        self.q.addSamples(src=pcr1, needDil=pcr1finalconc/self.qconc, primers=self.qprimers, save=True, nreplicates=1)
 
-        d2 = min(4.0, 150.0 / max([p.volume for p in pcr2]))
-        if d2 > 1:
-            print "Post-dilute PCR2 by %.1fx" % d2
-            self.diluteInPlace(tgt=pcr2, dil=d2)
-            self.e.shakeSamples(pcr2)
+        if len(pcrcycles)>1:
+            # Second PCR with 235p/236p on mixture (use at least 4ul of prior)
+            pcr2 = self.runPCR(src=pcr1, srcdil=pcr2dil / pcr1postdil, vol=max(pcr2minvol, pcr2dil / pcr1postdil * 4),
+                               ncycles=pcrcycles[1],
+                               primers="End", fastCycling=False, master="MKapa", kapa=True)
+
+            d2 = min(4.0, 150.0 / max([p.volume for p in pcr2]))
+            if d2 > 1:
+                print "Post-dilute PCR2 by %.1fx" % d2
+                self.diluteInPlace(tgt=pcr2, dil=d2)
+                self.e.shakeSamples(pcr2)
+            else:
+                d2 = 1
+
+            pcr2finalconc=min(200,pcr1finalconc/(pcr2dil/pcr1postdil)*2**pcrcycles[1])
+            for x in pcr2:
+                x.conc = Concentration(stock=pcr2finalconc,units='nM')
+
+            self.q.addSamples(src=pcr2, needDil=pcr2finalconc/self.qconc, primers=self.qprimers, save=True, nreplicates=2)
+            res=pcr2
         else:
-            d2 = 1
-
-        for x in pcr2:
-            x.conc.stock = self.bc_pcr2prodconc * 1e9 / d2
+            res=pcr1
 
         # self.q.addSamples(src=pcr2, needDil=qpcrdil / d2, primers=self.qprimers, save=False, nreplicates=2)
         print "Elapsed time for barcoding part = %d minutes" % (clock.elapsed() / 60)
 
-        return pcr2
+        return res
 
     def constrict(self, constrictin, conc):
         """Constrict sample with concentration given by conc (in M)"""
@@ -164,35 +190,38 @@ class IDPrep(TRP):
         s = [constrictin] * self.nconstrict + [decklayout.SSDDIL]
 
         self.q.addReferences(dstep=10, primers=self.qprimers, ref=reagents.getsample("BT5310"))
-        qpcrdil = [x * max(1.0, conc * 1.0 / self.qconc) for x in [1, 10, 100]]
 
         for j in range(nstages):
-            print "Stage ", j, ", qpcrdil=", qpcrdil
-            for k in range(len(qpcrdil)):
-                if qpcrdil[k] is not None and qpcrdil[k] < dilperstage * 2:
-                    self.q.addSamples(constrictin, needDil=qpcrdil[k], primers=self.qprimers)
-                    qpcrdil[k] = None
-
-            tgt = self.runQPCRDIL(s, self.con_dilvol, dilperstage, dilPlate=True)
-            qpcrdil = [x / dilperstage if x is not None else None for x in qpcrdil]
-            s = tgt
+            print "Stage ", j, ", conc=", conc
+            if conc<=self.qconc*1e-9:
+                self.q.addSamples(s, needDil=1.0, primers=self.qprimers, save=False)
+            s = self.runQPCRDIL(s, self.con_dilvol, dilperstage, dilPlate=True)
+            conc/=dilperstage
 
         cycles = int(
-            math.log(self.con_pcr1tgtconc / conc * dil * self.con_pcr1vol / self.con_pcr1inputvol) / math.log(2)) + 1
-        print "Running %d cycle PCR1" % cycles
+            math.log(self.con_pcr1tgtconc / conc * self.con_pcr1vol / self.con_pcr1inputvol) / math.log(2)+0.5)
+        pcr1finalconc=conc*self.con_pcr1inputvol/self.con_pcr1vol*2**cycles
+        print "Running %d cycle PCR1 -> %.1f pM" % (cycles, pcr1finalconc*1e12)
         pcr = self.runPCR(primers="End", src=s, vol=self.con_pcr1vol,
                           srcdil=self.con_pcr1vol * 1.0 / self.con_pcr1inputvol,
                           ncycles=cycles, master="MKapa", kapa=True)
-        for i in range(len(pcr)):
-            needDil = self.con_pcr1tgtconc / self.qconc
-            print "Sample %d: dil=%f, needDil=%f" % (i, dil, needDil)
-            # self.q.addSamples(pcr[i], needDil=max(2.0, needDil), primers=self.qprimers)
-        cycles2 = int(math.log(self.con_pcr2tgtconc / self.con_pcr1tgtconc * self.con_pcr2dil / math.log(2))) + 1
-        print "Running %d cycle PCR2" % cycles2
+        for p in pcr:
+            p.conc = Concentration(stock=pcr1finalconc * 1e9, units='nM')
+
+        needDil = max(4,pcr1finalconc / self.qconc)
+        print "Running qPCR of PCR1 products using %.1fx dilution"%needDil
+        self.q.addSamples(pcr, needDil=needDil, primers=self.qprimers, save=True)
+
+        cycles2 = int(math.log(self.con_pcr2tgtconc / pcr1finalconc * self.con_pcr2dil) / math.log(2) + 0.5)
+        pcr2finalconc=pcr1finalconc/self.con_pcr2dil*2**cycles2
 
         if cycles2 > 0:
+            print "Running %d cycle PCR2 -> %.1f nM" % (cycles2, pcr2finalconc * 1e9)
+
             pcr2 = self.runPCR(primers="End", src=pcr, vol=self.con_pcr2vol, srcdil=self.con_pcr2dil,
                                ncycles=cycles2, master="MKapa", kapa=True)
+            for p in pcr2:
+                p.conc=Concentration(stock=pcr2finalconc*1e9,units='nM')
             self.e.waitpgm()
             return pcr2
         else:
@@ -200,7 +229,10 @@ class IDPrep(TRP):
 
     def regenerate(self, inp, prefix):
         """Regenerate T7 templates without barcodes with each of the given prefixes"""
+        print "Regen Predilute: %.1f nM by %.1fx to %.2f nM"%(inp[0].conc.stock,self.regen_predil, inp[0].conc.stock/self.regen_predil)
         d1 = self.runQPCRDIL(inp, self.regen_predilvol, self.regen_predil, dilPlate=True)
+        inconc=inp[0].conc.stock/self.regen_predil/self.regen_dil
+        print "Regen PCR:  %.3f nM with %d cycles -> %.1f nM"%(inconc,self.regen_cycles,inconc*2**self.regen_cycles)
         res = self.runPCR(src=d1, srcdil=self.regen_dil, vol=self.regen_vol,
                           ncycles=self.regen_cycles,
                           primers=["T7%sX" % p for p in prefix], fastCycling=False, master="MKapa", kapa=True)
