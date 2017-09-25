@@ -45,9 +45,6 @@ def reset():
     wlist=[]
     nloops=0   # Gemini crashes if more than 100 loops
 
-def bin(s):
-    return str(s) if s<=1 else bin(s>>1) + str(s&1)
-
 def setOptimization(onoff):
     global delayEnabled
     if onoff:
@@ -184,7 +181,7 @@ def optimizeQueue():
                 d2=opQueue[j]
                 merge=[d1[0],d1[1]|d2[1],d1[2]+d2[2],d1[3],d1[4]+d2[4],d1[5],d1[6],d1[7]+d2[7]]
                 # Reorder based on well order
-                ordering=sorted(range(len(merge[2])), key=lambda k: merge[2][k])
+                ordering=sorted(range(len(merge[2])), key=lambda x: merge[2][x])
                 merge[2]=[merge[2][k] for k in ordering]
                 merge[4]=[merge[4][k] for k in ordering]
                 merge[7]=[merge[7][k] for k in ordering]
@@ -421,6 +418,8 @@ def hashUpdate(op,tip,grid,pos,well,vol):
 
     #print "hashUpdate(%s,%s,%d,%d,%d,%d,%.1f) %06x,%06x -> %06x,%06x"%(key,op,tip,grid,pos,well,vol,old&0xffffff,oldTip&0xffffff,hashCodes[key]&0xffffff,tipHash[tip]&0xffffff)
 
+
+# noinspection PyUnusedLocal
 def SIM(tip,op,vol,loc,pos):
     #print "SIM",tip,op,vol,loc,pos
     pass
@@ -693,6 +692,6 @@ def savegem(headerfile,filename):
                 s='    '+s[1:]
         else:
             s='        '+s
-        print >>fd,"%s"%(s)
+        print >>fd,"%s" % s
     fd.close()
 

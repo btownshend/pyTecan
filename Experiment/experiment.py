@@ -16,11 +16,11 @@ import os
 from string import strip
 
 def md5sum(filename):
-    hash = md5()
+    hashval = md5()
     with open(filename, "rb") as f:
-        for chunk in iter(lambda: f.read(128 * hash.block_size), b""):
-            hash.update(chunk)
-    return hash.hexdigest()
+        for chunk in iter(lambda: f.read(128 * hashval.block_size), b""):
+            hashval.update(chunk)
+    return hashval.hexdigest()
 
 class Experiment(object):
     __shakerActive = False
@@ -187,7 +187,7 @@ class Experiment(object):
             worklist.comment(cmt)
 
             if mix[0] and (not src.isMixed() or not src.wellMixed):
-                if (src.plate==decklayout.SAMPLEPLATE or src.plate==decklayout.DILPLATE):
+                if src.plate==decklayout.SAMPLEPLATE or src.plate==decklayout.DILPLATE:
                     logging.notice("Forcing pipette mix of "+src.name)
                 worklist.comment("pipette mix for src mix of "+src.name)
                 src.mix(tipMask)	# Manual mix (after allocating a tip for this)
@@ -243,7 +243,7 @@ class Experiment(object):
         worklist.comment(cmt)
 
         if mix[0] and (not src.isMixed() or not src.wellMixed):
-            if (src.plate==decklayout.SAMPLEPLATE or src.plate==decklayout.DILPLATE):
+            if src.plate==decklayout.SAMPLEPLATE or src.plate==decklayout.DILPLATE:
                 logging.notice("Forcing pipette mix of "+src.name)
             worklist.comment("pipette mix for src mix of "+src.name)
             src.mix(tipMask)	# Manual mix (after allocating a tip for this)
@@ -261,7 +261,7 @@ class Experiment(object):
         if self.tcrunning and src.plate==decklayout.SAMPLEPLATE:
             self.waitpgm()
 
-        cmt="Mix %s"%(src.name)
+        cmt="Mix %s" % src.name
         tipMask=self.cleantip()
         worklist.comment(cmt)
         src.lastMixed=None	# Force a mix

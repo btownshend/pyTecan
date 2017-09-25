@@ -101,7 +101,7 @@ def diluteName(name,dilution):
     # Collapses any current dilution
     components = name.split('.')
     curdil=1
-    replicate=1
+#   replicate=1
 #    if len(components[-1])==1:
 #        replicate=int(components[-1])
 #        components=components[:-1]
@@ -128,6 +128,7 @@ def diluteName(name,dilution):
 class TRP(object):
     def __init__(self):
         'Create a new TRP run'
+        self.e=None  # Placeholder
             
     def reset(self):
         'Reset this experiment so we can generate it again after adjusting the reagent initial volumes and total time'
@@ -328,7 +329,7 @@ class TRP(object):
         if sum(watervols)>0.01:
             self.e.multitransfer(watervols,decklayout.WATER,tgt)
         for ir in range(len(rlist)):
-            self.e.multitransfer([rvols[ir] for s in tgt],reagents.getsample(rlist[ir]),tgt)
+            self.e.multitransfer([rvols[ir] for _ in tgt],reagents.getsample(rlist[ir]),tgt)
         for i in range(len(ligands)):
             if ligandvols[i] > 0.01:
                 self.e.transfer(ligandvols[i],ligands[i],tgt[i])
@@ -421,8 +422,9 @@ class TRP(object):
         self.e.shakeSamples(src,dur=incTime,returnPlate=False)
 
     def sepWait(self,src,sepTime=None):
+        del src # Unused
         if sepTime is None:
-            maxvol=max([s.volume for s in src])
+            #maxvol=max([s.volume for s in src])
             # if maxvol > 50:
             #     sepTime=50
             # else:

@@ -2,6 +2,8 @@
 from Experiment.experiment import Experiment
 import logging
 
+
+# noinspection PyShadowingBuiltins
 class JobQueue(object):
     '''Queue of jobs to be executed during idle times'''
     def __init__(self):

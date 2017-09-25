@@ -242,6 +242,7 @@ class Sample(object):
             row=row+1
         else:
             col=int(self.well[1:])
+            # noinspection PyUnresolvedReferences
             row=ord(self.well[0])-ord('A')+1
         assert 1 <= row <= self.plate.ny and 1 <= col <= self.plate.nx
         wellpos=(row-1)+self.plate.ny*(col-1)
@@ -328,7 +329,7 @@ class Sample(object):
             pctevap=self.evap/self.volume*100
             logging.warning(" %s (%s.%s, vol=%.1f ul) may have %.1f ul of evaporation (%.0f%%)"%(self.name,str(self.plate),self.plate.wellname(self.well),self.volume,self.evap,pctevap))
             if "evap" in Sample.__historyOptions:
-                self.history= self.history + (' [Evap: %0.1f ul]'%(self.evap))
+                self.history= self.history + (' [Evap: %0.1f ul]' % self.evap)
         self.lastevapupdate+=dt
         
     def amountToRemove(self,tgtVolume):
@@ -684,7 +685,7 @@ class Sample(object):
             if maxspeed<minspeed:
                 logging.notice("%s with %.1ful and %.1f%% glycerol has minspeed of %.0f greater than maxspeed of %.0f"%(self.name,self.volume,glycerol*100,minspeed,maxspeed))
                 minspeed=maxspeed	# Glycerol presence should also reduce minspeed
-        return (minspeed,maxspeed)
+        return minspeed, maxspeed
     
     def chooseLC(self,aspirateVolume=0):
         if self.volume-aspirateVolume>=MINLIQUIDDETECTVOLUME:
@@ -781,7 +782,7 @@ class Sample(object):
                         for _ in range(nmix):
                             worklist.aspirateNC(tipMask,well,mixLC,mixvol,self.plate)
                             worklist.dispense(tipMask,well,mixLC,mixvol,self.plate)
-                        mstr="(M@%d)"%(mixheight)
+                        mstr="(M@%d)" % mixheight
                     if blowvol>0:
                         worklist.dispense(tipMask,well,blowoutLC,blowvol,self.plate)
                         worklist.dispense(tipMask,well,liquidclass.LCDip,0.1,self.plate)
@@ -793,7 +794,7 @@ class Sample(object):
             return True
 
     def __str__(self):
-        s="%-32s "%(self.name)
+        s="%-32s " % self.name
         if self.conc is not None:
             s+=" %-18s"%("[%s]"%str(self.conc))
         else:
@@ -809,7 +810,7 @@ class Sample(object):
         if self.initVol!=0:
             volString="%.1f->%.1f"%(self.initVol, self.volume)
         else:
-            volString="%.1f"%(self.volume)
+            volString="%.1f" % self.volume
             
         s+=" %-30s"%("(%s.%s,%s ul%s%s)"%(self.plate.name,self.plate.wellname(self.well),volString,evapString,beadString))
         hist=self.history

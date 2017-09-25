@@ -2,6 +2,7 @@ import os
 from plate import Plate
 from sample import Sample
 from liquidclass import LCBleachMix
+# noinspection PyUnresolvedReferences
 from worklist import WASHLOC, QPCRLOC
 
 ############ Plates and plate locations  #############

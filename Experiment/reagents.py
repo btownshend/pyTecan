@@ -72,7 +72,7 @@ def printprep(fd=sys.stdout):
     for p in sorted(set([r.plate for r in Reagent.allReagents.itervalues()])):
         print >>fd,"\nPlate %s:"%p.name
         total=0
-        for r in sorted(Reagent.allReagents.itervalues(), key=lambda p:p.sample.well if p.sample is not None else None):
+        for r in sorted(Reagent.allReagents.itervalues(), key=lambda x:x.sample.well if x.sample is not None else None):
             s=r.sample
             if s is None:
                 continue
