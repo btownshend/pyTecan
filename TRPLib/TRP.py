@@ -349,7 +349,7 @@ class TRP(object):
         self.e.runpgm(pgm,dur, False,vol)
 
     def runT7Stop(self,theo,tgt,stopmaster=None,srcdil=2):
-        [theo,tgt,stopmaster,srcdil]=listify([theo,tgt,stopmaster,srcdil])
+        [tgt,stopmaster]=listify([tgt,stopmaster])
         assert( stopmaster is not None)
             
         ## Stop
@@ -410,7 +410,6 @@ class TRP(object):
             for i in range(len(src)):
                 self.e.transfer(buffervol[i],bbuffer[i],src[i])
         else:
-            buffervol=[0.0 for i in range(len(src))]
             totalvol=[src[i].volume/(1-1.0/beadDil[i]) for i in range(len(src))]
 
         beadvol=[totalvol[i]/beadDil[i] for i in range(len(totalvol))]
@@ -424,10 +423,10 @@ class TRP(object):
     def sepWait(self,src,sepTime=None):
         if sepTime is None:
             maxvol=max([s.volume for s in src])
-            if maxvol > 50:
-                sepTime=50
-            else:
-                sepTime=30
+            # if maxvol > 50:
+            #     sepTime=50
+            # else:
+            #     sepTime=30
             sepTime=120
         self.e.pause(sepTime)	# Wait for separation
         
@@ -582,8 +581,10 @@ class TRP(object):
         self.beadWash(src=src,wash=reagents.getsample("EtOH80"),washVol=100,numWashes=2)
         self.e.pause(evapTime)	# Wait for evaporation
         self.beadAddElutant(src=src,elutant=reagents.getsample("TE8"),elutionVol=elutionVol)
-        tgt=self.beadSupernatant(src=src,sepTime=120,tgt=[Sample("%s.ampure"%r.name,decklayout.SAMPLEPLATE) for r in src])
-        return tgt
+        if tgt is None:
+            tgt=[Sample("%s.ampure"%r.name,decklayout.SAMPLEPLATE) for r in src]
+        res=self.beadSupernatant(src=src,sepTime=120,tgt=tgt)
+        return res
     
     ########################
     # RT - Reverse Transcription
@@ -593,7 +594,7 @@ class TRP(object):
         self.runRTPgm(dur,heatInactivate=heatInactivate,hiTemp=hiTemp,incTemp=incTemp)
         return result
     
-    def runRTInPlace(self,src,vol,dur=20,heatInactivate=False,hiTemp=None,incTemp=37,stop=None,stopConc=1.0):
+    def runRTInPlace(self,src,vol,dur=20,heatInactivate=False,hiTemp=None,incTemp=37,stop=None):
         'Run RT on beads in given volume'
 
         # Adjust source dilution
@@ -747,9 +748,9 @@ class TRP(object):
                 print "runPCR: cannot specify tgt when using inPlace=True"
                 assert(False)
             if primers is None:
-                [src,vol,srcdil]=listify([src,vol,srcdil])
+                [src,srcdil]=listify([src,srcdil])
             else:
-                [primers,src,vol,srcdil]=listify([primers,src,vol,srcdil])
+                [primers,src,srcdil]=listify([primers,src,srcdil])
             vol=[src[i].volume*srcdil[i] for i in range(len(src))]
             tgt=src
         else: 
