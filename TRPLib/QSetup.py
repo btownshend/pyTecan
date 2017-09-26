@@ -144,21 +144,24 @@ class QSetup(object):
         endTime=clock.elapsed()+t
         if self.debug:
             print "Idler(%.0f)"%t
+        njobs=0
         while clock.elapsed()<endTime:
             j=self.jobq.getJob()
             if j is None:
                 break
             self.jobq.execJob(self.trp.e,j)
+            njobs+=1
         if self.debug:
-            print "Idler done with ",endTime-clock.elapsed()," seconds remaining"
+            print "Idler completed ",njobs," jobs with ",endTime-clock.elapsed()," seconds remaining"
 
-    def run(self,confirm=False,enzName="EvaUSER"):
+    def run(self,confirm=False,enzName="EvaUSER",waitForPTC=True):
         """Run the dilutions and QPCR setup"""
         # Setup qPCRs
         #self.jobq.dump()
         self.idler(100000)
-        self.trp.e.waitpgm()		# May still need to wait for TC to complete before able to do final jobs
-        self.idler(100000)
+        if waitForPTC:
+            self.trp.e.waitpgm()		# May still need to wait for TC to complete before able to do final jobs
+            self.idler(100000)
         worklist.flushQueue()
         if self.jobq.len()>0:
             logging.error( "Blocked jobs remain on queue:",fatal=False)
