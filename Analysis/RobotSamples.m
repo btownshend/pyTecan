@@ -357,7 +357,19 @@ classdef RobotSamples < handle
     function len=getlength(obj,template,primer)
     % See if we have the length
       len=nan;
-      if obj.loop1len.isKey(template) && obj.loop2len.isKey(template)
+      if strcmp(primer,'REF')
+        len=90;
+      elseif strcmp(primer,'TBR')
+        len=74;  
+      elseif strcmp(primer,'TWR')
+        len=64;            
+      elseif strcmp(primer,'TR')
+        len=mean([64,74]);   % Could be W or B
+      elseif strcmp(primer,'TheoX')
+        len=71;
+      elseif strcmp(primer,'End')
+        len=237;
+      elseif obj.loop1len.isKey(template) && obj.loop2len.isKey(template)
         loop1len=obj.loop1len(template);
         loop2len=obj.loop2len(template);
         if strncmp(primer,'MX',2)
@@ -384,19 +396,10 @@ classdef RobotSamples < handle
           len=24+21+6+loop1len+6+17+loop2len+29;
         elseif strncmp(primer,'T7BX',4)
           len=24+21+6+loop1len+6+17+loop2len+29;
-        elseif strcmp(primer,'REF')
-          len=90;
-        elseif strcmp(primer,'TBR')
-          len=74;  
-        elseif strcmp(primer,'TWR')
-          len=64;            
-        elseif strcmp(primer,'TR')
-          len=mean([64,74]);   % Could be W or B
-        elseif strcmp(primer,'TheoX')
-          len=71;
-        else
-          fprintf('Not implemented: length of sequence with %s primers\n', primer);
         end
+      end
+      if isnan(len)
+        fprintf('Unable to determine length of %s with %s primers\n', template, primer);
       end
     end
     
