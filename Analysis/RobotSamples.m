@@ -609,16 +609,26 @@ classdef RobotSamples < handle
           if isKey(obj.qsamps,nm)
             scale=obj.qsamps(nm).dispDil;
             concs=obj.qsamps(nm).conc*scale;
-            concsnm=nan*concs;	% Conc in nM
-            for k=1:length(obj.primers())
-              mw=607.4*obj.getlength(obj.templates{i},obj.primers{k})+157.9;
-              concsnm(k)=concs(k)/1000/mw*1e9;
+            if strcmp(obj.q.refs(qkeys{1}).units,'nM')
+              concsnm=concs;
+            elseif strcmp(obj.q.refs(qkeys{1}).units,'pM')
+              concsnm=concs/1000;
+            elseif strcmp(obj.q.refs(qkeys{1}).units,'ng/ul')
+              assert(strcmp(obj.q.refs(qkeys{1}).units,'ng/ul'));
+              concsnm=nan*concs;	% Conc in nM
+              for k=1:length(obj.primers())
+                mw=607.4*obj.getlength(obj.templates{i},obj.primers{k})+157.9;
+                concsnm(k)=concs(k)/1000/mw*1e9;
+              end
+            else
+              fprintf('Bad units: %s\n', obj.q.refs(qkeys{1}).units);
+              concsnm=nan*concs;
             end
             if all(isfinite(concsnm)==isfinite(concs))
               if args.normalize && isfinite(concsnm(pREF))
                 concsnm=concsnm/concsnm(pREF)*obj.options.refconc;
               end
-              fprintf('%-40.40s %6.2f %s nM    ',nm,scale,sprintf('%8.1f ',concsnm));
+              fprintf('%-40.40s %6.2f %s nM    ',nm,scale,sprintf('%8.3f ',concsnm));
               obj.rsv(i,j,:)=concsnm;
             else
               fprintf('%-40.40s %6.2f %s ng/ul ',nm,scale,sprintf('%8.1f ',concs));
