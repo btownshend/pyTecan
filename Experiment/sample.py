@@ -134,6 +134,9 @@ class Sample(object):
                 if not found:
                     well=max(plate.wells) if atEnd else min(plate.wells) 
                     while (well>=0) if atEnd else (well<=max(plate.wells)):
+                        if well not in plate.wells:
+                            well = well + (-1 if atEnd else 1)
+                            continue
                         found=True
                         for s in Sample.__allsamples:
                             if s.plate==plate and s.well==well:
