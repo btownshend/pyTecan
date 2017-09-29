@@ -65,6 +65,16 @@ class Plate(object):
         self.backupPlate=backupPlate	   # Backup plate to use when this one is full
         Plate.__allplates.append(self)
 
+    def markUsed(self,firstWell,lastWell=None):
+        first=self.wellnumber(firstWell)
+        if lastWell is None:
+            last=first
+        else:
+            last=self.wellnumber(lastWell)
+        self.wells=[w for w in self.wells if w<first or w>last]
+        logging.warning("Marking wells %s:%s on plate %s as unavailable: now have %d wells"%(firstWell,self.wellname(last),self.name,len(self.wells)))
+
+
     @classmethod
     def lookup(cls,grid,pos):
         for p in Plate.__allplates:
