@@ -55,7 +55,7 @@ class Constrict(TRP):
         self.rsrc = [reagents.add("%s-%s-%s" % (inputs[i]['name'], inputs[i]['left'], inputs[i]['right']),
                                   decklayout.SAMPLEPLATE,
                                   well=inputs[i]['well'] if 'well' in inputs[i] else None,
-                                  conc=Concentration(stock=inputs[i]['conc'], units="nM"),
+                                  conc=Concentration(stock=inputs[i]['bconc'], units="nM"),
                                   initVol=vol, extraVol=0)
                      for i in range(len(inputs))]
         self.q = None  # Defined in pgm()
