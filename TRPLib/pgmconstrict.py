@@ -78,7 +78,7 @@ class Constrict(TRP):
         print "### Constriction #### (%.1f min)" % (clock.elapsed() / 60.0)
         constricted = self.constrict(mixdown, mixdown.conc.stock * 1e-9)
         print "### Regeneration #### (%.0f min)" % (clock.elapsed() / 60.0)
-        prefixes = set([x['prefix'] for x in self.inputs])
+        prefixes = set([x['left'][0] for x in self.inputs])
         self.regenerate(constricted * len(prefixes), [p for p in prefixes for _ in constricted])
         print "### qPCR #### (%.0f min)" % (clock.elapsed() / 60.0)
         self.q.run(confirm=False, enzName='EvaGreen', waitForPTC=False)
