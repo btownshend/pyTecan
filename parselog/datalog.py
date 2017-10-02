@@ -72,7 +72,7 @@ class LogEntry(object):
         return "%s tip %d, %.2ful, %s"%(self.op,self.tip,self.vol,self.lc)
             
 class Datalog(object):
-    'Log data about transfers, liquid height measures'
+    """Log data about transfers, liquid height measures"""
 
     def __init__(self):
         self.logentries={}

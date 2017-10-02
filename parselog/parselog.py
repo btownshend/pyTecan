@@ -157,7 +157,7 @@ def displaymatch(match):
     return '<Match: %r, groups=%r>' % (match.group(), match.groups())
 
 def gemtip(tipcmd,line2):
-    'Handle Gemini command of form:  tip 2 : aspirate 9.00ul 10, 1 HSP96xx on carrier [4,2]                 8.00ul "Water-InLiquid" Standard <all volumes> Multi'
+    """Handle Gemini command of form:  tip 2 : aspirate 9.00ul 10, 1 HSP96xx on carrier [4,2]                 8.00ul "Water-InLiquid" Standard <all volumes> Multi"""
     fullcmd=tipcmd[8:]+line2
     if debug:
         print "XFR ",fullcmd

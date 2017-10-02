@@ -296,7 +296,7 @@ class TRobot:
         return [hdr,steps]
     
     def errorstr(self,ecode):
-        'Parse 3 hex digits in ecode string'
+        """Parse 3 hex digits in ecode string"""
         estr=''
         if ecode[0]=='0':
             estr="System Error: "
