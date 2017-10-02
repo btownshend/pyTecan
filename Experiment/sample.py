@@ -431,7 +431,7 @@ class Sample(object):
             logging.notice("Removing all contents (%.1ful) from %s"%(volume,self.name))
             
         if volume<0.1:
-            logging.warning("attempt to aspirate only %.1f ul from %s ignored"%(volume,self.name))
+            logging.notice("attempt to aspirate only %.3f ul from %s ignored"%(volume,self.name))
             return
         if volume<2 and not multi and self.name!="Water":
             logging.warning("Inaccurate for < 2ul:  attempting to aspirate %.1f ul from %s"%(volume,self.name))
@@ -503,7 +503,7 @@ class Sample(object):
             logging.error("Dispense to TC!, loc=(%d,%d)"%(self.plate.grid,self.plate.pos))
 
         if volume<0.1:
-            logging.warning("attempt to dispense only %.1f ul to %s ignored"%(volume,self.name))
+            logging.notice("attempt to dispense only %.1f ul to %s ignored"%(volume,self.name))
             return
 
         if self.volume+volume < MINDEPOSITVOLUME:
