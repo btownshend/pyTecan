@@ -17,7 +17,7 @@ reagents.add("BT5310", well="D1", conc=Concentration(20, 20, "pM"))
 class Barcoding(TRP):
     """Barcode multiple samples, mix them"""
 
-    def __init__(self, inputs):
+    def __init__(self, inputs,pcr1inputconc=0.05):
         super(Barcoding, self).__init__()
         self.inputs = inputs
 
@@ -26,6 +26,7 @@ class Barcoding(TRP):
 
         self.bc1_inputvol = 4  # ul of input samples
         self.mix_conc = 100e-9  # Concentration of mixdown
+        self.pcr1inputconc = pcr1inputconc
 
         used = []
         for inp in inputs:
@@ -100,7 +101,6 @@ class Barcoding(TRP):
     def barcoding(self, names, left, right):
         """Perform barcoding of the given inputs;  rsrsc,left,right should all be equal length"""
         pcrcycles = [4, 12]
-        pcr1inputconc = 0.05  # PCR1 concentration final in reaction
         pcr1inputdil = 10
         pcr1vol = 30
         pcr1postdil = 100.0 / pcr1vol
@@ -123,7 +123,7 @@ class Barcoding(TRP):
                 wellnum += 1
         for s in samps:
             # Dilute down to desired conc
-            dil = s.conc.stock / pcr1inputconc / pcr1inputdil
+            dil = s.conc.stock / self.pcr1inputconc / pcr1inputdil
             if dil < 1.0:
                 logging.error("Input %s requires dilution of %.2f" % (s.name, dil))
             elif dil > 1.0:
@@ -138,7 +138,7 @@ class Barcoding(TRP):
                            primers=[[left[i], right[i]] for i in range(len(left))], usertime=0, fastCycling=False,
                            inPlace=False, master="MPCR1", kapa=True)
 
-        pcr1finalconc = pcr1inputconc * 2 ** pcrcycles[0]
+        pcr1finalconc = self.pcr1inputconc * 2 ** pcrcycles[0]
         print "PCR1 output concentration = %.1f nM" % pcr1finalconc
 
         if pcr1postdil > 1:
