@@ -65,7 +65,7 @@ class Barcoding(TRP):
     def mix(self, inp, weights):
         """Mix given inputs according to weights (by moles -- use conc.stock of each input)"""
         mixvol = 100.0
-        relvol = [weights[i] / inp[i].conc.stock for i in range(len(inp))]
+        relvol = [weights[i] *1.0/ inp[i].conc.stock for i in range(len(inp))]
         scale = mixvol / sum(relvol)
         minvol = min(relvol) * scale
         for i in range(len(inp)):
@@ -129,13 +129,15 @@ class Barcoding(TRP):
             elif dil > 1.0:
                 dilvol = s.volume * dil
                 if dilvol > 150.0:
-                    logging.error("Dilution of input %s (%.1f ul) by %.2f would require %.1f ul" % (
-                        s.name, s.volume, dil, dilvol))
+                    maxdil = 150.0 / s.volume
+                    logging.warning("Dilution of input %s (%.1f ul) by %.2f would require %.1f ul -- only diluting by %.1fx" % (
+                        s.name, s.volume, dil, dilvol, maxdil ))
+                    dil=maxdil
                 self.diluteInPlace(tgt=[s], dil=dil)
                 print "Diluting %s by %.1f" % (s.name, dil)
 
-        pcr1 = self.runPCR(src=samps, srcdil=pcr1inputdil, ncycles=pcrcycles[0], vol=pcr1vol,
-                           primers=[[left[i], right[i]] for i in range(len(left))], usertime=0, fastCycling=False,
+        pcr1 = self.runPCR(src=samps, srcdil=[s.conc.stock/self.pcr1inputconc for s in samps], ncycles=pcrcycles[0], vol=pcr1vol,
+                           primers=[[left[i], right[i]] for i in range(len(left))], usertime=30, fastCycling=False,
                            inPlace=False, master="MPCR1", kapa=True)
 
         pcr1finalconc = self.pcr1inputconc * 2 ** pcrcycles[0]
