@@ -295,7 +295,8 @@ class TRobot:
         print "steps=",steps
         return [hdr,steps]
     
-    def errorstr(self,ecode):
+    @staticmethod
+    def errorstr(ecode):
         """Parse 3 hex digits in ecode string"""
         estr=''
         if ecode[0]=='0':
