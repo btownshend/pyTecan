@@ -37,7 +37,9 @@ class Experiment(object):
         self.gitlabel=strip(subprocess.check_output(["git", "describe","--always"],cwd=pyTecan))
         worklist.comment("Generated %s (%s-%s pyTecan-%s)"%(datetime.now().ctime(),sys.argv[0],self.checksum,self.gitlabel))
         worklist.userprompt("The following reagent tubes should be present: %s"%Sample.getAllLocOnPlate(decklayout.REAGENTPLATE))
-        worklist.userprompt("The following eppendorf tubes should be present: %s"%Sample.getAllLocOnPlate(decklayout.EPPENDORFS))
+        epp=Sample.getAllLocOnPlate(decklayout.EPPENDORFS)
+        if len(epp)>0:
+            worklist.userprompt("The following eppendorf tubes should be present: %s"%epp)
         worklist.email(dest='cdsrobot@gmail.com',subject='Run started (Generate: %s) expected runtime %.0f minutes'%(datetime.now().ctime(),clock.totalTime/60.0 if clock.totalTime is not None else 0.0 ) )
         worklist.email(dest='cdsrobot@gmail.com',subject='Tecan error',onerror=1)
         self.cleanTips=0
@@ -53,7 +55,7 @@ class Experiment(object):
 
         #        worklist.periodicWash(15,4)
         if thermocycler.cycler=='PTC200':
-            worklist.userprompt("Verify that PTC thermocycler lid pressure is set to '2'.")
+            worklist.userprompt("Verify that PTC thermocycler lid pressure is set to correct value.")
         self.idlePgms=[]
         self.timerStartTime=[None]*8
 
