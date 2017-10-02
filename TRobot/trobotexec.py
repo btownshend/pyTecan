@@ -1,7 +1,7 @@
-import debughook
-import trobot
-import sys
 import logging
+import sys
+
+import trobot
 
 p=trobot.TRobot()
 #logging.info( "Status=",p.getstatus())
