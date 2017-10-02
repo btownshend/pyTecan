@@ -8,8 +8,8 @@ from TRPLib.QSetup import QSetup
 from TRPLib.TRP import TRP
 
 reagents.add("MPCR1", well="A1", conc=30.0/18.0,
-             ingredients={'Kapa': 3, 'USER': 0.75, 'glycerol': 3.75, 'PK-ABE': 89.5, 'Water': 0})
-reagents.add("MPCR2", well="B1", conc=10.0/9.0, ingredients={'Kapa': 3, 'glycerol': 3, 'PK-ABE': 89.5, 'Water': 4.5})
+             ingredients={'Kapa': 3.33/2, 'USER': 1.67/2, 'glycerol': 2.5, 'Water': 95})
+reagents.add("MPCR2", well="B1", conc=10.0/9.0, ingredients={'Kapa': 2.22/2, 'glycerol': 2.22/2, 'Water': 97.78})
 reagents.add("P-End", well="C1", conc=4)
 reagents.add("BT5310", well="D1", conc=Concentration(20, 20, "pM"))
 
