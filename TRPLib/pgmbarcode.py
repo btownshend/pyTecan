@@ -165,8 +165,11 @@ class Barcoding(TRP):
             pcr2 = self.runPCR(src=pcr1, srcdil=pcr2dil / pcr1postdil, vol=pcr2vol, ncycles=pcrcycles[1],
                                primers=None, fastCycling=False, master="MPCR2", kapa=True)
 
-            pcr2finalconc = min(200, pcr1finalconc / (pcr2dil / pcr1postdil) * 2 ** pcrcycles[1])
+            pcr2finalconc = pcr1finalconc / (pcr2dil / pcr1postdil) * 2 ** pcrcycles[1]
             print "PCR2 final conc = %.1f nM" % pcr2finalconc
+            if pcr2finalconc>200:
+                print "Capping at 200nM"
+                pcr2finalconc=200
 
             for x in pcr2:
                 x.conc = Concentration(stock=pcr2finalconc, units='nM')
@@ -174,6 +177,8 @@ class Barcoding(TRP):
             self.q.addSamples(src=pcr2, needDil=pcr2finalconc * 1e-9 / self.qconc, primers=self.qprimers)
             res = pcr2
         else:
+            self.q.addSamples(src=pcr1, needDil=pcr1finalconc / (self.qconc * 1e9), primers=self.qprimers, save=True,
+                              nreplicates=1)
             res = pcr1
 
         return res
