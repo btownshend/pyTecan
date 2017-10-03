@@ -53,7 +53,8 @@ class Barcoding(TRP):
                                right=[x['right'] for x in self.inputs])
 
         print "### Mixdown #### (%.0f min)" % (clock.elapsed() / 60.0)
-        self.mix(bcout, [x['weight'] for x in self.inputs])
+        mixdown=self.mix(bcout, [x['weight'] for x in self.inputs])
+        self.q.addSamples(mixdown, needDil=mixdown.conc.stock * 1e-9 / self.qconc, primers=self.qprimers,nreplicates=3)
 
         print "### qPCR #### (%.0f min)" % (clock.elapsed() / 60.0)
         self.q.run(confirm=False, enzName='EvaGreen', waitForPTC=False)
@@ -65,18 +66,25 @@ class Barcoding(TRP):
     def mix(self, inp, weights):
         """Mix given inputs according to weights (by moles -- use conc.stock of each input)"""
         mixvol = 100.0
-        relvol = [weights[i] *1.0/ inp[i].conc.stock for i in range(len(inp))]
-        scale = mixvol / sum(relvol)
-        minvol = min(relvol) * scale
-        for i in range(len(inp)):
-            if relvol[i] * scale > inp[i].volume - 16.4:
-                scale = (inp[i].volume - 16.4) / relvol[i]
+        if len(inp)==1:
+            # Special case, just dilute 10x
+            vol=[mixvol/10]
+        else:
+            relvol = [weights[i] *1.0/ inp[i].conc.stock for i in range(len(inp))]
+            scale = mixvol / sum(relvol)
+            for i in range(len(inp)):
+               if relvol[i] * scale > inp[i].volume - 16.4:
+                 scale = (inp[i].volume - 16.4) / relvol[i]
+            vol = [x * scale for x in relvol]
 
-        if minvol < 4.0:
-            logging.warning("Minimum volume into mixing is only %.2f ul" % minvol)
-        vol = [x * scale for x in relvol]  # Mix to include 4ul in smallest
-        if sum(vol) < mixvol:
-            mixvol = max(50, sum(vol))
+        if min(vol) < 4.0:
+            logging.info("Minimum volume into mixing would be only %.2f ul - staging..." % min(vol))
+            sel=[i for i in range(len(inp)) if vol[i]<4.0 ]
+            nsel=[i for i in range(len(inp)) if vol[i]>=4.0 ]
+            print "Mixing ",",".join([inp[i].name for i in sel])," in separate stage."
+            mix1=self.mix([inp[i] for i in sel],[weights[i] for i in sel])
+            mix2=self.mix([inp[i] for i in nsel]+[mix1],[weights[i] for i in nsel]+[sum([weights[i] for i in sel])])
+            return mix2
         watervol = mixvol - sum(vol)
         print "Mixdown: vols=[", ",".join(["%.2f " % v for v in vol]), "], water=", watervol, ", total=", mixvol, " ul"
         mixdown = Sample('mixdown', plate=decklayout.SAMPLEPLATE)
@@ -95,7 +103,6 @@ class Barcoding(TRP):
         mixdown.conc = Concentration(stock=sum([inp[i].conc.stock * vol[i] for i in range(len(inp))]) / mixvol,
                                      final=None, units='nM')
         print "Mixdown final concentration = %.0f nM" % mixdown.conc.stock
-        self.q.addSamples(mixdown, needDil=mixdown.conc.stock * 1e-9 / self.qconc, primers=self.qprimers,nreplicates=3)
         return mixdown
 
     def barcoding(self, names, left, right):
@@ -151,8 +158,7 @@ class Barcoding(TRP):
         for x in pcr1:
             x.conc = Concentration(stock=pcr1finalconc, units='nM')
 
-        self.q.addSamples(src=pcr1, needDil=pcr1finalconc / (self.qconc * 1e9), primers=self.qprimers, save=True,
-                          nreplicates=1)
+
 
         if len(pcrcycles) > 1:
             # Second PCR with 235p/236p on mixture (use at least 4ul of prior)
