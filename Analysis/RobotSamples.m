@@ -499,6 +499,13 @@ classdef RobotSamples < handle
 
       pT7WX=find(strcmp(obj.primers,'T7WX'));
       pWX=find(strcmp(obj.primers,'WX'));
+      if isempty(pWX)
+        pWX=pT7WX;
+      end
+      if isempty(pT7WX)
+        pT7WX=pWX;
+      end
+      
       pAX=find(strcmp(obj.primers,'T7AX'));
       if isempty(pAX)
         pAX=find(strcmp(obj.primers,'AX'));
