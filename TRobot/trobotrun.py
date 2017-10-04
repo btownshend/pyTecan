@@ -1,4 +1,3 @@
-import debughook
 import trobot
 import sys
 

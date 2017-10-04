@@ -1,6 +1,5 @@
 # Setup TRP programs on TRobot
 # Usage: trobotsetpgm name lidtemp {steps }
-import debughook
 import trobot
 import sys
 
