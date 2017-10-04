@@ -102,8 +102,8 @@ class RunStatus:
 class TRobot:
     debug=False
     ser=None
-    #PORT=3
-    PORT="/dev/cu.KeySerial1"
+    PORT=1
+    #PORT="/dev/cu.KeySerial1"
 
     def __init__(self,to=5):
         fname=time.strftime("TRobot-%Y%m%d.log")
@@ -116,7 +116,7 @@ class TRobot:
         logging.getLogger('').addHandler(console)
         
         logging.info("Running: %s"," ".join(sys.argv))
-        logging.debug( "About to open serial port "+self.PORT)
+        logging.debug( "About to open serial port %d"%self.PORT)
         try:
             self.ser = serial.Serial(self.PORT,baudrate=9600,timeout=to)
         except serial.SerialException as e:
