@@ -6,14 +6,14 @@ import sys
 try:
     p=trobot.TRobot()   # 10s timeout
     pgm=sys.argv[1]
-    lidtemp=int(sys.argv[2])
+    lidtemp=float(sys.argv[2])
     steps=[]
     for s in [s.replace('@',' ') for s in sys.argv[3:]]:
         a=s.split()
         if a[0]=='TEMP':
             b=a[1].split(',')
-            temp=int(b[0])
-            time=int(b[1])
+            temp=float(b[0])
+            time=float(b[1])
             steps.append(["%x"%(temp*100),"%x"%time,'','','','','',''])
         elif a[0]=='RATE':
             rate=float(a[1])
