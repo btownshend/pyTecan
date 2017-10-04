@@ -137,11 +137,13 @@ class Barcoding(TRP):
                 dilvol = s.volume * dil
                 if dilvol > 150.0:
                     maxdil = 150.0 / s.volume
-                    logging.warning("Dilution of input %s (%.1f ul) by %.2f would require %.1f ul -- only diluting by %.1fx" % (
+                    logging.info("Dilution of input %s (%.1f ul) by %.2f would require %.1f ul -- only diluting by %.1fx" % (
                         s.name, s.volume, dil, dilvol, maxdil ))
                     dil=maxdil
                 self.diluteInPlace(tgt=[s], dil=dil)
                 print "Diluting %s by %.1f" % (s.name, dil)
+
+        print "### PCR1 #### (%.0f min)" % (clock.elapsed() / 60.0)
 
         pcr1 = self.runPCR(src=samps, srcdil=[s.conc.stock/self.pcr1inputconc for s in samps], ncycles=pcrcycles[0], vol=pcr1vol,
                            primers=[[left[i], right[i]] for i in range(len(left))], usertime=30, fastCycling=False,
@@ -162,6 +164,8 @@ class Barcoding(TRP):
 
         if len(pcrcycles) > 1:
             # Second PCR with 235p/236p on mixture (use at least 4ul of prior)
+            print "### PCR2 #### (%.0f min)" % (clock.elapsed() / 60.0)
+
             pcr2 = self.runPCR(src=pcr1, srcdil=pcr2dil / pcr1postdil, vol=pcr2vol, ncycles=pcrcycles[1],
                                primers=None, fastCycling=False, master="MPCR2", kapa=True)
 
