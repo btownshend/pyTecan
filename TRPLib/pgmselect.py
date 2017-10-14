@@ -75,7 +75,6 @@ class PGMSelect(TRP):
         self.pcrcycles=[10 for _ in self.rounds]
         self.rnaInput=False
         self.stopConc=1	   # Concentration of stop in uM
-        self.savePCRAtEnd=False
         self.barcoding=False   # True to use unique barcode primers in cleaved rounds
         self.enrich=math.sqrt(2.0)   # Estimate of enrichment/round -- scales number of pmoles needed to carry
         self.lowhi=True
@@ -170,6 +169,9 @@ class PGMSelect(TRP):
         else:
             self.srcs = self.addTemplates([inp['name'] for inp in self.inputs],stockconc=self.tmplFinalConc/self.templateDilution,finalconc=self.tmplFinalConc,plate=decklayout.DILPLATE,looplengths=[inp['looplength'] for inp in self.inputs],extraVol=15) 
 
+        # Reserve space for  PCR products
+        pcrprods=[ [Sample("R%d-T%s"%(r,inp['ligand']),decklayout.DILPLATE) for inp in self.inputs] for r in range(len(self.rounds))]
+
         t7in = [s.getsample()  for s in self.srcs]
         
         if "negative" in self.qpcrStages:
@@ -224,8 +226,8 @@ class PGMSelect(TRP):
 
             self.rndNum=self.rndNum+1
             self.finalRound=self.rndNum==len(self.rounds)
-                
-            r1=self.oneround(q,r1,prefixOut=prefixOut,stop=stop,prefixIn=curPrefix,keepCleaved=(roundType!='U'),rtvol=self.rtvol[self.rndNum-1],t7vol=self.t7vol[self.rndNum-1],cycles=self.pcrcycles[self.rndNum-1],pcrdil=self.pcrdil[self.rndNum-1],pcrvol=self.pcrvol[self.rndNum-1],dolig=self.allLig or (roundType!='U'))
+
+            r1=self.oneround(q,r1,prefixOut=prefixOut,stop=stop,prefixIn=curPrefix,keepCleaved=(roundType!='U'),rtvol=self.rtvol[self.rndNum-1],t7vol=self.t7vol[self.rndNum-1],cycles=self.pcrcycles[self.rndNum-1],pcrdil=self.pcrdil[self.rndNum-1],pcrvol=self.pcrvol[self.rndNum-1],dolig=self.allLig or (roundType!='U'),pcrtgt=pcrprods[self.rndNum-1])
 
             for i in range(len(r1)):
                 r1[i].name="%s_%d"%(prefixOut[i],self.nextID)
@@ -259,7 +261,7 @@ class PGMSelect(TRP):
         self.allprimers=q.allprimers()
         q.run(confirm=self.qpcrWait)
         
-    def oneround(self, q, inputs, prefixOut, stop, prefixIn, keepCleaved, t7vol, rtvol, pcrdil, cycles, pcrvol, dolig):
+    def oneround(self, q, inputs, prefixOut, stop, prefixIn, keepCleaved, t7vol, rtvol, pcrdil, cycles, pcrvol, dolig,pcrtgt=None):
         primerSet=[set(["REF","T7X",prefixIn[i]+"X",prefixOut[i]+"X"]+(["MX"] if self.useMX else [])) for i in range(len(prefixIn))]
         if self.extraQPCRPrimers is not None:
             primerSet=[set(list(p) + self.extraQPCRPrimers) for p in primerSet]
@@ -539,11 +541,11 @@ class PGMSelect(TRP):
                 # Save samples at 1x (move all contents -- can ignore warnings)
                 maxSaveVol=(100 if self.savedilplate else 1500)*1.0/nsplit
 
-                if self.finalRound and nsplit==1 and self.savedilplate:
+                if self.finalRound and nsplit==1 and self.savedilplate and pcrtgt is None:
                     print "Skipping save of final PCR"
                     sv=pcr
                 else:
-                    sv=self.saveSamps(src=pcr[:len(rxs)],vol=[min([maxSaveVol,x.volume]) for x in pcr[:len(rxs)]],dil=1,plate=(decklayout.DILPLATE if self.savedilplate else decklayout.EPPENDORFS),atEnd=self.savePCRAtEnd)
+                    sv=self.saveSamps(src=pcr[:len(rxs)],vol=[min([maxSaveVol,x.volume]) for x in pcr[:len(rxs)]],dil=1,plate=(decklayout.DILPLATE if self.savedilplate else decklayout.EPPENDORFS),tgt=pcrtgt)
                     if nsplit>1:
                         # Combine split
                         for i in range(len(rxs),len(rxs)*nsplit):
