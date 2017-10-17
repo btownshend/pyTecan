@@ -72,13 +72,15 @@ reagents.add("P-BC-T6-R6_T7",well="E4",conc=8)
 
 # Targets
 reagents.add("T1",well='B4',conc=Concentration(10.0/3,1.0,'x'))  # New targets (9/2017)
+reagents.add("T1b",well='B4',conc=Concentration(10.0/3,1.0,'x'))  # New targets (10/17/2017)
 reagents.add("T2",well='C4',conc=Concentration(10.0,1.0,'mM')) # Acetyl CoA
+reagents.add("T2b",well='C4',conc=Concentration(10.0/3,1.0,'x'),extraVol=30) # Acetyl CoA + Trans-Zeatin + Redox
 reagents.add("T3",well=None,conc=Concentration(10.0/3,1.0,'x')) # BIAs
 reagents.add("T3d",well='E3',conc=Concentration(10.0/3,1.0,'x'),extraVol=30) # BIAs less S-Reticuline
 reagents.add("T3e",well='E3',conc=Concentration(10.0/3,1.0,'x'),extraVol=30) # BIAs less S-Reticuline, reduced Noscapine (9/17)
+reagents.add("T3f",well='E3',conc=Concentration(10.0/3,1.0,'x'),extraVol=30) # BIAs with 0.1uM S-Reticuline, 20uM Noscapine (10/17/17)
 reagents.add("T6",well='D4',conc=Concentration(10.0/3,1.0,'x'),extraVol=30) # Redox
 reagents.add("T25",well='C4',conc=Concentration(10.0/3,1.0,'x'),extraVol=30) # Acetyl CoA + Trans-Zeatin
-reagents.add("T2b",well='C4',conc=Concentration(10.0/3,1.0,'x'),extraVol=30) # Acetyl CoA + Trans-Zeatin + Redox
 #reagents.add("T25T6",well='E2',conc=Concentration(2.222,1.0,'x'),extraVol=30) # Acetyl CoA + Trans-Zeatin +Redox
     
 def listify(x):
