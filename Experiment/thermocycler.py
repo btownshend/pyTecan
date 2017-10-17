@@ -35,6 +35,7 @@ def wait():
 
 def setpgm(name,lidtemp,steps):
     global hotlidtemp
+    logging.notice("setpgm(%s,%d,%s)"%(name,lidtemp,steps))
     if cycler=='PTC200':
         hotlidtemp=lidtemp
         worklist.pyrun(tc_prefix+'setpgm.py %s %s'%(name,steps))
