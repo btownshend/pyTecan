@@ -506,7 +506,7 @@ class Experiment(object):
         self.waittimer(dur)
         worklist.pyrun("BioShake\\bioexec.py shakeOff")
         self.starttimer()
-        self.waittimer(accel+4)
+        self.waittimer(accel+1)
         worklist.pyrun("BioShake\\bioexec.py setElmUnlockPos")
         Experiment.__shakerActive=False
         if returnPlate:
