@@ -325,6 +325,7 @@ class Experiment(object):
         if dilutant is None:
             dilutant=decklayout.WATER
 
+        worklist.flushQueue()
         worklist.comment("Stage: "+stagename)
         if not isinstance(volume,list):
             volume=[volume for _ in range(len(samples))]
