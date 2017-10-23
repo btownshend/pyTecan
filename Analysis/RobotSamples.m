@@ -14,7 +14,6 @@ classdef RobotSamples < handle
     loop2len;
     rsv; % Saved data 
     sv;	% Saved data (scaled by ref)
-    cleavage;   % Index by template, suffix
   end
   
   methods
@@ -61,6 +60,9 @@ classdef RobotSamples < handle
         for i=1:length(opdfilename)
           obj.opd{i}=opdread(opdfilename{i},'remotedir',args.remotedir);
         end
+      elseif isstruct(opdfilename)
+        % Actual OPD struct passed in instead of filename
+        obj.opd={opdfilename};
       else
         obj.opd={opdread(opdfilename,'remotedir',args.remotedir)};
       end
@@ -70,6 +72,7 @@ classdef RobotSamples < handle
         end
       end
       for i=1:length(obj.opd)
+        fprintf('Ctcalc...');
         obj.opd{i}=ctcalc(obj.opd{i},'thresh',args.thresh,'basecycles',args.basecycles,'doplot',args.doplot,'fulow',args.fulow,'fuhigh',args.fuhigh,'showall',args.showall);
       end
       obj.templates={};
@@ -577,7 +580,7 @@ classdef RobotSamples < handle
         end
         if isempty(prevlenlist) || any(prevlenlist~=lenlist)
           fprintf('\n%-40.40s ','');
-          fprintf('  Dil ');
+          fprintf('   Dil ');
           ref=[];
           for j=1:length(obj.primers())
             fprintf('%8s ',obj.primers(j));
@@ -593,8 +596,9 @@ classdef RobotSamples < handle
               end
             end
           end
+          fprintf('       %5.5s %5.5s %5.5s %5.5s %6.6s %6.6s',sprintf('%.0fT/R',obj.options.refconc),sprintf('%.0fAWX/R',obj.options.refconc),'W/WZ','Z/WZ','AWZ/M','AWZ/T');
           fprintf('\n');
-          fprintf('%-46.46s ','');
+          fprintf('%-46.46s  ','');
           fprintf('%8d ',lenlist);
         end
         prevlenlist=lenlist;
@@ -645,59 +649,38 @@ classdef RobotSamples < handle
               obj.sv(i,j,:)=obj.rsv(i,j,:)/obj.rsv(i,j,ref)*obj.options.refconc;
               fprintf('%6.1f ',obj.sv(i,j,[1:ref-1,ref+1:end]));
             end
-            if (length(nm)>4 && strcmp(nm(end-3:end),'.ext')) || (length(nm)>3 && strcmp(nm(end-2:end),'.rt')) || (length(nm)>2 && strcmp(nm(end-1:end),'.T'))
-              if nm(1)=='A'
-                pCLV=pBX; pUNCLV=pAX;
-              elseif nm(1)=='B'
-                pCLV=pT7WX; pUNCLV=pBX;
-              elseif nm(1)=='W'
-                pUNCLV=pT7WX;
-                if isempty(pUNCLV)
-                  pUNCLV=pWX;
-                end
-                if ~isempty(pZX)
-                  pCLV=pZX; 
-                elseif ~isempty(pAX)
-                  pCLV=pAX; 
-                elseif ~isempty(pBX)
-                  pCLV=pBX; 
-                end
-              elseif nm(1)=='Z'
-                pUNCLV=pZX;
-                if ~isempty(pT7WX)
-                  pCLV=pT7WX; 
-                elseif ~isempty(pWX)
-                  pCLV=pWX; 
-                elseif ~isempty(pAX)
-                  pCLV=pAX; 
-                elseif ~isempty(pBX)
-                  pCLV=pBX; 
-                end
-              elseif isempty(pBX) && ~isempty(pAX)
-                pCLV=pAX; pUNCLV=pT7WX;
-              end
               tval=concsnm(pT7X)/concsnm(pREF)*obj.options.refconc;
               if isfinite(tval)
-                fprintf(' T=%4.2f',tval);
+                fprintf('%5.1f ',tval);
+              else
+                fprintf('      ');
               end
-              rgain=concsnm(pMX)/concsnm(pT7X);
+              awz=nansum(concsnm([pAX,pWX,pZX]));
+              awz_t=awz/concsnm(pREF)*obj.options.refconc;
+              if isfinite(awz_t)
+                fprintf('%5.0f ',awz_t);
+              else
+                fprintf('      ');
+              end
+              w_wz=concsnm(pWX)/(concsnm(pWX)+concsnm(pZX));
+              if isfinite(w_wz)
+                fprintf('%4.0f%% %4.0f%% ',w_wz*100,(1-w_wz)*100);
+              else
+                fprintf('            ');
+              end
+              awz_m=awz/concsnm(pMX);
+              if isfinite(awz_m) && awz_m>0
+                fprintf('%6.2f ',awz_m);
+              else
+                fprintf('       ');
+              end
+              rgain=awz/concsnm(pT7X);
               if isfinite(rgain)
-                fprintf(' R=%3.1fx',rgain);
+                fprintf('%6.2f ',rgain);
+              else
+                fprintf('       ');
               end
-              obj.cleavage(i,j)=concsnm(pCLV)/sum(concsnm([pCLV,pUNCLV]));
-              cleavage=100.0*obj.cleavage(i,j);
-              if isfinite(cleavage)
-                if strcmp(obj.suffixes{j},'.ext')
-                  fprintf(' Clv=%.1f%%',cleavage);
-                else
-                  fprintf(' Leak=%.1f%%',cleavage);
-                end
-              end
-              abw=nansum(concsnm([pAX,pBX,pWX,pT7WX,pZX]))/concsnm(pMX);
-              if isfinite(abw) && abw>0 && strcmp(nm(end-3:end),'.ext')
-                fprintf(' ABWZ/M=%4.2f',abw);
-              end
-            end
+                
             fprintf('\n');
             nrowsprinted=nrowsprinted+1;
           end
