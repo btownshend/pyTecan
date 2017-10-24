@@ -445,7 +445,7 @@ class Experiment(object):
         if returnHome:
             worklist.romahome()
 
-    def shakeSamples(self,samples,dur=60,speed=None,accel=5,returnPlate=True):
+    def shakeSamples(self,samples,dur=60,speed=None,accel=10,returnPlate=True):
         """Shake plates if any of the given samples are on that plate and  needs mixing"""
         if self.tcrunning and any([s.plate==decklayout.SAMPLEPLATE for s in samples]):
             self.waitpgm()
@@ -454,7 +454,7 @@ class Experiment(object):
             if p.maxspeeds is not None:
                 self.shake(p,returnPlate=returnPlate,speed=speed,samps=[s for s in samples if s.plate==p],dur=dur,accel=accel)
 
-    def shake(self,plate,dur=60,speed=None,accel=5,returnPlate=True,samps=None,force=False):
+    def shake(self,plate,dur=60,speed=None,accel=10,returnPlate=True,samps=None,force=False):
         if self.tcrunning and plate==decklayout.SAMPLEPLATE:
             self.waitpgm()
 
