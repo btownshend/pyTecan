@@ -10,7 +10,7 @@ reagents.add("P-End", well="C1", conc=4)
 
 
 class IDPrep(TRP):
-    # Barcode multiple samples, mix them, constrict, PCR, remove barcodes
+    # Barcode multiple samples
     pcreff = 1.98
 
     def __init__(self, inputs):
@@ -40,11 +40,7 @@ class IDPrep(TRP):
     def pgm(self):
         self.q = QSetup(self, maxdil=16, debug=False, mindilvol=60)
 
-        #  Don't start idler (to minimize tip cross-contamination); last PCR allows plenty of time for doing dilutions without any effect on run time
-        # Will start after first constriction PCR is running
         self.q.debug = True
-        # self.e.addIdleProgram(self.q.idler)
-
         self.q.addReferences(dstep=10, primers=self.qprimers, ref=reagents.getsample("BT5310"),nreplicates=2)
 
         print "### Barcoding #### (%.0f min)" % (clock.elapsed() / 60.0)
