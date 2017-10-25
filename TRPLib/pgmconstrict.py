@@ -81,7 +81,7 @@ class Constrict(TRP):
         prefixes = set([x['left'][0] for x in self.inputs])
         self.regenerate(constricted * len(prefixes), [p for p in prefixes for _ in constricted])
         print "### qPCR #### (%.0f min)" % (clock.elapsed() / 60.0)
-        self.q.run(confirm=False, enzName='EvaGreen', waitForPTC=False)
+        self.q.run(confirm=False, enzName='EvaGreen', waitForPTC=True)
         print "### qPCR Done #### (%.0f min)" % (clock.elapsed() / 60.0)
         worklist.userprompt("qPCR done -- only need to complete final PCR", 300)
         self.e.waitpgm()
