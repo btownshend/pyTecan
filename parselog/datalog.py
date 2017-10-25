@@ -145,6 +145,10 @@ class Datalog(object):
         else:
             sample.history=" ".join(hsplit[:-1]+[h]+hsplit[-1:])
 
+    def logspeed(self,platename,speed):
+        print "logspeed(%s,%d)"%(platename,speed)
+        Sample.addallhistory("(S@%d)"%speed,onlyplate=platename)
+            
     def __str__(self):
         s=""
         print self.logentries

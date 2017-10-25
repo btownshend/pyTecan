@@ -320,6 +320,7 @@ geminicmdtimes={}
 geminicmdcnt={}
 tipcmd=""
 lasttime=0
+shakePlate=None   # Plate on shaker
 
 while True:
     line=fd.readline()
@@ -373,6 +374,17 @@ while True:
                         gemtip(tipcmd,cmd)
                     tipcmd=""
 
+          if cmd.find("setShakeTargetSpeed")!=-1:
+                pos=cmd.find("setShakeTargetSpeed")
+                speed=int(cmd[pos+19:])
+                print "SPEED %d"%speed
+                dl.logspeed(shakePlate,speed)
+
+          if cmd.startswith("moveplate") and cmd.find("Shaker")!=-1:
+                pos=cmd.find("Shaker")
+                shakePlate=cmd[10:pos-1]
+                print "SHAKEPLATE %s"%shakePlate
+                
           if cmd.startswith('Line'):
                 colon=cmd.find(':')
                 cname=cmd[(colon+2):]
