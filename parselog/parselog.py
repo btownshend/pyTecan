@@ -211,7 +211,7 @@ def gemtip(tipcmd,line2):
         print "XFR",msg1
     dl.logop(op,tip,vol,wellx,welly,rack,grid,pos,lc,std,volset,ptype=='Multi')
     
-def fwparse(dev,send,reply,error):
+def fwparse(dev,send,reply,error,lasttime):
     global lnum, sbl, sml, tipSelect, ldpending, zadd
     if debug:
         if error:
@@ -281,7 +281,7 @@ def fwparse(dev,send,reply,error):
             for i in range(len(heights)):
                 if 1<<i & tipSelect != 0:
                     print "TIPS %d %s "%(lnum,op),heights[i],sbl[i],sml[i],heights[i]+sbl[i]-sml[i]
-                    dl.logmeasure(i+1,heights[i],sbl[i],sml[i],zadd[i])
+                    dl.logmeasure(i+1,heights[i],sbl[i],sml[i],zadd[i],lasttime)
     elif op=='REE' or op=='RVZ':
         pass
     elif ldpending and op=='RPZ' and int(args[0])==0:
@@ -290,7 +290,7 @@ def fwparse(dev,send,reply,error):
         for i in range(len(heights)):
             if 1<<i & tipSelect != 0:
                 print "TIPS %d  "%(lnum),heights[i],sbl[i],sml[i],heights[i]+sbl[i]-sml[i]
-                dl.logmeasure(i+1,heights[i],sbl[i],sml[i],zadd[i])
+                dl.logmeasure(i+1,heights[i],sbl[i],sml[i],zadd[i],lasttime)
         ldpending=False
     elif ldpending:
         print "**** Parser error:  got op %s without a RPZ while ldpending"%op
@@ -359,7 +359,7 @@ while True:
                 print "Missing cmd when received reply from %s: %s"%(dev,str(spcmd))
                 exit(1)
             error=cmd[0]=='*'
-            fwparse(dev,send[dev],spcmd,error)
+            fwparse(dev,send[dev],spcmd,error,lasttime)
             send.pop(dev)
         else:
             print "Bad cmd: %s"%cmd

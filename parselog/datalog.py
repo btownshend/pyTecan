@@ -91,8 +91,16 @@ class Datalog(object):
             self.logentries[sname]=[entry]
         self.lastSample[tip]=entry.sample
         
-    def logmeasure(self,tip,height,submerge,zmax,zadd):
+    def logmeasure(self,tip,height,submerge,zmax,zadd,time):
+        # Time is the time in seconds of this measurement
         sample=self.lastSample[tip]
+        if len(sample.extrainfo)>0:
+            elapsed=time-sample.extrainfo[0]
+        else:
+            elapsed=0
+
+        #print "%s: %f"%(sample.name,elapsed)
+        sample.extrainfo=[time]    # Keep track of last measurement time of this sample in the extrainfo list
         if sample.plate.zmax is not None:
             curzmax=2100-sample.plate.zmax-390+TIPOFFSETS[tip-1]
             if zmax!=curzmax:
@@ -132,7 +140,10 @@ class Datalog(object):
                 sample.volume=sample.volume+(vol-prevol)
         # Insert BEFORE last history entry since the liquid height is measured before aspirate/dispense
         hsplit=sample.history.split(' ')
-        sample.history=" ".join(hsplit[:-1]+[h]+hsplit[-1:])
+        if elapsed>=600:   # Log elapsed time if more than 10 min
+            sample.history=" ".join(hsplit[:-1]+["(T%.0f)"%(elapsed/60)]+[h]+hsplit[-1:])
+        else:
+            sample.history=" ".join(hsplit[:-1]+[h]+hsplit[-1:])
 
     def __str__(self):
         s=""
