@@ -498,7 +498,7 @@ class Experiment(object):
         self.moveplate(plate,"Shaker",returnHome=False)
         Experiment.__shakerActive=True
         worklist.pyrun("BioShake\\bioexec.py setElmLockPos")
-        worklist.pyrun("BioShake\\bioexec.py setShakeTargetSpeed%d"%speed)
+        worklist.pyrun("BioShake\\bioexec.py setShakeTargetSpeed%.0f"%speed)
         worklist.pyrun("BioShake\\bioexec.py setShakeAcceleration%d"%accel)
         worklist.pyrun("BioShake\\bioexec.py shakeOn")
         self.starttimer()
