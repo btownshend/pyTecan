@@ -374,7 +374,7 @@ class Sample(object):
             return
 
         volcrit=self.plate.unusableVolume*0.8+volToRemove
-        volwarn=min(volcrit,self.volume*0.80)
+        volwarn=max(volcrit,self.volume*0.80,self.volume+50)
         
         heightwarn=min(self.plate.getliquidheight(volwarn),height-1.0)	# threshold is lower of 1mm or 80%
         gemvolwarn=self.plate.getgemliquidvolume(heightwarn)	# Volume that would be reported by Gemini for this height
