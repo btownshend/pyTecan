@@ -51,7 +51,7 @@ class IDPrep(TRP):
 
     def idbarcoding(self, rsrc, left, right):
         """Perform barcoding of the given inputs;  rsrsc,left,right should all be equal length"""
-        pcrcycles = [4]
+        pcrcycles = [4]   # Don't need 2nd PCR since this will go directly into constriction
         #pcr1inputconc = 0.05  # PCR1 concentration final in reaction
         pcr1inputdil = 10
         pcr1vol = 30
@@ -63,11 +63,11 @@ class IDPrep(TRP):
         samps = [s.getsample() for s in rsrc]
         print "Inputs:"
         for i in range(len(samps)):
-            print "%2s %-10s %8s-%-8s  %s" % (
-                samps[i].plate.wellname(samps[i].well), self.inputs[i]['name'], left[i], right[i], str(samps[i].conc))
+            print "%2s %-10s %8s-%-8s  %.1f%s" % (
+                samps[i].plate.wellname(samps[i].well), self.inputs[i]['name'], left[i], right[i], samps[i].conc.stock,samps[i].conc.units)
         # Compute pcr1inputconc such that lowest concentration input ends up with at least 30ul after dilution
         pcr1inputconc=min([s.conc.stock*s.volume/30.0/pcr1inputdil for s in samps])
-        print "PCR1 input conc = %.0f pM"%(pcr1inputconc*1000)
+        print "Diluting inputs so PCR1 final template conc = %.0f pM"%(pcr1inputconc*1000)
         wellnum = 5
         for s in left + right:
             primer = "P-" + s
