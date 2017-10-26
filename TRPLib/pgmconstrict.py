@@ -65,7 +65,7 @@ class Constrict(TRP):
 
         #  Don't start idler (to minimize tip cross-contamination); last PCR allows plenty of time for doing dilutions without any effect on run time
         # Will start after first constriction PCR is running
-        self.q.debug = True
+        #self.q.debug = True
         # self.e.addIdleProgram(self.q.idler)
 
         self.q.addReferences(dstep=10, primers=self.qprimers, ref=reagents.getsample("BT5310"),nreplicates=2)
@@ -75,6 +75,8 @@ class Constrict(TRP):
             self.q.addSamples([s],needDil=max(10,s.conc.stock*1e-9/self.qconc),primers=self.qprimers)
         print "### Mixdown #### (%.0f min)" % (clock.elapsed() / 60.0)
         mixdown = self.mix(samps, [x['weight'] for x in self.inputs])
+        self.q.addSamples(mixdown, needDil=max(1.0,mixdown.conc.stock * 1e-9 / self.qconc), primers=self.qprimers)
+        print "Mixdown final concentration = %.0f pM" % (mixdown.conc.stock * 1000)
         print "### Constriction #### (%.1f min)" % (clock.elapsed() / 60.0)
         constricted = self.constrict(mixdown, mixdown.conc.stock * 1e-9)
         print "### Regeneration #### (%.0f min)" % (clock.elapsed() / 60.0)
@@ -87,37 +89,64 @@ class Constrict(TRP):
         self.e.waitpgm()
         print "### Final PCR Done #### (%.0f min)" % (clock.elapsed() / 60.0)
 
-    def mix(self, inp, weights):
+    def mix(self, inp, weights,mixvol=100,tgtconc=None,maxinpvol=20):
         """Mix given inputs according to weights (by moles -- use conc.stock of each input)"""
-        mixvol = 100.0
-        relvol = [weights[i] / inp[i].conc.stock for i in range(len(inp))]
-        scale = mixvol / sum(relvol)
-        minvol = min(relvol) * scale
-        if minvol > 4.0:
-            scale *= 4.0 / minvol
-        elif minvol < 4.0:
-            logging.warning("Minimum volume into mixing is only %.2f ul" % minvol)
-        vol = [x * scale for x in relvol]  # Mix to include 4ul in smallest
+        vol = [weights[i] *1.0 / inp[i].conc.stock for i in range(len(inp))]
+        scale = mixvol / sum(vol)
+        conc=sum([inp[i].conc.stock * scale * vol[i] for i in range(len(inp))]) / mixvol
+
+        if tgtconc is not None and conc>tgtconc:
+            scale*=tgtconc*1.0/conc
+        if max(vol)*scale<4.0:
+            scale=4.0/max(vol)   # At least one input with 4ul input
+        vol = [x * scale for x in vol]  # Mix to make planned total without water
+
+        for i in range(len(vol)):
+            # Check if this would require more than available of any input
+            newscale= min(maxinpvol,inp[i].volume-inp[i].plate.unusableVolume-2)/vol[i]
+            if newscale<1:
+                vol = [x * 1.0 * newscale for x in vol]
+                if tgtconc is not None:
+                    mixvol *= newscale   # Maintain same target concentration by reducing total volume
+                    
+        print "Mixing into %.0ful with tgtconc of %s, dil=%.2f"%(mixvol,"None" if tgtconc is None else "%.2f"%tgtconc,mixvol/sum(vol))
+        for i in range(len(inp)):
+            print "%-30.30s %5.2fnM wt=%5.2f v=%5.2ful"%(inp[i].name,inp[i].conc.stock,weights[i],vol[i])
+
+        if min(vol) < 4.0:
+            # Some components are too small; split mixing
+            lowvol=[i for i in range(len(inp)) if vol[i]<4.0]
+            highvol=[i for i in range(len(inp)) if i not in lowvol]
+            assert len(highvol)>0
+            assert len(lowvol)>0
+            lowtgtconc=sum([inp[i].conc.stock *1.0/ weights[i] for i in highvol])/len(highvol)*sum([weights[i] for i in lowvol])
+            print "Running premix of samples "+",".join(["%d"%ind for ind in lowvol])+" with target concentration of %.2f"%lowtgtconc
+            mix1=self.mix([inp[i] for i in lowvol],[weights[i] for i in lowvol],tgtconc=lowtgtconc,mixvol=mixvol,maxinpvol=maxinpvol)
+            wt1=sum([weights[i] for i in lowvol])
+            mix2=self.mix([inp[i] for i in highvol]+[mix1],[weights[i] for i in highvol]+[wt1],tgtconc=tgtconc,mixvol=mixvol,maxinpvol=maxinpvol)
+            return mix2
+
+
         watervol = mixvol - sum(vol)
-        print "Mixdown: vols=[", ",".join(["%.2f " % v for v in vol]), "], water=", watervol, ", total=", mixvol, " ul"
+        #print "Mixdown: vols=[", ",".join(["%.2f " % v for v in vol]), "], water=", watervol, ", total=", mixvol, " ul"
         mixdown = Sample('mixdown', plate=decklayout.SAMPLEPLATE)
-        print "Mixdown is in well %s"%(mixdown.plate.wellname(mixdown.well))
 
         if watervol < -0.1:
             print "Total mixdown is %.1f ul, more than planned %.0f ul" % (sum(vol), mixvol)
             assert False
-        elif watervol > 0.0:
+        elif watervol >= 4.0:   # Omit if too small
             self.e.transfer(watervol, decklayout.WATER, mixdown, (False, False))
         else:
             pass
-        for i in range(len(inp)):
+        ord=sorted(range(len(inp)),key=lambda i: vol[i],reverse=True)
+        for i in ord:
             inp[i].conc.final = inp[i].conc.stock * vol[i] / mixvol  # Avoid warnings about concentrations not adding up
-            self.e.transfer(vol[i], inp[i], mixdown, (False, i == len(inp) - 1))
+            self.e.transfer(vol[i], inp[i], mixdown, (False, False))
         self.e.shakeSamples([mixdown])
         mixdown.conc = Concentration(stock=sum([inp[i].conc.stock * vol[i] for i in range(len(inp))]) / mixvol,
                                      final=None, units='nM')
-        self.q.addSamples(mixdown, needDil=mixdown.conc.stock * 1e-9 / self.qconc, primers=self.qprimers)
-        print "Mixdown final concentration = %.0f pM" % (mixdown.conc.stock * 1000)
+        print "Mix product, %s, is in well %s with %.1ful @ %.2f nM"%(mixdown.name,mixdown.plate.wellname(mixdown.well),mixdown.volume,mixdown.conc.stock)
+        print "----------"
         return mixdown
 
     def constrict(self, constrictin, conc):
