@@ -17,7 +17,7 @@ class IDPrep(TRP):
         super(IDPrep, self).__init__()
         self.inputs = inputs
 
-        self.qconc = 50e-12  # Target qPCR concentration
+        self.qconc = 0.020   # Target qPCR concentration in nM
         self.qprimers = ["End"]
 
         self.bc1_inputvol = 2  # ul into PCR1
@@ -122,7 +122,7 @@ class IDPrep(TRP):
         for x in pcr1:
             x.conc = Concentration(stock=pcr1finalconc, units='nM')
 
-        self.q.addSamples(src=pcr1, needDil=pcr1finalconc / (self.qconc * 1e9), primers=self.qprimers, save=True,
+        self.q.addSamples(src=pcr1, needDil=pcr1finalconc / self.qconc, primers=self.qprimers, save=True,
                           nreplicates=1)
 
         if len(pcrcycles) > 1:
