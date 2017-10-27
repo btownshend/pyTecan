@@ -37,7 +37,7 @@ class Constrict(TRP):
         self.con_pcr1tgtconc = self.qconc * 4  # Enough to take qPCR without dilutiojn
         self.con_pcr2dil = 4
         self.con_pcr2vol = 50
-        self.con_pcr2tgtconc = 100e-9
+        self.con_pcr2tgtconc = 10e-9
 
         self.regen_predilvol = 100
         self.regen_predil = 25
