@@ -98,7 +98,7 @@ class Constrict(TRP):
         if tgtconc is not None and conc>tgtconc:
             scale*=tgtconc*1.0/conc
         if max(vol)*scale<4.0:
-            scale=4.0/max(vol)   # At least one input with 4ul input
+            scale=4.1/max(vol)   # At least one input with 4ul input
         vol = [x * scale for x in vol]  # Mix to make planned total without water
 
         for i in range(len(vol)):
@@ -109,10 +109,6 @@ class Constrict(TRP):
                 if tgtconc is not None:
                     mixvol *= newscale   # Maintain same target concentration by reducing total volume
                     
-        print "Mixing into %.0ful with tgtconc of %s, dil=%.2f"%(mixvol,"None" if tgtconc is None else "%.2f"%tgtconc,mixvol/sum(vol))
-        for i in range(len(inp)):
-            print "%-30.30s %5.2fnM wt=%5.2f v=%5.2ful"%(inp[i].name,inp[i].conc.stock,weights[i],vol[i])
-
         if min(vol) < 4.0:
             # Some components are too small; split mixing
             lowvol=[i for i in range(len(inp)) if vol[i]<4.0]
@@ -120,12 +116,16 @@ class Constrict(TRP):
             assert len(highvol)>0
             assert len(lowvol)>0
             lowtgtconc=sum([inp[i].conc.stock *1.0/ weights[i] for i in highvol])/len(highvol)*sum([weights[i] for i in lowvol])
-            print "Running premix of samples "+",".join(["%d"%ind for ind in lowvol])+" with target concentration of %.2f"%lowtgtconc
+            print "Running premix of samples "+",".join(["%d"%ind for ind in lowvol])+" with target concentration of %.4f"%lowtgtconc
             mix1=self.mix([inp[i] for i in lowvol],[weights[i] for i in lowvol],tgtconc=lowtgtconc,mixvol=mixvol,maxinpvol=maxinpvol)
             wt1=sum([weights[i] for i in lowvol])
             mix2=self.mix([inp[i] for i in highvol]+[mix1],[weights[i] for i in highvol]+[wt1],tgtconc=tgtconc,mixvol=mixvol,maxinpvol=maxinpvol)
             return mix2
 
+
+        print "Mixing into %.0ful with tgtconc of %s, dil=%.2f"%(mixvol,"None" if tgtconc is None else "%.4f"%tgtconc,mixvol/sum(vol))
+        for i in range(len(inp)):
+            print "%-30.30s %6.3fnM wt=%5.2f v=%5.2ful"%(inp[i].name,inp[i].conc.stock,weights[i],vol[i])
 
         watervol = mixvol - sum(vol)
         #print "Mixdown: vols=[", ",".join(["%.2f " % v for v in vol]), "], water=", watervol, ", total=", mixvol, " ul"
@@ -143,6 +143,8 @@ class Constrict(TRP):
             inp[i].conc.final = inp[i].conc.stock * vol[i] / mixvol  # Avoid warnings about concentrations not adding up
             self.e.transfer(vol[i], inp[i], mixdown, (False, False))
         self.e.shakeSamples([mixdown])
+        if not mixdown.wellMixed:
+            self.e.mix(mixdown)
         mixdown.conc = Concentration(stock=sum([inp[i].conc.stock * vol[i] for i in range(len(inp))]) / mixvol,
                                      final=None, units='nM')
         print "Mix product, %s, is in well %s with %.1ful @ %.2f nM"%(mixdown.name,mixdown.plate.wellname(mixdown.well),mixdown.volume,mixdown.conc.stock)
