@@ -656,11 +656,15 @@ classdef RobotSamples < handle
                 fprintf('      ');
               end
               awz=nansum(concsnm([pAX,pWX,pZX]));
-              awz_t=awz/concsnm(pREF)*obj.options.refconc;
-              if isfinite(awz_t)
-                fprintf('%5.0f ',awz_t);
-              else
+              if isempty(pREF)
                 fprintf('      ');
+              else
+                awz_t=awz/concsnm(pREF)*obj.options.refconc;
+                if isfinite(awz_t)
+                  fprintf('%5.0f ',awz_t);
+                else
+                  fprintf('      ');
+                end
               end
               w_wz=concsnm(pWX)/(concsnm(pWX)+concsnm(pZX));
               if isfinite(w_wz)
@@ -668,17 +672,25 @@ classdef RobotSamples < handle
               else
                 fprintf('            ');
               end
-              awz_m=awz/concsnm(pMX);
-              if isfinite(awz_m) && awz_m>0
-                fprintf('%6.2f ',awz_m);
-              else
+              if isempty(pMX)
                 fprintf('       ');
+              else
+                awz_m=awz/concsnm(pMX);
+                if isfinite(awz_m) && awz_m>0
+                  fprintf('%6.2f ',awz_m);
+                else
+                  fprintf('       ');
+                end
               end
-              rgain=awz/concsnm(pT7X);
-              if isfinite(rgain)
-                fprintf('%6.2f ',rgain);
-              else
+              if isempty(pT7X)
                 fprintf('       ');
+              else
+                rgain=awz/concsnm(pT7X);
+                if isfinite(rgain)
+                  fprintf('%6.2f ',rgain);
+                else
+                  fprintf('       ');
+                end
               end
                 
             fprintf('\n');
