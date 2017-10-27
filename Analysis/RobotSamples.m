@@ -596,10 +596,11 @@ classdef RobotSamples < handle
               end
             end
           end
-          fprintf('       %5.5s %5.5s %5.5s %5.5s %6.6s %6.6s',sprintf('%.0fT/R',obj.options.refconc),sprintf('%.0fAWX/R',obj.options.refconc),'W/WZ','Z/WZ','AWZ/M','AWZ/T');
+          fprintf('       %5.5s %5.5s %5.5s %5.5s %5.5s %6.6s %6.6s',sprintf('%.0fT/R',obj.options.refconc),sprintf('%.0fAWX/R',obj.options.refconc),'W/WZ','Z/WZ','A/AWZ','AWZ/M','AWZ/T');
           fprintf('\n');
           fprintf('%-46.46s  ','');
           fprintf('%8d ',lenlist);
+          fprintf('\n');
         end
         prevlenlist=lenlist;
         
@@ -611,8 +612,8 @@ classdef RobotSamples < handle
             end
           end
           fprintf('* %.1f nM',obj.options.refconc);
+          fprintf('\n');
         end
-        fprintf('\n');
 
         nrowsprinted=0;
         for j=1:length(obj.suffixes)
@@ -666,11 +667,25 @@ classdef RobotSamples < handle
                   fprintf('      ');
                 end
               end
-              w_wz=concsnm(pWX)/(concsnm(pWX)+concsnm(pZX));
-              if isfinite(w_wz)
-                fprintf('%4.0f%% %4.0f%% ',w_wz*100,(1-w_wz)*100);
-              else
+              if isempty(pWX) || isempty(pZX)
                 fprintf('            ');
+              else
+                w_wz=concsnm(pWX)/(concsnm(pWX)+concsnm(pZX));
+                if isfinite(w_wz)
+                  fprintf('%4.0f%% %4.0f%% ',w_wz*100,(1-w_wz)*100);
+                else
+                  fprintf('            ');
+                end
+              end
+              if isempty(pAX) || (isempty(pZX) && isempty(pWX))
+                fprintf('       ');
+              else
+                a_awz=concsnm(pAX)/nansum(concsnm([pAX,pWX,pZX]));
+                if isfinite(a_awz)
+                  fprintf('%4.0f%% ',a_awz*100);
+                else
+                  fprintf('       ');
+                end
               end
               if isempty(pMX)
                 fprintf('       ');
@@ -698,7 +713,7 @@ classdef RobotSamples < handle
           end
         end
         if nrowsprinted>=2
-          fprintf('\n');
+          fprintf('[%d]\n',nrowsprinted);
         end
       end
 
