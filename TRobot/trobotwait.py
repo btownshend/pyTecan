@@ -4,6 +4,7 @@ import logging
 
 p=trobot.TRobot()
 firstpass=True
+remt=0
 
 logging.info('Waiting for TRobot to complete')
 #p.setdebug()
@@ -18,6 +19,10 @@ while True:
         loopcntrs=p.getloopcounters()
     except ValueError:
         print "error"
+        if remt>2:
+            # Premature termination
+            logging.error("Program terminated with %.0f minutes still remaining"%remt)
+            sys.exit(1)
         break
 
     print "%s: [%s] LID=%.1f/%.1f [%s], step=%d, temp=%.1f/%.1f, time=%d, loop=%d, loop#=%s/%d, remt=%d min"%(status.progname, str(bstatus),lidtemp,status.lidtemp,str(lstatus),status.stepnr,blocktemp,status.bltemp,status.htime,status.loop,loopcntrs,status.numloop,remt)
