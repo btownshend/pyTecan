@@ -46,11 +46,6 @@ class Constrict(TRP):
         self.regen_cycles = 10
 
         used = []
-        for inp in inputs:
-            bc = "%s-%s" % (inp['left'], inp['right'])
-            if bc in used:
-                logging.error("Barcode %s is being reused for %s" % (bc, inp['name']))
-            used.append(bc)
 
         self.rsrc = [reagents.add("%s-%s-%s" % (inputs[i]['name'], inputs[i]['left'], inputs[i]['right']),
                                   decklayout.SAMPLEPLATE,
@@ -74,7 +69,10 @@ class Constrict(TRP):
         for s in samps:
             self.q.addSamples([s],needDil=max(10,s.conc.stock*1e-9/self.qconc),primers=self.qprimers)
         print "### Mixdown #### (%.0f min)" % (clock.elapsed() / 60.0)
-        mixdown = self.mix(samps, [x['weight'] for x in self.inputs])
+        if len(samps)>1:
+            mixdown = self.mix(samps, [x['weight'] for x in self.inputs])
+        else:
+            mixdown=samps[0]
         self.q.addSamples(mixdown, needDil=max(1.0,mixdown.conc.stock * 1e-9 / self.qconc), primers=self.qprimers)
         print "Mixdown final concentration = %.0f pM" % (mixdown.conc.stock * 1000)
         print "### Constriction #### (%.1f min)" % (clock.elapsed() / 60.0)
