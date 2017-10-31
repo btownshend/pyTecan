@@ -41,6 +41,7 @@ class PGMSelect(TRP):
         self.saveRNA=saveRNA
         self.extraQPCRPrimers=None
         self.useMX=useMX
+        self.pauseAfterStop=False
         
         # General parameters
         self.qConc = 0.050			# Target qPCR concentration in nM (corresponds to Ct ~ 10)
@@ -355,6 +356,9 @@ class PGMSelect(TRP):
 
             stopDil=rxs[0].volume/preStopVolume
 
+            if self.pauseAfterStop:
+                worklist.userprompt("Post EDTA pause")
+                
             if self.saveRNA:
                 self.saveSamps(src=rxs,vol=5,dil=self.saveRNADilution,plate=decklayout.DILPLATE,dilutant=reagents.getsample("TE8"),mix=(False,False))   # Save to check [RNA] on Qubit, bioanalyzer
 
