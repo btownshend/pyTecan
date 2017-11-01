@@ -51,16 +51,24 @@ class Barcoding(TRP):
         bcout = self.barcoding(names=[x['name'] for x in self.inputs], left=[x['left'] for x in self.inputs],
                                right=[x['right'] for x in self.inputs])
 
-        print "### Mixdown #### (%.0f min)" % (clock.elapsed() / 60.0)
-        mixdown=self.mix(bcout, [x['weight'] for x in self.inputs])
-        self.q.addSamples(mixdown, needDil=mixdown.conc.stock * 1e-9 / self.qconc, primers=self.qprimers,nreplicates=3)
+        for i in range(len(self.inputs)):
+            x=self.inputs[i]
+            if 'bconc' in x:
+                print "Resetting concentration of %s from expected %.1f to bconc setting of %.1f nM"%(x['name'],bcout[i].conc.stock,x['bconc'])
+                bcout[i].conc.stock=x['bconc']
 
         print "### qPCR #### (%.0f min)" % (clock.elapsed() / 60.0)
-        self.q.run(confirm=False, enzName='EvaGreen', waitForPTC=False)
+        self.q.run(confirm=False, enzName='EvaGreen')
         print "### qPCR Done #### (%.0f min)" % (clock.elapsed() / 60.0)
-        worklist.userprompt("qPCR done -- only need to complete final PCR", 300)
-        self.e.waitpgm()
         print "### Final PCR Done #### (%.0f min)" % (clock.elapsed() / 60.0)
+
+        if all(['bconc' in x for x in self.inputs]):
+            print "### Mixdown #### (%.0f min)" % (clock.elapsed() / 60.0)
+            worklist.comment('Start mixdown only at this point')
+            mixdown=self.mix(bcout, [x['weight'] for x in self.inputs])
+            #self.q.addSamples(mixdown, needDil=mixdown.conc.stock * 1e-9 / self.qconc, primers=self.qprimers,nreplicates=3)
+        else:
+            print "### Not doing mixdown as bconc not set in all inputs"
 
     def mix(self, inp, weights):
         """Mix given inputs according to weights (by moles -- use conc.stock of each input)"""
