@@ -17,7 +17,7 @@ reagents.add("BT5310", well="D1", conc=Concentration(20, 20, "pM"))
 class Barcoding(TRP):
     """Barcode multiple samples, mix them"""
 
-    def __init__(self, inputs,pcr1inputconc=0.05):
+    def __init__(self, inputs,pcr1inputconc=0.05,used=[]):
         super(Barcoding, self).__init__()
         self.inputs = inputs
 
@@ -28,7 +28,6 @@ class Barcoding(TRP):
         self.mix_conc = 100e-9  # Concentration of mixdown
         self.pcr1inputconc = pcr1inputconc
 
-        used = []
         for inp in inputs:
             bc = "%s-%s" % (inp['left'], inp['right'])
             if bc in used:

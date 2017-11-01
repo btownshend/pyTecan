@@ -29,6 +29,7 @@ class IDPrep(TRP):
                 logging.error("Barcode %s is being reused for %s" % (bc, inp['name']))
             used.append(bc)
 
+        print "used=",used
         self.rsrc = [reagents.add("%s-%s-%s" % (inputs[i]['name'], inputs[i]['left'], inputs[i]['right']),
                                   decklayout.SAMPLEPLATE,
                                   well=inputs[i]['well'] if 'well' in inputs[i] else None,
