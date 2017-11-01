@@ -42,7 +42,7 @@ class Barcoding(TRP):
         self.q = None  # Defined in pgm()
 
     def pgm(self):
-        self.q = QSetup(self, maxdil=16, debug=False, mindilvol=60)
+        self.q = QSetup(self, maxdil=16, debug=False, mindilvol=100)
         self.e.addIdleProgram(self.q.idler)
 
         self.q.addReferences(dstep=10, primers=self.qprimers, ref=reagents.getsample("BT5310"))
