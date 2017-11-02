@@ -109,7 +109,7 @@ class Barcoding(TRP):
         self.e.shakeSamples([mixdown])
         mixdown.conc = Concentration(stock=sum([inp[i].conc.stock * vol[i] for i in range(len(inp))]) / mixvol,
                                      final=None, units='nM')
-        print "Mixdown final concentration = %.0f nM" % mixdown.conc.stock
+        print "Mixdown final concentration = %.1f nM" % mixdown.conc.stock
         return mixdown
 
     def barcoding(self, names, left, right):
