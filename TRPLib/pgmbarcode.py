@@ -61,6 +61,7 @@ class Barcoding(TRP):
         self.q.run(confirm=False, enzName='EvaGreen')
         print "### qPCR Done #### (%.0f min)" % (clock.elapsed() / 60.0)
         print "### Final PCR Done #### (%.0f min)" % (clock.elapsed() / 60.0)
+        worklist.flushQueue()
 
         if all(['bconc' in x for x in self.inputs]):
             print "### Mixdown #### (%.0f min)" % (clock.elapsed() / 60.0)
