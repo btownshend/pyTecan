@@ -127,10 +127,10 @@ class QSetup(object):
                     if srcDil==1:
                         src=[ref]
                     else:
-                        srcname="%s.D%d"%(ref.name,srcDil)
+                        srcname=diluteName(ref.name,srcDil)
                         src=[Sample.lookup(srcname)]
                         if src[0] is None:
-                            src=[Sample(srcname,decklayout.DILPLATE)]
+                            logging.error("%s not found"%srcname)
                     break
             tmp=self.MINDILVOL
             self.MINDILVOL=75   # Make sure there's enough for resuing dilutions
