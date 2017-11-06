@@ -650,64 +650,69 @@ classdef RobotSamples < handle
               obj.sv(i,j,:)=obj.rsv(i,j,:)/obj.rsv(i,j,ref)*obj.options.refconc;
               fprintf('%6.1f ',obj.sv(i,j,[1:ref-1,ref+1:end]));
             end
+            
+            if isempty(pREF) || isempty(pT7X)
+              fprintf('      ');
+            else
               tval=concsnm(pT7X)/concsnm(pREF)*obj.options.refconc;
               if isfinite(tval)
                 fprintf('%5.1f ',tval);
               else
                 fprintf('      ');
               end
-              awz=nansum(concsnm([pAX,pWX,pZX]));
-              if isempty(pREF)
+            end
+            awz=nansum(concsnm([pAX,pWX,pZX]));
+            if isempty(pREF)
+              fprintf('      ');
+            else
+              awz_t=awz/concsnm(pREF)*obj.options.refconc;
+              if isfinite(awz_t)
+                fprintf('%5.0f ',awz_t);
+              else
                 fprintf('      ');
-              else
-                awz_t=awz/concsnm(pREF)*obj.options.refconc;
-                if isfinite(awz_t)
-                  fprintf('%5.0f ',awz_t);
-                else
-                  fprintf('      ');
-                end
               end
-              if isempty(pWX) || isempty(pZX)
+            end
+            if isempty(pWX) || isempty(pZX)
+              fprintf('            ');
+            else
+              w_wz=concsnm(pWX)/(concsnm(pWX)+concsnm(pZX));
+              if isfinite(w_wz)
+                fprintf('%4.0f%% %4.0f%% ',w_wz*100,(1-w_wz)*100);
+              else
                 fprintf('            ');
-              else
-                w_wz=concsnm(pWX)/(concsnm(pWX)+concsnm(pZX));
-                if isfinite(w_wz)
-                  fprintf('%4.0f%% %4.0f%% ',w_wz*100,(1-w_wz)*100);
-                else
-                  fprintf('            ');
-                end
               end
-              if isempty(pAX) || (isempty(pZX) && isempty(pWX))
+            end
+            if isempty(pAX) || (isempty(pZX) && isempty(pWX))
+              fprintf('       ');
+            else
+              a_awz=concsnm(pAX)/nansum(concsnm([pAX,pWX,pZX]));
+              if isfinite(a_awz)
+                fprintf('%4.0f%% ',a_awz*100);
+              else
                 fprintf('       ');
-              else
-                a_awz=concsnm(pAX)/nansum(concsnm([pAX,pWX,pZX]));
-                if isfinite(a_awz)
-                  fprintf('%4.0f%% ',a_awz*100);
-                else
-                  fprintf('       ');
-                end
               end
-              if isempty(pMX)
+            end
+            if isempty(pMX)
+              fprintf('       ');
+            else
+              awz_m=awz/concsnm(pMX);
+              if isfinite(awz_m) && awz_m>0
+                fprintf('%6.2f ',awz_m);
+              else
                 fprintf('       ');
-              else
-                awz_m=awz/concsnm(pMX);
-                if isfinite(awz_m) && awz_m>0
-                  fprintf('%6.2f ',awz_m);
-                else
-                  fprintf('       ');
-                end
               end
-              if isempty(pT7X)
+            end
+            if isempty(pT7X)
+              fprintf('       ');
+            else
+              rgain=awz/concsnm(pT7X);
+              if isfinite(rgain)
+                fprintf('%6.2f ',rgain);
+              else
                 fprintf('       ');
-              else
-                rgain=awz/concsnm(pT7X);
-                if isfinite(rgain)
-                  fprintf('%6.2f ',rgain);
-                else
-                  fprintf('       ');
-                end
               end
-                
+            end
+            
             fprintf('\n');
             nrowsprinted=nrowsprinted+1;
           end
