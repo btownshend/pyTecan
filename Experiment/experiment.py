@@ -159,7 +159,11 @@ class Experiment(object):
             #         maxval=max([d.volume for d in dests if d.conc != None])
         #print "volumes=",[d.volume for d in dests],", conc=",[str(d.conc) for d in dests],", maxval=",maxval
         if not mix[1] and len(volumes)>1 and ( maxval<.01 or ignoreContents):
-            if sum(volumes)*(1+extraFrac)>self.MAXVOLUME:
+            if len(dests)>=8:
+                vmax=max([sum(volumes[i::4]) for i in range(4)])
+            else:
+                vmax=sum(volumes)
+            if vmax*(1+extraFrac)>self.MAXVOLUME:
                 #print "sum(volumes)=%.1f, MAXVOL=%.1f"%(sum(volumes),self.MAXVOLUME)
                 for i in range(1,len(volumes)):
                     if sum(volumes[0:i+1])*(1+extraFrac)>self.MAXVOLUME:
@@ -185,7 +189,7 @@ class Experiment(object):
                     worklist.getDITI(tipMask&self.DITIMASK,min(self.MAXVOLUME,ditivol),True)
             else:
                 tipMask=self.cleantip()
-
+                
             cmt="Multi-add  %s to samples %s"%(src.name,",".join("%s[%.1f]"%(dests[i].name,volumes[i]) for i in range(len(dests))))
             #print "*",cmt
             worklist.comment(cmt)
@@ -196,12 +200,27 @@ class Experiment(object):
                 worklist.comment("pipette mix for src mix of "+src.name)
                 src.mix(tipMask)	# Manual mix (after allocating a tip for this)
 
-            src.aspirate(tipMask,sum(volumes)*(1+extraFrac),True)	# Aspirate extra
-            for i in range(len(dests)):
-                if volumes[i]>0.01:
-                    dests[i].dispense(tipMask,volumes[i],src)
-            if self.useDiTis and dropDITI:
-                worklist.dropDITI(tipMask&self.DITIMASK,decklayout.WASTE)
+            if len(dests)>=8:
+                print "Running multi-tip transfer"
+                worklist.flushQueue()
+                worklist.comment("Multi-tip transfer of "+src.name)
+                self.sanitize()   # Make sure all tips are clean
+                for i in range(4):
+                    tipMask=1<<i
+                    src.aspirate(1<<i,sum(volumes[i::4])*(1+extraFrac),True)	# Aspirate extra
+                for i in range(len(dests)):
+                    tipMask=1<<(i%4)
+                    if volumes[i]>0.01:
+                        dests[i].dispense(tipMask,volumes[i],src)
+                worklist.flushQueue()
+                worklist.comment("Done multi-tip transfer of "+src.name)
+            else:
+                src.aspirate(tipMask,sum(volumes)*(1+extraFrac),True)	# Aspirate extra
+                for i in range(len(dests)):
+                    if volumes[i]>0.01:
+                        dests[i].dispense(tipMask,volumes[i],src)
+                if self.useDiTis and dropDITI:
+                    worklist.dropDITI(tipMask&self.DITIMASK,decklayout.WASTE)
         else:
             for i in range(len(dests)):
                 if volumes[i]>0.01:
