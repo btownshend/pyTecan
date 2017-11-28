@@ -212,6 +212,7 @@ class Experiment(object):
                     tipMask=1<<(i%4)
                     if volumes[i]>0.01:
                         dests[i].dispense(tipMask,volumes[i],src)
+                self.cleanTips=0  # All are dirty now
                 worklist.flushQueue()
                 worklist.comment("Done multi-tip transfer of "+src.name)
             else:
