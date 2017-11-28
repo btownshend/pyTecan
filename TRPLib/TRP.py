@@ -49,6 +49,7 @@ reagents.add("P-T7BX",well="C5",conc=4)
 reagents.add("P-T7ZX",well="C5",conc=4)
 reagents.add("P-T7WX",well="D5",conc=4)
 reagents.add("P-T7AX",well="E5",conc=4)
+reagents.add("P-AX",well="E5",conc=4)
 
 reagents.add("P-T7X",well="A6",conc=4)
 reagents.add("P-WX",well="B6",conc=4)
