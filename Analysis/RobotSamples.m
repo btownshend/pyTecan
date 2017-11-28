@@ -399,6 +399,10 @@ classdef RobotSamples < handle
           len=24+21+6+loop1len+6+17+loop2len+29;
         elseif strncmp(primer,'T7BX',4)
           len=24+21+6+loop1len+6+17+loop2len+29;
+        elseif strncmp(primer,'A786',4)
+          len=21+6+43;
+        elseif strncmp(primer,'W786',4)
+          len=11+6+43;
         end
       end
       if isnan(len)
