@@ -64,7 +64,7 @@ class PGMSelect(TRP):
         self.rtDil=4
         self.saveRNADilution=10
         self.ligInPlace=True
-        self.allprimers=["REF","T7X","WX","ZX"]    # Will get updated after first pass with all primers used
+        self.allprimers=["REF","T7X","WX"]    # Will get updated after first pass with all primers used
         if self.useMX:
             self.allprimers.append("MX")
         self.rtpostdil=[3.0 if r=='U' else 1.0 for r in self.rounds]
