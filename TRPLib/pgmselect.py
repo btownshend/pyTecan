@@ -86,7 +86,10 @@ class PGMSelect(TRP):
         
     def setVolumes(self):
         # Computed parameters
+        # Observed data:   0.1nM@30min -> gain ~1000
         self.rnaConc=8314*self.tmplFinalConc/(self.tmplFinalConc+55)*self.t7dur/30
+        if self.tmplFinalConc<1:
+            self.rnaConc*=6   # Kludge based on being off at 0.1nM template concentrations
         maxConc=1000*self.stopConc*4/0.9
         if maxConc<self.rnaConc:
             logging.warning( "Stop@%.1f uM limits usable RNA to %.0f/%.0f nM"%(self.stopConc,maxConc,self.rnaConc))
