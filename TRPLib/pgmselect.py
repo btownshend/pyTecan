@@ -438,12 +438,18 @@ class PGMSelect(TRP):
                         maxdil=q.MAXDIL*q.MAXDIL
                         if needDil/self.saveDil>maxdil:
                             logging.notice( "Diluting ext by %.0fx instead of needed %.0f to save steps"%(maxdil,needDil/self.saveDil))
-                        q.addSamples(src=[ext[i]],needDil=min(maxdil,needDil/self.saveDil),primers=primerSet[i],names=["%s.ext"%names[i]],save=False)
+                        pset=primerSet[i]
+                        if "extraQPCR" in self.inputs[i]:
+                            pset.udpate(self.inputs[i]["extraQPCR"])
+                        q.addSamples(src=[ext[i]],needDil=min(maxdil,needDil/self.saveDil),primers=pset,names=["%s.ext"%names[i]],save=False)
             else:
                 if "ext" in self.qpcrStages:
                     print "needDil=",needDil
                     for i in range(len(names)):
-                        q.addSamples(src=[rxs[i]],needDil=needDil,primers=primerSet[i],names=["%s.ext"%names[i]])
+                        pset=primerSet[i]
+                        if "extraQPCR" in self.inputs[i]:
+                            pset.update(self.inputs[i]["extraQPCR"])
+                        q.addSamples(src=[rxs[i]],needDil=needDil,primers=pset,names=["%s.ext"%names[i]])
                         isave=i+len(names)
                         if isave<len(rxs):
                             # samples restored
