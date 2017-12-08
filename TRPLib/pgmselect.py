@@ -174,8 +174,11 @@ class PGMSelect(TRP):
         else:
             self.srcs = self.addTemplates([inp['name'] for inp in self.inputs],stockconc=self.tmplFinalConc/self.templateDilution,finalconc=self.tmplFinalConc,plate=decklayout.DILPLATE,looplengths=[inp['looplength'] for inp in self.inputs],extraVol=15) 
 
-        # Reserve space for  PCR products
-        pcrprods=[ [Sample("R%d-T%s"%(r,inp['ligand']),decklayout.DILPLATE) for inp in self.inputs] for r in range(len(self.rounds))]
+        if self.dopcr:
+            # Reserve space for  PCR products
+            pcrprods=[ [Sample("R%d-T%s"%(r,inp['ligand']),decklayout.DILPLATE) for inp in self.inputs] for r in range(len(self.rounds))]
+        else:
+            pcrprods=None
 
         t7in = [s.getsample()  for s in self.srcs]
         
@@ -232,7 +235,7 @@ class PGMSelect(TRP):
             self.rndNum=self.rndNum+1
             self.finalRound=self.rndNum==len(self.rounds)
 
-            r1=self.oneround(q,r1,prefixOut=prefixOut,stop=stop,prefixIn=curPrefix,keepCleaved=(roundType!='U'),rtvol=self.rtvol[self.rndNum-1],t7vol=self.t7vol[self.rndNum-1],cycles=self.pcrcycles[self.rndNum-1],pcrdil=self.pcrdil[self.rndNum-1],pcrvol=self.pcrvol[self.rndNum-1],dolig=self.allLig or (roundType!='U'),pcrtgt=pcrprods[self.rndNum-1])
+            r1=self.oneround(q,r1,prefixOut=prefixOut,stop=stop,prefixIn=curPrefix,keepCleaved=(roundType!='U'),rtvol=self.rtvol[self.rndNum-1],t7vol=self.t7vol[self.rndNum-1],cycles=self.pcrcycles[self.rndNum-1],pcrdil=self.pcrdil[self.rndNum-1],pcrvol=self.pcrvol[self.rndNum-1],dolig=self.allLig or (roundType!='U'),pcrtgt=None if pcrprods is None else pcrprods[self.rndNum-1])
 
             for i in range(len(r1)):
                 r1[i].name="%s_%d"%(prefixOut[i],self.nextID)
