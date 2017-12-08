@@ -80,6 +80,7 @@ reagents.add("T3",well=None,conc=Concentration(10.0/3,1.0,'x'),extraVol=30) # BI
 reagents.add("T3d",well='E3',conc=Concentration(10.0/3,1.0,'x'),extraVol=30) # BIAs less S-Reticuline
 reagents.add("T3e",well='E3',conc=Concentration(10.0/3,1.0,'x'),extraVol=30) # BIAs less S-Reticuline, reduced Noscapine (9/17)
 reagents.add("T3f",well='E3',conc=Concentration(10.0/3,1.0,'x'),extraVol=30) # BIAs with 0.1uM S-Reticuline, 20uM Noscapine (10/17/17)
+reagents.add("T3g",well='E3',conc=Concentration(10.0/3,1.0,'x'),extraVol=30) #Reduced Trans-Zeatin (12/9/17)
 reagents.add("T6",well='D4',conc=Concentration(10.0/3,1.0,'x'),extraVol=30) # Redox
 reagents.add("T25",well='C4',conc=Concentration(10.0/3,1.0,'x'),extraVol=30) # Acetyl CoA + Trans-Zeatin
 #reagents.add("T25T6",well='E2',conc=Concentration(2.222,1.0,'x'),extraVol=30) # Acetyl CoA + Trans-Zeatin +Redox
