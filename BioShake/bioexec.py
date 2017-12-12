@@ -3,7 +3,9 @@ import sys
 import logging
 
 p=bioshake.BioShake()
-logging.info( "Info=%s",p.info())
+#logging.info( "Info=%s",p.info())
 res=p.execute(" ".join(sys.argv[1:]))
 logging.info( "Result=%s",res)
-
+if res!="ok":
+    sys.exit(1)
+    
