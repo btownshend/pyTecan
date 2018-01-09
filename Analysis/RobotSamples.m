@@ -156,7 +156,7 @@ classdef RobotSamples < handle
         ct=nanmean(obj.q.getct({water.well}));
       end
       if isnan(ct)
-        ct=22;
+        ct=25;
         fprintf('Missing water control for %s -- assuming %.1f\n', primer,ct);
       end
     end
