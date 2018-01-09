@@ -53,7 +53,7 @@ class Barcoding(TRP):
 
         for i in range(len(self.inputs)):
             x=self.inputs[i]
-            if 'bconc' in x:
+            if 'bconc' in x and x['bconc'] is not None:
                 print "Resetting concentration of %s from expected %.1f to bconc setting of %.1f nM"%(x['name'],bcout[i].conc.stock,x['bconc'])
                 bcout[i].conc.stock=x['bconc']
 
@@ -63,7 +63,7 @@ class Barcoding(TRP):
         print "### Final PCR Done #### (%.0f min)" % (clock.elapsed() / 60.0)
         worklist.flushQueue()
 
-        if all(['bconc' in x for x in self.inputs]):
+        if all(['bconc' in x and x['bconc'] is not None  for x in self.inputs]):
             print "### Mixdown #### (%.0f min)" % (clock.elapsed() / 60.0)
             worklist.comment('Start mixdown only at this point')
             mixdown=self.mix(bcout, [x['weight'] for x in self.inputs])
@@ -87,8 +87,14 @@ class Barcoding(TRP):
 
         if min(vol) < 4.0:
             logging.info("Minimum volume into mixing would be only %.2f ul - staging..." % min(vol))
-            sel=[i for i in range(len(inp)) if vol[i]<4.0 ]
-            nsel=[i for i in range(len(inp)) if vol[i]>=4.0 ]
+            if max(vol)<4.0:
+                # All volumes are low, just too much
+                # Split into 2 stages
+                sel=range(int(len(inp)/2))
+                nsel=range(int(len(inp)/2),len(inp))
+            else:
+                sel=[i for i in range(len(inp)) if vol[i]<4.0 ]
+                nsel=[i for i in range(len(inp)) if vol[i]>=4.0 ]
             print "Mixing ",",".join([inp[i].name for i in sel])," in separate stage."
             mix1=self.mix([inp[i] for i in sel],[weights[i] for i in sel])
             mix2=self.mix([inp[i] for i in nsel]+[mix1],[weights[i] for i in nsel]+[sum([weights[i] for i in sel])])
