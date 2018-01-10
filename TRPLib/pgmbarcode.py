@@ -1,5 +1,6 @@
 """Barcoding"""
 import logging
+import numpy as np
 
 from Experiment import reagents, worklist, decklayout, clock
 from Experiment.concentration import Concentration
@@ -71,12 +72,18 @@ class Barcoding(TRP):
         else:
             print "### Not doing mixdown as bconc not set in all inputs"
 
-    def mix(self, inp, weights):
+    def mix(self, inp, weights,tgtdil=1.0):
         """Mix given inputs according to weights (by moles -- use conc.stock of each input)"""
+        print "Mix: tgtdil=%.2f, inp="%tgtdil,",".join(["%s@%.2f"%(inp[i].name,weights[i]) for i in range(len(inp))])
         mixvol = 100.0
         if len(inp)==1:
-            # Special case, just dilute 10x
-            vol=[mixvol/10]
+            if tgtdil>1.0:
+                vol=[mixvol/tgtdil]
+                if vol[0]<4.0:
+                    vol[0]=4.0
+            else:
+                # Special case, just dilute 10x
+                vol=[mixvol/10]
         else:
             relvol = [weights[i] *1.0/ inp[i].conc.stock for i in range(len(inp))]
             scale = mixvol / sum(relvol)
@@ -84,7 +91,12 @@ class Barcoding(TRP):
                if relvol[i] * scale > inp[i].volume - 16.4:
                  scale = (inp[i].volume - 16.4) / relvol[i]
             vol = [x * scale for x in relvol]
+            if min(vol)>4.0 and tgtdil>1.0:
+                scale=max(1.0/tgtdil,4.0/min(vol))
+                print "Rescale volumes by %.2f to get closer to target dilution of %.2f"%(scale, tgtdil)
+                vol = [x * scale for x in vol]
 
+        print "Mix1: vols=[",",".join(["%.2f"%v for v in vol]),"]"
         if min(vol) < 4.0:
             logging.info("Minimum volume into mixing would be only %.2f ul - staging..." % min(vol))
             if max(vol)<4.0:
@@ -93,10 +105,18 @@ class Barcoding(TRP):
                 sel=range(int(len(inp)/2))
                 nsel=range(int(len(inp)/2),len(inp))
             else:
-                sel=[i for i in range(len(inp)) if vol[i]<4.0 ]
-                nsel=[i for i in range(len(inp)) if vol[i]>=4.0 ]
-            print "Mixing ",",".join([inp[i].name for i in sel])," in separate stage."
-            mix1=self.mix([inp[i] for i in sel],[weights[i] for i in sel])
+                # Choose a splitting threshold
+                mindilution=4.0/min(vol)
+                thresh = np.median(vol)
+                while mixvol/sum([v for v in vol if v<thresh]) < mindilution:
+                    thresh = thresh*0.8
+                print "Using %.2f as threshold to split mixdown"%thresh
+                sel=[i for i in range(len(inp)) if vol[i]<thresh ]
+                nsel=[i for i in range(len(inp)) if vol[i]>=thresh ]
+            print "Mixing ",",".join([inp[i].name for i in sel])," with vols [",",".join(["%.2f"%vol[i] for i in sel]),"] in separate stage."
+            tgtdil=np.median([vol[i] for i in nsel])/sum([vol[i] for i in sel])
+            print "tgtdil=%.2f"%tgtdil
+            mix1=self.mix([inp[i] for i in sel],[weights[i] for i in sel],tgtdil)
             mix2=self.mix([inp[i] for i in nsel]+[mix1],[weights[i] for i in nsel]+[sum([weights[i] for i in sel])])
             return mix2
         watervol = mixvol - sum(vol)
