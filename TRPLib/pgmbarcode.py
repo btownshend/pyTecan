@@ -40,6 +40,13 @@ class Barcoding(TRP):
                 reagents.add(x['name'], decklayout.SAMPLEPLATE, well=x['well'] if 'well' in x else None,
                              conc=Concentration(stock=x['conc'], units="nM"),
                              initVol=self.bc1_inputvol, extraVol=0)
+            else:
+                r = reagents.getsample(x['name'])
+                currConc = r.conc.stock
+                if r.conc.stock != x['conc']:
+                    logging.error('Input %s has conflicting concentrations set:  %f and %f',x['name'],r.conc.stock,x['conc'])
+                    assert False
+                    
         self.q = None  # Defined in pgm()
 
     def pgm(self):
