@@ -84,7 +84,7 @@ def moveliha( loc):
     speed=10   # 0.1-400 (mm/s)
     #comment('*MoveLiha to '+str(loc))
     wlist.append( 'MoveLiha(%d,%d,%d,1,"0104?",0,4,0,%.1f,0)'%(tipMask,loc.grid,loc.pos-1,speed))
-    clock.pipetting+=1.05
+    clock.pipetting+=0.89
 
 def optimizeQueue():
     """Optimize operations in queue"""
@@ -270,15 +270,15 @@ def aspirateDispense(op,tipMask,wells, liquidClass, volume, loc, cycles=None,all
         return
 
     if op=='Mix':
-        clock.pipetting+=11.17
+        clock.pipetting+=12.53
     elif op=='Dispense':
-        clock.pipetting+=3.01
+        clock.pipetting+=3.70
     elif op=='Aspirate':
-        clock.pipetting+=4.83+3.01   # Extra for conditioning volume
+        clock.pipetting+=5.14+3.70   # Extra for conditioning volume
     elif op=='AspirateNC':
-        clock.pipetting+=4.83
+        clock.pipetting+=5.14
     elif op=='Detect_Liquid':
-        clock.pipetting+=3.78
+        clock.pipetting+=2.90
 
     comment("*%s tip=%d well=%s.%s vol=%s lc=%s"%(op,tipMask,str(loc),str(wells),str(volume),str(liquidClass)))
     # Update volumes
@@ -381,7 +381,7 @@ def aspirateDispense(op,tipMask,wells, liquidClass, volume, loc, cycles=None,all
     if op!="Detect_Liquid" and op!="Aspirate" and (loc.grid!=QPCRLOC.grid or loc.pos!=QPCRLOC.pos) and loc.grid>3 and liquidClass.name!='Air' and liquidClass.name[0:3]!='Mix' and liquidClass.name[0:7]!='Blowout':
         # Do final liquid detect (but not on qPCR plate, since that doesn't work anyway)
         wlist.append( 'Detect_Liquid(%d,"%s",%d,%d,%d,"%s",0)'%(tipMask,"Water-InLiquid",loc.grid,loc.pos-1,spacing,ws))
-        clock.pipetting+=2.00    # Unsure of this one
+        clock.pipetting+=2.90    # Unsure of this one
         
     ptr=0
     for i in range(len(allvols)):
@@ -483,7 +483,7 @@ def wash( tipMask,wasteVol=1,cleanerVol=2,deepClean=False):
     atFreq=1000  # Hz, For Active tip
     wlist.append('Wash(%d,%d,%d,%d,%d,%.1f,%d,%.1f,%d,%.1f,%d,%d,%d,%d,%d)'%(tipMask,wasteLoc[0],wasteLoc[1],cleanerLoc[0],cleanerLoc[1],wasteVol,wasteDelay,cleanerVol,cleanerDelay,airgap, airgapSpeed, retractSpeed, fastWash, lowVolume, atFreq))
     #print "Wash %d,%.1fml,%.1fml,deep="%(tipMask,wasteVol,cleanerVol),deepClean
-    clock.pipetting+=19.01
+    clock.pipetting+=19.00
     if tipMask&1:
         tipHash[0]=0
     if tipMask&2:
@@ -521,12 +521,12 @@ def vector(vec, loc, direction, andBack, initialAction, finalAction, slow=False)
     else:
         andBack=0
     wlist.append('Vector("%s",%d,%d,%d,%d,%d,%d,%d,0)' % (vec, loc.grid, loc.pos, direction, andBack, initialAction, finalAction, speed))
-    clock.pipetting+=5.04
+    clock.pipetting+=5.16
 
 def romahome():
     #comment("*ROMA Home")
     wlist.append('ROMA(2,0,0,0,0,0,60,0,0)')
-    clock.pipetting+=2.83
+    clock.pipetting+=2.79
 
 def email(dest,subject,body='',profile='cdsrobot',onerror=0,attachscreen=1):
     wlist.append('Notification(%d,"%s","%s","%s","%s",%d)'%(attachscreen,profile,dest,subject,body,onerror))
@@ -630,7 +630,7 @@ def execute( command, wait=True, resultvar=None):
     else:
         resultvar=""
     wlist.append('Execute("%s",%d,"%s")'%(command,flags,resultvar))
-    clock.pipetting+=1.73   # Just overhead time, not actually time that command itself takes
+    clock.pipetting+=2.15   # Just overhead time, not actually time that command itself takes
 
 def pyrun( cmd):
     label=getlabel()
