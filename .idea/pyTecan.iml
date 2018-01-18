@@ -6,7 +6,7 @@
       <excludeFolder url="file://$MODULE_DIR$/SELEX" />
       <excludeFolder url="file://$MODULE_DIR$/Scale" />
     </content>
-    <orderEntry type="jdk" jdkName="Python 2.7.13 virtualenv at ~/Dropbox/SynBio/Robot/RUNS/python_venv" jdkType="Python SDK" />
+    <orderEntry type="jdk" jdkName="Python 2.7.14 (/opt/local/bin/python)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
   <component name="TestRunnerService">
