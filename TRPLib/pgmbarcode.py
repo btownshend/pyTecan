@@ -90,7 +90,6 @@ class Barcoding(TRP):
         mixvol = 100.0
         relvol = [weights[i] * 1.0 / inp[i].conc.stock for i in range(len(inp))]
         stages=mixsplit(vols=relvol,samps=inp,avail=[(i.volume-15.0)*maxusefrac-1.4 for i in inp],minvol=4.0,minmix=100,maxmix=100.0,plate=decklayout.SAMPLEPLATE,debug=False)
-        print "stages=",stages
         for s in stages:
             dest=s[0]
             moles=0
@@ -103,6 +102,8 @@ class Barcoding(TRP):
             newconc=moles/sum(s[2])
             print "Adjusting concentration of %s from %s to %.2f nM"%(dest.name,str(dest.conc) if dest.conc is not None else -1,newconc)
             dest.conc=Concentration(newconc,newconc,units='nM')
+            print s[0].name,'\n =',"\n + ".join(['%5.1fuL %5.2f %s %s'%(s[2][i],s[1][i].conc.stock if s[1][i].conc is not None else 0,s[1][i].conc.units if s[1][i].conc is not None else "  ",s[1][i].name) for i in range(len(s[1]))]),"\n-> %5.1ful %5.2f %s %s"%(dest.volume,dest.conc.stock,dest.conc.units,dest.name)
+        print
         return dest
 
     def oldmix(self, inp, weights, tgtdil=1.0):

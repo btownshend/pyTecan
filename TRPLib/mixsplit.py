@@ -66,7 +66,7 @@ if __name__ == "__main__":
         print "Test: ",t
         stages=mixsplit(t,plate=decklayout.SAMPLEPLATE,minmix=100,debug=True)
         for s in stages:
-            print s[0],'\n =',"\n + ".join(['%4.1f: %s'%(s[2][i],s[1][i]) for i in range(len(s[1]))])
+            print s[0].name,'\n =',"\n + ".join(['%4.1f: %s'%(s[2][i],s[1][i]) for i in range(len(s[1]))])
         print
 
 
