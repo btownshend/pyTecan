@@ -31,11 +31,11 @@ if dilute>1
   names{end+1}='Water';
   dilute=sum(vols)/sum(vols(1:end-1));
 end
-fprintf('Level %d, sum(vol)=%.1f, Dilute=%.2f\n',nextmixnum,sum(.vols),dilute);
+fprintf('Level %d, sum(vol)=%.1f, Dilute=%.2f\n',nextmixnum,sum(vols),dilute);
 for i=1:length(names)
   fprintf('%s%-5.5s %.2f\n',blanks(nextmixnum-1),names{i}, vols(i));
 end
-if sum(vols)<=maxmix
+if sum(vols)<=maxmix && max(vols)<maxvol
   stages=struct('prodname',sprintf('Mix%d',nextmixnum),'names',{names},'vols',vols,'dilute',dilute);
   return
 end

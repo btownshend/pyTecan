@@ -7,6 +7,7 @@ from Experiment.concentration import Concentration
 from Experiment.sample import Sample
 from TRPLib.QSetup import QSetup
 from TRPLib.TRP import TRP
+from TRPLib.mixsplit import mixsplit
 
 reagents.add("MPCR1", well="A1", conc=30.0/18.0,
              ingredients={'Kapa': 3.33/2, 'USER': 1.67/2, 'glycerol': 2.5, 'Water': 95})
@@ -79,7 +80,29 @@ class Barcoding(TRP):
         else:
             print "### Not doing mixdown as bconc not set in all inputs"
 
-    def mix(self, inp, weights,tgtdil=1.0):
+    def mix(self, inp, weights, tgtdil=1.0, maxusefrac=0.75):
+        """Mix given inputs according to weights (by moles -- use conc.stock of each input)"""
+        print "Mix: tgtdil=%.2f, inp=" % tgtdil, ",".join(
+            ["%s@%.2f" % (inp[i].name, weights[i]) for i in range(len(inp))])
+        mixvol = 100.0
+        relvol = [weights[i] * 1.0 / inp[i].conc.stock for i in range(len(inp))]
+        stages=mixsplit(vols=relvol,samps=inp,avail=[(i.volume-15.0)*maxusefrac-1.4 for i in inp],minvol=4.0,minmix=100,maxmix=100.0,plate=decklayout.SAMPLEPLATE,debug=False)
+        print "stages=",stages
+        for s in stages:
+            dest=s[0]
+            moles=0
+            for i in range(len(s[1])-1,-1,-1):
+                src=s[1][i]
+                vol=s[2][i]
+                self.e.transfer(vol,src,dest,(True,False))
+                if src.conc is not None:
+                    moles+=src.conc.stock*vol
+            newconc=moles/sum(s[2])
+            print "Adjusting concentration of %s from %s to %.2f nM"%(dest.name,str(dest.conc) if dest.conc is not None else -1,newconc)
+            dest.conc=Concentration(newconc,newconc,units='nM')
+        return dest
+
+    def oldmix(self, inp, weights, tgtdil=1.0):
         """Mix given inputs according to weights (by moles -- use conc.stock of each input)"""
         print "Mix: tgtdil=%.2f, inp="%tgtdil,",".join(["%s@%.2f"%(inp[i].name,weights[i]) for i in range(len(inp))])
         mixvol = 100.0
