@@ -77,7 +77,9 @@ class Barcoding(TRP):
 
         if all(['bconc' in x and x['bconc'] is not None for x in self.inputs]):
             print "### Mixdown #### (%.0f min)" % (clock.elapsed() / 60.0)
+            worklist.flushQueue()
             worklist.comment('Start mixdown only at this point')
+            self.e.sanitize(force=True)
             mixdown = self.mix(bcout, [x['weight'] for x in self.inputs])
             # self.q.addSamples(mixdown, needDil=mixdown.conc.stock * 1e-9 / self.qconc, primers=self.qprimers,nreplicates=3)
         else:
