@@ -188,12 +188,12 @@ class TRP(object):
         hasError=False
         for s in Sample.getAllOnPlate():
             if s.volume<1.0 and s.conc is not None and not s.emptied:
-                logging.error("Insufficient volume for %s: need at least %.1f ul additional"%(s.name,1.0-s.volume),fatal=False)
+                logging.error("Insufficient volume for %s: need at least %.1f ul additional"%(s.name,1.0-s.volume))
                 #hasError=True
             elif s.volume<2.5 and s.conc is not None and not s.emptied:
                 logging.warning("Low final volume for "+ s.name)
             elif s.volume>s.plate.maxVolume:
-                logging.error("Excess final volume  (%.1f) for %s: maximum is %.1f ul"%(s.volume,s.name,s.plate.maxVolume),fatal=False)
+                logging.error("Excess final volume  (%.1f) for %s: maximum is %.1f ul"%(s.volume,s.name,s.plate.maxVolume))
                 hasError=True
                 
         if hasError:

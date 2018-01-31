@@ -167,7 +167,7 @@ class MSetup(object):
         self.idler(100000)
 
         if self.jobq.len() > 0:
-            logging.error("Blocked jobs remain on queue:", fatal=False)
+            logging.error("Blocked jobs remain on queue:")
             self.jobq.dump()
             assert False
 
