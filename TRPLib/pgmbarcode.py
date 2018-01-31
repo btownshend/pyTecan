@@ -11,7 +11,7 @@ from TRPLib.mixsplit import mixsplit
 
 reagents.add("MPCR1", well="A1", conc=30.0 / 18.0,
              ingredients={'Kapa': 3.33 / 2, 'USER': 1.67 / 2, 'glycerol': 2.5, 'Water': 95})
-reagents.add("MPCR2", well="B1", conc=10.0 / 9.0, ingredients={'Kapa': 2.22 / 2, 'glycerol': 2.22 / 2, 'Water': 97.78})
+reagents.add("MPCR2", well="B1", conc=10.0 / 9.0, ingredients={'Kapa': 2.22 / 2, 'glycerol': 2.22 / 2, 'Water': 97.78},extraVol=100)
 reagents.add("P-End", well="C1", conc=4)
 reagents.add("BT5310", well="D1", conc=Concentration(20, 20, "pM"))
 
@@ -184,7 +184,7 @@ class Barcoding(TRP):
         pcr1postdil = 100.0 / pcr1vol
 
         pcr2dil = 50
-        pcr2vol = 50.0
+        pcr2vol = 40.0
 
         samps = [reagents.getsample(s) for s in names]
         print "Inputs:"
