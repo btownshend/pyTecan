@@ -222,7 +222,7 @@ class Barcoding(TRP):
         pcr1 = self.runPCR(src=samps, srcdil=[s.conc.stock / self.pcr1inputconc for s in samps], ncycles=pcrcycles[0],
                            vol=pcr1vol,
                            primers=[[left[i], right[i]] for i in range(len(left))], usertime=30, fastCycling=False,
-                           inPlace=False, master="MPCR1", kapa=True)
+                           inPlace=False, master="MPCR1", kapa=True, annealTemp=62)
 
         pcr1finalconc = self.pcr1inputconc * 2 ** pcrcycles[0]
         print "PCR1 output concentration = %.1f nM" % pcr1finalconc
@@ -240,7 +240,7 @@ class Barcoding(TRP):
             print "### PCR2 #### (%.0f min)" % (clock.elapsed() / 60.0)
 
             pcr2 = self.runPCR(src=pcr1, srcdil=pcr2dil / pcr1postdil, vol=pcr2vol, ncycles=pcrcycles[1],
-                               primers=None, fastCycling=False, master="MPCR2", kapa=True)
+                               primers=None, fastCycling=False, master="MPCR2", kapa=True, annealTemp=62)
 
             pcr2finalconc = pcr1finalconc / (pcr2dil / pcr1postdil) * 2 ** pcrcycles[1]
             print "PCR2 final conc = %.1f nM" % pcr2finalconc
