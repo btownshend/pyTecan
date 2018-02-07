@@ -83,6 +83,11 @@ class Sample(object):
                 print >>fd,"%d: %s\n"%(t,tiphistory[t])
 
     @staticmethod
+    def evapcheckallsamples():
+        for s in Sample.__allsamples:
+            s.evapcheck("end")
+    
+    @staticmethod
     def numSamplesOnPlate(plate):
         cnt=0
         for s in Sample.__allsamples:
@@ -328,7 +333,8 @@ class Sample(object):
         for i in range(10):   # Break it into smaller steps since volume affects rate
             evaprate=self.plate.getevaprate(max(0,self.volume-self.evap))
             self.evap+=evaprate*dt/3600/10
-        if op=='aspirate' and self.evap>thresh*self.volume and self.evap>2.0 and self.volume>0:
+            self.evap=min(self.evap,self.volume)
+        if (op=='aspirate' or op=='end') and self.evap>thresh*self.volume and self.evap>2.0 and self.volume>0:
             pctevap=self.evap/self.volume*100
             logging.warning(" %s (%s.%s, vol=%.1f ul) may have %.1f ul of evaporation (%.0f%%)"%(self.name,str(self.plate),self.plate.wellname(self.well),self.volume,self.evap,pctevap))
             if "evap" in Sample.__historyOptions:

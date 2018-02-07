@@ -166,7 +166,7 @@ class Plate(object):
             return 0
         theta=25+19*vel
         evaprate=theta*area/1000/1000*(xs-x)*1e6
-        #print "Air temp=%.1fC, DP=%.1fC, x=%.3f, xs=%.3f, vol=%.1f ul, area=%.0f mm^2, evaprate=%.3f ul/h"%(self.liquidTemp,self.dewpoint,x,xs,volume,area,evaprate)
+        #print "Plate=%s,Air temp=%.1fC, DP=%.1fC, x=%.3f, xs=%.3f, vol=%.1f ul, area=%.0f mm^2, evaprate=%.3f ul/h"%(self.name,self.liquidTemp,globals.dewpoint,x,xs,volume,area,evaprate)
         return evaprate*EVAPFUDGE
 
     def getliquidvolume(self,height):

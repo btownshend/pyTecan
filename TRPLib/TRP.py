@@ -182,6 +182,7 @@ class TRP(object):
     def finish(self):
         self.e.lihahome()
         worklist.userprompt("Process complete. Continue to turn off reagent cooler")
+        Sample.evapcheckallsamples()   #  Run an evap check to ensure that we compute with correct reagent block temp
         self.e.setreagenttemp(None)
 
         #Sample.printallsamples("At completion")
