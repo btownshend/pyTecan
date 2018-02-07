@@ -19,11 +19,11 @@ reagents.add("MExo",well="C1",conc=5,extraVol=30,ingredients={'ExoI':0.5*55,'Exo
 reagents.add("TheoX",well="C1",conc=4)
 reagents.add("MTaqU",well="C1",conc=2,ingredients={'Taq':0.5*1,'glycerol':0.5*1,'TAQ-ABE':51,'Water':48})
 reagents.add("MTaqC",well="D1",conc=2,ingredients={'Taq':0.5*1,'USER':0.5*2,'glycerol':0.5*3,'TAQ-ABE':51,'Water':46})
-reagents.add("MTaqBar",well="D1",conc=2,ingredients={'Taq':0.5*1,'glycerol':0.5*1,'TAQ-ABE':51,'Water':48})
 reagents.add("MTaqR",well="C2",conc=2,ingredients={'Taq':0.5*1,'glycerol':0.5*1,'TAQ-ABE':51,'Water':48})
 reagents.add("MLigase",well="E1",conc=5,extraVol=50,ingredients={'T4DNALigase':0.5*2.50,'glycerol':0.5*2.50,'T4-ABE':97.47})
 
 reagents.add("Unclvd-Stop",well="A2",conc=Concentration(4,1,'uM'),extraVol=30)
+reagents.add("MTaqBar",well="B2",conc=2,ingredients={'Taq':0.5*1,'glycerol':0.5*1,'TAQ-ABE':51,'Water':48})
 reagents.add("MUser",well="B2",conc=5,extraVol=30,ingredients={'USER':0.5*2.5,'glycerol':0.5*2.5,'CutSmart':25,'Water':72.5})
 reagents.add("Ampure",well="C2",conc=None,hasBeads=True)
 reagents.add("EtOH80",well="D2")
@@ -59,17 +59,6 @@ reagents.add("P-ZX",well="C6",conc=4)
 reagents.add("P-T7ZXlong",well="C6",conc=4)
 reagents.add("P-MX",well="D6",conc=4)
 reagents.add("P-REF",well="E6",conc=4)
-
-reagents.add("P-BC-T25-R2_T7",well="B2",conc=8)
-
-reagents.add("P-BC-T3c-R2_T7",well="C2",conc=8)
-reagents.add("P-BC-T6-R2_T7",well="D2",conc=8)
-reagents.add("P-BC-T25-R4_T7",well="E2",conc=8)
-reagents.add("P-BC-T3c-R4_T7",well="A3",conc=8)
-reagents.add("P-BC-T6-R4_T7",well="B3",conc=8)
-reagents.add("P-BC-T25-R6_T7",well="C3",conc=8)
-reagents.add("P-BC-T3c-R6_T7",well="B4",conc=8)
-reagents.add("P-BC-T6-R6_T7",well="E4",conc=8)
 
 # Targets
 reagents.add("T1",well='B4',conc=Concentration(10.0/3,1.0,'x'),extraVol=30)  # New targets (9/2017)
