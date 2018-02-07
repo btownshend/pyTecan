@@ -80,18 +80,28 @@ class Barcoding(TRP):
             worklist.flushQueue()
             worklist.comment('Start mixdown only at this point')
             self.e.sanitize(force=True)
-            mixdown = self.mix(bcout, [x['weight'] for x in self.inputs])
+            # mixdown = self.mix(bcout, [x['weight'] for x in self.inputs])
+            # Set default mix number to 1
+            for x in self.inputs:
+                if 'mix' not in x:
+                    x['mix']=1
+            mixes=set([x['mix'] for x in self.inputs])
+            for m in mixes:
+                sel=[ i for i in range(len(self.inputs)) if self.inputs[i]['mix']==m] 
+                print "sel=",sel
+                mixdown = self.mix([bcout[i] for i in sel], [self.inputs[i]['weight'] for i in sel],prefix="Mix%d_"%m)
+                mixdown.name="Mix%d_Final"%m
             # self.q.addSamples(mixdown, needDil=mixdown.conc.stock * 1e-9 / self.qconc, primers=self.qprimers,nreplicates=3)
         else:
             print "### Not doing mixdown as bconc not set in all inputs"
 
-    def mix(self, inp, weights, tgtdil=1.0, maxusefrac=0.75):
+    def mix(self, inp, weights, tgtdil=1.0, maxusefrac=0.75, prefix="Mix"):
         """Mix given inputs according to weights (by moles -- use conc.stock of each input)"""
         print "Mix: tgtdil=%.2f, inp=" % tgtdil, ",".join(
             ["%s@%.2f" % (inp[i].name, weights[i]) for i in range(len(inp))])
         mixvol = 100.0
         relvol = [weights[i] * 1.0 / inp[i].conc.stock for i in range(len(inp))]
-        stages=mixsplit(vols=relvol,samps=inp,avail=[(i.volume-15.0)*maxusefrac-1.4 for i in inp],minvol=4.0,minmix=100,maxmix=100.0,plate=decklayout.SAMPLEPLATE,debug=False)
+        stages=mixsplit(vols=relvol,samps=inp,avail=[(i.volume-15.0)*maxusefrac-1.4 for i in inp],minvol=4.0,minmix=100,maxmix=100.0,plate=decklayout.SAMPLEPLATE,debug=False,prefix=prefix)
         for s in stages:
             dest=s[0]
             moles=0
