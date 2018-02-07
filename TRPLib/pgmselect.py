@@ -15,15 +15,25 @@ reagents.add("BT5310",well="B5",conc=Concentration(20,20,"pM"))
 class PGMSelect(TRP):
     """Selection experiment"""
     
-    def __init__(self, inputs, rounds, firstID, pmolesIn, directT7=True, templateDilution=0.3, tmplFinalConc=50,
+    def __init__(self, inputs, rounds=None, firstID=None, pmolesIn=None, rnddef=None, directT7=True, templateDilution=0.3, tmplFinalConc=50,
                  saveDil=24, qpcrWait=False, allLig=False, qpcrStages=None, finalPlus=True, t7dur=30, usertime=10,
                  singlePrefix=False, noPCRCleave=False, saveRNA=False, useMX=True):
         # Initialize field values which will never change during multiple calls to pgm()
+        # Can use rounds="UZUWUZ" (e.g.) OR rnddef which is a list of specs for each round with rtype (U,W,Z), tref, barcode
         super(PGMSelect, self).__init__()
         if qpcrStages is None:
             qpcrStages = ["negative", "template", "ext", "finalpcr"]
         self.inputs=inputs
-        self.rounds=rounds   # String of U or C for each round to be run
+        if rnddef is not None:
+            assert rounds is None
+            self.rounds=[r['rtype'] for r in rnddef]   # String of U or C for each round to be run
+            self.rnddef=rnddef
+        else:
+           # Old interface, uses rounds instead of rnddef
+            assert rounds is not None
+            self.rounds=rounds
+            self.rnddef=[{'rtype':r} for r in rounds]
+
         self.directT7=directT7
         self.tmplFinalConc=tmplFinalConc
         self.templateDilution=templateDilution
@@ -235,7 +245,20 @@ class PGMSelect(TRP):
             self.rndNum=self.rndNum+1
             self.finalRound=self.rndNum==len(self.rounds)
 
-            r1=self.oneround(q,r1,prefixOut=prefixOut,stop=stop,prefixIn=curPrefix,keepCleaved=(roundType!='U'),rtvol=self.rtvol[self.rndNum-1],t7vol=self.t7vol[self.rndNum-1],cycles=self.pcrcycles[self.rndNum-1],pcrdil=self.pcrdil[self.rndNum-1],pcrvol=self.pcrvol[self.rndNum-1],dolig=self.allLig or (roundType!='U'),pcrtgt=None if pcrprods is None else pcrprods[self.rndNum-1])
+            [r1,bc1]=self.oneround(q,r1,prefixOut=prefixOut,stop=stop,prefixIn=curPrefix,keepCleaved=(roundType!='U'),rtvol=self.rtvol[self.rndNum-1],t7vol=self.t7vol[self.rndNum-1],cycles=self.pcrcycles[self.rndNum-1],pcrdil=self.pcrdil[self.rndNum-1],pcrvol=self.pcrvol[self.rndNum-1],dolig=self.allLig or (roundType!='U'),pcrtgt=None if pcrprods is None else pcrprods[self.rndNum-1])
+
+            # Add TRefs specified in rnddefs 
+            if 'tref' in self.rnddef[self.rndNum-1]:
+                tref=self.rnddef[self.rndNum-1]['tref']
+                assert len(tref)==len(r1)
+                for i in range(len(r1)):
+                    if tref[i] is not None:
+                        trefname='TRef%d'%tref[i]
+                        print "Adding %s to %s"%(trefname,r1[i].name)
+                        if not reagents.isReagent(trefname):
+                            reagents.add(name=trefname,conc=10,extraVol=30,well="E4")
+                        tref=reagents.getsample(trefname)
+                        self.e.transfer(r1[i].volume/(tref.conc.dilutionneeded()-1),tref,r1[i],mix=(False,False))    # TODO: Check that these end up mixed
 
             for i in range(len(r1)):
                 r1[i].name="%s_%d"%(prefixOut[i],self.nextID)
@@ -247,6 +270,15 @@ class PGMSelect(TRP):
                 self.nextID+=1
                 r1[i].conc.final=r1[i].conc.stock*self.templateDilution
             curPrefix=prefixOut
+
+            for i in range(len(bc1)):
+                print "Renaming",bc1[i].name
+                pts=bc1[i].name.split("_")
+                bc1[i].name="BC_%d_%s"%(self.nextID,"_".join(pts[2:]))
+                print "Used ID ", self.nextID," for ", bc1[i].name
+                self.nextID+=1
+            curPrefix=prefixOut
+
 
         if "finalpcr" in self.qpcrStages:
             for i in range(len(r1)):
@@ -519,6 +551,8 @@ class PGMSelect(TRP):
             else:
                 master="MTaqU"
 
+            reagents.getsample(master)    # Allocate for this before primers
+            
             if self.barcoding:
                 primers=self.bcprimers[self.rndNum-1]
                 if primers is not None and nsplit>1:
@@ -529,6 +563,25 @@ class PGMSelect(TRP):
             if primers is None:
                 primers=[("T7%sX"%x).replace("T7T7","T7") for x in prefixOut]*nsplit
 
+            rnddef = self.rnddef[self.rndNum-1]
+            bcout=[]
+            if 'barcode' in rnddef:
+                # Add barcoding primers 
+                assert len(rnddef['barcode'])==len(rxs)
+                dil=self.saveSamps(rxs,dil=50,vol=2,plate=decklayout.SAMPLEPLATE)
+                for i in range(len(rxs)):
+                    dil[i].conc=Concentration(25,1)
+                    for bc in rnddef['barcode'][i]:
+                        tgt=Sample("%s.%s"%(rxs[i].name,bc),decklayout.SAMPLEPLATE)
+                        bparts=bc.split("/")
+                        for b in bparts:
+                            if not reagents.isReagent("P-%s"%b):
+                                reagents.add(name="P-%s"%b,conc=Concentration(2.67,0.4,'uM'),extraVol=30)
+                        print "PCR-%s"%bc
+                        self.e.stage("PCR-%s"%bc,reagents=[reagents.getsample("MTaqBar"),reagents.getsample("P-%s"%bparts[0]),reagents.getsample("P-%s"%bparts[1])],samples=[tgt],sources=[dil[i] ],volume=50,destMix=False)
+                        bcout.append(tgt)
+                        print tgt.name,"wellMixed=",tgt.wellMixed
+                        
             print "Running PCR with master=",master,", primers=",primers
             pcr=self.runPCR(src=rxs*nsplit,vol=pcrvol/nsplit,srcdil=pcrdil,ncycles=cycles,primers=primers,usertime=self.usertime if keepCleaved else None,fastCycling=False,inPlace=False,master=master,lowhi=self.lowhi,annealTemp=57)
             if keepCleaved and self.regenPCRCycles is not None:
@@ -576,10 +629,20 @@ class PGMSelect(TRP):
                         q.addSamples(sv[i],needDil,primers=primerSet[i],names=["%s.pcr"%names[i]])
 
                 print "Have %.2f pmoles of product (%.0f ul @ %.1f nM)"%(sv[0].volume*sv[0].conc.stock/1000,sv[0].volume,sv[0].conc.stock)
-                return sv
+
+                # Save barcoded products too
+                if len(bcout)>0:
+                    print "bcout=",",".join(str(b) for b in bcout)
+                    print "mixed=",bcout[0].isMixed(),", wellMixed=",bcout[0].wellMixed
+                    bcsave=self.saveSamps(src=bcout,vol=[b.volume for b in bcout],dil=1,plate=decklayout.DILPLATE,mix=(False,False))
+                else:
+                    bcsave=[]
+                    
+                return (sv, bcsave)
             else:
                 assert "pcr" not in self.qpcrStages   ## Not implemented
-                return pcr[:len(rxs)]
+                return (pcr[:len(rxs)],bcout)
+            
         elif self.noPCRCleave:
             print "Dilution instead of PCR: %.2f"%self.nopcrdil
             # Need to add enough t7prefix to compensate for all of the Stop primer currently present, regardless of whether it is for cleaved or uncleaved
