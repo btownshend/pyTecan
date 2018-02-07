@@ -838,7 +838,7 @@ class TRP(object):
         self.e.runpgm(pgm,runTime,False,max(vol))
         # Mark samples as mixed (by thermal convection)
         print "Marking samples as mixed (by thermal convection)"
-        for t in tgt:
+        for t in Sample.getAllOnPlate(tgt[0].plate):
             t.wellMixed=True
             t.lastMixed=clock.elapsed()
         #self.e.shakeSamples(tgt,returnPlate=True)
