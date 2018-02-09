@@ -666,9 +666,9 @@ class PGMSelect(TRP):
             else:
                 print "Dilution of EXT product: %.2fx\n"%(1+relbt88)
 
-            return rxs
+            return (rxs,[])
         else:
-            return rxs
+            return (rxs,[])
 
 
 class PGMAnalytic(PGMSelect):
