@@ -1,6 +1,7 @@
 """Module for generating a worklist from a set of commands"""
 import math
 import string
+import sys
 import shutil
 from zlib import crc32
 
@@ -690,6 +691,9 @@ def savegem(headerfile,filename):
     fd=open(filename+'txt','w')
     for i in range(len(wlist)):
         s=str(wlist[i])
+        if len(s)>512:
+            print "Gemini command line too long (%d>512): %s"%(len(s),s)   # Gemini definitely breaks at 522, maybe overflowing a buffer before that
+            sys.exit(1)
         if s.startswith('Comment'):
             s=s[9:-2]
             if s.startswith('*'):
