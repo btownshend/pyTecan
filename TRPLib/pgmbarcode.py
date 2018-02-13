@@ -192,7 +192,7 @@ class Barcoding(TRP):
 
     def barcoding(self, names, left, right):
         """Perform barcoding of the given inputs;  rsrsc,left,right should all be equal length"""
-        pcrcycles = [4, 11]
+        pcrcycles = [4, 14]
         pcr1inputdil = 10
         pcr1vol = 30
         pcr1postdil = 100.0 / pcr1vol
