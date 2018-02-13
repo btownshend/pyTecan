@@ -1,5 +1,6 @@
 import inspect
 import globals
+import sys
 
 def callhistory(includeLibs=False):
     h=[]
@@ -19,8 +20,11 @@ def notice(msg):
     if globals.verbose:
         print "NOTICE: %s [%s]"%(msg,"->".join(callhistory()))
     
-def warning(msg):
-    print "WARNING: %s [%s]"%(msg,"->".join(callhistory(globals.verbose)))
+def warning(msg,stderr=False):
+    if stderr:
+        print >>sys.stderr,  "WARNING: %s [%s]"%(msg,"->".join(callhistory(globals.verbose)))
+    else:
+        print "WARNING: %s [%s]"%(msg,"->".join(callhistory(globals.verbose)))
 
 def mixwarning(msg):
     print "MIXING: %s [%s]"%(msg,"->".join(callhistory(globals.verbose)))
