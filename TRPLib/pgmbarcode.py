@@ -19,7 +19,7 @@ reagents.add("BT5310", well="D1", conc=Concentration(20, 20, "pM"))
 class Barcoding(TRP):
     """Barcode multiple samples, mix them"""
 
-    def __init__(self, inputs, pcr1inputconc=0.05, used=None):
+    def __init__(self, inputs, pcr1inputconc=0.05, used=None,doqpcr=True,inputPlate=decklayout.SAMPLEPLATE):
         super(Barcoding, self).__init__()
         if used is None:
             used = []
@@ -27,7 +27,8 @@ class Barcoding(TRP):
 
         self.qconc = 50e-12  # Target qPCR concentration
         self.qprimers = ["End"]
-
+        self.doqpcr=doqpcr
+        
         self.bc1_inputvol = 4  # ul of input samples
         self.mix_conc = 100e-9  # Concentration of mixdown
         self.pcr1inputconc = pcr1inputconc
@@ -40,7 +41,7 @@ class Barcoding(TRP):
 
         for x in inputs:
             if not reagents.isReagent(x['name']):
-                reagents.add(x['name'], decklayout.SAMPLEPLATE, well=x['well'] if 'well' in x else None,
+                reagents.add(x['name'], inputPlate, well=x['well'] if 'well' in x else None,
                              conc=Concentration(stock=x['conc'], units="nM"),
                              initVol=self.bc1_inputvol, extraVol=0)
             else:
@@ -56,7 +57,8 @@ class Barcoding(TRP):
         self.q = QSetup(self, maxdil=16, debug=False, mindilvol=100)
         self.e.addIdleProgram(self.q.idler)
 
-        self.q.addReferences(dstep=10, primers=self.qprimers, ref=reagents.getsample("BT5310"))
+        if self.doqpcr:
+            self.q.addReferences(dstep=10, primers=self.qprimers, ref=reagents.getsample("BT5310"))
 
         print "### Barcoding #### (%.0f min)" % (clock.elapsed() / 60.0)
         bcout = self.barcoding(names=[x['name'] for x in self.inputs], left=[x['left'] for x in self.inputs],
@@ -261,7 +263,8 @@ class Barcoding(TRP):
             for x in pcr2:
                 x.conc = Concentration(stock=pcr2finalconc, units='nM')
 
-            self.q.addSamples(src=pcr2, needDil=pcr2finalconc * 1e-9 / self.qconc, primers=self.qprimers)
+            if self.doqpcr:
+                self.q.addSamples(src=pcr2, needDil=pcr2finalconc * 1e-9 / self.qconc, primers=self.qprimers)
             res = pcr2
         else:
             self.q.addSamples(src=pcr1, needDil=pcr1finalconc / (self.qconc * 1e9), primers=self.qprimers, save=True,
