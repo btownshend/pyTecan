@@ -612,7 +612,7 @@ class TRP(object):
         if tgt is None:
             tgt=[Sample(s.name+".RT+",decklayout.SAMPLEPLATE) for s in src]
 
-        [src,tgt,vol,srcdil,stop]=listify([src,tgt,vol,srcdil,stop])
+        [src,tgt,vol,srcdil,stop,stopConc]=listify([src,tgt,vol,srcdil,stop,stopConc])
 
         # Adjust source dilution
         for i in range(len(src)):
@@ -620,20 +620,23 @@ class TRP(object):
 
         for i in range(len(stop)):
             if stop[i] is not None:
-                stop[i].conc.final=stopConc
-                if stop[i].conc.stock<4*stopConc:
-                    stop[i].conc.stock=10   # Use 10uM stock (or higher)
-                    stop[i].conc.stock=max(stop[i].conc.stock,stopConc*4)
+                stop[i].conc.final=stopConc[i]   # FIXME: these usually all refer to the same underlying sample, so changing the same value multiple times
+                if stop[i].conc.stock<4*stopConc[i]:
+                    #stop[i].conc.stock=10   # Use 10uM stock (or higher)
+                    logging.warning("Increase %s stock concentration to %.1f uM to accomodate stop at %.0f uM final"%(stop[i].name,4*stopConc[i],stop[i].conc.stock),stderr=True)  # Need to write to stderr since this will only happen during first pass, for which stdout is supressed
+                    stop[i].conc.stock=stopConc[i]*4
                 
         if any([s is not None for s in stop]):
-            print "Adding stop:  [%s]"%(",".join(["%s@%.1fuM (stock=%.1fuM)"%(s.name,s.conc.final,s.conc.stock) for s in stop]))
-            
-        stopvol=[ 0 if stop[i] is None else vol[i]/stop[i].conc.dilutionneeded() for i in range(len(vol))]
-        assert(min(stopvol)==max(stopvol))   # Assume all stop volumes are the same
+            print "Adding stop:  [%s]"%(",".join(["%s@%.1fuM (stock=%.1fuM)"%(stop[i].name,stopConc[i],stop[i].conc.stock) for i in range(len(stop))]))
+
+        stopvol=[ 0 if stop[i] is None else vol[i]*stopConc[i]/stop[i].conc.stock for i in range(len(vol))]
+        #assert(min(stopvol)==max(stopvol))   # Assume all stop volumes are the same
         self.e.stage('RTPos',[rtmaster],[src[i] for i in range(len(src)) ],[tgt[i] for i in range(len(tgt)) ],[vol[i]-stopvol[i] for i in range(len(vol))],destMix=False,finalx=vol[0]/(vol[0]-stopvol[0]))
         for i in range(len(tgt)):
             if stopvol[i]>0.1:
                 self.e.transfer(stopvol[i],stop[i],tgt[i],(False,False))
+
+        # print "RT: Stop Conc=",stopConc,"stopVol=",stopvol
 
         #self.e.shakeSamples(tgt,returnPlate=True)
         return tgt

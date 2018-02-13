@@ -101,9 +101,13 @@ class PGMSelect(TRP):
         if self.tmplFinalConc<1:
             self.rnaConc*=6   # Kludge based on being off at 0.1nM template concentrations
         self.rnaConc=max(40,self.rnaConc)   # Another kludge
-        maxConc=1000*self.stopConc*4/0.9
+        if isinstance(self.stopConc,list):
+            minStopConc=min(self.stopConc)
+        else:
+            minStopConc=self.stopConc
+        maxConc=1000*minStopConc*4/0.9
         if maxConc<self.rnaConc:
-            logging.warning( "Stop@%.1f uM limits usable RNA to %.0f/%.0f nM"%(self.stopConc,maxConc,self.rnaConc))
+            logging.warning( "Stop@%.1f uM limits usable RNA to %.0f/%.0f nM"%(minStopConc,maxConc,self.rnaConc))
             self.rnaConc=min(maxConc,self.rnaConc)
         stopConc=self.rnaConc*0.9
         rtConc=stopConc/self.rtDil
