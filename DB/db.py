@@ -14,7 +14,8 @@ from Experiment import decklayout
 class TecanDB(object):
     def __init__(self):
         os.chdir('C:\cygwin\Home\Admin\DB')
-        self.con=sqlite3.connect('test.dbs')
+        self.con=sqlite3.connect('robot.dbs')
+        self.con.execute("PRAGMA foreign_keys=ON")
         
     def execute(self,argv):
         print "argv=",argv

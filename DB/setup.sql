@@ -1,4 +1,4 @@
-.open test.dbs
+.open robot.dbs
 pragma foreign_keys = ON;
 create table runs(
        run text primary key, 
