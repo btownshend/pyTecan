@@ -1,0 +1,1 @@
+rsync -vt *.py  "Admin@171.64.80.58:Experiment"
