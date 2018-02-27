@@ -6,6 +6,7 @@ from concentration import Concentration
 import clock
 import logging
 from plate import interpolate
+import db
 
 MAXVOLUME=200
 MINLIQUIDDETECTVOLUME=15
@@ -399,6 +400,7 @@ class Sample(object):
         volvar='detected_volume_%d'%tipnum
         worklist.variable(volvar,-2)
         worklist.detectLiquid(tipMask,well,self.inliquidLC,self.plate)
+        db.setvol(self,volvar)
         doneLabel=worklist.getlabel()
         worklist.condition(volvar,">",gemvolwarn,doneLabel)
         ptmp=clock.pipetting

@@ -4,6 +4,7 @@ from pprint import pprint
 
 import worklist
 import thermocycler
+import db
 from sample import Sample
 import liquidclass
 import reagents
@@ -36,6 +37,7 @@ class Experiment(object):
         pyTecan=os.path.dirname(os.path.realpath(__file__))
         self.gitlabel=strip(subprocess.check_output(["git", "describe","--always"],cwd=pyTecan))
         worklist.comment("Generated %s (%s-%s pyTecan-%s)"%(datetime.now().ctime(),sys.argv[0],self.checksum,self.gitlabel))
+        db.startrun(sys.argv[0],datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'),self.checksum,self.gitlabel)
         worklist.userprompt("The following reagent tubes should be present: %s"%Sample.getAllLocOnPlate(decklayout.REAGENTPLATE))
         epp=Sample.getAllLocOnPlate(decklayout.EPPENDORFS)
         if len(epp)>0:
@@ -79,6 +81,7 @@ class Experiment(object):
         worklist.saveworklist(filename)
 
     def savegem(self,filename):
+        db.endrun(sys.argv[0])
         worklist.comment("Completed (%s-%s)"%(sys.argv[0],self.checksum))
         worklist.flushQueue()
         worklist.savegem(decklayout.headerfile,filename)
@@ -129,6 +132,8 @@ class Experiment(object):
         self.cleanTips|=fixedTips
         # print "* Sanitize"
         worklist.comment(clock.statusString())
+        if clock.totalTime is not None:
+            db.tick(clock.elapsed()/60.0,(clock.totalTime-clock.elapsed())/60.0)
 
     def cleantip(self):
         """Get the mask for a clean tip, washing if needed"""
