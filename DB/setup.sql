@@ -32,7 +32,6 @@ create table flags(
        value integer, 
        lastupdate datetime not null, 
        synctime datetime,  -- Time this record was last pushed to master
-       unique(run,name),
        foreign key(run) references runs(run) on delete cascade
 );
 -- Sample names for a run

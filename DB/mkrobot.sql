@@ -40,7 +40,6 @@ create table flags(
        lastupdate datetime not null,
        
        pulltime datetime,  -- Time this record was last pulled to robot
-       unique(run,name),
        foreign key(run) references runs(run) on delete cascade
 );
 
