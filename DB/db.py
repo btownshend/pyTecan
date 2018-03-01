@@ -30,16 +30,23 @@ class TecanDB(object):
             pass   # Ignore
         self.con=sqlite3.connect('robot.dbs')
         self.con.execute("PRAGMA foreign_keys=ON")
-        
+        self.dbchanged=False   # True to flag when local database has been modified and updates need to be pushed
+        self.remoteconn=None   # Open when needed
+
     def execute(self,argv):
         logging.info("Running: %s"," ".join(argv))
         retval=-1   # For error
+
         if len(argv)<2:
                 logging.error('Usage: db.py cmd [args]')
         elif argv[1]=='getflag':
             if len(argv)!=3:
                 logging.error('Usage: db.py getflag <flagname>')
             else:
+                try:
+                    self.pullfromserver()   # In case there are any updates
+                except:
+                    logging.error('Error during automatic pull ignored')
                 retval=self.getflag(argv[2])
         elif argv[1]=='setflag':
             if len(argv)!=4:
@@ -76,21 +83,29 @@ class TecanDB(object):
                 logging.error('Usage db.py push')
             else:
                 retval=self.pushtoserver()
+        elif argv[1]=='pull':
+            if len(argv)!=2:
+                logging.error('Usage db.py pull')
+            else:
+                retval=self.pullfromserver()
         else:
             logging.error( "Bad command: %s"," ".join(argv))
-        if retval==0 and argv[1]!='push':
+        if retval>=0 and self.dbchanged:
             # Push if possible
             try:
                 self.pushtoserver()
             except:
                 logging.error('Error during automatic push ignored')
+        if self.remoteconn is not None:
+            self.remoteconn.close()
         return retval
     
     def startrun(self,program,gentime,checksum,gitlabel):
         run=uuid.uuid4()
         logging.debug(str(("run=",run,",gentime=",gentime,",checksum=",checksum,",gitlabel=",gitlabel)))
         self.con.execute("update runs set endtime=datetime('now') where endtime is null")
-        self.con.execute("insert into runs(run,program,starttime,gentime,checksum,gitlabel) values (?,?,datetime('now'),datetime(?),?,?)",(run.hex,program,gentime,checksum,gitlabel))
+        # Store values in DB in UTC ('now' always gives UTC, need to convert gentime from localtime to UTC)
+        self.con.execute("insert into runs(run,program,starttime,gentime,checksum,gitlabel) values (?,?,datetime('now'),datetime(?,'utc'),?,?)",(run.hex,program,gentime,checksum,gitlabel))
         self.con.commit()
         return 0
         
@@ -112,6 +127,7 @@ class TecanDB(object):
         else:
             logging.info("inserted %d rows", cursor.rowcount)
         self.con.commit()
+        self.dbchanged=True
         return 0
         
     def endrun(self,program):
@@ -123,10 +139,7 @@ class TecanDB(object):
             logging.error("endrun: Had %d runs which had not ended",cursor.rowcount)
             
         self.con.commit()
-        try:
-            self.pushtoserver()
-        finally:
-            pass
+        self.dbchanged=True
         return 0
         
     def getflag(self,name):
@@ -163,6 +176,7 @@ class TecanDB(object):
         else:
             logging.info("Inserted %d rows",cursor.rowcount)
         self.con.commit()
+        self.dbchanged=True
         return 0
 
     def getrun(self):
@@ -234,6 +248,35 @@ class TecanDB(object):
         if cursor.rowcount!=1:
             logging.error("setvol: Failed insert of (%s,%s,%s,%.1f,%s) into vols: rowcount=%d",platename,well,gemvolume,volume,expectvol,cursor.rowcount)
         self.con.commit()
+        self.dbchanged=True
+        return 0
+
+    def openremote(self):
+        if self.remoteconn is None:
+            self.remoteconn = pymysql.connect(host='35.203.151.202',user='robot',password='cdsrobot',db='robot',cursorclass=pymysql.cursors.DictCursor)
+
+    def pullfromserver(self):
+        """Pull any flag updates from server"""
+        self.openremote()
+        with self.remoteconn.cursor() as cremote:
+            cremote.execute('select * from flags where pulltime is null')
+            flags=cremote.fetchall()
+            logging.info("Pulling %d flags",len(flags))
+            if len(flags)>0:
+                clocal = self.con.cursor()
+                for flag in flags:
+                    logging.debug('pulling flag %d',flag['flag'])
+                    clocal.execute("insert into flags(run,name,value,lastupdate,synctime) values(?,?,?,?,datetime('now'))",
+                                   (flag['run'],flag['name'],flag['value'],flag['lastupdate']))
+                    if clocal.rowcount != 1:
+                        logging.error("pullfromserver: Failed insert of (%s,%s,%s,%s) into flags: rowcount=%d",
+                                      flag['run'],flag['name'],flag['value'],flag['lastupdate'],clocal.rowcount)
+                        return -1
+                    else:
+                        logging.info("Inserted %d rows", clocal.rowcount)
+                    cremote.execute("update flags set pulltime=now() where flag=%s",flag['flag'])
+                self.remoteconn.commit()
+                self.con.commit()
         return 0
 
     def pushtoserver(self):
@@ -254,22 +297,18 @@ class TecanDB(object):
 
         logging.info( "Pushing: %d runs,  %d endruns, %d sampnames, %d vols, %d flags, %d ticks",len(runs),len(runends),len(sampnames),len(vols),len(flags),len(ticks))
         if len(runs)+len(runends)+len(sampnames)+len(vols)+len(flags)+len(ticks) > 0:
-            # Connect to the database
-            connection = pymysql.connect(host='35.203.151.202',
-                                user='robot',
-                                password='cdsrobot',
-                                db='robot',
-                                cursorclass=pymysql.cursors.DictCursor)
+            # Connect to the database if needed
+            self.openremote()
             try:
                 # run primary key is persistent across both local and remote
-                sql1 = "INSERT INTO runs (run,program,starttime,gentime,checksum,gitlabel,endtime) VALUES(%s,%s,%s,%s,%s,%s,%s)"
-                sql1u = "UPDATE runs SET endtime=%s WHERE run=%s"
+                sql1 = "INSERT INTO runs (run,program,starttime,gentime,checksum,gitlabel,endtime) VALUES(%s,%s,CONVERT_TZ(%s,'UTC','SYSTEM'),CONVERT_TZ(%s,'UTC','SYSTEM'),%s,%s,CONVERT_TZ(%s,'UTC','SYSTEM'))"
+                sql1u = "UPDATE runs SET endtime=CONVERT_TZ(%s,'UTC','SYSTEM') WHERE run=%s"
                 # Local and remote maintain their own primary keys for sampnames,vols, ticks, flags
                 sql2 = "INSERT INTO sampnames (run,plate,well,name) VALUES(%s,%s,%s,%s)"
-                sql3 = "INSERT INTO vols (run,plate,well,gemvolume,volume,expected,measured) VALUES(%s,%s,%s,%s,%s,%s,%s)"
+                sql3 = "INSERT INTO vols (run,plate,well,gemvolume,volume,expected,measured) VALUES(%s,%s,%s,%s,%s,%s,CONVERT_TZ(%s,'UTC','SYSTEM'))"
                 sql4 = "INSERT INTO ticks (run,elapsed,remaining,time) VALUES(%s,%s,%s,%s)"
-                sql5 = "INSERT INTO flags (run,name,value,lastupdate,pulltime) VALUES(%s,%s,%s,%s,now())"
-                with connection.cursor() as cremote:
+                sql5 = "INSERT INTO flags (run,name,value,lastupdate,pulltime) VALUES(%s,%s,%s,CONVERT_TZ(%s,'UTC','SYSTEM'),now())"
+                with self.remoteconn.cursor() as cremote:
                     for run in runs:
                         logging.debug("pushing run %s",run[0])
                         if cremote.execute(sql1,run) != 1:
@@ -298,10 +337,10 @@ class TecanDB(object):
                         logging.debug("pushing flag %d (run %s)",flag[0],flag[1])
                         cremote.execute(sql5,flag[1:])
                         clocal.execute("update flags set synctime=datetime('now') where flag=?",(flag[0],))
-                connection.commit()
+                self.remoteconn.commit()
                 self.con.commit()
             finally:
-                connection.close()
+                self.remoteconn.close()
             
         return 0
 
