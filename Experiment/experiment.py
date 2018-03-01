@@ -81,7 +81,7 @@ class Experiment(object):
         worklist.saveworklist(filename)
 
     def savegem(self,filename):
-        db.endrun(sys.argv[0])
+        db.endrun(sys.argv[0])   # May have already been ended before waiting to turn off reagent chiller; idempotent
         worklist.comment("Completed (%s-%s)"%(sys.argv[0],self.checksum))
         worklist.flushQueue()
         worklist.savegem(decklayout.headerfile,filename)
