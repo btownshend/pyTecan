@@ -38,13 +38,14 @@ create table flags(
 -- Sample names for a run
 -- Inserted on robot only, read-only on master, never updated (except synctime)
 create table sampnames(
+       sampname integer primary key,
        run text not null,
        plate text not null,
        well text not null,
        name text not null,
        synctime datetime,  -- Time this record was last pushed to master
        foreign key(run) references runs(run)  on delete cascade,
-       primary key(run,plate,well)
+       unique(run,plate,well)
 );
 
 -- Vols for a run
