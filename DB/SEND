@@ -1,1 +1,1 @@
-rsync -vrt . "Admin@171.64.80.58:DB"
+rsync -vrt  db.py "Admin@171.64.80.58:DB"
