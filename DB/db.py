@@ -98,6 +98,7 @@ class TecanDB(object):
                 logging.error('Error during automatic push ignored')
         if self.remoteconn is not None:
             self.remoteconn.close()
+            self.remoteconn=None
         return retval
     
     def startrun(self,program,gentime,checksum,gitlabel):
@@ -340,8 +341,7 @@ class TecanDB(object):
                 self.remoteconn.commit()
                 self.con.commit()
             finally:
-                self.remoteconn.close()
-            
+                pass
         return 0
 
 #Execute the application
