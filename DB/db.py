@@ -105,8 +105,8 @@ class TecanDB(object):
         run=uuid.uuid4()
         logging.debug(str(("run=",run,",gentime=",gentime,",checksum=",checksum,",gitlabel=",gitlabel)))
         self.con.execute("update runs set endtime=datetime('now') where endtime is null")
-        # Store values in DB in UTC ('now' always gives UTC, need to convert gentime from localtime to UTC)
-        self.con.execute("insert into runs(run,program,starttime,gentime,checksum,gitlabel) values (?,?,datetime('now'),datetime(?,'utc'),?,?)",(run.hex,program,gentime,checksum,gitlabel))
+        # Store values in DB in UTC ('now' always gives UTC, gentime passed on the command line to db.py in the .gem file is UTC already)
+        self.con.execute("insert into runs(run,program,starttime,gentime,checksum,gitlabel) values (?,?,datetime('now'),datetime(?),?,?)",(run.hex,program,gentime,checksum,gitlabel))
         self.con.commit()
         return 0
         
