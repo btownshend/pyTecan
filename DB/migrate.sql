@@ -1,3 +1,6 @@
+.open robot.dbs
+select * from flags;
+
 alter table flags rename to flags_old;
 create table flags(
        flag integer primary key, 
@@ -9,3 +12,5 @@ create table flags(
        foreign key(run) references runs(run) on delete cascade
 );
 insert into flags(run,name,value,lastupdate,synctime) select run,name,value,lastupdate,synctime from flags_old;
+
+select * from flags;
