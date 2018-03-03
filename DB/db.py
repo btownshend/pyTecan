@@ -27,7 +27,7 @@ class TecanDB(object):
 
         try:
             os.chdir('C:\cygwin\Home\Admin\DB')
-        except:
+        except OSError:
             pass  # Ignore
         self.con = sqlite3.connect('robot.dbs')
         self.con.execute("PRAGMA foreign_keys=ON")
@@ -117,9 +117,9 @@ class TecanDB(object):
 
     def tick(self, elapsed, remaining):
         try:
-        except:
             elapsed = float(elapsed)
             remaining = float(remaining)
+        except ValueError:
             logging.error('tick: elapsed,remaining must be floats')
             return -1
 
@@ -164,14 +164,14 @@ class TecanDB(object):
         logging.info("value=%s, lastupdate=%s", val, lastupdate)
         try:
             return int(val)
-        except:
+        except ValueError:
             logging.warning("getflag: Value for flag %s is '%s', not an integer, exitting with code 1", name, val)
             return 1
 
     def setflag(self, name, value):
         try:
-        except:
             value = int(value)
+        except ValueError:
             logging.error('setflag: Only integers allowed, not "%s"', value)
             return -1
 
@@ -217,9 +217,9 @@ class TecanDB(object):
 
     def setvol(self, sampname, platename, well, gemvolume, expectvol):
         try:
-        except:
             gemvolume = float(gemvolume)
             expectvol = float(expectvol)
+        except ValueError:
             logging.error('setvol: gemvolume,expectvol must be floats')
             return -1
 
