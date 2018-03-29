@@ -685,14 +685,21 @@ def savegem(headerfile,filename):
     """Save worklist in a file in format that Gemini can load as an experiment"""
     flushQueue()
     shutil.copy(headerfile,filename)
-    fd=open(filename,'a')
+    fd=open(filename,'ab')
     for i in range(len(wlist)):
-        print("%s"%(str(wlist[i]).replace('\n','\f\a')), file=fd)
+        # Worklist contains some binary data masquerading as ascii (in well position string), so need to hack the conversion to bytes
+        if sys.version[0] == "2":
+            b = wlist[i]    # Python 3 won't handle this as the result is a string and file write needs bytes (so requires an encode step)
+        else:
+            b = wlist[i].encode('latin-1')   # For some reason, python2 rejects this if any codes are >= 0x80
+        fd.write(b)
+        fd.write(b'\n')
+        #print("%s"%(str(wlist[i]).replace('\n','\f\a')), file=fd)
     fd.close()
     # Also save another copy with line numbers, indent in a readable form in filename.gemtxt
-    fd=open(filename+'txt','w')
+    fd=open(filename+'txt','wb')
     for i in range(len(wlist)):
-        s=str(wlist[i])
+        s=wlist[i]
         if len(s)>512:
             print("Gemini command line too long (%d>512): %s"%(len(s),s))   # Gemini definitely breaks at 522, maybe overflowing a buffer before that
             sys.exit(1)
@@ -702,6 +709,13 @@ def savegem(headerfile,filename):
                 s='    '+s[1:]
         else:
             s='        '+s
-        print("%s" % s, file=fd)
+
+        if sys.version[0] == "2":
+            b = s
+        else:
+            b = s.encode('latin-1')
+        fd.write(b)
+        fd.write(b'\n')
+        #print("%s" % s, file=fd)
     fd.close()
 
