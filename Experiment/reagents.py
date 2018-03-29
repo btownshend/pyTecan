@@ -26,7 +26,13 @@ class Reagent(object):
         self.initVol=initVol
         self.extrainfo=extrainfo
         self.ingredients=ingredients
-        
+
+    def __str__(self):
+        s=self.name
+        return s
+    def __repr__(self):
+        return str(self)
+
     def getsample(self):
         if self.sample is None:
             #print "Creating sample for reagent %s with %.1f ul"%(self.name,self.initVol)
