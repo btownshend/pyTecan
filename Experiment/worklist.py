@@ -59,7 +59,7 @@ def setOptimization(onoff):
 def wellSelection(nx,ny,pos):
     """Build a well selection string"""
     s="%02x%02x"%(nx,ny)
-    vals=[0] * int(7*((nx*ny+6)/7))
+    vals=[0] * (7*((nx*ny+6)//7))
     for i in pos:
         vals[i]=1
     bitCounter=0
@@ -145,7 +145,7 @@ def optimizeQueue():
                 if tipdiff!=welldiff:
                     if optimizeDebug:
                         print("  tipdiff (%d) != welldiff(%d)"%(tipdiff,welldiff))
-                elif d1[2][0]/d1[5].ny != d2[2][0]/d2[5].ny:
+                elif d1[2][0]//d1[5].ny != d2[2][0]//d2[5].ny:
                     if optimizeDebug:
                         print("  wells in different columns of %d-row plate"%d1[5].ny)
                 elif d1[3].name!=d2[3].name:

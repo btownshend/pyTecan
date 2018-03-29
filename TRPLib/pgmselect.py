@@ -99,10 +99,10 @@ class PGMSelect(TRP):
     def setVolumes(self):
         # Computed parameters
         # Observed data:   0.1nM@30min -> gain ~1000
-        self.rnaConc=8314*self.tmplFinalConc/(self.tmplFinalConc+55)*self.t7dur/30
+        self.rnaConc=8314.0*self.tmplFinalConc/(self.tmplFinalConc+55)*self.t7dur/30
         if self.tmplFinalConc<1:
             self.rnaConc*=6   # Kludge based on being off at 0.1nM template concentrations
-        self.rnaConc=max(40,self.rnaConc)   # Another kludge
+        self.rnaConc=max(40.0,self.rnaConc)   # Another kludge
         if isinstance(self.stopConc,list):
             minStopConc=min(self.stopConc)
         else:
@@ -127,8 +127,8 @@ class PGMSelect(TRP):
         self.pcrvol=[self.pcrcopies*self.pmolesIn*1000/pcrConc[i]/math.pow(self.enrich,(i+1.0)) for i in range(len(self.rounds))]
         # Use at least 100ul so the evaporation of the saved sample that occurs during the run will be relatively small
         self.pcrvol=[max(100,v) for v in self.pcrvol]
-        pcrExtra=[1.4*math.ceil(v/self.maxPCRVolume) for v in self.pcrvol]
-        self.minligvol=[self.pcrvol[i]/self.pcrdil[i]+(pcrExtra[i]+ (4.4 if self.saveDil is not None else 5.4 if 'ext' in self.qpcrStages else 0)+15.1)/self.extpostdil[i] for i in range(len(self.pcrvol))]
+        pcrExtra=[1.4*math.ceil(v*1.0/self.maxPCRVolume) for v in self.pcrvol]
+        self.minligvol=[self.pcrvol[i]*1.0/self.pcrdil[i]+(pcrExtra[i]+ (4.4 if self.saveDil is not None else 5.4 if 'ext' in self.qpcrStages else 0)+15.1)/self.extpostdil[i] for i in range(len(self.pcrvol))]
         print("minligvol=[%s]"%(",".join(["%.1f"%v for v in self.minligvol])))
 
         # Compute RT volume 
@@ -145,7 +145,7 @@ class PGMSelect(TRP):
         self.t7extravols=((4+1.4)*0.9 if 'stopped' in self.qpcrStages else 0)+ ((5+1.4)*0.9 if self.saveRNA else 0) + 3.3  # 3.3 in case pipette mixing used
         #print "self.t7extravols=%.1f ul\n"%self.t7extravols
         #print "self.rtvol=%s ul\n"%(",".join(["%.1f "%x for x in self.rtvol]))
-        self.t7vol=[max((15.1+self.rtvol[i]/4.0+1.4)*0.9+self.t7extravols,self.pmolesIn*1000/self.tmplFinalConc/math.pow(self.enrich,i*1.0)) for i in range(len(self.rounds))]
+        self.t7vol=[max((15.1+self.rtvol[i]/4.0+1.4)*0.9+self.t7extravols,self.pmolesIn*1000.0/self.tmplFinalConc/math.pow(self.enrich,i*1.0)) for i in range(len(self.rounds))]
         #print "self.t7vol=%s ul\n"%(",".join(["%.1f "%x for x in self.t7vol]))
         self.t7vol=[max(18.0,v) for v in self.t7vol]   # Make sure that there's enough to add at least 2ul of stop
         self.t7vol=[min(self.maxSampVolume,v) for v in self.t7vol]   # Make sure no tubes overflow

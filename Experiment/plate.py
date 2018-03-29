@@ -103,7 +103,7 @@ class Plate(object):
         """Get liquid height in mm above ZMax"""
         if self.angle is None:
             if self.gemShape=='flat':
-                return volume/self.gemArea
+                return volume*1.0/self.gemArea
             if not self.warned:
                 logging.warning("No liquid height equation for plate %s"%self.name)
                 self.warned=True
@@ -165,7 +165,7 @@ class Plate(object):
         if area is None:
             return 0
         theta=25+19*vel
-        evaprate=theta*area/1000/1000*(xs-x)*1e6
+        evaprate=theta*area/1000.0/1000*(xs-x)*1e6
         #print "Plate=%s,Air temp=%.1fC, DP=%.1fC, x=%.3f, xs=%.3f, vol=%.1f ul, area=%.0f mm^2, evaprate=%.3f ul/h"%(self.name,self.liquidTemp,globals.dewpoint,x,xs,volume,area,evaprate)
         return evaprate*EVAPFUDGE
 
@@ -224,7 +224,7 @@ class Plate(object):
     def wellname(self,well):
         if well is None:
             return "None"
-        col=int(well/self.ny)
+        col=well//self.ny
         row=well-col*self.ny
         return "%c%d"%(chr(65+row),col+1)
 
