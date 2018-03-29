@@ -549,6 +549,9 @@ def condition(varname,cond,value,dest):
     else:
         logging.error("Bad condition '%s' to condition()"%cond)
 
+    if type(value)!=str:
+        value="%f"%value
+
     wlist.append('If("%s",%d,"%s","%s")'%(varname,condval,value,dest))
 
 def goto(dest):
