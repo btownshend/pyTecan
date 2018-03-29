@@ -24,7 +24,7 @@ def notice(msg):
     
 def warning(msg,stderr=False):
     if stderr:
-        print >>sys.stderr,  "WARNING: %s [%s]"%(msg,"->".join(callhistory(globals.verbose)))
+        print("WARNING: %s [%s]"%(msg,"->".join(callhistory(globals.verbose))),file=sys.stderr)
     else:
         print("WARNING: %s [%s]"%(msg,"->".join(callhistory(globals.verbose))))
 

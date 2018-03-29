@@ -213,7 +213,7 @@ class Experiment(object):
                 self.sanitize()   # Make sure all tips are clean
                 for i in range(4):
                     tipMask=1<<i
-                    src.aspirate(1<<i,sum(volumes[i::4])*(1+extraFrac),True)	# Aspirate extra
+                    src.aspirate(tipMask,sum(volumes[i::4])*(1+extraFrac),True)	# Aspirate extra
                 for i in range(len(dests)):
                     tipMask=1<<(i%4)
                     if volumes[i]>0.01:

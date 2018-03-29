@@ -275,7 +275,6 @@ class PGMSelect(TRP):
                 print("Used ID ", self.nextID," for ", r1[i].name,": ",r1[i])
                 self.nextID+=1
                 r1[i].conc.final=r1[i].conc.stock*self.templateDilution
-            curPrefix=prefixOut
 
             for i in range(len(bc1)):
                 print("Renaming",bc1[i].name)
@@ -644,10 +643,10 @@ class PGMSelect(TRP):
                 else:
                     bcsave=[]
                     
-                return (sv, bcsave)
+                return sv, bcsave
             else:
                 assert "pcr" not in self.qpcrStages   ## Not implemented
-                return (pcr[:len(rxs)],bcout)
+                return pcr[:len(rxs)], bcout
             
         elif self.noPCRCleave:
             print("Dilution instead of PCR: %.2f"%self.nopcrdil)
@@ -672,9 +671,9 @@ class PGMSelect(TRP):
             else:
                 print("Dilution of EXT product: %.2fx\n"%(1+relbt88))
 
-            return (rxs,[])
+            return rxs, []
         else:
-            return (rxs,[])
+            return rxs, []
 
 
 class PGMAnalytic(PGMSelect):

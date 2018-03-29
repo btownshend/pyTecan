@@ -746,7 +746,6 @@ class Sample(object):
         self.volcheck(tipMask,[self.well],0)
 
         blowvol=5
-        mstr=""
         extraspace=blowvol+0.1
         if preaspirateAir:
             extraspace+=5

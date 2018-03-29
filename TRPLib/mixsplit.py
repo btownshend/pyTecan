@@ -6,7 +6,7 @@ from Experiment.sample import Sample, logging
 from Experiment import decklayout
 
 # Test splitting of mixdowns
-def mixsplit(vols, samps=None, avail=None, minvol=4, minmix=0, maxmix=100, nextmixnum=1, dilute=1, debug=False, plate=None, prefix="Mix"):
+def mixsplit(vols, samps=None, avail=None, minvol=4, minmix=0.0, maxmix=100.0, nextmixnum=1, dilute=1, debug=False, plate=None, prefix="Mix"):
     """"mimix is minimum volume needed (prior to any dilution) """
     if debug:
         print("mixsplit(",vols,",avail=",avail,", minmix=",minmix,")")
@@ -35,7 +35,7 @@ def mixsplit(vols, samps=None, avail=None, minvol=4, minmix=0, maxmix=100, nextm
         print('\nMaking %s%d, sum(vol)=%.1f, Dilute=%.2f, Minmix=%.2f'%(prefix,nextmixnum,sum(vols),dilute,minmix))
         for i in range(len(samps)):
             print('%-20.20s %.2f avail=%.2f'%(samps[i].name, vols[i], avail[i]))
-    stage=None
+    stages=None
     if sum(vols)<=maxmix and all([vols[i]<=avail[i] for i in range(len(avail))]):
       stages=[[Sample('%s%d' % (prefix,nextmixnum),plate), samps, vols, 1]]
     else:

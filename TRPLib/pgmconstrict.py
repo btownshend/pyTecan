@@ -2,7 +2,7 @@ from __future__ import print_function
 
 import math
 
-from Experiment import decklayout, reagents, clock, logging, worklist
+from Experiment import decklayout, reagents, clock, worklist
 from Experiment.concentration import Concentration
 from Experiment.sample import Sample
 from TRPLib.QSetup import QSetup
@@ -46,8 +46,6 @@ class Constrict(TRP):
         self.regen_dil = 25
         self.regen_vol = 100
         self.regen_cycles = 10
-
-        used = []
 
         self.rsrc = [reagents.add("%s-%s-%s" % (inputs[i]['name'], inputs[i]['left'], inputs[i]['right']),
                                   decklayout.SAMPLEPLATE,
@@ -138,8 +136,8 @@ class Constrict(TRP):
             self.e.transfer(watervol, decklayout.WATER, mixdown, (False, False))
         else:
             pass
-        ord=sorted(list(range(len(inp))),key=lambda i: vol[i],reverse=True)
-        for i in ord:
+        ordering=sorted(list(range(len(inp))),key=lambda i: vol[i],reverse=True)
+        for i in ordering:
             inp[i].conc.final = inp[i].conc.stock * vol[i] / mixvol  # Avoid warnings about concentrations not adding up
             self.e.transfer(vol[i], inp[i], mixdown, (False, False))
         self.e.shakeSamples([mixdown])
