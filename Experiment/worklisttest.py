@@ -1,5 +1,5 @@
-import worklist
-import plate
+from . import worklist
+from . import plate
 
 #aspirate(1,"LC",[1,3,4],1,2,3,"wells")
 plate1=plate.Plate("Samples",4,3,12,8)

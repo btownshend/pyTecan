@@ -2,9 +2,9 @@
 from __future__ import print_function
 
 import sys
-from Experiment.sample import Sample
-import logging
-import decklayout
+from .sample import Sample
+from . import logging
+from . import decklayout
 
 class Reagent(object):
     allReagents={}

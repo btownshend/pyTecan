@@ -1,9 +1,9 @@
 import os
-from plate import Plate
-from sample import Sample
-from liquidclass import LCBleachMix
+from .plate import Plate
+from .sample import Sample
+from .liquidclass import LCBleachMix
 # noinspection PyUnresolvedReferences
-from worklist import WASHLOC, QPCRLOC
+from .worklist import WASHLOC, QPCRLOC
 
 ############ Plates and plate locations  #############
 #WASHLOC=Plate("Wash",1,2,1,8,False,0)   # Defined in worklist

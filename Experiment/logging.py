@@ -1,7 +1,7 @@
 from __future__ import print_function
 
 import inspect
-import globals
+from . import globals
 import sys
 
 def callhistory(includeLibs=False):

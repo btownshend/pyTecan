@@ -1,5 +1,5 @@
-import worklist
-import logging
+from . import worklist
+from . import logging
 
 
 def startrun(name,gentime,checksum,gitlabel):

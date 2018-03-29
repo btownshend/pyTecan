@@ -2,13 +2,13 @@ from __future__ import print_function
 
 import sys
 import math
-import liquidclass
-import worklist
-from concentration import Concentration
-import clock
-import logging
-from plate import interpolate
-import db
+from . import liquidclass
+from . import worklist
+from .concentration import Concentration
+from . import clock
+from . import logging
+from .plate import interpolate
+from . import db
 
 MAXVOLUME=200
 MINLIQUIDDETECTVOLUME=15

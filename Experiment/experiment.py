@@ -4,15 +4,15 @@ from datetime import datetime
 from hashlib import md5
 from pprint import pprint
 
-import worklist
-import thermocycler
-import db
-from sample import Sample
-import liquidclass
-import reagents
-import decklayout
-import clock
-import logging
+from . import worklist
+from . import thermocycler
+from . import db
+from .sample import Sample
+from . import liquidclass
+from . import reagents
+from . import decklayout
+from . import clock
+from . import logging
 import sys
 import subprocess
 import os

@@ -1,6 +1,6 @@
 import math
-import globals
-import logging
+from . import globals
+from . import logging
 
 
 def interpolate(dictionary, x0):

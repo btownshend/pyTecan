@@ -7,9 +7,9 @@ import sys
 import shutil
 from zlib import crc32
 
-from plate import Plate
-import clock
-import logging
+from . import clock
+from . import logging
+from .plate import Plate
 
 WASHLOC=Plate("Wash",1,2,1,8,False,0)    # Duplicate of what's in decklayout.py -- but don't want to include all those dependencies...
 QPCRLOC=Plate("qPCR",4,1,12,8,False,0)    # Duplicate of what's in decklayout.py -- but don't want to include all those dependencies...

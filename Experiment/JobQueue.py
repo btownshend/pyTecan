@@ -1,7 +1,8 @@
 """Queue of jobs to be executed during idle times"""
-from Experiment.experiment import Experiment
-import logging
 from __future__ import print_function
+
+from .experiment import Experiment
+from . import logging
 
 
 # noinspection PyShadowingBuiltins

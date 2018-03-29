@@ -8,7 +8,7 @@ from Experiment.concentration import Concentration
 from Experiment.sample import Sample
 from TRPLib.QSetup import QSetup
 from TRPLib.TRP import TRP
-from pcrgain import pcrgain
+from .pcrgain import pcrgain
 
 reagents.add("BT5310",well="B5",conc=Concentration(20,20,"pM"))
 
