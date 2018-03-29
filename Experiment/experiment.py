@@ -16,7 +16,6 @@ from . import logging
 import sys
 import subprocess
 import os
-from string import strip
 
 def md5sum(filename):
     hashval = md5()
@@ -37,7 +36,7 @@ class Experiment(object):
         self.checksum=md5sum(sys.argv[0])
         self.checksum=self.checksum[-4:]
         pyTecan=os.path.dirname(os.path.realpath(__file__))
-        self.gitlabel=strip(subprocess.check_output(["git", "describe","--always"],cwd=pyTecan))
+        self.gitlabel=subprocess.check_output(["git", "describe","--always"],cwd=pyTecan).strip();
         worklist.comment("Generated %s (%s-%s pyTecan-%s)"%(datetime.now().ctime(),sys.argv[0],self.checksum,self.gitlabel))
         db.startrun(sys.argv[0],datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'),self.checksum,self.gitlabel)
         worklist.userprompt("The following reagent tubes should be present: %s"%Sample.getAllLocOnPlate(decklayout.REAGENTPLATE))

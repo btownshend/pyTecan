@@ -2,7 +2,6 @@
 from __future__ import print_function
 
 import math
-import string
 import sys
 import shutil
 from zlib import crc32
@@ -671,14 +670,14 @@ def dumpvols():
     """Dump final volumes"""
     for loc in volumes:
         for well in volumes[loc]:
-            print "%-14s\t%s\t%6.1f"%(str(loc),str(well),volumes[loc][well])
+            print("%-14s\t%s\t%6.1f"%(str(loc),str(well),volumes[loc][well]))
 
 def saveworklist(filename):
     """Save worklist in a file in format that Gemini can load as a worklist"""
     flushQueue()
     fd=open(filename,'w')
     for i in range(len(wlist)):
-        print >>fd, "B;%s"%string.replace(str(wlist[i]),'\n','\f\a')
+        print("B;%s"%(str(wlist[i]).replace('\n','\f\a')), file=fd)
     fd.close()
 
 def savegem(headerfile,filename):
@@ -687,7 +686,7 @@ def savegem(headerfile,filename):
     shutil.copy(headerfile,filename)
     fd=open(filename,'a')
     for i in range(len(wlist)):
-        print >>fd, "%s"%string.replace(str(wlist[i]),'\n','\f\a')
+        print("%s"%(str(wlist[i]).replace('\n','\f\a')), file=fd)
     fd.close()
     # Also save another copy with line numbers, indent in a readable form in filename.gemtxt
     fd=open(filename+'txt','w')
