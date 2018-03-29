@@ -70,8 +70,8 @@ class Sample(object):
         print("\n%s by plate:"%txt, file=fd)
         plates=set([s.plate for s in Sample.__allsamples])
         for p in sorted(plates, key=lambda x:x.name.upper()):
-            for s in sorted(Sample.__allsamples, key=lambda x:x.well):
             print("Samples in plate: ",p, file=fd)
+            for s in sorted(Sample.__allsamples, key=lambda x:x.well if x.well is not None else 0):
                 if len(s.history)==0:
                     continue   # Not used
                 if s.plate==p:
@@ -156,7 +156,7 @@ class Sample(object):
             elif well==-1:
                 well=None
 
-            if well>=plate.nx*plate.ny:
+            if well is not None and well>=plate.nx*plate.ny:
                 # Overflow
                 if plate.backupPlate is not None:
                     # Overflow onto backup plate
