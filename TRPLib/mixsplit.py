@@ -17,7 +17,7 @@ def mixsplit(vols, samps=None, avail=None, minvol=4, minmix=0, maxmix=100, nextm
         assert(plate is not None)
         samps=[Sample("%sIn_%d" % (prefix,i), plate=plate) for i in range(len(vols))]
     if avail is None:
-        avail=[20 for v in vols]
+        avail=[20 for _ in vols]
     sortord=sorted(list(range(len(vols))), key=lambda k: vols[k])
     samps=[samps[i] for i in sortord]
     vols=[vols[i] for i in sortord]
@@ -35,6 +35,7 @@ def mixsplit(vols, samps=None, avail=None, minvol=4, minmix=0, maxmix=100, nextm
         print('\nMaking %s%d, sum(vol)=%.1f, Dilute=%.2f, Minmix=%.2f'%(prefix,nextmixnum,sum(vols),dilute,minmix))
         for i in range(len(samps)):
             print('%-20.20s %.2f avail=%.2f'%(samps[i].name, vols[i], avail[i]))
+    stage=None
     if sum(vols)<=maxmix and all([vols[i]<=avail[i] for i in range(len(avail))]):
       stages=[[Sample('%s%d' % (prefix,nextmixnum),plate), samps, vols, 1]]
     else:

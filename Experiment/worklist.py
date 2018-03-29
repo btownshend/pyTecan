@@ -2,8 +2,8 @@
 from __future__ import print_function
 
 import math
-import sys
 import shutil
+import sys
 from zlib import crc32
 
 from . import clock
@@ -59,7 +59,7 @@ def setOptimization(onoff):
 def wellSelection(nx,ny,pos):
     """Build a well selection string"""
     s="%02x%02x"%(nx,ny)
-    vals=[0] * (7*((nx*ny+6)/7))
+    vals=[0] * int(7*((nx*ny+6)/7))
     for i in pos:
         vals[i]=1
     bitCounter=0
@@ -302,6 +302,7 @@ def aspirateDispense(op,tipMask,wells, liquidClass, volume, loc, cycles=None,all
             else:
                 volumes[loc][well]=volumes[loc][well]+vincr
 
+    # noinspection PyUnusedLocal
     spacing=1
     pos=[0] * len(wells)
     prevcol=None
