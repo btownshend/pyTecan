@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 from datetime import datetime
 from hashlib import md5
 from pprint import pprint
@@ -100,10 +102,10 @@ class Experiment(object):
         # print >>fd
         #print >>fd,"DiTi usage:",worklist.getDITIcnt()
         #print >>fd
-        print >>fd,"Generated %s (%s-%s pyTecan-%s)"%(datetime.now().ctime(),sys.argv[0],self.checksum,self.gitlabel)
+        print("Generated %s (%s-%s pyTecan-%s)"%(datetime.now().ctime(),sys.argv[0],self.checksum,self.gitlabel), file=fd)
         rtime="Run time: %d (pipetting only) + %d (thermocycling only) + %d (both) = %d minutes (%.1f hours)\n"%(clock.pipetting/60.0,clock.thermotime/60, clock.pipandthermotime/60, clock.elapsed()/60, clock.elapsed()/3600.0)
-        print rtime
-        print >>fd,rtime
+        print(rtime)
+        print(rtime, file=fd)
         reagents.printprep(fd)
         Sample.printallsamples("All Samples:",fd,w=worklist)
         liquidclass.LC.printalllc(fd)
@@ -206,7 +208,7 @@ class Experiment(object):
                 src.mix(tipMask)	# Manual mix (after allocating a tip for this)
 
             if len(dests)>=8:
-                print "Running multi-tip transfer"
+                print("Running multi-tip transfer")
                 worklist.flushQueue()
                 worklist.comment("Multi-tip transfer of "+src.name)
                 self.sanitize()   # Make sure all tips are clean

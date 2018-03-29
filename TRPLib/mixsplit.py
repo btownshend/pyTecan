@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import debughook
 
 from Experiment.sample import Sample, logging
@@ -7,7 +9,7 @@ from Experiment import decklayout
 def mixsplit(vols, samps=None, avail=None, minvol=4, minmix=0, maxmix=100, nextmixnum=1, dilute=1, debug=False, plate=None, prefix="Mix"):
     """"mimix is minimum volume needed (prior to any dilution) """
     if debug:
-        print "mixsplit(",vols,",avail=",avail,", minmix=",minmix,")"
+        print("mixsplit(",vols,",avail=",avail,", minmix=",minmix,")")
     if avail is not None:
         assert(all([a>=minvol for a in avail]))
     assert(nextmixnum<10)
@@ -26,13 +28,13 @@ def mixsplit(vols, samps=None, avail=None, minvol=4, minmix=0, maxmix=100, nextm
         rescale=min(maxrescale,minmix/sum(vols)/dilute)
         if rescale>1:
             if debug:
-                print "Rescale by %.2f"%rescale
+                print("Rescale by %.2f"%rescale)
             vols=[v*rescale for v in vols]
 
     if debug:
-        print '\nMaking %s%d, sum(vol)=%.1f, Dilute=%.2f, Minmix=%.2f'%(prefix,nextmixnum,sum(vols),dilute,minmix)
+        print('\nMaking %s%d, sum(vol)=%.1f, Dilute=%.2f, Minmix=%.2f'%(prefix,nextmixnum,sum(vols),dilute,minmix))
         for i in range(len(samps)):
-            print '%-20.20s %.2f avail=%.2f'%(samps[i].name, vols[i], avail[i])
+            print('%-20.20s %.2f avail=%.2f'%(samps[i].name, vols[i], avail[i]))
     if sum(vols)<=maxmix and all([vols[i]<=avail[i] for i in range(len(avail))]):
       stages=[[Sample('%s%d' % (prefix,nextmixnum),plate), samps, vols, 1]]
     else:
@@ -71,7 +73,7 @@ def mixsplit(vols, samps=None, avail=None, minvol=4, minmix=0, maxmix=100, nextm
         stages[-1][3]=(totalvol+water)/totalvol  # Dilution
 
     if debug:
-        print "stages=",stages
+        print("stages=",stages)
     return stages
     
 if __name__ == "__main__":
@@ -79,11 +81,11 @@ if __name__ == "__main__":
 
     cntr=1
     for t in tests:
-        print "Test: ",t
+        print("Test: ",t)
         stages=mixsplit(t,plate=decklayout.SAMPLEPLATE,minmix=20,avail=[11.625 for i in t],debug=True,prefix="Test%d_"%cntr)
         cntr+=1
         for s in stages:
-            print s[0].name,'\n =',"\n + ".join(['%4.1f: %s'%(s[2][i],s[1][i]) for i in range(len(s[1]))])
-        print
+            print(s[0].name,'\n =',"\n + ".join(['%4.1f: %s'%(s[2][i],s[1][i]) for i in range(len(s[1]))]))
+        print()
 
 

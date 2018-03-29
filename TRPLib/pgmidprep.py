@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 from Experiment import decklayout, reagents, clock, logging
 from Experiment.concentration import Concentration
 from TRPLib.QSetup import QSetup
@@ -29,7 +31,7 @@ class IDPrep(TRP):
                 logging.error("Barcode %s is being reused for %s" % (bc, inp['name']))
             used.append(bc)
 
-        print "used=",used
+        print("used=",used)
         self.rsrc = [reagents.add("%s-%s-%s" % (inputs[i]['name'], inputs[i]['left'], inputs[i]['right']),
                                   decklayout.SAMPLEPLATE,
                                   well=inputs[i]['well'] if 'well' in inputs[i] else None,
@@ -44,10 +46,10 @@ class IDPrep(TRP):
         self.q.debug = True
         self.q.addReferences(dstep=10, primers=self.qprimers, ref=reagents.getsample("BT5310"),nreplicates=2)
 
-        print "### Barcoding #### (%.0f min)" % (clock.elapsed() / 60.0)
+        print("### Barcoding #### (%.0f min)" % (clock.elapsed() / 60.0))
         self.idbarcoding(self.rsrc, left=[x['left'] for x in self.inputs],
                                  right=[x['right'] for x in self.inputs])
-        print "### qPCR #### (%.0f min)" % (clock.elapsed() / 60.0)
+        print("### qPCR #### (%.0f min)" % (clock.elapsed() / 60.0))
         self.q.run(confirm=False, enzName='EvaGreen')
 
     def idbarcoding(self, rsrc, left, right):
@@ -62,13 +64,13 @@ class IDPrep(TRP):
         pcr2minvol = 50.0
 
         samps = [s.getsample() for s in rsrc]
-        print "Inputs:"
+        print("Inputs:")
         for i in range(len(samps)):
-            print "%2s %-10s %8s-%-8s  %.1f%s" % (
-                samps[i].plate.wellname(samps[i].well), self.inputs[i]['name'], left[i], right[i], samps[i].conc.stock,samps[i].conc.units)
+            print("%2s %-10s %8s-%-8s  %.1f%s" % (
+                samps[i].plate.wellname(samps[i].well), self.inputs[i]['name'], left[i], right[i], samps[i].conc.stock,samps[i].conc.units))
         # Compute pcr1inputconc such that lowest concentration input ends up with at least 30ul after dilution
         pcr1inputconc=min([s.conc.stock*s.volume/30.0/pcr1inputdil for s in samps])
-        print "Diluting inputs so PCR1 final template conc = %.0f pM"%(pcr1inputconc*1000)
+        print("Diluting inputs so PCR1 final template conc = %.0f pM"%(pcr1inputconc*1000))
         wellnum = 5
         for s in left + right:
             primer = "P-" + s
@@ -87,7 +89,7 @@ class IDPrep(TRP):
                 # Do a first pass dilution into 150ul, then remove enough so second dilution can go into 100ul
                 dil1 = 100.0 / samps[i].volume
                 self.diluteInPlace(tgt=[samps[i]], dil=dil1)
-                print "First pass dilution of %s by %.1f/%.1f (conc now %.3f nM)" % (samps[i].name, dil1, dil, samps[i].conc.stock)
+                print("First pass dilution of %s by %.1f/%.1f (conc now %.3f nM)" % (samps[i].name, dil1, dil, samps[i].conc.stock))
                 dil /=  dil1
 
         # Make sure they are all mixed
@@ -103,21 +105,21 @@ class IDPrep(TRP):
                 dilvol = s.volume * dil
                 if dilvol>100:
                     toremove=s.volume-100.0/dil
-                    print "Removing %.1f ul from %s to allow enough room for dilution"%(toremove,s.name)
+                    print("Removing %.1f ul from %s to allow enough room for dilution"%(toremove,s.name))
                     self.e.dispose(toremove, s)
                 self.diluteInPlace(tgt=[s], dil=dil)
-                print "Diluting %s by %.1f" % (s.name, dil)
+                print("Diluting %s by %.1f" % (s.name, dil))
 
         pcr1 = self.runPCR(src=samps, srcdil=pcr1inputdil, ncycles=pcrcycles[0], vol=pcr1vol,
                            primers=[[left[i], right[i]] for i in range(len(left))], usertime=0, fastCycling=False,
                            inPlace=False, master="MKapa", kapa=True)
 
         pcr1finalconc = pcr1inputconc * self.pcreff ** pcrcycles[0]
-        print "PCR1 output concentration = %.3f nM" % pcr1finalconc
+        print("PCR1 output concentration = %.3f nM" % pcr1finalconc)
 
         if pcr1postdil > 1:
             pcr1finalconc /= pcr1postdil
-            print "Post dilute PCR1 by %.2fx to %.3f nM " % (pcr1postdil, pcr1finalconc)
+            print("Post dilute PCR1 by %.2fx to %.3f nM " % (pcr1postdil, pcr1finalconc))
             self.diluteInPlace(tgt=pcr1, dil=pcr1postdil)
 
         for x in pcr1:
@@ -133,12 +135,12 @@ class IDPrep(TRP):
                                primers="End", fastCycling=False, master="MKapa", kapa=True)
 
             pcr2finalconc = min(200, pcr1finalconc / (pcr2dil / pcr1postdil) * self.pcreff ** pcrcycles[1])
-            print "PCR2 final conc = %.1f nM" % pcr2finalconc
+            print("PCR2 final conc = %.1f nM" % pcr2finalconc)
 
             d2 = min(4.0, 150.0 / max([p.volume for p in pcr2]))
             if d2 > 1:
                 pcr2finalconc /= d2
-                print "Post-dilute PCR2 by %.1fx to %.3fnM" % (d2, pcr2finalconc)
+                print("Post-dilute PCR2 by %.1fx to %.3fnM" % (d2, pcr2finalconc))
                 self.diluteInPlace(tgt=pcr2, dil=d2)
                 self.e.shakeSamples(pcr2)
 

@@ -1,4 +1,6 @@
 """Barcoding"""
+from __future__ import print_function
+
 import logging
 import numpy as np
 
@@ -60,25 +62,25 @@ class Barcoding(TRP):
         if self.doqpcr:
             self.q.addReferences(dstep=10, primers=self.qprimers, ref=reagents.getsample("BT5310"))
 
-        print "### Barcoding #### (%.0f min)" % (clock.elapsed() / 60.0)
+        print("### Barcoding #### (%.0f min)" % (clock.elapsed() / 60.0))
         bcout = self.barcoding(names=[x['name'] for x in self.inputs], left=[x['left'] for x in self.inputs],
                                right=[x['right'] for x in self.inputs])
 
         for i in range(len(self.inputs)):
             x = self.inputs[i]
             if 'bconc' in x and x['bconc'] is not None:
-                print "Resetting concentration of %s from expected %.1f to bconc setting of %.1f nM" % \
-                      (x['name'], bcout[i].conc.stock, x['bconc'])
+                print("Resetting concentration of %s from expected %.1f to bconc setting of %.1f nM" % \
+                      (x['name'], bcout[i].conc.stock, x['bconc']))
                 bcout[i].conc.stock = x['bconc']
 
-        print "### qPCR #### (%.0f min)" % (clock.elapsed() / 60.0)
+        print("### qPCR #### (%.0f min)" % (clock.elapsed() / 60.0))
         self.q.run(confirm=False, enzName='EvaGreen')
-        print "### qPCR Done #### (%.0f min)" % (clock.elapsed() / 60.0)
-        print "### Final PCR Done #### (%.0f min)" % (clock.elapsed() / 60.0)
+        print("### qPCR Done #### (%.0f min)" % (clock.elapsed() / 60.0))
+        print("### Final PCR Done #### (%.0f min)" % (clock.elapsed() / 60.0))
         worklist.flushQueue()
 
         if all(['bconc' in x and x['bconc'] is not None for x in self.inputs]):
-            print "### Mixdown #### (%.0f min)" % (clock.elapsed() / 60.0)
+            print("### Mixdown #### (%.0f min)" % (clock.elapsed() / 60.0))
             worklist.flushQueue()
             worklist.comment('Start mixdown only at this point')
             self.e.sanitize(force=True)
@@ -90,17 +92,17 @@ class Barcoding(TRP):
             mixes=set([x['mix'] for x in self.inputs])
             for m in mixes:
                 sel=[ i for i in range(len(self.inputs)) if self.inputs[i]['mix']==m] 
-                print "sel=",sel
+                print("sel=",sel)
                 mixdown = self.mix([bcout[i] for i in sel], [self.inputs[i]['weight'] for i in sel],prefix="Mix%d_"%m)
                 mixdown.name="Mix%d_Final"%m
             # self.q.addSamples(mixdown, needDil=mixdown.conc.stock * 1e-9 / self.qconc, primers=self.qprimers,nreplicates=3)
         else:
-            print "### Not doing mixdown as bconc not set in all inputs"
+            print("### Not doing mixdown as bconc not set in all inputs")
 
     def mix(self, inp, weights, tgtdil=1.0, maxusefrac=0.75, prefix="Mix"):
         """Mix given inputs according to weights (by moles -- use conc.stock of each input)"""
-        print "Mix: tgtdil=%.2f, inp=" % tgtdil, ",".join(
-            ["%s@%.2f" % (inp[i].name, weights[i]) for i in range(len(inp))])
+        print("Mix: tgtdil=%.2f, inp=" % tgtdil, ",".join(
+            ["%s@%.2f" % (inp[i].name, weights[i]) for i in range(len(inp))]))
         mixvol = 100.0
         relvol = [weights[i] * 1.0 / inp[i].conc.stock for i in range(len(inp))]
         stages=mixsplit(vols=relvol,samps=inp,avail=[(i.volume-15.0)*maxusefrac-1.4 for i in inp],minvol=4.0,minmix=100,maxmix=100.0,plate=decklayout.SAMPLEPLATE,debug=False,prefix=prefix)
@@ -114,16 +116,16 @@ class Barcoding(TRP):
                 if src.conc is not None:
                     moles+=src.conc.stock*vol
             newconc=moles/sum(s[2])
-            print "Adjusting concentration of %s from %s to %.2f nM"%(dest.name,str(dest.conc) if dest.conc is not None else -1,newconc)
+            print("Adjusting concentration of %s from %s to %.2f nM"%(dest.name,str(dest.conc) if dest.conc is not None else -1,newconc))
             dest.conc=Concentration(newconc,newconc,units='nM')
-            print s[0].name,'\n =',"\n + ".join(['%5.1fuL %5.2f %s %s'%(s[2][i],s[1][i].conc.stock if s[1][i].conc is not None else 0,s[1][i].conc.units if s[1][i].conc is not None else "  ",s[1][i].name) for i in range(len(s[1]))]),"\n-> %5.1ful %5.2f %s %s"%(dest.volume,dest.conc.stock,dest.conc.units,dest.name)
-        print
+            print(s[0].name,'\n =',"\n + ".join(['%5.1fuL %5.2f %s %s'%(s[2][i],s[1][i].conc.stock if s[1][i].conc is not None else 0,s[1][i].conc.units if s[1][i].conc is not None else "  ",s[1][i].name) for i in range(len(s[1]))]),"\n-> %5.1ful %5.2f %s %s"%(dest.volume,dest.conc.stock,dest.conc.units,dest.name))
+        print()
         return dest
 
     def oldmix(self, inp, weights, tgtdil=1.0):
         """Mix given inputs according to weights (by moles -- use conc.stock of each input)"""
-        print "Mix: tgtdil=%.2f, inp=" % tgtdil, ",".join(
-            ["%s@%.2f" % (inp[i].name, weights[i]) for i in range(len(inp))])
+        print("Mix: tgtdil=%.2f, inp=" % tgtdil, ",".join(
+            ["%s@%.2f" % (inp[i].name, weights[i]) for i in range(len(inp))]))
         mixvol = 100.0
         if len(inp) == 1:
             if tgtdil > 1.0:
@@ -142,10 +144,10 @@ class Barcoding(TRP):
             vol = [x * scale for x in relvol]
             if min(vol) > 4.0 and tgtdil > 1.0:
                 scale = max(1.0 / tgtdil, 4.0 / min(vol))
-                print "Rescale volumes by %.2f to get closer to target dilution of %.2f" % (scale, tgtdil)
+                print("Rescale volumes by %.2f to get closer to target dilution of %.2f" % (scale, tgtdil))
                 vol = [x * scale for x in vol]
 
-        print "Mix1: vols=[", ",".join(["%.3f" % v for v in vol]), "]"
+        print("Mix1: vols=[", ",".join(["%.3f" % v for v in vol]), "]")
         if min(vol) < 4.0:
             logging.info("Minimum volume into mixing would be only %.2f ul - staging..." % min(vol))
             if max(vol) < 4.0:
@@ -159,23 +161,23 @@ class Barcoding(TRP):
                 thresh = np.median(vol)
                 while mixvol / sum([v for v in vol if v < thresh]) < mindilution:
                     thresh = thresh * 0.8
-                print "Using %.2f as threshold to split mixdown" % thresh
+                print("Using %.2f as threshold to split mixdown" % thresh)
                 sel = [i for i in range(len(inp)) if vol[i] < thresh]
                 nsel = [i for i in range(len(inp)) if vol[i] >= thresh]
-            print "Mixing ", ",".join([inp[i].name for i in sel]), " with vols [", ",".join(
-                ["%.2f" % vol[i] for i in sel]), "] in separate stage."
+            print("Mixing ", ",".join([inp[i].name for i in sel]), " with vols [", ",".join(
+                ["%.2f" % vol[i] for i in sel]), "] in separate stage.")
             tgtdil = float(np.median([vol[i] for i in nsel]) / sum([vol[i] for i in sel]))
-            print "tgtdil=%.2f" % tgtdil
+            print("tgtdil=%.2f" % tgtdil)
             mix1 = self.mix([inp[i] for i in sel], [weights[i] for i in sel], tgtdil)
             mix2 = self.mix([inp[i] for i in nsel] + [mix1],
                             [weights[i] for i in nsel] + [sum([weights[i] for i in sel])])
             return mix2
         watervol = mixvol - sum(vol)
-        print "Mixdown: vols=[", ",".join(["%.2f " % v for v in vol]), "], water=", watervol, ", total=", mixvol, " ul"
+        print("Mixdown: vols=[", ",".join(["%.2f " % v for v in vol]), "], water=", watervol, ", total=", mixvol, " ul")
         mixdown = Sample('mixdown', plate=decklayout.SAMPLEPLATE)
 
         if watervol < -0.1:
-            print "Total mixdown is %.1f ul, more than planned %.0f ul" % (sum(vol), mixvol)
+            print("Total mixdown is %.1f ul, more than planned %.0f ul" % (sum(vol), mixvol))
             assert False
         elif watervol > 0.0:
             self.e.transfer(watervol, decklayout.WATER, mixdown, (False, False))
@@ -187,7 +189,7 @@ class Barcoding(TRP):
         self.e.shakeSamples([mixdown])
         mixdown.conc = Concentration(stock=sum([inp[i].conc.stock * vol[i] for i in range(len(inp))]) / mixvol,
                                      final=None, units='nM')
-        print "Mixdown final concentration = %.1f nM" % mixdown.conc.stock
+        print("Mixdown final concentration = %.1f nM" % mixdown.conc.stock)
         return mixdown
 
     def barcoding(self, names, left, right):
@@ -201,10 +203,10 @@ class Barcoding(TRP):
         pcr2vol = 40.0
 
         samps = [reagents.getsample(s) for s in names]
-        print "Inputs:"
+        print("Inputs:")
         for i in range(len(samps)):
-            print "%2s %-10s %8s-%-8s  %s" % (
-                samps[i].plate.wellname(samps[i].well), self.inputs[i]['name'], left[i], right[i], str(samps[i].conc))
+            print("%2s %-10s %8s-%-8s  %s" % (
+                samps[i].plate.wellname(samps[i].well), self.inputs[i]['name'], left[i], right[i], str(samps[i].conc)))
 
         wellnum = 5
         for s in left + right:
@@ -227,9 +229,9 @@ class Barcoding(TRP):
                             s.name, s.volume, dil, dilvol, maxdil))
                     dil = maxdil
                 self.diluteInPlace(tgt=[s], dil=dil)
-                print "Diluting %s by %.1f" % (s.name, dil)
+                print("Diluting %s by %.1f" % (s.name, dil))
 
-        print "### PCR1 #### (%.0f min)" % (clock.elapsed() / 60.0)
+        print("### PCR1 #### (%.0f min)" % (clock.elapsed() / 60.0))
 
         pcr1 = self.runPCR(src=samps, srcdil=[s.conc.stock / self.pcr1inputconc for s in samps], ncycles=pcrcycles[0],
                            vol=pcr1vol,
@@ -237,11 +239,11 @@ class Barcoding(TRP):
                            inPlace=False, master="MPCR1", kapa=True, annealTemp=57)
 
         pcr1finalconc = self.pcr1inputconc * 2 ** pcrcycles[0]
-        print "PCR1 output concentration = %.1f nM" % pcr1finalconc
+        print("PCR1 output concentration = %.1f nM" % pcr1finalconc)
 
         if pcr1postdil > 1:
             pcr1finalconc /= pcr1postdil
-            print "Post dilute PCR1 by %.2fx to %.3f nM " % (pcr1postdil, pcr1finalconc)
+            print("Post dilute PCR1 by %.2fx to %.3f nM " % (pcr1postdil, pcr1finalconc))
             self.diluteInPlace(tgt=pcr1, dil=pcr1postdil)
 
         for x in pcr1:
@@ -249,15 +251,15 @@ class Barcoding(TRP):
 
         if len(pcrcycles) > 1:
             # Second PCR with 235p/236p on mixture (use at least 4ul of prior)
-            print "### PCR2 #### (%.0f min)" % (clock.elapsed() / 60.0)
+            print("### PCR2 #### (%.0f min)" % (clock.elapsed() / 60.0))
 
             pcr2 = self.runPCR(src=pcr1, srcdil=pcr2dil / pcr1postdil, vol=pcr2vol, ncycles=pcrcycles[1],
                                primers=None, fastCycling=False, master="MPCR2", kapa=True, annealTemp=64)
 
             pcr2finalconc = pcr1finalconc / (pcr2dil / pcr1postdil) * 2 ** pcrcycles[1]
-            print "PCR2 final conc = %.1f nM" % pcr2finalconc
+            print("PCR2 final conc = %.1f nM" % pcr2finalconc)
             if pcr2finalconc > 200:
-                print "Capping at 200nM"
+                print("Capping at 200nM")
                 pcr2finalconc = 200
 
             for x in pcr2:

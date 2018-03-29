@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 # Setup QPCR experiments
 import math
 
@@ -143,7 +145,7 @@ class QSetup(object):
     def idler(self,t):
         endTime=clock.elapsed()+t
         if self.debug:
-            print "Idler(%.0f)"%t
+            print("Idler(%.0f)"%t)
         njobs=0
         while clock.elapsed()<endTime:
             j=self.jobq.getJob()
@@ -152,7 +154,7 @@ class QSetup(object):
             self.jobq.execJob(self.trp.e,j)
             njobs+=1
         if self.debug:
-            print "Idler completed ",njobs," jobs with ",endTime-clock.elapsed()," seconds remaining"
+            print("Idler completed ",njobs," jobs with ",endTime-clock.elapsed()," seconds remaining")
 
     def run(self,confirm=False,enzName="EvaUSER",waitForPTC=True):
         """Run the dilutions and QPCR setup"""

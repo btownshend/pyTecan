@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import sys
 import math
 import liquidclass
@@ -65,23 +67,23 @@ class Sample(object):
 
     @staticmethod
     def printallsamples(txt="",fd=sys.stdout,w=None):
-        print >>fd,"\n%s by plate:"%txt
+        print("\n%s by plate:"%txt, file=fd)
         plates=set([s.plate for s in Sample.__allsamples])
         for p in sorted(plates, key=lambda x:x.name.upper()):
-            print >>fd,"Samples in plate: ",p
             for s in sorted(Sample.__allsamples, key=lambda x:x.well):
+            print("Samples in plate: ",p, file=fd)
                 if len(s.history)==0:
                     continue   # Not used
                 if s.plate==p:
                     if w is not None:
-                        print >>fd,s,("%06x"%(s.getHash()&0xffffff))
+                        print(s,("%06x"%(s.getHash()&0xffffff)), file=fd)
                     else:
-                        print >>fd,s
-            print >>fd
+                        print(s, file=fd)
+            print(file=fd)
         if SHOWTIPS and SHOWTIPHISTORY:
-            print >>fd,"\nTip history:\n"
+            print("\nTip history:\n", file=fd)
             for t in tiphistory:
-                print >>fd,"%d: %s\n"%(t,tiphistory[t])
+                print("%d: %s\n"%(t,tiphistory[t]), file=fd)
 
     @staticmethod
     def evapcheckallsamples():
@@ -279,7 +281,7 @@ class Sample(object):
     @classmethod
     def clearplate(cls,plate):
         """Remove all samples from give plate"""
-        print cls
+        print(cls)
         allnew=[s for s in Sample.__allsamples if s.plate!=plate]
         Sample.__allsamples=allnew
 
@@ -641,7 +643,7 @@ class Sample(object):
         for k in self.ingredients:
             total=total+self.ingredients[k]
         if abs(total-self.volume)>0.01:
-            print "Ingredients of %s add up to %.2f ul, but volume=%.2f"%(self.name,total, self.volume)
+            print("Ingredients of %s add up to %.2f ul, but volume=%.2f"%(self.name,total, self.volume))
             assert False
             
     def addingredients(self,src,vol):
@@ -849,7 +851,7 @@ class Sample(object):
     @staticmethod
     def savematlab(filename):
         fd=open(filename,"w")
-        print >>fd,"samps=[];"
+        print("samps=[];", file=fd)
         for s in Sample.__allsamples:
             ing=""
             ingvol=""
@@ -861,5 +863,5 @@ class Sample(object):
                     ing=ing+",'%s'"%k
                     ingvol=ingvol+",%g"%s.ingredients[k]
 
-            print >>fd,"samps=[samps,struct('name','%s','plate','%s','well','%s','concentration','%s','history','%s','ingredients',{{%s}},'volumes',[%s],'extrainfo',[%s])];"%(s.name,s.plate,s.plate.wellname(s.well),str(s.conc),s.history,ing,ingvol,",".join(["%d"%x for x in s.extrainfo]))
+            print("samps=[samps,struct('name','%s','plate','%s','well','%s','concentration','%s','history','%s','ingredients',{{%s}},'volumes',[%s],'extrainfo',[%s])];"%(s.name,s.plate,s.plate.wellname(s.well),str(s.conc),s.history,ing,ingvol,",".join(["%d"%x for x in s.extrainfo])), file=fd)
         fd.close()

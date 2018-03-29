@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import inspect
 import globals
 import sys
@@ -18,19 +20,19 @@ def callhistory(includeLibs=False):
 
 def notice(msg):
     if globals.verbose:
-        print "NOTICE: %s [%s]"%(msg,"->".join(callhistory()))
+        print("NOTICE: %s [%s]" % (msg, "->".join(callhistory())))
     
 def warning(msg,stderr=False):
     if stderr:
         print >>sys.stderr,  "WARNING: %s [%s]"%(msg,"->".join(callhistory(globals.verbose)))
     else:
-        print "WARNING: %s [%s]"%(msg,"->".join(callhistory(globals.verbose)))
+        print("WARNING: %s [%s]"%(msg,"->".join(callhistory(globals.verbose))))
 
 def mixwarning(msg):
-    print "MIXING: %s [%s]"%(msg,"->".join(callhistory(globals.verbose)))
+    print("MIXING: %s [%s]"%(msg,"->".join(callhistory(globals.verbose))))
 
 def error(msg,fatal=True):
-    print "ERROR: %s [%s]"%(msg,"->".join(callhistory(True)))
+    print("ERROR: %s [%s]"%(msg,"->".join(callhistory(True))))
     if fatal:
         assert False
 

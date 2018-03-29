@@ -1,4 +1,6 @@
 """Module for generating a worklist from a set of commands"""
+from __future__ import print_function
+
 import math
 import string
 import sys
@@ -93,7 +95,7 @@ def optimizeQueue():
     optimizeDebug=False
 
     if optimizeDebug:
-        print "Optimizing queue with %d entries"%len(opQueue)
+        print("Optimizing queue with %d entries"%len(opQueue))
     # Assign IDs
     for i in range(len(opQueue)):
         opQueue[i].append([i])
@@ -137,31 +139,31 @@ def optimizeQueue():
             d2=opQueue[j]
             if d1[0]==d2[0]  and d1[1]!=d2[1] and d1[5]==d2[5]:
                 if optimizeDebug:
-                    print "  CHECK %s %s:\tTip %d, Loc (%d,%d) Wells %s"%(d1[7],d1[0],d1[1],d1[5].grid,d1[5].pos,str(d1[2]))
-                    print "   WITH %s %s:\tTip %d, Loc (%d,%d) Wells %s"%(d2[7],d2[0],d2[1],d2[5].grid,d2[5].pos,str(d2[2])),
+                    print("  CHECK %s %s:\tTip %d, Loc (%d,%d) Wells %s"%(d1[7],d1[0],d1[1],d1[5].grid,d1[5].pos,str(d1[2])))
+                    print("   WITH %s %s:\tTip %d, Loc (%d,%d) Wells %s"%(d2[7],d2[0],d2[1],d2[5].grid,d2[5].pos,str(d2[2])), end=' ')
                 tipdiff=math.log(d2[1],2)-math.floor(math.log(d1[1],2))
                 welldiff=d2[2][0]-max(d1[2])
                 if tipdiff!=welldiff:
                     if optimizeDebug:
-                        print "  tipdiff (%d) != welldiff(%d)"%(tipdiff,welldiff)
+                        print("  tipdiff (%d) != welldiff(%d)"%(tipdiff,welldiff))
                 elif d1[2][0]/d1[5].ny != d2[2][0]/d2[5].ny:
                     if optimizeDebug:
-                        print "  wells in different columns of %d-row plate"%d1[5].ny
+                        print("  wells in different columns of %d-row plate"%d1[5].ny)
                 elif d1[3].name!=d2[3].name:
                     if optimizeDebug:
-                        print "  liquid classes different",d1[3],d2[3]
+                        print("  liquid classes different",d1[3],d2[3])
                 elif d1[6]!=d2[6]:
                     if optimizeDebug:
-                        print "  mix cycles different"
+                        print("  mix cycles different")
                 else:
                     if optimizeDebug:
-                        print "  can merge"
+                        print("  can merge")
                     mergeable[i].add(j)
 
     if optimizeDebug:
         for i in range(len(opQueue)):
             d=opQueue[i]
-            print "PRE-OPT %s:  %s:\tTip %d, Loc (%d,%d) Wells %s, Vol %s, depends on %s, merges with %s"%(d[7],d[0],d[1],d[5].grid,d[5].pos,str(d[2]),d[4],dependencies[i],mergeable[i])
+            print("PRE-OPT %s:  %s:\tTip %d, Loc (%d,%d) Wells %s, Vol %s, depends on %s, merges with %s"%(d[7],d[0],d[1],d[5].grid,d[5].pos,str(d[2]),d[4],dependencies[i],mergeable[i]))
 
     # Try to combine multiple operations into one command
     todelete=[]
@@ -197,7 +199,7 @@ def optimizeQueue():
                 mergeable[i] &= mergeable[j]
                 #comment("Merged operations")
                 if optimizeDebug:
-                    print "MERGED %s %s:\tTip %d, Loc (%d,%d) Wells %s depends on %s, merges with %s, vol=%s "%(merge[7],merge[0],merge[1],merge[5].grid,merge[5].pos,str(merge[2]),dependencies[i],mergeable[i],merge[4])
+                    print("MERGED %s %s:\tTip %d, Loc (%d,%d) Wells %s depends on %s, merges with %s, vol=%s "%(merge[7],merge[0],merge[1],merge[5].grid,merge[5].pos,str(merge[2]),dependencies[i],mergeable[i],merge[4]))
 
         # Finished doing all the merges we can do with the current set of operations that don't depend on any prior operations
         # Find something to emit/delete
@@ -222,7 +224,7 @@ def optimizeQueue():
     for i in range(len(opQueue)):
         d=opQueue[i]
         if optimizeDebug:
-            print "POST-OPT %s:  %s:\tTip %d, Loc (%d,%d) Wells %s"%(d[7],d[0],d[1],d[5].grid,d[5].pos,str(d[2]))
+            print("POST-OPT %s:  %s:\tTip %d, Loc (%d,%d) Wells %s"%(d[7],d[0],d[1],d[5].grid,d[5].pos,str(d[2])))
 
 def flushQueue():
     global delayEnabled,opQueue
@@ -342,9 +344,9 @@ def aspirateDispense(op,tipMask,wells, liquidClass, volume, loc, cycles=None,all
         logging.error("Number of tips (mask=%d) != number of wells (%d)"%(tipMask, len(wells)))
 
     if debug:
-        print "allvols=",allvols
-        print "pos[0]=",pos[0]
-        print "spacing=",spacing
+        print("allvols=",allvols)
+        print("pos[0]=",pos[0])
+        print("spacing=",spacing)
 
     ws=wellSelection(loc.nx,loc.ny,pos)
     condvol=""  # Initialize to avoid warnings below
@@ -663,7 +665,7 @@ def dump():
     """Dump current worklist"""
     flushQueue()
     for i in range(len(wlist)):
-        print wlist[i]
+        print(wlist[i])
 
 def dumpvols():
     """Dump final volumes"""
@@ -692,7 +694,7 @@ def savegem(headerfile,filename):
     for i in range(len(wlist)):
         s=str(wlist[i])
         if len(s)>512:
-            print "Gemini command line too long (%d>512): %s"%(len(s),s)   # Gemini definitely breaks at 522, maybe overflowing a buffer before that
+            print("Gemini command line too long (%d>512): %s"%(len(s),s))   # Gemini definitely breaks at 522, maybe overflowing a buffer before that
             sys.exit(1)
         if s.startswith('Comment'):
             s=s[9:-2]
@@ -700,6 +702,6 @@ def savegem(headerfile,filename):
                 s='    '+s[1:]
         else:
             s='        '+s
-        print >>fd,"%s" % s
+        print("%s" % s, file=fd)
     fd.close()
 

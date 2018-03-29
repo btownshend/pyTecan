@@ -1,4 +1,6 @@
 # Reagent - a set of samples that are allocated as they are needed
+from __future__ import print_function
+
 import sys
 from Experiment.sample import Sample
 import logging
@@ -38,7 +40,7 @@ class Reagent(object):
         if self.sample is not None:
             adj=self.extraVol-self.sample.volume
             if adj>0:
-                print "Adjusting initVol of %s to %.1f (adj=%.1f)"%(self.name,self.initVol+adj,adj)
+                print("Adjusting initVol of %s to %.1f (adj=%.1f)"%(self.name,self.initVol+adj,adj))
                 self.initVol+=adj
             self.sample=None
 
@@ -67,7 +69,7 @@ def reset():
 
 def printprep(fd=sys.stdout):
     for p in sorted(set([r.plate for r in Reagent.allReagents.itervalues()])):
-        print >>fd,"\nPlate %s:"%p.name
+        print("\nPlate %s:"%p.name, file=fd)
         total=0
         extras=0
         for r in sorted(Reagent.allReagents.itervalues(), key=lambda x:x.sample.well if x.sample is not None else None):
@@ -86,10 +88,10 @@ def printprep(fd=sys.stdout):
                 #notes=notes+"\n"+note
                 pass
             elif r.initVol>0:
-                print >>fd,"%s%s in %s.%s consume %.1f ul, provide %.1f ul"%(s.name,c,s.plate.name,s.plate.wellname(s.well),r.initVol-s.volume,r.initVol)
+                print("%s%s in %s.%s consume %.1f ul, provide %.1f ul"%(s.name,c,s.plate.name,s.plate.wellname(s.well),r.initVol-s.volume,r.initVol), file=fd)
             total+=round((r.initVol-s.volume)*10)/10.0
             extras+=r.extraVol
             if r.initVol>s.plate.maxVolume:
                 logging.error("Excess initial volume (%.1f) for %s, maximum is %.1f"%(r.initVol,s.name,s.plate.maxVolume))
-        print >>fd,"Total %s volume = %.1f ul (%.1f ul with extras)"%(p.name,total,total+extras)
+        print("Total %s volume = %.1f ul (%.1f ul with extras)"%(p.name,total,total+extras), file=fd)
 

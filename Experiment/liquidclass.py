@@ -1,4 +1,6 @@
 """A liquid class"""
+from __future__ import print_function
+
 import sys
 
 SURFACEREMOVE=0.4	# Extra removed from wells due to tip wetting (assuming liquid detecting, aspirating 3.5mm below surface)
@@ -22,11 +24,11 @@ class LC(object):
 
     @staticmethod
     def printalllc(fd=sys.stdout):
-        print >>fd, "Liquid classes used:"
+        print("Liquid classes used:", file=fd)
         for lc in sorted(LC.__alllc, key=lambda p:p.name.upper()):
             ops=lc.used.keys()
             if len(ops)>0:
-                print >>fd,lc.fullstr()
+                print(lc.fullstr(), file=fd)
 
     def __str__(self):
         #        return "%s(%d,%d,%d)"%(self.name,self.singletag,self.multicond,self.multiexcess)

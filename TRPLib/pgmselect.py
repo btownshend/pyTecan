@@ -1,4 +1,6 @@
 # Generic selection progam
+from __future__ import print_function
+
 import math
 
 from Experiment import worklist, reagents, decklayout, logging, clock, thermocycler
@@ -118,20 +120,20 @@ class PGMSelect(TRP):
         
         for i in range(len(self.rounds)):
             if ligConc[i] is None:
-                print "R%d Concs(nM):  RNA: %.0f, Stop: %.0f, RT: %.0f, RTDil: %.0f, PCRIn: %.0f"%(i, self.rnaConc, stopConc, rtConc, rtdilConc[i], pcrConc[i])
+                print("R%d Concs(nM):  RNA: %.0f, Stop: %.0f, RT: %.0f, RTDil: %.0f, PCRIn: %.0f"%(i, self.rnaConc, stopConc, rtConc, rtdilConc[i], pcrConc[i]))
             else:
-                print "R%d Concs(nM):  RNA: %.0f, Stop: %.0f, RT: %.0f, RTDil: %.0f, Lig: %.0f, LigDil: %.0f, PCRIn: %.0f"%(i, self.rnaConc, stopConc, rtConc, rtdilConc[i], ligConc[i], ligdilConc[i], pcrConc[i])
+                print("R%d Concs(nM):  RNA: %.0f, Stop: %.0f, RT: %.0f, RTDil: %.0f, Lig: %.0f, LigDil: %.0f, PCRIn: %.0f"%(i, self.rnaConc, stopConc, rtConc, rtdilConc[i], ligConc[i], ligdilConc[i], pcrConc[i]))
 
         self.pcrvol=[self.pcrcopies*self.pmolesIn*1000/pcrConc[i]/math.pow(self.enrich,(i+1.0)) for i in range(len(self.rounds))]
         # Use at least 100ul so the evaporation of the saved sample that occurs during the run will be relatively small
         self.pcrvol=[max(100,v) for v in self.pcrvol]
         pcrExtra=[1.4*math.ceil(v/self.maxPCRVolume) for v in self.pcrvol]
         self.minligvol=[self.pcrvol[i]/self.pcrdil[i]+(pcrExtra[i]+ (4.4 if self.saveDil is not None else 5.4 if 'ext' in self.qpcrStages else 0)+15.1)/self.extpostdil[i] for i in range(len(self.pcrvol))]
-        print "minligvol=[%s]"%(",".join(["%.1f"%v for v in self.minligvol]))
+        print("minligvol=[%s]"%(",".join(["%.1f"%v for v in self.minligvol])))
 
         # Compute RT volume 
         self.rtvol=[ ((self.minligvol[i]/1.25+3.3)/self.rtpostdil[i]) if self.rounds[i]=='C' else (self.pcrvol[i]*1.0/self.pcrdil[i]+(pcrExtra[i]+15.1+3.3)/self.rtpostdil[i]) for i in range(len(self.rounds))]
-        print  "self.rtvol=",self.rtvol,", rtSave=",self.rtSave
+        print("self.rtvol=",self.rtvol,", rtSave=",self.rtSave)
         if self.rtSave:
             self.rtvol=[max(15.0/self.rtpostdil[i],self.rtvol[i])+(self.rtSaveVol+1.4)/self.rtpostdil[i] for i in range(len(self.rtvol))]  # Extra for saves
         elif "rt" in self.qpcrStages:		# Take from save if rtSave is set
@@ -167,8 +169,8 @@ class PGMSelect(TRP):
                         if not reagents.isReagent(p):
                             reagents.add(name=p,conc=4,extraVol=30,plate=decklayout.REAGENTPLATE,well="B2")
                         s=reagents.getsample(p)   # Force allocation of a well
-                        print "Adding %s to reagents at well %s"%(p,s.plate.wellname(s.well))
-            print "BC primers=", self.bcprimers
+                        print("Adding %s to reagents at well %s"%(p,s.plate.wellname(s.well)))
+            print("BC primers=", self.bcprimers)
             
         # Add any missing fields to inputs
         for i in range(len(self.inputs)):
@@ -236,7 +238,7 @@ class PGMSelect(TRP):
                     else:
                         t=self.inputs[i]['stop']
                     if (roundType=='U') != (t=='U'):
-                        print "Attempt to override round %d (type %s) with a input-specific round type of %s"%(self.rndNum, roundType, t)
+                        print("Attempt to override round %d (type %s) with a input-specific round type of %s"%(self.rndNum, roundType, t))
                         assert False
                     if roundType!='U':
                         if t=='T':
@@ -258,7 +260,7 @@ class PGMSelect(TRP):
                 for i in range(len(r1)):
                     if tref[i] is not None:
                         trefname='TRef%d'%tref[i]
-                        print "Adding %s to %s"%(trefname,r1[i].name)
+                        print("Adding %s to %s"%(trefname,r1[i].name))
                         if not reagents.isReagent(trefname):
                             reagents.add(name=trefname,conc=10,extraVol=30,well="E4")
                         tref=reagents.getsample(trefname)
@@ -270,16 +272,16 @@ class PGMSelect(TRP):
                     r1[i].name="%s_R%d%c"%(r1[i].name,self.inputs[i]['round']+self.rndNum,roundType)
                 if self.inputs[i]['ligand'] is not None:
                     r1[i].name="%s_%s"%(r1[i].name,self.inputs[i]['ligand'])
-                print "Used ID ", self.nextID," for ", r1[i].name,": ",r1[i]
+                print("Used ID ", self.nextID," for ", r1[i].name,": ",r1[i])
                 self.nextID+=1
                 r1[i].conc.final=r1[i].conc.stock*self.templateDilution
             curPrefix=prefixOut
 
             for i in range(len(bc1)):
-                print "Renaming",bc1[i].name
+                print("Renaming",bc1[i].name)
                 pts=bc1[i].name.split("_")
                 bc1[i].name="BC_%d_%s"%(self.nextID,"_".join(pts[2:]))
-                print "Used ID ", self.nextID," for ", bc1[i].name
+                print("Used ID ", self.nextID," for ", bc1[i].name)
                 self.nextID+=1
             curPrefix=prefixOut
 
@@ -301,7 +303,7 @@ class PGMSelect(TRP):
                 tref=reagents.getsample(trefname)
                 self.e.transfer(r1[i].volume/(tref.conc.dilutionneeded()-1),tref,r1[i],mix=(False,False))
             
-        print "######### qPCR ########### %.0f min"%(clock.elapsed()/60)
+        print("######### qPCR ########### %.0f min"%(clock.elapsed()/60))
         self.allprimers=q.allprimers()
         q.run(confirm=self.qpcrWait)
         
@@ -309,14 +311,14 @@ class PGMSelect(TRP):
         primerSet=[set(["REF","T7X",prefixIn[i]+"X",prefixOut[i]+"X"]+(["MX"] if self.useMX else [])) for i in range(len(prefixIn))]
         if self.extraQPCRPrimers is not None:
             primerSet=[set(list(p) + self.extraQPCRPrimers) for p in primerSet]
-            print "primerSet=",primerSet
+            print("primerSet=",primerSet)
             
         if keepCleaved:
-            print "Starting new cleavage round, will add prefix: ",prefixOut
+            print("Starting new cleavage round, will add prefix: ",prefixOut)
             assert dolig
         else:
-            print "Starting new uncleaved round, will retain prefix: ",prefixIn
-        print "stop=",stop,"prefixOut=",prefixOut,", prefixIn=",prefixIn,",t7vol=",t7vol,",rtvol=",rtvol,",pcrdil=",pcrdil,",cycles=",cycles,",dolig=",dolig
+            print("Starting new uncleaved round, will retain prefix: ",prefixIn)
+        print("stop=",stop,"prefixOut=",prefixOut,", prefixIn=",prefixIn,",t7vol=",t7vol,",rtvol=",rtvol,",pcrdil=",pcrdil,",cycles=",cycles,",dolig=",dolig)
         if self.rtCarryForward:
             assert dolig
             
@@ -326,17 +328,17 @@ class PGMSelect(TRP):
             rxs=inputs
             stopDil=1
         else:
-            print "######## T7 ########### %.0f min"%(clock.elapsed()/60)
-            print "Inputs:  (t7vol=%.2f)"%t7vol
+            print("######## T7 ########### %.0f min"%(clock.elapsed()/60))
+            print("Inputs:  (t7vol=%.2f)"%t7vol)
             for inp in inputs:
                 if inp.conc.units=='nM':
-                    print "    %s:  %.1ful@%.1f %s, use %.1f ul (%.3f pmoles)"%(inp.name,inp.volume,inp.conc.stock,inp.conc.units,t7vol/inp.conc.dilutionneeded(), t7vol*inp.conc.final/1000)
+                    print("    %s:  %.1ful@%.1f %s, use %.1f ul (%.3f pmoles)"%(inp.name,inp.volume,inp.conc.stock,inp.conc.units,t7vol/inp.conc.dilutionneeded(), t7vol*inp.conc.final/1000))
                 else:
-                    print "    %s:  %.1ful@%.1f %s, use %.1f ul"%(inp.name,inp.volume,inp.conc.stock,inp.conc.units,t7vol/inp.conc.dilutionneeded())
+                    print("    %s:  %.1ful@%.1f %s, use %.1f ul"%(inp.name,inp.volume,inp.conc.stock,inp.conc.units,t7vol/inp.conc.dilutionneeded()))
                 # inp.conc.final=inp.conc.stock*self.templateDilution
             units=list(set([inp.conc.units for inp in inputs]))
             if len(units)>1:
-                print "Inputs have inconsistent concentration units: ",units
+                print("Inputs have inconsistent concentration units: ",units)
                 assert False
             if units[0]=='nM':
                 needDil = max([inp.conc.stock for inp in inputs]) * 1.0 / self.qConc
@@ -355,7 +357,7 @@ class PGMSelect(TRP):
                 for i in range(len(inputs)):
                     watervol=t7vol*(1-1/mconc) - inputs[i].volume
                     if watervol<-0.1:
-                        print "Negative amount of water (%.1f ul) needed for T7 setup"%watervol
+                        print("Negative amount of water (%.1f ul) needed for T7 setup"%watervol)
                         assert False
                     elif watervol>0.1:
                         self.e.transfer(watervol, decklayout.WATER, inputs[i], mix=(False, False))
@@ -388,12 +390,12 @@ class PGMSelect(TRP):
                 rxs[i].name="%s.t7"%names[i]
 
             self.e.lihahome()
-            print "Estimate usable RNA concentration in T7 reaction at %.0f nM"%self.rnaConc
+            print("Estimate usable RNA concentration in T7 reaction at %.0f nM"%self.rnaConc)
 
             self.e.waitpgm()   # So elapsed time will be updated
-            print "######## Stop ########### %.0f min"%(clock.elapsed()/60)
+            print("######## Stop ########### %.0f min"%(clock.elapsed()/60))
             
-            print "Have %.1f ul before stop"%rxs[0].volume
+            print("Have %.1f ul before stop"%rxs[0].volume)
             preStopVolume=rxs[0].volume
             self.addEDTA(tgt=rxs,finalconc=2)	# Stop to 2mM EDTA final
 
@@ -411,7 +413,7 @@ class PGMSelect(TRP):
             for i in range(len(rxs)):
                 q.addSamples(src=rxs[i:i+1],needDil=needDil,primers=primerSet[i],names=["%s.stopped"%names[i]])
         
-        print "######## RT  Setup ########### %.0f min"%(clock.elapsed()/60)
+        print("######## RT  Setup ########### %.0f min"%(clock.elapsed()/60))
         hiTemp=95
 
         stop=["%s-Stop"%n for n in stop]
@@ -424,11 +426,11 @@ class PGMSelect(TRP):
             else:
                 rxs[i].name=names[i]+".rt"
 
-        print "RT volume= [",",".join(["%.1f "%x.volume for x in rxs]),"]"
+        print("RT volume= [",",".join(["%.1f "%x.volume for x in rxs]),"]")
         
         needDil /=self.rtDil
         if self.rtpostdil[self.rndNum-1]>1:
-            print "Dilution after RT: %.2f"%self.rtpostdil[self.rndNum-1]
+            print("Dilution after RT: %.2f"%self.rtpostdil[self.rndNum-1])
             self.diluteInPlace(tgt=rxs,dil=self.rtpostdil[self.rndNum-1])
             needDil=needDil/self.rtpostdil[self.rndNum-1]
 
@@ -454,7 +456,7 @@ class PGMSelect(TRP):
                 rxs.append(newsamp)
             
         if dolig:
-            print "######## Ligation setup  ########### %.0f min"%(clock.elapsed()/60)
+            print("######## Ligation setup  ########### %.0f min"%(clock.elapsed()/60))
             extdil=5.0/4
             reagents.getsample("MLigase").conc=Concentration(5)
             if self.ligInPlace:
@@ -462,10 +464,10 @@ class PGMSelect(TRP):
             else:
                 rxs=self.runLig(rxs,inPlace=False,srcdil=extdil,vol=20,incTime=self.ligdur)
 
-            print "Ligation volume= ",[x.volume for x in rxs]
+            print("Ligation volume= ",[x.volume for x in rxs])
             needDil=needDil/extdil
             if self.extpostdil[self.rndNum-1]>1:
-                print "Dilution after extension: %.2f"%self.extpostdil[self.rndNum-1]
+                print("Dilution after extension: %.2f"%self.extpostdil[self.rndNum-1])
                 self.diluteInPlace(tgt=rxs,dil=self.extpostdil[self.rndNum-1])
                 needDil=needDil/self.extpostdil[self.rndNum-1]
                 pcrdil=pcrdil*1.0/self.extpostdil[self.rndNum-1]
@@ -484,7 +486,7 @@ class PGMSelect(TRP):
                         q.addSamples(src=[ext[i]],needDil=min(maxdil,needDil/self.saveDil),primers=pset,names=["%s.ext"%names[i]],save=False)
             else:
                 if "ext" in self.qpcrStages:
-                    print "needDil=",needDil
+                    print("needDil=",needDil)
                     for i in range(len(names)):
                         pset=primerSet[i]
                         if "extraQPCR" in self.inputs[i]:
@@ -502,7 +504,7 @@ class PGMSelect(TRP):
 
         totalDil=stopDil*self.rtDil*self.rtpostdil[self.rndNum-1]*extdil*self.extpostdil[self.rndNum-1]
         fracRetained=rxs[0].volume/(t7vol*totalDil)
-        print "Total dilution from T7 to Pre-pcr Product = %.2f*%.2f*%.2f*%.2f*%.2f = %.2f, fraction retained=%.0f%%"%(stopDil,self.rtDil,self.rtpostdil[self.rndNum-1],extdil,self.extpostdil[self.rndNum-1],totalDil,fracRetained*100)
+        print("Total dilution from T7 to Pre-pcr Product = %.2f*%.2f*%.2f*%.2f*%.2f = %.2f, fraction retained=%.0f%%"%(stopDil,self.rtDil,self.rtpostdil[self.rndNum-1],extdil,self.extpostdil[self.rndNum-1],totalDil,fracRetained*100))
 
         if self.rtCarryForward and not keepCleaved:
             # Remove the extra samples
@@ -518,8 +520,8 @@ class PGMSelect(TRP):
             stop= stop[0:len(inputs)]
             
         if self.dopcr and not (keepCleaved and self.noPCRCleave):
-            print "######### PCR ############# %.0f min"%(clock.elapsed()/60)
-            print "PCR Volume: %.1f, Dilution: %.1f, volumes available for PCR: [%s]"%(pcrvol, pcrdil,",".join(["%.1f"%r.volume for r in rxs]))
+            print("######### PCR ############# %.0f min"%(clock.elapsed()/60))
+            print("PCR Volume: %.1f, Dilution: %.1f, volumes available for PCR: [%s]"%(pcrvol, pcrdil,",".join(["%.1f"%r.volume for r in rxs])))
 
             initConc=needDil*self.qConc/pcrdil
             if keepCleaved:
@@ -529,14 +531,14 @@ class PGMSelect(TRP):
                 
             gain=pcrgain(initConc,400,cycles)
             finalConc=min(200,initConc*gain)
-            print "Estimated starting concentration in PCR = %.1f nM, running %d cycles -> %.0f nM\n"%(needDil*self.qConc/pcrdil,cycles,finalConc)
+            print("Estimated starting concentration in PCR = %.1f nM, running %d cycles -> %.0f nM\n"%(needDil*self.qConc/pcrdil,cycles,finalConc))
             nsplit=int(math.ceil(pcrvol*1.0/self.maxPCRVolume))
-            print "Split each PCR into %d reactions"%nsplit
+            print("Split each PCR into %d reactions"%nsplit)
             sampNeeded=pcrvol/pcrdil
             if self.rtCarryForward and keepCleaved:
                 sampNeeded+=rtCarryForwardVol
             if keepCleaved and self.rtCarryForward:
-                print "Saving %.1f ul of each pre-PCR sample" % rtCarryForwardVol
+                print("Saving %.1f ul of each pre-PCR sample" % rtCarryForwardVol)
                 self.lastSaved=[Sample("%s.sv"%x.name,decklayout.DILPLATE) for x in rxs]
                 for i in range(len(rxs)):
                     # Save with rtCarryForwardDil dilution to reduce amount of RT consumed (will have Ct's 2-3 lower than others)
@@ -547,7 +549,7 @@ class PGMSelect(TRP):
             minvol=min([r.volume for r in rxs])
             maxpcrvol=(minvol-15-1.4*nsplit)*pcrdil
             if maxpcrvol<pcrvol:
-                print "Reducing PCR volume from %.1ful to %.1ful due to limited input"%(pcrvol, maxpcrvol)
+                print("Reducing PCR volume from %.1ful to %.1ful due to limited input"%(pcrvol, maxpcrvol))
                 pcrvol=maxpcrvol
 
             if keepCleaved:
@@ -581,12 +583,12 @@ class PGMSelect(TRP):
                         for b in bparts:
                             if not reagents.isReagent("P-%s"%b):
                                 reagents.add(name="P-%s"%b,conc=Concentration(2.67,0.4,'uM'),extraVol=30)
-                        print "PCR-%s"%bc
+                        print("PCR-%s"%bc)
                         self.e.stage("PCR-%s"%bc,reagents=[reagents.getsample("MTaqBar"),reagents.getsample("P-%s"%bparts[0]),reagents.getsample("P-%s"%bparts[1])],samples=[tgt],sources=[dil[i] ],volume=50,destMix=False)
                         bcout.append(tgt)
-                        print tgt.name,"wellMixed=",tgt.wellMixed
+                        print(tgt.name,"wellMixed=",tgt.wellMixed)
                         
-            print "Running PCR with master=",master,", primers=",primers
+            print("Running PCR with master=",master,", primers=",primers)
             pcr=self.runPCR(src=rxs*nsplit,vol=pcrvol/nsplit,srcdil=pcrdil,ncycles=cycles,primers=primers,usertime=self.usertime if keepCleaved else None,fastCycling=False,inPlace=False,master=master,lowhi=self.lowhi,annealTemp=57)
             if keepCleaved and self.regenPCRCycles is not None:
                 # Regenerate prefix
@@ -607,7 +609,7 @@ class PGMSelect(TRP):
                 
             #print "Volume remaining in PCR input source: [",",".join(["%.1f"%r.volume for r in rxs]),"]"
             needDil=finalConc/self.qConc
-            print "Projected final concentration = %.0f nM"%(needDil*self.qConc)
+            print("Projected final concentration = %.0f nM"%(needDil*self.qConc))
             for i in range(len(pcr)):
                 pcr[i].conc=Concentration(stock=finalConc,final=None,units='nM')
 
@@ -616,7 +618,7 @@ class PGMSelect(TRP):
                 maxSaveVol=(100 if self.savedilplate else 1500)*1.0/nsplit
 
                 if self.finalRound and nsplit==1 and self.savedilplate and pcrtgt is None:
-                    print "Skipping save of final PCR"
+                    print("Skipping save of final PCR")
                     sv=pcr
                 else:
                     sv=self.saveSamps(src=pcr[:len(rxs)],vol=[min([maxSaveVol,x.volume]) for x in pcr[:len(rxs)]],dil=1,plate=(decklayout.DILPLATE if self.savedilplate else decklayout.EPPENDORFS),tgt=pcrtgt)
@@ -632,12 +634,12 @@ class PGMSelect(TRP):
                     for i in range(len(sv)):
                         q.addSamples(sv[i],needDil,primers=primerSet[i],names=["%s.pcr"%names[i]])
 
-                print "Have %.2f pmoles of product (%.0f ul @ %.1f nM)"%(sv[0].volume*sv[0].conc.stock/1000,sv[0].volume,sv[0].conc.stock)
+                print("Have %.2f pmoles of product (%.0f ul @ %.1f nM)"%(sv[0].volume*sv[0].conc.stock/1000,sv[0].volume,sv[0].conc.stock))
 
                 # Save barcoded products too
                 if len(bcout)>0:
-                    print "bcout=",",".join(str(b) for b in bcout)
-                    print "mixed=",bcout[0].isMixed(),", wellMixed=",bcout[0].wellMixed
+                    print("bcout=",",".join(str(b) for b in bcout))
+                    print("mixed=",bcout[0].isMixed(),", wellMixed=",bcout[0].wellMixed)
                     bcsave=self.saveSamps(src=bcout,vol=[b.volume for b in bcout],dil=1,plate=decklayout.DILPLATE,mix=(False,False))
                 else:
                     bcsave=[]
@@ -648,7 +650,7 @@ class PGMSelect(TRP):
                 return (pcr[:len(rxs)],bcout)
             
         elif self.noPCRCleave:
-            print "Dilution instead of PCR: %.2f"%self.nopcrdil
+            print("Dilution instead of PCR: %.2f"%self.nopcrdil)
             # Need to add enough t7prefix to compensate for all of the Stop primer currently present, regardless of whether it is for cleaved or uncleaved
             # Will result in some short transcripts corresponding to the stop primers that are not used for cleaved product, producing just GGG_W_GTCTGC in the next round.  These would be reverse-trancribed, but may compete for T7 yield
             t7prefix=reagents.getsample("BT88")
@@ -656,7 +658,7 @@ class PGMSelect(TRP):
             stopconc=1000.0/dil
             bt88conc=t7prefix.conc.stock
             relbt88=stopconc/bt88conc
-            print "Using EXT with %.0fnM of stop oligo as input to next T7, need %.2ful of BT88@%.0fnM per ul of sample"%(stopconc,relbt88,bt88conc)
+            print("Using EXT with %.0fnM of stop oligo as input to next T7, need %.2ful of BT88@%.0fnM per ul of sample"%(stopconc,relbt88,bt88conc))
             for r in rxs:
                 vol=r.volume*relbt88
                 t7prefix.conc.final=t7prefix.conc.stock*vol/(r.volume+vol)
@@ -666,9 +668,9 @@ class PGMSelect(TRP):
             if self.nopcrdil>(1+relbt88):
                 self.diluteInPlace(tgt=rxs,dil=self.nopcrdil/(1.0+relbt88))
                 #needDil=needDil/self.nopcrdil  # needDil not used subsequently
-                print "Dilution of EXT product: %.2fx * %.2fx = %2.fx\n"%(1+relbt88,self.nopcrdil/(1+relbt88),self.nopcrdil)
+                print("Dilution of EXT product: %.2fx * %.2fx = %2.fx\n"%(1+relbt88,self.nopcrdil/(1+relbt88),self.nopcrdil))
             else:
-                print "Dilution of EXT product: %.2fx\n"%(1+relbt88)
+                print("Dilution of EXT product: %.2fx\n"%(1+relbt88))
 
             return (rxs,[])
         else:

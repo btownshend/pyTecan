@@ -1,6 +1,7 @@
 """Queue of jobs to be executed during idle times"""
 from Experiment.experiment import Experiment
 import logging
+from __future__ import print_function
 
 
 # noinspection PyShadowingBuiltins
@@ -64,7 +65,7 @@ class JobQueue(object):
     def dump(self):
         """Dump queue"""
         for id,j in self.jobs.iteritems():
-            print id,j
+            print(id,j)
 
     def getJob(self):
         """Return the next job on the queue to execute, removing it from queue"""
@@ -114,34 +115,34 @@ class JobQueue(object):
         job=self.jobs[id]
         self.runningJob=job
         if self.debug:
-            print "execJob(",id,"): ",
+            print("execJob(",id,"): ", end=' ')
         if job['type']=='shake':
             if job['sample'].isMixed():
                 if self.debug:
-                    print "no need to shake ",job['sample'].plate," because ",job['sample'].name," is already mixed.",
+                    print("no need to shake ",job['sample'].plate," because ",job['sample'].name," is already mixed.", end=' ')
             elif job['sample'].plate.maxspeeds is None:
                 if self.debug:
-                    print "Not shaking ",job['sample'].plate," because it is not compatible with shaker.",
+                    print("Not shaking ",job['sample'].plate," because it is not compatible with shaker.", end=' ')
             elif job['sample'].hasBeads:
                 if self.debug:
-                    print "Not shaking ",job['sample'].name," because it has beads"
+                    print("Not shaking ",job['sample'].name," because it has beads")
             else:
                 if self.debug:
-                    print "shaking ",job['sample'].plate," because ",job['sample'].name," is not mixed.",
+                    print("shaking ",job['sample'].plate," because ",job['sample'].name," is not mixed.", end=' ')
                 e.shake(job['sample'].plate)
         elif  job['type']=='transfer':
             if self.debug:
-                print " transfer(",job['volume'],", ",job['src'].name,",",job['dest'].name,")",
+                print(" transfer(",job['volume'],", ",job['src'].name,",",job['dest'].name,")", end=' ')
             e.transfer(job['volume'],job['src'],job['dest'],(True,False))
         elif  job['type']=='multitransfer':
             if self.debug:
-                print "multitransfer(",job['volume'],", ",job['src'].name,",".join([x.name for x in job['dest']]),")",
+                print("multitransfer(",job['volume'],", ",job['src'].name,",".join([x.name for x in job['dest']]),")", end=' ')
             e.multitransfer(job['volume'],job['src'],job['dest'])
         else:
             logging.error("Internal error")
 
         if self.debug:
-            print
+            print()
         self.removeJob(id)
         self.runningJob=None
 

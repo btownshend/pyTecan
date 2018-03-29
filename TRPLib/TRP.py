@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import argparse
 import os
 import sys
@@ -190,7 +192,7 @@ class TRP(object):
         if hasError:
             logging.error("NO OUTPUT DUE TO ERRORS")
             
-        print "Wells used:  samples: %d, dilutions: %d, qPCR: %d"%(Sample.numSamplesOnPlate(decklayout.SAMPLEPLATE),Sample.numSamplesOnPlate(decklayout.DILPLATE),Sample.numSamplesOnPlate(decklayout.QPCRPLATE))
+        print("Wells used:  samples: %d, dilutions: %d, qPCR: %d"%(Sample.numSamplesOnPlate(decklayout.SAMPLEPLATE),Sample.numSamplesOnPlate(decklayout.DILPLATE),Sample.numSamplesOnPlate(decklayout.QPCRPLATE)))
         # Save worklist to a file
         #e.saveworklist("trp1.gwl")
         (scriptname,ext)=os.path.splitext(sys.argv[0])
@@ -342,7 +344,7 @@ class TRP(object):
         else:
             pgm="T37-%d"%dur
         thermocycler.setpgm(pgm,38,'TEMP@37,%d TEMP@25,2'%(dur*60))
-        print "Running T7 at 37C for %d minutes"%dur
+        print("Running T7 at 37C for %d minutes"%dur)
         self.e.runpgm(pgm,dur, False,vol)
 
     def runT7Stop(self,theo,tgt,stopmaster=None):
@@ -601,7 +603,7 @@ class TRP(object):
             src[i].conc=None
 
         if stop is not None:
-            print 'runRTInPlace does not support adding stop'
+            print('runRTInPlace does not support adding stop')
             assert False
             
         self.runRxInPlace(src,vol,reagents.getsample("MPosRT"),returnPlate=False)
@@ -628,7 +630,7 @@ class TRP(object):
                     stop[i].conc.stock=stopConc[i]*4
                 
         if any([s is not None for s in stop]):
-            print "Adding stop:  [%s]"%(",".join(["%s@%.1fuM (stock=%.1fuM)"%(stop[i].name,stopConc[i],stop[i].conc.stock) for i in range(len(stop))]))
+            print("Adding stop:  [%s]"%(",".join(["%s@%.1fuM (stock=%.1fuM)"%(stop[i].name,stopConc[i],stop[i].conc.stock) for i in range(len(stop))])))
 
         stopvol=[ 0 if stop[i] is None else vol[i]*stopConc[i]/stop[i].conc.stock for i in range(len(vol))]
         #assert(min(stopvol)==max(stopvol))   # Assume all stop volumes are the same
@@ -647,16 +649,16 @@ class TRP(object):
         if heatInactivate:
             if hiTemp is None:
                 hiTemp=95
-                print "Assuming RT heat inactivation temperature of ",hiTemp
+                print("Assuming RT heat inactivation temperature of ",hiTemp)
             hidur=2
 
             thermocycler.setpgm(pgm,hiTemp+1,'TEMP@%d,%d TEMP@%d,%d TEMP@25,2 RATE@0.5'%(incTemp,dur*60,hiTemp,hidur*60))
             self.e.runpgm(pgm,dur+hidur+2.5,False,100)		# Volume doesn't matter since it's just an incubation, use 100ul
-            print "Running RT at %dC for %d min, followed by heat inactivation/refold at %dC for %d minutes"%(incTemp,dur,hiTemp,hidur)
+            print("Running RT at %dC for %d min, followed by heat inactivation/refold at %dC for %d minutes"%(incTemp,dur,hiTemp,hidur))
         else:
             thermocycler.setpgm(pgm,incTemp+1,'TEMP@%d,%d TEMP@25,2'%(incTemp,dur*60))
             self.e.runpgm(pgm,dur,False,100)		# Volume doesn't matter since it's just an incubation, use 100ul
-            print "Running RT at %dC for %d min without heat inactivation"%(incTemp,dur)
+            print("Running RT at %dC for %d min without heat inactivation"%(incTemp,dur))
  
     ########################
     # Incubation - run a single temp incubation followed by inactivation
@@ -691,16 +693,16 @@ class TRP(object):
             self.e.shakeSamples(tgt,returnPlate=(incTime is None))
 
         if incTime is None:
-            print "Setup only of incubation with %s"%enzymes[0].name
+            print("Setup only of incubation with %s"%enzymes[0].name)
         else:
             if hiTemp is None:
                 thermocycler.setpgm('INC',incTemp+10,'TEMP@%.0f,%.0f TEMP@25,30'%(incTemp,incTime*60))
-                print "Incubating at %dC for %d minutes without heat inactivation"%(incTemp, incTime)
+                print("Incubating at %dC for %d minutes without heat inactivation"%(incTemp, incTime))
                 hiTime=0
             else:
                 assert(hiTime>0)
                 thermocycler.setpgm('INC',hiTemp+1,'TEMP@%.0f,%.0f TEMP@%.0f,%.0f TEMP@25,30'%(incTemp,incTime*60,hiTemp,hiTime*60))
-                print "Incubating at %dC for %d minutes followed by heat inactivate at %dC for %d minutes"%(incTemp,incTime,hiTemp,hiTime)
+                print("Incubating at %dC for %d minutes followed by heat inactivate at %dC for %d minutes"%(incTemp,incTime,hiTemp,hiTime))
             self.e.runpgm("INC",incTime+hiTime+2,False,max(vol))
 
         return tgt
@@ -836,12 +838,12 @@ class TRP(object):
             cycling="TEMP@37,%d %s"%(usertime*60,cycling)
             runTime+=usertime
 
-        print "PCR volume=[",",".join(["%.1f"%t.volume for t in tgt]), "], srcdil=[",",".join(["%.1fx"%s for s in srcdil]),"], program: %s"%cycling
+        print("PCR volume=[",",".join(["%.1f"%t.volume for t in tgt]), "], srcdil=[",",".join(["%.1fx"%s for s in srcdil]),"], program: %s"%cycling)
 
         thermocycler.setpgm(pgm,99,cycling)
         self.e.runpgm(pgm,runTime,False,max(vol))
         # Mark samples as mixed (by thermal convection)
-        print "Marking samples as mixed (by thermal convection)"
+        print("Marking samples as mixed (by thermal convection)")
         for t in Sample.getAllOnPlate(tgt[0].plate):
             t.wellMixed=True
             t.lastMixed=clock.elapsed()
@@ -1028,7 +1030,7 @@ class TRP(object):
         parser.add_argument('-D','--dewpoint',type=float,help='Dew point',default=10.0)
         args=parser.parse_args()
         
-        print "Estimating evaporation for dew point of %.1f C"%args.dewpoint
+        print("Estimating evaporation for dew point of %.1f C"%args.dewpoint)
         globals.dewpoint=args.dewpoint
 
         self.reset()
@@ -1036,16 +1038,16 @@ class TRP(object):
         self.setup()
         if args.verbose:
             globals.verbose=True
-            print '------ Preliminary runs to set volume -----'
+            print('------ Preliminary runs to set volume -----')
         else:
             sys.stdout=open(os.devnull,'w')
         self.pgm()
         if args.verbose:
-            print '------ Second preliminary run to set volume -----'
+            print('------ Second preliminary run to set volume -----')
         self.reset()
         self.pgm()
         if args.verbose:
-            print '------ Main run -----'
+            print('------ Main run -----')
         else:
             sys.stdout=sys.__stdout__
         self.reset()
