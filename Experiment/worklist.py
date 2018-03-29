@@ -327,6 +327,7 @@ def aspirateDispense(op,tipMask,wells, liquidClass, volume, loc, cycles=None,all
         spacing=1
     else:
         spacing=2
+    assert spacing==1   # Not supporting higher spacing yet
     allvols=[0]*12
     tip=0
     tipTmp=tipMask
