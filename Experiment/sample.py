@@ -246,7 +246,7 @@ class Sample(object):
         """Convert a sample well number to a well position as used by Gemini worklist"""
         if self.well is None:
             return None
-        elif isinstance(self.well,(long,int)):
+        elif isinstance(self.well,int):
             ival=int(self.well)
             (col,row)=divmod(ival,self.plate.ny)
             col=col+1

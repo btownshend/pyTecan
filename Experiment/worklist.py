@@ -308,7 +308,7 @@ def aspirateDispense(op,tipMask,wells, liquidClass, volume, loc, cycles=None,all
     prevcol=None
     for i in range(len(wells)):
         well=wells[i]
-        if isinstance(well,(long,int)):
+        if isinstance(well,int):
             ival=int(well)
             (col,row)=divmod(ival,loc.ny)
             col=col+1

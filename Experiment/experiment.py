@@ -154,7 +154,7 @@ class Experiment(object):
         if self.tcrunning and (src.plate==decklayout.SAMPLEPLATE or len([1 for d in dests if d.plate==decklayout.SAMPLEPLATE])>0):
             self.waitpgm()
 
-        if isinstance(volumes,(int,long,float)):
+        if isinstance(volumes,(int,float)):
             # Same volume for each dest
             volumes=[volumes for _ in range(len(dests))]
         assert len(volumes)==len(dests)
