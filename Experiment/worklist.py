@@ -184,7 +184,7 @@ def optimizeQueue():
                 d2=opQueue[j]
                 merge=[d1[0],d1[1]|d2[1],d1[2]+d2[2],d1[3],d1[4]+d2[4],d1[5],d1[6],d1[7]+d2[7]]
                 # Reorder based on well order
-                ordering=sorted(range(len(merge[2])), key=lambda x: merge[2][x])
+                ordering=sorted(list(range(len(merge[2]))), key=lambda x: merge[2][x])
                 merge[2]=[merge[2][k] for k in ordering]
                 merge[4]=[merge[4][k] for k in ordering]
                 merge[7]=[merge[7][k] for k in ordering]

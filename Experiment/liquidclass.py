@@ -26,7 +26,7 @@ class LC(object):
     def printalllc(fd=sys.stdout):
         print("Liquid classes used:", file=fd)
         for lc in sorted(LC.__alllc, key=lambda p:p.name.upper()):
-            ops=lc.used.keys()
+            ops=list(lc.used.keys())
             if len(ops)>0:
                 print(lc.fullstr(), file=fd)
 
@@ -36,7 +36,7 @@ class LC(object):
 
     def fullstr(self):
         # Full details
-        return "%-20s"%self.name+"("+" ".join(self.used.keys())+") multi: (cond=%.1f, excess=%.1f, tag=%.1f)"%(self.multicond,self.multiexcess,self.multitag)+ ", single: (tag=%.1f, lag=%.1f)"%(self.singletag,self.singlelag)+", wetvol=%.1f"%self.wetvolume+", ldetect=%d"%self.ldetect
+        return "%-20s"%self.name+"("+" ".join(list(self.used.keys()))+") multi: (cond=%.1f, excess=%.1f, tag=%.1f)"%(self.multicond,self.multiexcess,self.multitag)+ ", single: (tag=%.1f, lag=%.1f)"%(self.singletag,self.singlelag)+", wetvol=%.1f"%self.wetvolume+", ldetect=%d"%self.ldetect
 
     def markUsed(self,op):
         self.used[op]=True

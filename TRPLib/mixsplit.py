@@ -18,7 +18,7 @@ def mixsplit(vols, samps=None, avail=None, minvol=4, minmix=0, maxmix=100, nextm
         samps=[Sample("%sIn_%d" % (prefix,i), plate=plate) for i in range(len(vols))]
     if avail is None:
         avail=[20 for v in vols]
-    sortord=sorted(range(len(vols)), key=lambda k: vols[k])
+    sortord=sorted(list(range(len(vols))), key=lambda k: vols[k])
     samps=[samps[i] for i in sortord]
     vols=[vols[i] for i in sortord]
     avail=[avail[i] for i in sortord]

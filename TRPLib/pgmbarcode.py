@@ -153,8 +153,8 @@ class Barcoding(TRP):
             if max(vol) < 4.0:
                 # All volumes are low, just too much
                 # Split into 2 stages
-                sel = range(int(len(inp) / 2))
-                nsel = range(int(len(inp) / 2), len(inp))
+                sel = list(range(int(len(inp) / 2)))
+                nsel = list(range(int(len(inp) / 2), len(inp)))
             else:
                 # Choose a splitting threshold
                 mindilution = 4.0 / min(vol)
