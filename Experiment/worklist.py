@@ -402,7 +402,7 @@ def getHashKey(grid,pos,well):
 def getHashCode(grid,pos,well):
     key=getHashKey(grid,pos,well)
     if key not in hashCodes:
-        hashCodes[key]=crc32(key)
+        hashCodes[key]=crc32(key.encode(encoding='utf8'))
     return hashCodes[key]
 
 def hashUpdate(op,tip,grid,pos,well,vol):
@@ -410,14 +410,14 @@ def hashUpdate(op,tip,grid,pos,well,vol):
     old=getHashCode(grid,pos,well)
     #oldTip=tipHash[tip]
     if op=="Dispense":
-        hashCodes[key]=crc32("%x"%tipHash[tip],old)
-        hashCodes[key]=crc32("+%.1f"%vol,hashCodes[key])
+        hashCodes[key]=crc32(("%x"%tipHash[tip]).encode('utf8'),old)
+        hashCodes[key]=crc32(("+%.1f"%vol).encode('utf8'),hashCodes[key])
     elif op=="Mix":
-        hashCodes[key]=crc32("M%.1f"%vol,old)
-        tipHash[tip]=crc32("Mix",tipHash[tip])
+        hashCodes[key]=crc32(("M%.1f"%vol).encode('utf8'),old)
+        tipHash[tip]=crc32("Mix".encode('utf8'), tipHash[tip])
     else:
         tipHash[tip]=old
-        hashCodes[key]=crc32("-%.1f"%vol,old)
+        hashCodes[key]=crc32(("-%.1f"%vol).encode('utf8'),old)
 
     #print "hashUpdate(%s,%s,%d,%d,%d,%d,%.1f) %06x,%06x -> %06x,%06x"%(key,op,tip,grid,pos,well,vol,old&0xffffff,oldTip&0xffffff,hashCodes[key]&0xffffff,tipHash[tip]&0xffffff)
 
