@@ -25,7 +25,7 @@ class JobQueue(object):
     def findPriors(self,sample,known):
         """Return any prior job entries that affect sample"""
         priors=[]
-        for i,j in self.jobs.iteritems():
+        for i,j in self.jobs.items():
             if j['type']=='transfer' and j['dest']==sample:
                 priors.append(i)
             elif j['type']=='multitransfer' and j['dest']==sample:
@@ -65,7 +65,7 @@ class JobQueue(object):
 
     def dump(self):
         """Dump queue"""
-        for id,j in self.jobs.iteritems():
+        for id,j in self.jobs.items():
             print(id,j)
 
     def getJob(self):
@@ -89,7 +89,7 @@ class JobQueue(object):
                 continue
             return id
 
-        for id,j in self.jobs.iteritems():
+        for id,j in self.jobs.items():
             if j['type']!='multitransfer' or len(j['prereqs'])>0 or  j['src'].plate.curloc!='Home'  or  j['dest'].plate.curloc!='Home':
                 continue
             # Combine with all other multitransfers from same src
@@ -148,7 +148,7 @@ class JobQueue(object):
         self.runningJob=None
 
     def removeJob(self,id):
-        for _,k in self.jobs.iteritems():
+        for _,k in self.jobs.items():
             k['prereqs']=k['prereqs'].difference([id])
         self.jobs.pop(id)
         #print "Removed job ",id

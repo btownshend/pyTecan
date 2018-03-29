@@ -7,7 +7,7 @@ def interpolate(dictionary, x0):
     """Interpolate a dictionary of x:y values at given x0 value using linear interpolation"""
     lowbound=None
     highbound=None
-    for x,y in dictionary.iteritems():
+    for x,y in dictionary.items():
         if x<=x0 and (lowbound is None or lowbound[0]<x):
             lowbound=(x,y)
         if x>=x0 and (highbound is None or highbound[0]>x):
