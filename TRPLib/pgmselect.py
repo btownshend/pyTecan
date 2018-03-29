@@ -318,7 +318,7 @@ class PGMSelect(TRP):
             assert dolig
         else:
             print("Starting new uncleaved round, will retain prefix: ",prefixIn)
-        print("stop=",stop,"prefixOut=",prefixOut,", prefixIn=",prefixIn,",t7vol=",t7vol,",rtvol=",rtvol,",pcrdil=",pcrdil,",cycles=",cycles,",dolig=",dolig)
+        print("stop=",stop,"prefixOut=",prefixOut,", prefixIn=",prefixIn,",t7vol=",round(t7vol,ndigits=2),",rtvol=",rtvol,",pcrdil=",pcrdil,",cycles=",cycles,",dolig=",dolig)
         if self.rtCarryForward:
             assert dolig
             
