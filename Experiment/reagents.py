@@ -2,6 +2,7 @@
 from __future__ import print_function
 
 import sys
+import operator
 from .sample import Sample
 from . import logging
 from . import decklayout
@@ -68,11 +69,11 @@ def reset():
         Reagent.allReagents[r].reset()
 
 def printprep(fd=sys.stdout):
-    for p in sorted(set([r.plate for r in Reagent.allReagents.itervalues()])):
+    for p in sorted(set([r.plate for r in Reagent.allReagents.values()]),key=operator.attrgetter('name')):
         print("\nPlate %s:"%p.name, file=fd)
         total=0
         extras=0
-        for r in sorted(Reagent.allReagents.itervalues(), key=lambda x:x.sample.well if x.sample is not None else None):
+        for r in sorted(iter(Reagent.allReagents.values()), key=lambda x:x.sample.well if x.sample is not None else 0):
             s=r.sample
             if s is None:
                 continue
