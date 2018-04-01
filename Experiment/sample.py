@@ -766,6 +766,7 @@ class Sample(object):
             if preaspirateAir:
                 # Aspirate some air to avoid mixing with excess volume aspirated into pipette from source in previous transfer
                 self.aspirateAir(tipMask,5)
+            # noinspection PyUnreachableCode,PyUnreachableCode
             if False:		# this results in losing mixprefillvol of sample which was not mixed; remainder has different concentration than planned
                 worklist.aspirateNC(tipMask,well,self.inliquidLC,mixprefillvol,self.plate)
                 self.removeVolume(mixprefillvol)

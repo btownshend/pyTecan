@@ -34,7 +34,7 @@ class Experiment(object):
     MAXVOLUME=200  # Maximum volume for pipetting in ul
 
     def __init__(self):
-        """Create a new experiment with given sample locations for water and WASTE;  totalTime is expected run time in seconds, if known"""
+        """Create a new experiment"""
         self.checksum=md5sum(sys.argv[0])
         self.checksum=self.checksum[-4:]
         pyTecan=os.path.dirname(os.path.realpath(__file__))
