@@ -101,7 +101,7 @@ class Constrict(TRP):
 
         for i in range(len(vol)):
             # Check if this would require more than available of any input
-            newscale= min(maxinpvol,inp[i].volume-inp[i].plate.unusableVolume-2)/vol[i]
+            newscale= min(maxinpvol,inp[i].volume-inp[i].plate.unusableVolume()-2)/vol[i]
             if newscale<1:
                 vol = [x * 1.0 * newscale for x in vol]
                 if tgtconc is not None:

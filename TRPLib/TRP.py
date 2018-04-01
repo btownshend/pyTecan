@@ -185,8 +185,8 @@ class TRP(object):
                 #hasError=True
             elif s.volume<2.5 and s.conc is not None and not s.emptied:
                 logging.warning("Low final volume for "+ s.name)
-            elif s.volume>s.plate.maxVolume:
-                logging.error("Excess final volume  (%.1f) for %s: maximum is %.1f ul"%(s.volume,s.name,s.plate.maxVolume))
+            elif s.volume>s.plate.plateType.maxVolume:
+                logging.error("Excess final volume  (%.1f) for %s: maximum is %.1f ul"%(s.volume,s.name,s.plate.plateType.maxVolume))
                 hasError=True
                 
         if hasError:

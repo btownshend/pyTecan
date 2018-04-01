@@ -98,7 +98,7 @@ def printprep(fd=sys.stdout):
                 print("%s%s in %s.%s consume %.1f ul, provide %.1f ul"%(s.name,c,s.plate.name,s.plate.wellname(s.well),r.initVol-s.volume,r.initVol), file=fd)
             total+=round((r.initVol-s.volume)*10)/10.0
             extras+=r.extraVol
-            if r.initVol>s.plate.maxVolume:
-                logging.error("Excess initial volume (%.1f) for %s, maximum is %.1f"%(r.initVol,s.name,s.plate.maxVolume))
+            if r.initVol>s.plate.plateType.maxVolume:
+                logging.error("Excess initial volume (%.1f) for %s, maximum is %.1f"%(r.initVol,s.name,s.plate.plateType.maxVolume))
         print("Total %s volume = %.1f ul (%.1f ul with extras)"%(p.name,total,total+extras), file=fd)
 

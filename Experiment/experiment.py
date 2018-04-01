@@ -17,6 +17,8 @@ import sys
 import subprocess
 import os
 
+decklayout.initWellKnownSamples()
+
 def md5sum(filename):
     hashval = md5()
     with open(filename, "rb") as f:
@@ -410,7 +412,7 @@ class Experiment(object):
         worklist.comment(cmt)
         #print "*",cmt
         thermocycler.lid(1)
-        self.moveplate(decklayout.SAMPLEPLATE,"TC")
+        self.moveplate(decklayout.SAMPLEPLATE,decklayout.TCPOS)
         worklist.vector("Hotel 1 Lid",decklayout.HOTELPOS,worklist.SAFETOEND,True,worklist.DONOTMOVE,worklist.CLOSE)
         worklist.vector("%slid"%thermocycler.cycler,decklayout.TCPOS,worklist.SAFETOEND,True,worklist.DONOTMOVE,worklist.OPEN)
         worklist.romahome()
@@ -424,48 +426,26 @@ class Experiment(object):
         if waitForCompletion:
             self.waitpgm()
 
-    def moveplate(self,plate,dest="Home",returnHome=True):
+    def moveplate(self,plate,dest=None,returnHome=True):
         if self.tcrunning and plate==decklayout.SAMPLEPLATE:
             self.waitpgm()
 
         # move to given destination (one of "Home","Magnet","Shaker","TC" )
-        if plate!=decklayout.SAMPLEPLATE and plate!=decklayout.DILPLATE:
-            logging.error("Only able to move %s or %s plates, not %s"%(decklayout.SAMPLEPLATE.name,decklayout.DILPLATE.name,plate.name))
+        if dest is None:
+            dest=plate.homeLocation
+        if plate.location.vectorName is None:
+            logging.error("moveplate: Attempt to move plate %s from %s, which doesn't have a vector"%(plate.name,plate.location))
+        if dest.vectorName is None:
+            logging.error("moveplate: Attempt to move plate %s to %s, which doesn't have a vector"%(plate.name,dest))
 
-        if plate.curloc==dest:
-            #print "Plate %s is already at %s"%(plate.name,dest)
-            return
-
-        #print "Move plate %s from %s to %s"%(plate.name,plate.curloc,dest)
+        # print("Move plate %s from %s to %s"%(plate.name,plate.location,destLoc))
         worklist.flushQueue()
         self.lihahome()
         cmt="moveplate %s %s"%(plate.name,dest)
         worklist.comment(cmt)
-        if plate.curloc=="Home":
-            worklist.vector(plate.vectorName,plate,worklist.SAFETOEND,True,worklist.DONOTMOVE,worklist.CLOSE)
-        elif plate.curloc=="Magnet":
-            worklist.vector("Magplate",decklayout.MAGPLATELOC,worklist.SAFETOEND,True,worklist.DONOTMOVE,worklist.CLOSE)
-        elif plate.curloc=="Shaker":
-            worklist.vector("Shaker",decklayout.SHAKERPLATELOC,worklist.SAFETOEND,True,worklist.DONOTMOVE,worklist.CLOSE)
-        elif plate.curloc=="TC":
-            worklist.vector(thermocycler.cycler,decklayout.TCPOS,worklist.SAFETOEND,True,worklist.DONOTMOVE,worklist.CLOSE)
-        else:
-            logging.error("Plate %s is in unknown location: %s"%(plate.name,plate.curloc))
-
-        if dest=="Home":
-            plate.movetoloc(dest)
-            worklist.vector(plate.vectorName,plate,worklist.SAFETOEND,True,worklist.DONOTMOVE,worklist.OPEN)
-        elif dest=="Magnet":
-            plate.movetoloc(dest,decklayout.MAGPLATELOC)
-            worklist.vector("Magplate",decklayout.MAGPLATELOC,worklist.SAFETOEND,True,worklist.DONOTMOVE,worklist.OPEN)
-        elif dest=="Shaker":
-            plate.movetoloc(dest,decklayout.SHAKERPLATELOC)
-            worklist.vector("Shaker",decklayout.SHAKERPLATELOC,worklist.SAFETOEND,True,worklist.DONOTMOVE,worklist.OPEN)
-        elif dest=="TC":
-            plate.movetoloc(dest,decklayout.TCPOS)
-            worklist.vector(thermocycler.cycler,decklayout.TCPOS,worklist.SAFETOEND,True,worklist.DONOTMOVE,worklist.OPEN)
-        else:
-            logging.error("Attempt to move plate %s to unknown location: %s"%(plate.name,dest))
+        worklist.vector(None,plate.location,worklist.SAFETOEND,True,worklist.DONOTMOVE,worklist.CLOSE)
+        plate.movetoloc(dest)
+        worklist.vector(None,dest,worklist.SAFETOEND,True,worklist.DONOTMOVE,worklist.OPEN)
 
         #Sample.addallhistory("{->%s}"%dest,onlyplate=plate.name)
         if returnHome:
@@ -477,7 +457,7 @@ class Experiment(object):
             self.waitpgm()
 
         for p in set([s.plate for s in samples if not s.isMixed()  ]):
-            if p.maxspeeds is not None:
+            if p.plateType.maxspeeds is not None:
                 self.shake(p,returnPlate=returnPlate,speed=speed,samps=[s for s in samples if s.plate==p],dur=dur,accel=accel)
 
     def shake(self,plate,dur=60,speed=None,accel=10,returnPlate=True,samps=None,force=False):
@@ -520,8 +500,8 @@ class Experiment(object):
         else:
             logging.notice("Mixing %s at %.0f RPM ( min RPM=%.0f, max RPM=%.f)"%(plate.name, speed, minspeed, maxspeed))
             
-        oldloc=plate.curloc
-        self.moveplate(plate,"Shaker",returnHome=False)
+        oldloc=plate.location
+        self.moveplate(plate,decklayout.SHAKERPLATELOC,returnHome=False)
         Experiment.__shakerActive=True
         worklist.pyrun("BioShake\\bioexec.py setElmLockPos")
         worklist.pyrun("BioShake\\bioexec.py setShakeTargetSpeed%.0f"%speed)
@@ -609,12 +589,12 @@ class Experiment(object):
             worklist.vector("PTC200WigglePos",decklayout.TCPOS,worklist.ENDTOSAFE,False,worklist.DONOTMOVE,worklist.DONOTMOVE)
 
         self.tcrunning=False
-        self.moveplate(decklayout.SAMPLEPLATE,"Home")
+        self.moveplate(decklayout.SAMPLEPLATE)  # Move HOME
         # Mark all samples on plate as unmixed (due to condensation)
         Sample.notMixed(decklayout.SAMPLEPLATE.name)
         # Verify plate is in place
-        worklist.vector(decklayout.SAMPLEPLATE.vectorName,decklayout.SAMPLEPLATE,worklist.SAFETOEND,False,worklist.DONOTMOVE,worklist.CLOSE)
-        worklist.vector(decklayout.SAMPLEPLATE.vectorName,decklayout.SAMPLEPLATE,worklist.ENDTOSAFE,False,worklist.OPEN,worklist.DONOTMOVE)
+        worklist.vector(None,decklayout.SAMPLELOC,worklist.SAFETOEND,False,worklist.DONOTMOVE,worklist.CLOSE)
+        worklist.vector(None,decklayout.SAMPLELOC,worklist.ENDTOSAFE,False,worklist.OPEN,worklist.DONOTMOVE)
         worklist.romahome()
         #worklist.userprompt("Plate should be back on deck. Press return to continue")
         # Wash tips again to remove any drips that may have formed while waiting for TC

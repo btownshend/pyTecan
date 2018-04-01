@@ -1,9 +1,11 @@
 import math
 from . import globals
 from . import logging
+from typing import Dict
 
+InterpDict = Dict[float, float]
 
-def interpolate(dictionary, x0):
+def interpolate(dictionary: InterpDict, x0: float):
     """Interpolate a dictionary of x:y values at given x0 value using linear interpolation"""
     lowbound=None
     highbound=None
@@ -27,7 +29,7 @@ def interpolate(dictionary, x0):
 class PlateType(object):
     """An object representing a type of microplate or other container ; includes a name, and physical parameters"""
 
-    def __init__(self,name, nx=12, ny=8,pierce=False,unusableVolume=5,maxVolume=200,zmax=None,angle=None,r1=None,h1=None,v0=None,gemDepth=None,gemArea=None,gemShape=None,vectorName=None,maxspeeds=None,glycerolmaxspeeds=None,glycerol=None,minspeeds=None):
+    def __init__(self,name: str, nx:int =12, ny:int=8,pierce:bool=False,unusableVolume:float=5,maxVolume:float=200,angle:float=None,r1:float=None,h1:float=None,v0:float=None,gemDepth:float=None,gemArea:float=None,gemShape:str=None,maxspeeds=None,glycerolmaxspeeds=None,glycerol:float=None,minspeeds=None):
         self.name=name
         self.unusableVolume=unusableVolume   # FIXME: unusableVolume did depend on where the plate was (was that for the magnet?)
         self.nx=nx
@@ -35,7 +37,6 @@ class PlateType(object):
         self.pierce=pierce
         self.maxVolume=maxVolume
         self.warned=False
-        self.zmax=zmax
         if angle is None:
             self.angle=None
         else:
@@ -46,21 +47,10 @@ class PlateType(object):
         self.gemDepth=gemDepth		  # Values programmed into Gemini so we can foretell what volumes Gemini will come up with for a given height
         self.gemArea=gemArea
         self.gemShape=gemShape
-        self.vectorName=vectorName		# Name of vector used for RoMa to pickup plate
         self.maxspeeds=maxspeeds
         self.glycerolmaxspeeds=glycerolmaxspeeds
         self.glycerol=glycerol			# Glycerol fraction for above speeds
         self.minspeeds=minspeeds
-
-    def markUsed(self,firstWell,lastWell=None):
-        first=self.wellnumber(firstWell)
-        if lastWell is None:
-            last=first
-        else:
-            last=self.wellnumber(lastWell)
-        self.wells=[w for w in self.wells if w<first or w>last]
-        logging.warning("Marking wells %s:%s on plate %s as unavailable: now have %d wells"%(firstWell,self.wellname(last),self.name,len(self.wells)))
-
 
     def getliquidheight(self,volume):
         """Get liquid height in mm above ZMax"""
@@ -83,7 +73,7 @@ class PlateType(object):
             #        print "%s,vol=%.1f, height=%.1f"%(self.name,volume,height)
         return height
 
-    def getliquidarea(self,volume):
+    def getliquidarea(self,volume:float):
         """Get surface area of liquid in mm^2 when filled to given volume"""
         if self.angle is None:
             if self.gemShape=='flat':
@@ -107,7 +97,7 @@ class PlateType(object):
         return area
 
     @staticmethod
-    def mixingratio(dewpoint):
+    def mixingratio(dewpoint:float):
         B=0.6219907  # kg/kg
         Tn=240.7263
         m=7.591386
@@ -117,7 +107,7 @@ class PlateType(object):
         mr=B*Pw/(Ptot-Pw)
         return mr
 
-    def getevaprate(self,volume,liquidTemp, vel=0):
+    def getevaprate(self,volume:float,liquidTemp:float, vel:float=0):
         """Get rate of evaporation of well in ul/min with given volume at specified liquidTemp and global dewpoint"""
         assert volume>=0
         EVAPFUDGE=0.69		# Fudge factor -- makes computed evaporation match up with observed
@@ -132,7 +122,7 @@ class PlateType(object):
         #print "Plate=%s,Air temp=%.1fC, DP=%.1fC, x=%.3f, xs=%.3f, vol=%.1f ul, area=%.0f mm^2, evaprate=%.3f ul/h"%(self.name,self.liquidTemp,globals.dewpoint,x,xs,volume,area,evaprate)
         return evaprate*EVAPFUDGE
 
-    def getliquidvolume(self,height):
+    def getliquidvolume(self,height:float):
         """Compute liquid volume given height above zmax in mm"""
         if self.angle is None:
             if self.gemShape=='flat':
@@ -148,7 +138,7 @@ class PlateType(object):
         #print "h0=",h0,", v1=",v1,", h=",height,", vol=",volume,", h=",self.getliquidheight(volume)
         return volume
 
-    def getgemliquidvolume(self,height):
+    def getgemliquidvolume(self,height:float):
         """Compute liquid volume given height above zmax in mm the way Gemini will do it"""
         if height is None:
             volume=None
@@ -166,7 +156,7 @@ class PlateType(object):
             volume=None
         return volume
 
-    def getgemliquidheight(self,volume):
+    def getgemliquidheight(self,volume:float):
         """Compute liquid height above zmax in mm given volume the way Gemini will do it"""
         if volume is None:
             height=None
@@ -184,14 +174,14 @@ class PlateType(object):
             height=None
         return height
 
-    def wellname(self,well):
+    def wellname(self,well:int):
         if well is None:
             return "None"
         col=well//self.ny
         row=well-col*self.ny
         return "%c%d"%(chr(65+row),col+1)
 
-    def wellnumber(self,wellname):
+    def wellnumber(self,wellname:str):
         """Convert a wellname, such as "A3" to a well index -- inverse of wellname()"""
         for i in range(self.nx*self.ny):
             if self.wellname(i)==wellname:
