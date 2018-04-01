@@ -6,11 +6,13 @@ import operator
 from .sample import Sample
 from . import logging
 from . import decklayout
+from .concentration import Concentration
+from .plate import Plate
 
 class Reagent(object):
     allReagents={}
 
-    def __init__(self, name, plate=None, well=None, conc=None, hasBeads=False, extraVol=50, initVol=0, extrainfo=None, ingredients=None):
+    def __init__(self, name:str , plate:Plate=None, well:str=None, conc:Concentration=None, hasBeads:bool=False, extraVol:float=50, initVol:float=0, extrainfo=None, ingredients=None):
         if extrainfo is None:
             extrainfo = []
         self.sample=None
@@ -51,16 +53,16 @@ class Reagent(object):
                 self.initVol+=adj
             self.sample=None
 
-def isReagent(name):
+def isReagent(name:str):
     return name in Reagent.allReagents
 
-def getsample(name):
+def getsample(name:str):
     return Reagent.allReagents[name].getsample()
 
-def lookup(name):
+def lookup(name:str):
     return Reagent.allReagents[name]
 
-def add(name, plate=None, well=None, conc=None, hasBeads=False, extraVol=50, initVol=0, extrainfo=None, ingredients=None):
+def add(name, plate:Plate=None, well=None, conc:Concentration=None, hasBeads:bool=False, extraVol:float=50, initVol:float=0, extrainfo=None, ingredients=None):
     if extrainfo is None:
         extrainfo = []
     if plate is None:
