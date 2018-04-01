@@ -1,8 +1,8 @@
+from . import decklayout
 from . import worklist
-from . import plate
 
 #aspirate(1,"LC",[1,3,4],1,2,3,"wells")
-plate1=plate.Plate("Samples",4,3,12,8)
+plate1=decklayout.SAMPLEPLATE
 worklist.aspirate(7,['B3','D3','E3'],"Water",[10,20,30],plate1)
 worklist.aspirate(7,['B4','D4','F4'],"Water",[10,20,30],plate1)
 worklist.aspirate(1,['B1'],"Water",[10],plate1)

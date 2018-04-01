@@ -9,9 +9,9 @@ from zlib import crc32
 from . import clock
 from . import logging
 from .plate import Plate
+from .platelocation import PlateLocation
+from .decklayout import QPCRLOC,WASHLOC
 
-WASHLOC=Plate("Wash",1,2,1,8,False,0)    # Duplicate of what's in decklayout.py -- but don't want to include all those dependencies...
-QPCRLOC=Plate("qPCR",4,1,12,8,False,0)    # Duplicate of what's in decklayout.py -- but don't want to include all those dependencies...
 
 DITI200=0
 DITI10=2
@@ -105,7 +105,7 @@ def optimizeQueue():
     # 2:wells
     # 3:liquidClass
     # 4:volume
-    # 5:loc
+    # 5:plate
     # 6:cycles
     # 7:id number
 
@@ -116,7 +116,7 @@ def optimizeQueue():
         dependencies.append(set())
         for j in range(i):
             dp=opQueue[j]
-            if d[5].grid==dp[5].grid and d[5].pos==dp[5].pos and d[2]==dp[2]: # and d[0]!=dp[0]:
+            if d[5].location==dp[5].location and d[2]==dp[2]: # and d[0]!=dp[0]:
                 # Multiple operations from same location (NOT ok to reorder multiple aspirates or dispenses from same location)
                 dependencies[i] |= dependencies[j]
                 dependencies[i].add(j)
@@ -138,16 +138,16 @@ def optimizeQueue():
             d2=opQueue[j]
             if d1[0]==d2[0]  and d1[1]!=d2[1] and d1[5]==d2[5]:
                 if optimizeDebug:
-                    print("  CHECK %s %s:\tTip %d, Loc (%d,%d) Wells %s"%(d1[7],d1[0],d1[1],d1[5].grid,d1[5].pos,str(d1[2])))
-                    print("   WITH %s %s:\tTip %d, Loc (%d,%d) Wells %s"%(d2[7],d2[0],d2[1],d2[5].grid,d2[5].pos,str(d2[2])), end=' ')
+                    print("  CHECK %s %s:\tTip %d, Loc %s Wells %s"%(d1[7],d1[0],d1[1],d1[5].location,str(d1[2])))
+                    print("   WITH %s %s:\tTip %d, Loc %s Wells %s"%(d2[7],d2[0],d2[1],d2[5].location,str(d2[2])), end=' ')
                 tipdiff=math.log(d2[1],2)-math.floor(math.log(d1[1],2))
                 welldiff=d2[2][0]-max(d1[2])
                 if tipdiff!=welldiff:
                     if optimizeDebug:
                         print("  tipdiff (%d) != welldiff(%d)"%(tipdiff,welldiff))
-                elif d1[2][0]//d1[5].ny != d2[2][0]//d2[5].ny:
+                elif d1[2][0]//d1[5].plateType.ny != d2[2][0]//d2[5].plateType.ny:
                     if optimizeDebug:
-                        print("  wells in different columns of %d-row plate"%d1[5].ny)
+                        print("  wells in different columns of %d-row plate"%d1[5].plateType.ny)
                 elif d1[3].name!=d2[3].name:
                     if optimizeDebug:
                         print("  liquid classes different",d1[3],d2[3])
@@ -162,7 +162,7 @@ def optimizeQueue():
     if optimizeDebug:
         for i in range(len(opQueue)):
             d=opQueue[i]
-            print("PRE-OPT %s:  %s:\tTip %d, Loc (%d,%d) Wells %s, Vol %s, depends on %s, merges with %s"%(d[7],d[0],d[1],d[5].grid,d[5].pos,str(d[2]),d[4],dependencies[i],mergeable[i]))
+            print("PRE-OPT %s:  %s:\tTip %d, Loc %s Wells %s, Vol %s, depends on %s, merges with %s"%(d[7],d[0],d[1],d[5].location,str(d[2]),d[4],dependencies[i],mergeable[i]))
 
     # Try to combine multiple operations into one command
     todelete=[]
@@ -198,7 +198,9 @@ def optimizeQueue():
                 mergeable[i] &= mergeable[j]
                 #comment("Merged operations")
                 if optimizeDebug:
-                    print("MERGED %s %s:\tTip %d, Loc (%d,%d) Wells %s depends on %s, merges with %s, vol=%s "%(merge[7],merge[0],merge[1],merge[5].grid,merge[5].pos,str(merge[2]),dependencies[i],mergeable[i],merge[4]))
+                    assert isinstance(merge[5], PlateLocation)
+                    # noinspection PyUnresolvedReferences,PyStringFormat
+                    print("MERGED %s %s:\tTip %d, Loc %s Wells %s depends on %s, merges with %s, vol=%s "%(merge[7],merge[0],merge[1],merge[5].location,str(merge[2]),dependencies[i],mergeable[i],merge[4]))
 
         # Finished doing all the merges we can do with the current set of operations that don't depend on any prior operations
         # Find something to emit/delete
@@ -223,7 +225,7 @@ def optimizeQueue():
     for i in range(len(opQueue)):
         d=opQueue[i]
         if optimizeDebug:
-            print("POST-OPT %s:  %s:\tTip %d, Loc (%d,%d) Wells %s"%(d[7],d[0],d[1],d[5].grid,d[5].pos,str(d[2])))
+            print("POST-OPT %s:  %s:\tTip %d, Loc %s Wells %s"%(d[7],d[0],d[1],d[5].location,str(d[2])))
 
 def flushQueue():
     global delayEnabled,opQueue
@@ -253,13 +255,14 @@ def mix(tipMask,wells, liquidClass, volume, loc, cycles=3, allowDelay=True):
 def detectLiquid(tipMask,wells,liquidClass,loc):
     aspirateDispense('Detect_Liquid',tipMask,wells, liquidClass, [0.0 for _ in wells], loc,allowDelay=False)
 
-def aspirateDispense(op,tipMask,wells, liquidClass, volume, loc, cycles=None,allowDelay=True):
+def aspirateDispense(op,tipMask,wells, liquidClass, volume, plate, cycles=None,allowDelay=True):
     """Execute or queue liquid handling operation"""
-    assert isinstance(loc,Plate)
-
+    assert isinstance(plate,Plate)
+    loc=plate.location
+    
     if loc.pos==0 or loc.grid>=25:
         # Attempting to use LiHa in ROMA-Only area
-        logging.error("Attempt to %s to/from %s at position (%d,%d), which is in ROMA-only area not accessible to LiHa"%(op,loc.name,loc.grid,loc.pos))
+        logging.error("Attempt to %s to/from %s at position %s, which is in ROMA-only area not accessible to LiHa"%(op,loc.name,loc))
 
     liquidClass.markUsed(op)
 
@@ -267,7 +270,7 @@ def aspirateDispense(op,tipMask,wells, liquidClass, volume, loc, cycles=None,all
         volume=[volume]*len(wells)
 
     if delayEnabled and allowDelay:
-        opQueue.append([op,tipMask,wells,liquidClass,volume,loc,cycles])
+        opQueue.append([op,tipMask,wells,liquidClass,volume,plate,cycles])
 #            comment("*Queued: %s tip=%d well=%s.%s vol=%s lc=%s"%(op,tipMask,str(loc),str(wells),str(volume),str(liquidClass)))
         return
 
@@ -282,7 +285,7 @@ def aspirateDispense(op,tipMask,wells, liquidClass, volume, loc, cycles=None,all
     elif op=='Detect_Liquid':
         clock.pipetting+=2.90
 
-    comment("*%s tip=%d well=%s.%s vol=%s lc=%s"%(op,tipMask,str(loc),str(wells),str(volume),str(liquidClass)))
+    comment("*%s tip=%d well=%s.%s vol=%s lc=%s"%(op,tipMask,str(plate),str(wells),str(volume),str(liquidClass)))
     # Update volumes
     for i in range(len(wells)):
         well=wells[i]
@@ -310,14 +313,14 @@ def aspirateDispense(op,tipMask,wells, liquidClass, volume, loc, cycles=None,all
         well=wells[i]
         if isinstance(well,int):
             ival=int(well)
-            (col,row)=divmod(ival,loc.ny)
+            (col,row)=divmod(ival,plate.plateType.ny)
             col=col+1
             row=row+1
         else:
             col=int(well[1:])
             row=ord(well[0])-ord('A')+1
-        assert 1 <= row <= loc.ny and 1 <= col <= loc.nx
-        pos[i]=(row-1)+loc.ny*(col-1)
+        assert 1 <= row <= plate.plateType.ny and 1 <= col <= plate.plateType.nx
+        pos[i]=(row-1)+plate.plateType.ny*(col-1)
         if i>0:
             assert col==prevcol
         prevcol=col
@@ -349,7 +352,7 @@ def aspirateDispense(op,tipMask,wells, liquidClass, volume, loc, cycles=None,all
         print("pos[0]=",pos[0])
         print("spacing=",spacing)
 
-    ws=wellSelection(loc.nx,loc.ny,pos)
+    ws=wellSelection(plate.plateType.nx,plate.plateType.ny,pos)
     condvol=""  # Initialize to avoid warnings below
     if op=='Aspirate':
         if allvols[0]>0:
@@ -513,7 +516,7 @@ def periodicWash(tipMask,period):
     atFreq=1000  # Hz, For Active tip
     wlist.append('Periodic_Wash(%d,%d,%d,%d,%d,%.1f,%d,%.1f,%d,%.1f,%d,%d,%d,%d,%d,%d)'%(tipMask,wasteLoc[0],wasteLoc[1],cleanerLoc[0],cleanerLoc[1],wasteVol,wasteDelay,cleanerVol,cleanerDelay,airgap, airgapSpeed, retractSpeed, fastWash, lowVolume, period, atFreq))
 
-def vector(vec, loc, direction, andBack, initialAction, finalAction, slow=False):
+def vector(vectorName, loc, direction, andBack, initialAction, finalAction, slow=False):
     """Move ROMA.  Gripper actions=0 (open), 1 (close), 2 (do not move)."""
     #comment("*ROMA Vector %s"%vector)
     if slow:
@@ -524,7 +527,9 @@ def vector(vec, loc, direction, andBack, initialAction, finalAction, slow=False)
         andBack=1
     else:
         andBack=0
-    wlist.append('Vector("%s",%d,%d,%d,%d,%d,%d,%d,0)' % (vec, loc.grid, loc.pos, direction, andBack, initialAction, finalAction, speed))
+    if vectorName is None:
+        vectorName=loc.vectorName
+    wlist.append('Vector("%s",%d,%d,%d,%d,%d,%d,%d,0)' % (vectorName, loc.grid, loc.pos, direction, andBack, initialAction, finalAction, speed))
     clock.pipetting+=5.16
 
 def romahome():

@@ -7,8 +7,9 @@ from . import worklist
 from .concentration import Concentration
 from . import clock
 from . import logging
-from .plate import interpolate
+from .platetype import interpolate
 from . import db
+from .decklayout import MAGPLATELOC
 
 MAXVOLUME=200
 MINLIQUIDDETECTVOLUME=15
@@ -156,7 +157,7 @@ class Sample(object):
             elif well==-1:
                 well=None
 
-            if well is not None and well>=plate.nx*plate.ny:
+            if well is not None and well>=plate.plateType.nx*plate.plateType.ny:
                 # Overflow
                 if plate.backupPlate is not None:
                     # Overflow onto backup plate
@@ -201,7 +202,7 @@ class Sample(object):
 
         self.checkingredients()
 
-        if plate.pierce:
+        if plate.plateType.pierce:
             self.bottomLC=liquidclass.LCWaterPierce
             self.bottomSideLC=self.bottomLC  # Can't use side with piercing
             self.inliquidLC=self.bottomLC  # Can't use liquid detection when piercing
@@ -248,20 +249,20 @@ class Sample(object):
             return None
         elif isinstance(self.well,int):
             ival=int(self.well)
-            (col,row)=divmod(ival,self.plate.ny)
+            (col,row)=divmod(ival,self.plate.plateType.ny)
             col=col+1
             row=row+1
         else:
             col=int(self.well[1:])
             # noinspection PyUnresolvedReferences
             row=ord(self.well[0])-ord('A')+1
-        assert 1 <= row <= self.plate.ny and 1 <= col <= self.plate.nx
-        wellpos=(row-1)+self.plate.ny*(col-1)
+        assert 1 <= row <= self.plate.plateType.ny and 1 <= col <= self.plate.plateType.nx
+        wellpos=(row-1)+self.plate.plateType.ny*(col-1)
         #print "sampleWellPosition(%d) -> %d"%(self.well,wellpos)
         return wellpos
 
     def getHash(self):
-        return worklist.getHashCode(grid=self.plate.grid,pos=self.plate.pos-1,well=self.sampleWellPosition())
+        return worklist.getHashCode(grid=self.plate.location.grid,pos=self.plate.location.pos-1,well=self.sampleWellPosition())
 
     @classmethod
     def clearall(cls):
@@ -354,7 +355,7 @@ class Sample(object):
             if nloop>0:
                 volume=self.volume-removed-tgtVolume+volume
             lc=self.chooseLC(volume)
-            if self.hasBeads and self.plate.curloc=="Magnet":
+            if self.hasBeads and self.plate.location==MAGPLATELOC:
                 # With beads don't do any manual conditioning and don't remove extra (since we usually want to control exact amounts left behind, if any)
                 removed=lc.volRemoved(volume,multi=False)
             else:
@@ -382,7 +383,7 @@ class Sample(object):
             logging.warning( "No volume equation for %s, skipping initial volume check"%self.name)
             return
 
-        volcrit=self.plate.unusableVolume*0.8+volToRemove
+        volcrit=self.plate.unusableVolume()*0.8+volToRemove
         volwarn=max(volcrit,self.volume*0.80,self.volume+50)
         
         heightwarn=min(self.plate.getliquidheight(volwarn),height-1.0)	# threshold is lower of 1mm or 80%
@@ -433,8 +434,8 @@ class Sample(object):
 
     def aspirate(self,tipMask,volume,multi=False):
         self.evapcheck('aspirate')
-        if self.plate.curloc=='TC':
-            logging.error( "Aspirate from TC!, loc=%d,%d"%(self.plate.grid,self.plate.pos))
+        if self.plate.location.zmax is None:
+            logging.error( "Aspirate from illegal location: %s" % self.plate.location)
 
         removeAll=volume==self.volume
         if removeAll:
@@ -447,12 +448,12 @@ class Sample(object):
             logging.warning("Inaccurate for < 2ul:  attempting to aspirate %.1f ul from %s"%(volume,self.name))
         if volume>self.volume > 0:
             logging.error("Attempt to aspirate %.1f ul from %s that contains only %.1f ul"%(volume, self.name, self.volume))
-        if not self.isMixed() and self.plate.curloc!="Magnet":
+        if not self.isMixed() and self.plate.location!=MAGPLATELOC:
             if self.hasBeads and self.lastMixed is not None:
                 logging.mixwarning("Aspirate %.1f ul from sample %s that has beads and has not been mixed for %.0f sec. "%(volume,self.name,clock.elapsed()-self.lastMixed))
             else:
                 logging.mixwarning("Aspirate %.1f ul from unmixed sample %s. "%(volume,self.name))
-        if not self.wellMixed and self.plate.curloc!="Magnet":
+        if not self.wellMixed and self.plate.location!=MAGPLATELOC:
             logging.mixwarning("Aspirate %.1f ul from poorly mixed sample %s (shake speed was too low). "%(volume,self.name))
 
         if self.well is None:
@@ -467,7 +468,7 @@ class Sample(object):
             
         self.volcheck(tipMask,well,volume)
 
-        if (self.hasBeads and self.plate.curloc=="Magnet") or removeAll:
+        if (self.hasBeads and self.plate.location==MAGPLATELOC) or removeAll:
             # With beads don't do any manual conditioning and don't remove extra (since we usually want to control exact amounts left behind, if any)
             worklist.aspirateNC(tipMask,well,lc,volume,self.plate)
             remove=lc.volRemoved(volume,multi=False)
@@ -485,8 +486,8 @@ class Sample(object):
                 remove=self.volume-0.1   # Leave residual
 
         self.removeVolume(remove)
-        if self.volume+.001<self.plate.unusableVolume and self.volume+remove>0 and not (self.hasBeads and self.plate.curloc=='Magnet') and not removeAll:
-            logging.warning("Aspiration of %.1ful from %s brings volume down to %.1ful which is less than its unusable volume of %.1f ul"%(remove,self.name,self.volume,self.plate.unusableVolume))
+        if self.volume+.001<self.plate.unusableVolume() and self.volume+remove>0 and not (self.hasBeads and self.plate.location==MAGPLATELOC) and not removeAll:
+            logging.warning("Aspiration of %.1ful from %s brings volume down to %.1ful which is less than its unusable volume of %.1f ul"%(remove,self.name,self.volume,self.plate.unusableVolume()))
             
         self.addhistory("",-remove,tipMask)
         #self.addhistory("[%06x]"%(self.getHash(w)&0xffffff),-remove,tipMask)
@@ -509,8 +510,8 @@ class Sample(object):
 
     def dispense(self,tipMask,volume,src):
         self.evapcheck('dispense')
-        if self.plate.curloc=='TC':
-            logging.error("Dispense to TC!, loc=(%d,%d)"%(self.plate.grid,self.plate.pos))
+        if self.plate.location.zmax is None:
+            logging.error( "Dispense to illegal location: %s"%self.plate.location)
 
         if volume<0.1:
             logging.notice("attempt to dispense only %.1f ul to %s ignored"%(volume,self.name))
@@ -524,10 +525,10 @@ class Sample(object):
         if self.well is None:
             logging.warning("Dispense with well is None, not sure what right logic is..., using well=%d"%well[0])
 
-        if self.volume+volume > self.plate.maxVolume:
-            logging.error("Dispense of %.1ful into %s results in total of %.1ful which is more than the maximum volume of %.1f ul"%(volume,self.name,self.volume+volume,self.plate.maxVolume))
+        if self.volume+volume > self.plate.plateType.maxVolume:
+            logging.error("Dispense of %.1ful into %s results in total of %.1ful which is more than the maximum volume of %.1f ul"%(volume,self.name,self.volume+volume,self.plate.plateType.maxVolume))
 
-        if self.hasBeads and self.plate.curloc=="Magnet":
+        if self.hasBeads and self.plate.location==MAGPLATELOC:
             worklist.dispense(tipMask,well,self.beadsLC,volume,self.plate)
         elif self.volume>=MINLIQUIDDETECTVOLUME:
             worklist.dispense(tipMask,well,self.inliquidLC,volume,self.plate)
@@ -562,7 +563,7 @@ class Sample(object):
             self.lastMixed=None
             self.wellMixed=False
 
-        if src.hasBeads and src.plate.curloc!="Magnet":
+        if src.hasBeads and src.plate.location!=MAGPLATELOC:
             #print "Set %s to have beads since %s does\n"%(self.name,src.name)
             self.hasBeads=True
 
@@ -649,7 +650,7 @@ class Sample(object):
     def addingredients(self,src,vol):
         """Update ingredients by adding ingredients from src"""
         for k in src.ingredients:
-            if src.plate.curloc=="Magnet" and k=='BIND-UNUSED':
+            if src.plate.location==MAGPLATELOC and k=='BIND-UNUSED':
                 pass  # Wasn't transferred
             else:
                 addition=src.ingredients[k]/src.volume*vol
@@ -668,16 +669,18 @@ class Sample(object):
 
     def getmixspeeds(self):
         """Get minimum, maximum speed for mixing this sample"""
+        ptype=self.plate.plateType
+
         if self.isMixed():
             minspeed=0
         else:
-            minspeed=interpolate(self.plate.minspeeds,self.volume)
+            minspeed=interpolate(ptype.minspeeds,self.volume)
             if minspeed is None:
                 assumeSpeed=1900
                 logging.notice("No shaker min speed data for volume of %.0f ul, assuming %.0f rpm"%(self.volume,assumeSpeed))
                 minspeed=assumeSpeed
 
-        maxspeed=interpolate(self.plate.maxspeeds,self.volume)
+        maxspeed=interpolate(ptype.maxspeeds,self.volume)
         if maxspeed is None:
             assumeSpeed=1200
             logging.warning("No shaker max speed data for volume of %.0f ul, assuming %.0f rpm"%(self.volume,assumeSpeed))
@@ -685,16 +688,16 @@ class Sample(object):
             
         glycerol=self.glycerolfrac()
         if glycerol>0:
-            gmaxspeed=interpolate(self.plate.glycerolmaxspeeds,self.volume)
+            gmaxspeed=interpolate(ptype.glycerolmaxspeeds,self.volume)
             if gmaxspeed is None:
                 logging.warning("No shaker max speed data for glycerol with volume of %.0f ul, using no-glycerol speed of  %.0f rpm"%(self.volume,maxspeed))
                 gmaxspeed=maxspeed
 
-            if glycerol>self.plate.glycerol:
-                logging.notice("Sample %s contains %.1f%% Glycerol (more than tested of %.1f%%)"%(self.name,glycerol*100,self.plate.glycerol*100))
+            if glycerol>ptype.glycerol:
+                logging.notice("Sample %s contains %.1f%% Glycerol (more than tested of %.1f%%)"%(self.name,glycerol*100,ptype.glycerol*100))
                 maxspeed=gmaxspeed
             else:
-                maxspeed=maxspeed+(gmaxspeed-maxspeed)*(glycerol/self.plate.glycerol)
+                maxspeed=maxspeed+(gmaxspeed-maxspeed)*(glycerol/ptype.glycerol)
             if maxspeed<minspeed:
                 logging.notice("%s with %.1ful and %.1f%% glycerol has minspeed of %.0f greater than maxspeed of %.0f"%(self.name,self.volume,glycerol*100,minspeed,maxspeed))
                 minspeed=maxspeed	# Glycerol presence should also reduce minspeed
@@ -731,7 +734,7 @@ class Sample(object):
         # No liquid detect:
         if self.volume==0 and aspirateVolume==0:
             return self.emptyLC
-        elif self.hasBeads and self.plate.curloc=="Magnet":
+        elif self.hasBeads and self.plate.location==MAGPLATELOC:
             return self.beadsLC
         else:
             return self.bottomLC
@@ -749,13 +752,13 @@ class Sample(object):
         extraspace=blowvol+0.1
         if preaspirateAir:
             extraspace+=5
-        mixvol=self.volume		  # -self.plate.unusableVolume;  # Can mix entire volume, if air is aspirated, it will just be dispensed first without making a bubble
+        mixvol=self.volume		  # -self.plate.unusableVolume();  # Can mix entire volume, if air is aspirated, it will just be dispensed first without making a bubble
         if self.volume>MAXVOLUME-extraspace:
             mixvol=MAXVOLUME-extraspace
             logging.mixwarning("Mix of %s limited to %.0f ul instead of full volume of %.0ful"%(self.name,mixvol,self.volume))
         well=[self.well if self.well is not None else 2 ** (tipMask - 1) - 1]
         mixprefillvol=5
-        if mixvol<self.plate.unusableVolume-mixprefillvol:
+        if mixvol<self.plate.unusableVolume()-mixprefillvol:
             logging.notice("Not enough volume in sample %s (%.1f) to mix"%(self.name,self.volume))
             self.history+="(UNMIXED)"
             return False
@@ -763,6 +766,7 @@ class Sample(object):
             if preaspirateAir:
                 # Aspirate some air to avoid mixing with excess volume aspirated into pipette from source in previous transfer
                 self.aspirateAir(tipMask,5)
+            # noinspection PyUnreachableCode,PyUnreachableCode
             if False:		# this results in losing mixprefillvol of sample which was not mixed; remainder has different concentration than planned
                 worklist.aspirateNC(tipMask,well,self.inliquidLC,mixprefillvol,self.plate)
                 self.removeVolume(mixprefillvol)

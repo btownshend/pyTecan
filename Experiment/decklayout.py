@@ -1,18 +1,11 @@
 import os
 from .plate import Plate
-from .sample import Sample
+from .platetype import PlateType
+from .platelocation import PlateLocation
+
 from .liquidclass import LCBleachMix
-# noinspection PyUnresolvedReferences
-from .worklist import WASHLOC, QPCRLOC
 
-############ Plates and plate locations  #############
-#WASHLOC=Plate("Wash",1,2,1,8,False,0)   # Defined in worklist
-
-# Use dimensional data from Robot/Calibration/20150302-LiquidHeights
-#REAGENTPLATE=Plate("Reagents",18,1,6,5,False,unusableVolume=20,maxVolume=1700,zmax=569,angle=17.5,r1=4.062,h1=17.75,v0=13.7,slopex=-0.022,slopey=-0.038,gemDepth=24.45,gemArea=51.61,gemHOffset=-7.15,gemShape='v-shaped')  
-#REAGENTPLATE=Plate("Reagents",18,1,6,5,False,unusableVolume=20,maxVolume=1700,zmax=569,angle=17.5,r1=4.062,h1=17.75,v0=13.7,slopex=-0.022,slopey=-0.038,gemDepth=13.83,gemArea=51.84,gemHOffset=0,gemShape='v-shaped')
-REAGENTPLATE=Plate("Reagents",18,1,6,5,False,unusableVolume=20,maxVolume=1700,zmax=569,angle=17.5,r1=4.062,h1=17.75,v0=13.7,slopex=-0.022,slopey=-0.038,gemDepth=9.59,gemArea=43.03,gemShape='v-shaped',liquidTemp=12)
-MAGPLATELOC=Plate("MagPlate",18,2,12,8,False,unusableVolume=9,maxVolume=200,zmax=1459,angle=17.5,r1=2.80,h1=10.04,v0=10.8)   # HSP9601 on magnetic plate  (Use same well dimensions as SAMPLE)
+############ Plate types  #############
 hspmaxspeeds={200:1400,150:1600,100:1850,50:2000,20:2200}	# From shaketest experiment
 grenmaxspeeds={150:1750,125:1900,100:1950,75:2200,50:2200}	# From shaketest experiment
 eppmaxspeeds={170:1200,119:1225,112:1300,91:1450,67:1600,58: 1700,40:1900,20:2000,0:2150} # From 10/24/17-run3
@@ -23,28 +16,47 @@ eppmaxspeeds={170:1200,119:1225,112:1300,91:1450,67:1600,58: 1700,40:1900,20:200
 eppglycerolmaxspeeds=eppmaxspeeds
 eppminspeeds={20:1900,32:1800,64:1700,96:1400,150:1100}  # 1100@150ul untested
 
-SAMPLEPLATE=Plate("Samples",4,3,12,8,False,unusableVolume=15,maxVolume=200,
-                zmax=1033,angle=17.5,r1=2.698,h1=9.31,v0=17.21,slopex=0.000,slopey=0.000,
-                gemDepth=2.81,gemArea=16.41,
-                gemShape='v-shaped',vectorName="Microplate Landscape",maxspeeds=eppmaxspeeds,minspeeds=eppminspeeds,glycerolmaxspeeds=eppglycerolmaxspeeds,glycerol=0.005)  # EppLoBind
-SAMPLEPLATE.wells=SAMPLEPLATE.wells[1:-1]	 # Skip A1 and H12 due to leakage
-SHAKERPLATELOC=Plate("Shaker",9,0,1,1)
-QPCRPLATE=Plate("qPCR",QPCRLOC.grid,QPCRLOC.pos,12,8,False,unusableVolume=15,maxVolume=200,
-                zmax=996,angle=17.5,r1=2.704,h1=10.89,v0=0.44,slopex=0.000,slopey=0.000,gemDepth=3.17,gemArea=14.33,
-                gemShape='v-shaped')
-# If changing location of QPCRPLATE, also update QPCRLOC in worklist.py
-DILPLATE=Plate("Dilutions",4,2,12,8,False,unusableVolume=15,maxVolume=200,
-               zmax=1033,angle=17.5,r1=2.705,h1=9.13,v0=13.14,slopex=0.000,slopey=0.000,gemDepth=2.81,gemArea=16.41,
-               gemShape='v-shaped',vectorName="Microplate Landscape",maxspeeds=eppmaxspeeds,minspeeds=eppminspeeds,glycerolmaxspeeds=eppglycerolmaxspeeds,glycerol=0.005,
-               backupPlate=SAMPLEPLATE) # EppLoBind
 
-SSDDILLOC=Plate("SSDDil",3,1,1,4,False,100,100000,zmax=1367,gemDepth=0,gemArea=1232,gemShape='flat')
-WATERLOC=Plate("Water",3,2,1,4,False,100,100000,zmax=1367,gemDepth=0,gemArea=1232,gemShape='flat')
-BLEACHLOC=Plate("Bleach",3,3,1,4,False,0,100000,zmax=1367,gemDepth=0,gemArea=1232,gemShape='flat')
-TCPOS=Plate("TC",25,1,1,1)
-HOTELPOS=Plate("Hotel",25,0,1,1)
-WASTE=Plate("Waste",20,3,1,1)
-EPPENDORFS=Plate("Eppendorfs",13,1,1,16,False,unusableVolume=30,maxVolume=1500,zmax=1337,angle=17.5,h1=17.56,r1=4.42,v0=29.6,gemDepth=3.15,gemArea=31.4,gemShape='v-shaped')
+TROUGH = PlateType("Trough",nx=1,ny=4,pierce=False,unusableVolume=100,maxVolume=100000,gemDepth=0,gemArea=1232,gemShape='flat')
+EPPLOWBIND=PlateType("EppLowBind",nx=12,ny=8,pierce=False,unusableVolume=15,maxVolume=200,
+                angle=17.5,r1=2.698,h1=9.31,v0=17.21,
+                gemDepth=2.81,gemArea=16.41,
+                gemShape='v-shaped',maxspeeds=eppmaxspeeds,minspeeds=eppminspeeds,glycerolmaxspeeds=eppglycerolmaxspeeds,glycerol=0.005)  # EppLoBind
+RICBLOCK=PlateType("RICBlock",nx=6,ny=5,pierce=False,unusableVolume=20,maxVolume=1700,angle=17.5,r1=4.062,h1=17.75,v0=13.7,gemDepth=9.59,gemArea=43.03,gemShape='v-shaped')
+WHITEQPCR=PlateType("qPCRPlate",nx=12,ny=8,pierce=False,unusableVolume=15,maxVolume=200,
+                angle=17.5,r1=2.704,h1=10.89,v0=0.44,gemDepth=3.17,gemArea=14.33,gemShape='v-shaped')
+EPPRACK = PlateType("EppRack", nx=1, ny=16, pierce=False, unusableVolume=30, maxVolume=1500, angle=17.5,
+                   h1=17.56, r1=4.42, v0=29.6, gemDepth=3.15, gemArea=31.4, gemShape='v-shaped')
+
+############ Plate locations  #############
+WATERLOC=PlateLocation("Water",3,2,zmax=1367)
+BLEACHLOC=PlateLocation("Bleach",3,3,zmax=1367)
+SSDDILLOC=PlateLocation("SSDDil",3,1,zmax=1367)
+
+RICLOC=PlateLocation("RIC",18,1,slopex=-0.022,slopey=-0.038,zmax=569)
+MAGPLATELOC=PlateLocation("MagPlate",18,2,zmax=1459,vectorName="Magplate")
+SHAKERPLATELOC=PlateLocation("Shaker",9,0,vectorName="Shaker")
+SAMPLELOC=PlateLocation("Home",4,3,zmax=1033,vectorName="Microplate Landscape")
+DILUTIONLOC=PlateLocation("DilutionLoc",4,2,zmax=1033,vectorName="Microplate Landscape")
+QPCRLOC=PlateLocation("QPCRLoc",4,1,zmax=996)  # defined in worklist.py
+WASHLOC=PlateLocation("Wash",1,2)  # defined in worklist.py
+EPPLOC=PlateLocation("EppLoc",13,1,zmax=1337)
+TCPOS=PlateLocation("TC",25,1,vectorName="TROBOT")
+HOTELPOS = PlateLocation("Hotel",25, 0)
+WASTE = PlateLocation("Waste",20, 3)
+
+############ Physical Plates #############
+WATERTROUGH=Plate(name="Water",plateType=TROUGH, plateLocation=WATERLOC)
+BLEACHTROUGH=Plate(name="Bleach",plateType=TROUGH, plateLocation=BLEACHLOC)
+SSDTROUGH=Plate(name="SSDDil",plateType=TROUGH, plateLocation=SSDDILLOC)
+
+SAMPLEPLATE=Plate(name="Samples",plateType=EPPLOWBIND,plateLocation=SAMPLELOC)
+SAMPLEPLATE.wells = SAMPLEPLATE.wells[1:-1]  # Skip A1 and H12 due to leakage
+DILPLATE=Plate(name="Dilutions",plateType=EPPLOWBIND,plateLocation=DILUTIONLOC,backupPlate=SAMPLEPLATE)
+EPPENDORFS=Plate(name="Eppendorfs",plateType=EPPRACK,plateLocation=EPPLOC)
+REAGENTPLATE=Plate(name="Reagents",plateType=RICBLOCK, plateLocation=RICLOC)
+QPCRPLATE=Plate(name="QPCR",plateType=WHITEQPCR, plateLocation=QPCRLOC)
+
 TIPOFFSETS=[390, 390, 394, 386]
 
 
@@ -53,13 +65,15 @@ WATER=None
 SSDDIL=None
 BLEACH=None
 
+
 def initWellKnownSamples():
     global WATER, SSDDIL, BLEACH
-    WATER=Sample("Water",WATERLOC,-1,None,50000)
-    SSDDIL=Sample("SSDDil",SSDDILLOC,-1,None,50000)
-    BLEACH=Sample("RNase-Away",BLEACHLOC,-1,None,50000,mixLC=LCBleachMix)
+    from .sample import Sample
 
-initWellKnownSamples()
+    WATER=Sample("Water",WATERTROUGH,-1,None,50000)
+    SSDDIL=Sample("SSDDil",SSDTROUGH,-1,None,50000)
+    BLEACH=Sample("RNase-Away",BLEACHTROUGH,-1,None,50000,mixLC=LCBleachMix)
+
 
 ############ Header file containing matching deck layout  #############
 headerfile=os.path.join(os.path.dirname(__file__),"../header.gem")

@@ -1,11 +1,11 @@
 class Concentration(object):
-    def __init__(self,stock,final=1.0,units='x'):
+    def __init__(self,stock:float,final:float=1.0,units='x'):
         self.stock=stock
         self.final=final
         self.units=units
 
     @staticmethod
-    def conctostr(conc,units):
+    def conctostr(conc:float,units:str):
         if conc<1 and units=='nM':
             conc=conc*1000
             units='pM'

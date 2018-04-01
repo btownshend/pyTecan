@@ -6,11 +6,13 @@ import operator
 from .sample import Sample
 from . import logging
 from . import decklayout
+from .concentration import Concentration
+from .plate import Plate
 
 class Reagent(object):
     allReagents={}
 
-    def __init__(self, name, plate=None, well=None, conc=None, hasBeads=False, extraVol=50, initVol=0, extrainfo=None, ingredients=None):
+    def __init__(self, name:str , plate:Plate=None, well:str=None, conc:Concentration=None, hasBeads:bool=False, extraVol:float=50, initVol:float=0, extrainfo=None, ingredients=None):
         if extrainfo is None:
             extrainfo = []
         self.sample=None
@@ -51,16 +53,16 @@ class Reagent(object):
                 self.initVol+=adj
             self.sample=None
 
-def isReagent(name):
+def isReagent(name:str):
     return name in Reagent.allReagents
 
-def getsample(name):
+def getsample(name:str):
     return Reagent.allReagents[name].getsample()
 
-def lookup(name):
+def lookup(name:str):
     return Reagent.allReagents[name]
 
-def add(name, plate=None, well=None, conc=None, hasBeads=False, extraVol=50, initVol=0, extrainfo=None, ingredients=None):
+def add(name, plate:Plate=None, well=None, conc:Concentration=None, hasBeads:bool=False, extraVol:float=50, initVol:float=0, extrainfo=None, ingredients=None):
     if extrainfo is None:
         extrainfo = []
     if plate is None:
@@ -98,7 +100,7 @@ def printprep(fd=sys.stdout):
                 print("%s%s in %s.%s consume %.1f ul, provide %.1f ul"%(s.name,c,s.plate.name,s.plate.wellname(s.well),r.initVol-s.volume,r.initVol), file=fd)
             total+=round((r.initVol-s.volume)*10)/10.0
             extras+=r.extraVol
-            if r.initVol>s.plate.maxVolume:
-                logging.error("Excess initial volume (%.1f) for %s, maximum is %.1f"%(r.initVol,s.name,s.plate.maxVolume))
+            if r.initVol>s.plate.plateType.maxVolume:
+                logging.error("Excess initial volume (%.1f) for %s, maximum is %.1f"%(r.initVol,s.name,s.plate.plateType.maxVolume))
         print("Total %s volume = %.1f ul (%.1f ul with extras)"%(p.name,total,total+extras), file=fd)
 
