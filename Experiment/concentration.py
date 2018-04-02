@@ -28,17 +28,17 @@ class Concentration(object):
         else:
             return self.conctostr(self.stock,self.units)+"->"+self.conctostr(self.final,self.units)
 
-    def dilute(self,factor):
+    def dilute(self, factor: float) -> 'Concentration':
         if self.stock is None:
             # noinspection PyTypeChecker
             return Concentration(None,None,'x')
         else:
             return Concentration(self.stock/factor,self.final,self.units)
-    def dilutionneeded(self):
+    def dilutionneeded(self) -> float:
         """Return dilution factor needed to dilute from stock to final"""
         return self.stock*1.0/self.final
 
-    def volneeded(self,totalvol):
+    def volneeded(self, totalvol: float) -> float:
         """Return volume needed into totalvol"""
         return totalvol*self.final*1.0/self.stock
 

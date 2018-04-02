@@ -1,9 +1,14 @@
 """Queue of jobs to be executed during idle times"""
 from __future__ import print_function
+from typing import List
 
 from .experiment import Experiment
 from . import logging
+from .sample import Sample
 
+# Annotation types
+SampleListType = List[Sample]
+FloatListType = List[float]
 
 # noinspection PyShadowingBuiltins
 class JobQueue(object):
@@ -17,12 +22,12 @@ class JobQueue(object):
     def len(self):
         return len(self.jobs)
 
-    def getID(self):
+    def getID(self)->int:
         id=self.nextID
         self.nextID+=1
         return id
 
-    def findPriors(self,sample,known):
+    def findPriors(self,sample:Sample,known):
         """Return any prior job entries that affect sample"""
         priors=[]
         for i,j in self.jobs.items():
@@ -37,7 +42,7 @@ class JobQueue(object):
         #print 'Adding prior dependences for sample ', sample,': ',priors
         return priors
 
-    def addTransfer(self, volume, src, dest, prereqs=None):
+    def addTransfer(self, volume:float, src:Sample, dest:Sample, prereqs=None):
         """Add a transfer operation to the queue, return the ID of the job (for use in prereqs)"""
         if prereqs is None:
             prereqs = []
@@ -46,7 +51,7 @@ class JobQueue(object):
         self.jobs[id]={'type':'transfer','volume':volume,'src':src,'dest':dest,'prereqs':set(prereqs).union(priors)}
         return id
 
-    def addMultiTransfer(self, volume, src, dest, prereqs=None):
+    def addMultiTransfer(self, volume: FloatListType, src:Sample, dest:SampleListType, prereqs=None):
         """Add a transfer operation to the queue, return the ID of the job (for use in prereqs)"""
         if prereqs is None:
             prereqs = []

@@ -3,6 +3,7 @@ from __future__ import print_function
 from datetime import datetime
 from hashlib import md5
 from pprint import pprint
+from typing import Dict, Tuple, List
 
 from . import worklist
 from . import thermocycler
@@ -13,13 +14,20 @@ from . import reagents
 from . import decklayout
 from . import clock
 from . import logging
+from .plate import Plate
+from .platelocation import PlateLocation
+
 import sys
 import subprocess
 import os
 
 decklayout.initWellKnownSamples()
 
-def md5sum(filename):
+# Annotation types
+SampleListType = List[Sample]
+mixType = Tuple[bool, bool]
+
+def md5sum(filename: str) -> int:
     hashval = md5()
     with open(filename, "rb") as f:
         for chunk in iter(lambda: f.read(128 * hashval.block_size), b""):
@@ -29,6 +37,7 @@ def md5sum(filename):
 class Experiment(object):
     __shakerActive = False
     DITIMASK=0   # Which tips are DiTis
+
 
     RPTEXTRA=0   # Extra amount when repeat pipetting
     MAXVOLUME=200  # Maximum volume for pipetting in ul
@@ -64,11 +73,11 @@ class Experiment(object):
         self.idlePgms=[]
         self.timerStartTime=[None]*8
 
-    def addIdleProgram(self,pgm):
+    def addIdleProgram(self,pgm: str):
         self.idlePgms.append(pgm)
 
     @staticmethod
-    def setreagenttemp(temp=None):
+    def setreagenttemp(temp: float=None):
         if temp is None:
             worklist.pyrun("RIC\\ricset.py IDLE")
             decklayout.REAGENTPLATE.liquidTemp=22.7
@@ -80,16 +89,16 @@ class Experiment(object):
 #            worklist.pyrun("RIC\\ricset.py %s"%temp)
 
     @staticmethod
-    def saveworklist(filename):
+    def saveworklist(filename: str):
         worklist.saveworklist(filename)
 
-    def savegem(self,filename):
+    def savegem(self,filename: str):
         db.endrun(sys.argv[0])   # May have already been ended before waiting to turn off reagent chiller; idempotent
         worklist.comment("Completed (%s-%s)"%(sys.argv[0],self.checksum))
         worklist.flushQueue()
         worklist.savegem(decklayout.headerfile,filename)
 
-    def savesummary(self,filename,settings=None):
+    def savesummary(self,filename:str ,settings: Dict =None):
         # Print amount of samples needed
         fd=open(filename,"w")
         # print >>fd,"Deck layout:"
@@ -114,7 +123,7 @@ class Experiment(object):
             pprint (settings,stream=fd)
         fd.close()
 
-    def sanitize(self,nmix=1,deepvol=20,force=False):
+    def sanitize(self,nmix:int=1,deepvol:float=20,force:bool=False):
         """Deep wash including RNase-Away treatment"""
         fixedTips=(~self.DITIMASK)&15
         worklist.flushQueue()
@@ -149,7 +158,8 @@ class Experiment(object):
         self.cleanTips&=~tipMask
         return tipMask
 
-    def multitransfer(self, volumes, src, dests,mix=(True,False),getDITI=True,dropDITI=True,ignoreContents=False,extraFrac=0.05):
+
+    def multitransfer(self, volumes, src: Sample, dests: SampleListType,mix: mixType=(True,False),getDITI:bool=True,dropDITI:bool=True,ignoreContents:bool=False,extraFrac:float=0.05):
         """Multi pipette from src to multiple dest.  mix is (src,dest) mixing -- only mix src if needed though"""
         #print "multitransfer(",volumes,",",src,",",dests,",",mix,",",getDITI,",",dropDITI,")"
         if self.tcrunning and (src.plate==decklayout.SAMPLEPLATE or len([1 for d in dests if d.plate==decklayout.SAMPLEPLATE])>0):
@@ -235,7 +245,7 @@ class Experiment(object):
                 if volumes[i]>0.01:
                     self.transfer(volumes[i],src,dests[i],(mix[0] and i==0,mix[1]),getDITI,dropDITI)
 
-    def transfer(self, volume, src, dest, mix=(True,False), getDITI=True, dropDITI=True):
+    def transfer(self, volume: float, src: Sample, dest: Sample, mix: mixType=(True,False), getDITI:bool=True, dropDITI:bool=True):
         if self.tcrunning and (src.plate==decklayout.SAMPLEPLATE or dest.plate==decklayout.SAMPLEPLATE)>0:
             self.waitpgm()
 
@@ -289,7 +299,7 @@ class Experiment(object):
             worklist.dropDITI(tipMask&self.DITIMASK,decklayout.WASTE)
 
     # Mix
-    def mix(self, src, nmix=4):
+    def mix(self, src:Sample, nmix:int=4):
         if self.tcrunning and src.plate==decklayout.SAMPLEPLATE:
             self.waitpgm()
 
@@ -299,7 +309,7 @@ class Experiment(object):
         src.lastMixed=None	# Force a mix
         src.mix(tipMask,False,nmix=nmix)
 
-    def dispose(self, volume, src,  mix=False, getDITI=True, dropDITI=True):
+    def dispose(self, volume:float, src:Sample,  mix:bool=False, getDITI:bool=True, dropDITI:bool=True):
         """Dispose of a given volume by aspirating and not dispensing (will go to waste during next wash)"""
         if self.tcrunning and src.plate==decklayout.SAMPLEPLATE:
             self.waitpgm()
@@ -337,7 +347,7 @@ class Experiment(object):
             worklist.dropDITI(tipMask&self.DITIMASK,decklayout.WASTE)
 
     # noinspection PyShadowingNames
-    def stage(self,stagename,reagents,sources,samples,volume,finalx=1.0,destMix=True,dilutant=None):
+    def stage(self,stagename:str,reagents: SampleListType,sources: SampleListType,samples: SampleListType,volume,finalx:float =1.0,destMix:bool=True,dilutant: Sample=None):
         # Add water to sample wells as needed (multi)
         # Pipette reagents into sample wells (multi)
         # Pipette sources into sample wells
@@ -357,9 +367,8 @@ class Experiment(object):
         worklist.comment("Stage: "+stagename)
         if not isinstance(volume,list):
             volume=[volume for _ in range(len(samples))]
-        for i in range(len(volume)):
-            assert volume[i]>0
-            volume[i]=float(volume[i])
+        assert all([v>0 for v in volume])
+        volume=[float(v) for v in volume]
 
         reagentvols=[1.0/x.conc.dilutionneeded()*finalx for x in reagents]
         sourcevols=[]
@@ -400,7 +409,7 @@ class Experiment(object):
         """Move LiHa to left of deck"""
         worklist.moveliha(decklayout.WASHLOC)
 
-    def runpgm(self,pgm,duration,waitForCompletion=True,volume=10):
+    def runpgm(self,pgm: str,duration:float,waitForCompletion:bool=True,volume:float=10):
         if self.tcrunning:
             logging.error("Attempt to start a progam on TC when it is already running")
         if len(pgm)>8:
@@ -426,7 +435,7 @@ class Experiment(object):
         if waitForCompletion:
             self.waitpgm()
 
-    def moveplate(self,plate,dest=None,returnHome=True):
+    def moveplate(self,plate:Plate,dest:PlateLocation=None,returnHome:bool=True):
         if self.tcrunning and plate==decklayout.SAMPLEPLATE:
             self.waitpgm()
 
@@ -451,7 +460,7 @@ class Experiment(object):
         if returnHome:
             worklist.romahome()
 
-    def shakeSamples(self,samples,dur=60,speed=None,accel=10,returnPlate=True):
+    def shakeSamples(self,samples:SampleListType,dur:float=60,speed:float=None,accel:float=10,returnPlate:bool=True):
         """Shake plates if any of the given samples are on that plate and  needs mixing"""
         if self.tcrunning and any([s.plate==decklayout.SAMPLEPLATE for s in samples]):
             self.waitpgm()
@@ -460,7 +469,7 @@ class Experiment(object):
             if p.plateType.maxspeeds is not None:
                 self.shake(p,returnPlate=returnPlate,speed=speed,samps=[s for s in samples if s.plate==p],dur=dur,accel=accel)
 
-    def shake(self,plate,dur=60,speed=None,accel=10,returnPlate=True,samps=None,force=False):
+    def shake(self,plate:Plate, dur:float=60,speed:float=None,accel:float=10,returnPlate:bool=True,samps: SampleListType=None,force: bool=False):
         if self.tcrunning and plate==decklayout.SAMPLEPLATE:
             self.waitpgm()
 
@@ -520,14 +529,14 @@ class Experiment(object):
             self.moveplate(plate,oldloc)
 
     @staticmethod
-    def shakerIsActive():
+    def shakerIsActive() -> bool:
         return Experiment.__shakerActive
 
-    def starttimer(self,timer=1):
+    def starttimer(self,timer:int=1):
         self.timerStartTime[timer]=clock.pipetting
         worklist.starttimer(timer)
 
-    def waittimer(self,duration,timer=1):
+    def waittimer(self,duration:float,timer:int=1):
         if self.timerStartTime[timer]+duration-clock.pipetting > 20:
             # Might as well sanitize while we're waiting
             self.sanitize()
@@ -535,12 +544,12 @@ class Experiment(object):
             worklist.waittimer(duration,timer)
             #Sample.addallhistory("{%ds}"%duration)
 
-    def pause(self,duration):
+    def pause(self,duration:float):
         self.starttimer()
         self.waittimer(duration)
         Sample.addallhistory("(%ds)" % duration, htype="pause")
 
-    def waitpgm(self, sanitize=True):
+    def waitpgm(self, sanitize:bool=True):
         if not self.tcrunning:
             return
         #print "* Wait for TC to finish"
@@ -602,7 +611,7 @@ class Experiment(object):
 
 
     @staticmethod
-    def dilute(samples, factor):
+    def dilute(samples: SampleListType, factor:float):
         if isinstance(factor,list):
             assert len(samples)==len(factor)
             for i in range(len(samples)):
