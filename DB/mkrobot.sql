@@ -67,3 +67,31 @@ create table vols(
        foreign key(run) references runs(run) on delete cascade
 );
 
+-- Programs
+-- inserted during build of progam (generation time)
+create table programs(
+    program integer primary key auto_increment,
+    name varchar(50) default null,
+    gentime timestamp default null,
+    checksum varchar(8) default null,
+    gitlabel varchar(8) default null
+);
+
+create table pgm_samples (
+       pgm_sample integer primary key auto_increment,
+       program integer not null, foreign key(program) references programs(program) on delete cascade,
+       initialVolume float not null,
+       plate varchar(20) not null,
+       well varchar(4) not null,
+       name varchar(50) not null,
+       unique(program,plate,well)
+);
+
+create table pgm_ops (
+       pgm_op integer primary key auto_increment,
+       pgm_sample integer not null, foreign key(pgm_sample) references pgm_samples(pgm_sample) on delete cascade,
+       elapsed float not null,
+       volume float not null,   -- expected volume after operation (FIXME: not needed?)
+       volchange float not null  -- increase/decrease in volume
+);
+

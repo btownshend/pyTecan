@@ -7,7 +7,7 @@ from typing import Dict, Tuple, List
 
 from . import worklist
 from . import thermocycler
-from . import db
+from .db import db
 from .sample import Sample
 from . import liquidclass
 from . import reagents

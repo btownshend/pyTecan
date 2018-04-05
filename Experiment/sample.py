@@ -8,7 +8,7 @@ from .concentration import Concentration
 from . import clock
 from . import logging
 from .platetype import interpolate
-from . import db
+from .db import db
 from .decklayout import MAGPLATELOC
 
 MAXVOLUME=200
@@ -233,6 +233,7 @@ class Sample(object):
             self.lastevapupdate=clock.elapsed()
         self.extrainfo=extrainfo
         self.emptied=False
+        db.newsample(self)
         
     def isMixed(self):
         """Check if sample is currently mixed"""
@@ -268,6 +269,7 @@ class Sample(object):
     def clearall(cls):
         """Clear all samples"""
         Sample.__allsamples=[]		# Clear list of samples
+        db.clearSamples()
         # for s in Sample.__allsamples:
         #     s.history=""
         #     s.lastMixed=None
@@ -436,7 +438,6 @@ class Sample(object):
         self.evapcheck('aspirate')
         if self.plate.location.zmax is None:
             logging.error( "Aspirate from illegal location: %s" % self.plate.location)
-
         removeAll=volume==self.volume
         if removeAll:
             logging.notice("Removing all contents (%.1ful) from %s"%(volume,self.name))
@@ -486,6 +487,8 @@ class Sample(object):
                 remove=self.volume-0.1   # Leave residual
 
         self.removeVolume(remove)
+        db.volchange(self,-remove,tipMask)
+
         if self.volume+.001<self.plate.unusableVolume() and self.volume+remove>0 and not (self.hasBeads and self.plate.location==MAGPLATELOC) and not removeAll:
             logging.warning("Aspiration of %.1ful from %s brings volume down to %.1ful which is less than its unusable volume of %.1f ul"%(remove,self.name,self.volume,self.plate.unusableVolume()))
             
@@ -568,6 +571,8 @@ class Sample(object):
             self.hasBeads=True
 
         self.volume=self.volume+volume
+        db.volchange(self,volume,tipMask)
+
         self.emptied=False
         #self.addhistory("%06x %s"%(self.getHash(w)&0xffffff,src.name),volume,tipMask)
         self.addhistory(src.name,volume,tipMask)
@@ -804,6 +809,7 @@ class Sample(object):
                         worklist.dispense(tipMask,well,liquidclass.LCDip,0.1,self.plate)
 
             self.removeVolume(MIXLOSS)
+            db.volchange(self,-MIXLOSS,tipMask)
             self.addhistory(mstr,-MIXLOSS,tipMask)
             self.lastMixed=clock.elapsed()
             self.wellMixed=True

@@ -5,11 +5,13 @@ import os
 import sys
 
 from Experiment import globals
-from Experiment import worklist, reagents, decklayout, clock, logging, thermocycler, db
+from Experiment import worklist, reagents, decklayout, clock, logging, thermocycler
 from Experiment.concentration import Concentration
 from Experiment.experiment import Experiment
 from Experiment.plate import Plate
 from Experiment.sample import Sample
+from Experiment.db import db
+from Experiment.config import Config
 
 maxVolumePerWell=150
 
@@ -1028,10 +1030,17 @@ class TRP(object):
         parser=argparse.ArgumentParser(description="TRP")
         parser.add_argument('-v','--verbose',help='Enable verbose output',default=False,action="store_true")
         parser.add_argument('-D','--dewpoint',type=float,help='Dew point',default=10.0)
+        parser.add_argument('-p','--password',type=str,help='DB Password')
+        parser.add_argument('-N','--nodb',help='No DB logging',default=False,action="store_true")
+
         args=parser.parse_args()
         
         print("Estimating evaporation for dew point of %.1f C"%args.dewpoint)
         globals.dewpoint=args.dewpoint
+        if args.nodb:
+            Config.usedb=False
+        elif args.password is not None:
+            Config.password = args.password
 
         self.reset()
 
