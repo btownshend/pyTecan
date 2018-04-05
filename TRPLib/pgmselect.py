@@ -91,7 +91,7 @@ class PGMSelect(TRP):
         self.rnaInput=False
         self.stopConc=1	   # Concentration of stop in uM
         self.barcoding=False   # True to use unique barcode primers in cleaved rounds
-        self.enrich=math.sqrt(2.0)   # Estimate of enrichment/round -- scales number of pmoles needed to carry
+        self.enrich=enrich   # Estimate of enrichment/round -- scales number of pmoles needed to carry
         self.lowhi=True
         self.regenPCRCycles=None
         self.regenPCRVolume=100
