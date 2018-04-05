@@ -57,3 +57,5 @@ DB/test.dbs
 DB/robot.dbs
 
 *.bak
+
+DB/qtgui/gui_auto.py
