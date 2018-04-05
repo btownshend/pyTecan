@@ -81,7 +81,10 @@ class JobQueue(object):
             return None
 
         # Remove any shake jobs that are unneeded
-        for id,j in self.jobs.items():
+        for id in list(self.jobs.keys()):   # Make copy so that we can handle deletes in loop
+            if id not in self.jobs:
+                continue  # Previously deleted
+            j=self.jobs[id]
             if j['type']=='shake' and len(j['prereqs'])==0 and j['sample'].isMixed() and not Experiment.shakerIsActive():
                 #print "Removing unneeded shake job ",id
                 self.removeJob(id)
@@ -100,7 +103,10 @@ class JobQueue(object):
             # Combine with all other multitransfers from same src
             alldest=[]
             allvol=[]
-            for id2,j2 in self.jobs.items():
+            for id2 in list(self.jobs.keys()):  # Make copy so we can delete
+                if id2 not in self.jobs:
+                    continue   # Previously deleted
+                j2=self.jobs[id2]
                 if j2['type']!='multitransfer' or len(j2['prereqs'])>0 or j['src']!=j2['src']:
                     continue
                 alldest.append(j2['dest'])
