@@ -339,7 +339,8 @@ def aspirateDispense(op,tipMask,wells, liquidClass, volume, plate, cycles=None,a
             tipTmp=tipTmp>>1
             tip=tip+1
         allvols[tip]=volume[i]
-        hashUpdate(op,tip,loc.grid,loc.pos-1,pos[i],allvols[tip])
+        if op!="Detect_Liquid":
+            hashUpdate(op,tip,loc.grid,loc.pos-1,pos[i],allvols[tip])
         #comment("Hash(%d,%d,%d)=%06x"%(loc.grid,loc.pos,pos[i],getHashCode(loc.grid,loc.pos-1,pos[i])&0xffffff))
         tipTmp = tipTmp>>1
         tip+=1
