@@ -104,7 +104,7 @@ class Sample(object):
         Sample.__historyOptions=opts
         
     def __init__(self, name, plate, well=None, conc=None, volume=0, hasBeads=False, extraVol=50, mixLC=liquidclass.LCMixBottom, firstWell=None,
-                 extrainfo=None, ingredients=None, atEnd=False):
+                 extrainfo=None, ingredients=None, atEnd=False, refillable=False):
         if extrainfo is None:
             extrainfo = []
         while True:
@@ -233,6 +233,8 @@ class Sample(object):
             self.lastevapupdate=clock.elapsed()
         self.extrainfo=extrainfo
         self.emptied=False
+        self.refillable=refillable   # When using refillable, self.volume still refers to the total volume throughout the entire run; could be higher than tube capacity
+        # But the actual volume in the tube will always be <=self.volume
         db.newsample(self)
         
     def isMixed(self):
@@ -349,6 +351,7 @@ class Sample(object):
         
     def amountToRemove(self,tgtVolume):
         """Calculate amount of volume to remove from sample to hit tgtVolume"""
+        assert not self.refillable   # Can't know how much is present
         self.evapcheck('check')
         volume=self.volume-tgtVolume	# Run through with nominal volume
         removed=0.0
@@ -370,24 +373,30 @@ class Sample(object):
 
     def volcheck(self,tipMask,well,volToRemove):
         """Check if the well contains the expected volume"""
+        # For refillable wells, this should not depend on self.volume, since that will only be an upper bound
         if self.lastvolcheck is not None:
             # Decide if a volume check is needed
             if volToRemove==0:
                 # No need to check if not removing anything and it has been checked previously (i.e. lastvolcheck is not None)
                 return
-            if self.volume-volToRemove > max(30,self.lastvolcheck-200) or self.volume-volToRemove>200:
-                # Not needed
+            if not self.refillable and (self.volume-volToRemove > max(30,self.lastvolcheck-200) or self.volume-volToRemove>200):
+                # Not needed (but always check refillable wells)
                 return
         self.lastvolcheck=self.volume
         height=self.plate.getliquidheight(self.volume)
         gemvol=self.plate.getgemliquidvolume(height)	# Volume that would be reported by Gemini for this height
-        if gemvol is None:
+        if not self.refillable and gemvol is None:
             logging.warning( "No volume equation for %s, skipping initial volume check"%self.name)
             return
 
         volcrit=self.plate.unusableVolume()*0.8+volToRemove
-        volwarn=max(volcrit,self.volume*0.80,self.volume+50)
-        
+        if self.refillable:
+            # Warn when getting low (shouldn't happen if we're on top of refilling)
+            volwarn=max(volcrit,self.plate.unusableVolume())
+        else:
+            # Warn when getting low
+            volwarn=max(volcrit,self.volume*0.80,self.volume+50)
+
         heightwarn=min(self.plate.getliquidheight(volwarn),height-1.0)	# threshold is lower of 1mm or 80%
         gemvolwarn=self.plate.getgemliquidvolume(heightwarn)	# Volume that would be reported by Gemini for this height
 
@@ -395,7 +404,7 @@ class Sample(object):
         gemvolcrit=self.plate.getgemliquidvolume(heightcrit)	# Volume that would be reported by Gemini for this height
     
         worklist.flushQueue()
-        worklist.comment( "Check that %s contains %.1f ul (warn< %.1f, crit<%.1f), (gemvol=%.1f (warn<%.1f,crit<%.1f); height=%.1f (>%.1f) )"%(self.name,self.volume,volwarn,volcrit,gemvol,gemvolwarn,gemvolcrit,height,heightwarn))
+        worklist.comment( "Check that %s contains %.1f ul (warn< %.1f, crit<%.1f), (expected gemvol=%.1f (warn<%.1f,crit<%.1f); height=%.1f (>%.1f) )"%(self.name,self.volume,volwarn,volcrit,gemvol,gemvolwarn,gemvolcrit,height,heightwarn))
         tipnum=0
         tm=tipMask
         while tm>0:
@@ -412,7 +421,10 @@ class Sample(object):
         warnLabel=worklist.getlabel()
         worklist.condition(volvar,">",gemvolcrit,warnLabel)
         worklist.moveliha(worklist.WASHLOC)	# Get LiHa out of the way
-        msg="Failed volume check of %s - should have  %.0f ul (gemvol=~%s~, crit=%.0f)"%(self.name,self.volume,volvar,gemvolcrit)
+        if self.refillable:
+            msg="Failed volume check of %s(refillable) - should have at least %.0f ul (gemvol=~%s~, crit=%.0f)"%(self.name,volcrit,volvar,gemvolcrit)
+        else:
+            msg="Failed volume check of %s - should have %.0f ul (gemvol=~%s~, crit=%.0f)"%(self.name,self.volume,volvar,gemvolcrit)
         worklist.email(dest='cdsrobot@gmail.com',subject=msg)
         worklist.stringvariable("response","retry",msg+" Enter 'ignore' to ignore and continue, otherwise will retry.")
         worklist.condition("response","==","ignore",doneLabel)
@@ -428,7 +440,10 @@ class Sample(object):
         worklist.condition("response","!=","warn",doneLabel)
 
         worklist.comment(warnLabel)
-        msg="Warning: volume check of %s - should have  %.0f ul (gemvol=~%s~, warn=%.0f, crit=%.0f)"%(self.name,self.volume,volvar,gemvolwarn,gemvolcrit)
+        if self.refillable:
+            msg="Warning: volume check of %s(refillable) - should have at least %.0f ul (gemvol=~%s~, warn=%.0f, crit=%.0f)"%(self.name,volwarn,volvar,gemvolwarn,gemvolcrit)
+        else:
+            msg="Warning: volume check of %s - should have %.0f ul (gemvol=~%s~, warn=%.0f, crit=%.0f)"%(self.name,self.volume,volvar,gemvolwarn,gemvolcrit)
         worklist.email(dest='cdsrobot@gmail.com',subject=msg)
         worklist.comment(doneLabel)
         clock.pipetting=ptmp   # All the retries don't usually happen, so don't count in total time
@@ -512,6 +527,7 @@ class Sample(object):
         worklist.aspirateNC(tipMask,[self.well],self.airLC,volume,self.plate)
 
     def dispense(self,tipMask,volume,src):
+        assert not self.refillable    # Dispensing into a refillable well not supported
         self.evapcheck('dispense')
         if self.plate.location.zmax is None:
             logging.error( "Dispense to illegal location: %s"%self.plate.location)
@@ -528,10 +544,11 @@ class Sample(object):
         if self.well is None:
             logging.warning("Dispense with well is None, not sure what right logic is..., using well=%d"%well[0])
 
-        if self.volume+volume > self.plate.plateType.maxVolume:
+        if self.volume+volume > self.plate.plateType.maxVolume and not self.refillable:
             logging.error("Dispense of %.1ful into %s results in total of %.1ful which is more than the maximum volume of %.1f ul"%(volume,self.name,self.volume+volume,self.plate.plateType.maxVolume))
 
         if self.hasBeads and self.plate.location==MAGPLATELOC:
+            assert not self.refillable
             worklist.dispense(tipMask,well,self.beadsLC,volume,self.plate)
         elif self.volume>=MINLIQUIDDETECTVOLUME:
             worklist.dispense(tipMask,well,self.inliquidLC,volume,self.plate)
@@ -674,6 +691,7 @@ class Sample(object):
 
     def getmixspeeds(self):
         """Get minimum, maximum speed for mixing this sample"""
+        assert not self.refillable   # Mixing of refillable wells not supported (unknown volume)
         ptype=self.plate.plateType
 
         if self.isMixed():
@@ -709,6 +727,8 @@ class Sample(object):
         return minspeed, maxspeed
     
     def chooseLC(self,aspirateVolume=0):
+        if self.refillable:
+            return self.inliquidLC   # Since volume is unknown, this is the only option
         if self.volume-aspirateVolume>=MINLIQUIDDETECTVOLUME:
             if aspirateVolume==0:
                 return self.inliquidLC	# Not aspirating, should be fine
@@ -746,6 +766,7 @@ class Sample(object):
 
         # Mix, return true if actually did a mix, false otherwise
     def mix(self,tipMask,preaspirateAir=False,nmix=4):
+        assert not self.refillable   # Not supported -- unknown volume
         if self.isMixed() and self.wellMixed:
             logging.notice( "mix() called for sample %s, which is already mixed"%self.name)
             return False
@@ -833,6 +854,8 @@ class Sample(object):
             volString="%.1f->%.1f"%(self.initVol, self.volume)
         else:
             volString="%.1f" % self.volume
+        if self.refillable:
+            volString=volString+"(refillable)"
             
         s+=" %-30s"%("(%s.%s,%s ul%s%s)"%(self.plate.name,self.plate.wellname(self.well),volString,evapString,beadString))
         hist=self.history

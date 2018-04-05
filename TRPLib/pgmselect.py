@@ -19,10 +19,12 @@ class PGMSelect(TRP):
     
     def __init__(self, inputs, rounds=None, firstID=None, pmolesIn=None, rnddef=None, directT7=True, templateDilution=0.3, tmplFinalConc=50,
                  saveDil=24, qpcrWait=False, allLig=False, qpcrStages=None, finalPlus=True, t7dur=30, usertime=10,
-                 singlePrefix=False, noPCRCleave=False, saveRNA=False, useMX=True):
+                 singlePrefix=False, noPCRCleave=False, saveRNA=False, useMX=True, refillable=False,enrich=1.4):
         # Initialize field values which will never change during multiple calls to pgm()
         # Can use rounds="UZUWUZ" (e.g.) OR rnddef which is a list of specs for each round with rtype (U,W,Z), tref, barcode
         super(PGMSelect, self).__init__()
+        if refillable:
+            reagents.lookup("MT7").refillable=True
         if qpcrStages is None:
             qpcrStages = ["negative", "template", "ext", "finalpcr"]
         self.inputs=inputs
