@@ -71,7 +71,7 @@ class Experiment(object):
         if thermocycler.cycler=='PTC200':
             worklist.userprompt("Verify that PTC thermocycler lid pressure is set to correct value.")
         self.idlePgms=[]
-        self.timerStartTime=[None]*8
+        self.timerStartTime=[0.0]*8
 
     def addIdleProgram(self,pgm: str):
         self.idlePgms.append(pgm)
