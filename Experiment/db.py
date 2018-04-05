@@ -39,24 +39,28 @@ class DB(object):
     def startrun(self, name: str, gentime: str, checksum: str, gitlabel: str):
         if self.db is None:
             self.connect()
+        if self.id is None:
+            return
         worklist.pyrun("DB\db.py startrun %s %s %s %s %s"%(name.replace(' ','_'),gentime.replace(' ','T'),checksum,gitlabel,self.id))
-        if self.id is not None:
-            with self.db.cursor() as cursor:
-                cursor.execute('update programs set gentime=%s, checksum=%s,gitlabel=%s where program=%s',(gentime, checksum, gitlabel,self.id))
+        with self.db.cursor() as cursor:
+            cursor.execute('update programs set gentime=%s, checksum=%s,gitlabel=%s where program=%s',(gentime, checksum, gitlabel,self.id))
 
     def tick(self, elapsed: float,remaining: float):
+        if self.id is None:
+            return
         worklist.pyrun("DB\db.py tick %f %f"%(elapsed,remaining))
 
     def endrun(self, name: str):
+        if self.id is None:
+            return
         worklist.pyrun("DB\db.py endrun %s"%(name.replace(' ','_'),))
-        if self.db is not None:
-            if len(self.ops)>0:
-                print("Insert %d ops..."%len(self.ops),end='')
-                with self.db.cursor() as cursor:
-                    cursor.executemany('insert into pgm_ops(pgm_sample, elapsed, tip, volume,volchange) values(%s,%s,%s,%s,%s)',self.ops)
-                print("done")
-                self.ops=[]
-            self.db.commit()
+        if len(self.ops)>0:
+            print("Insert %d ops..."%len(self.ops),end='')
+            with self.db.cursor() as cursor:
+                cursor.executemany('insert into pgm_ops(pgm_sample, elapsed, tip, volume,volchange) values(%s,%s,%s,%s,%s)',self.ops)
+            print("done")
+            self.ops=[]
+        self.db.commit()
         #self.db.close()
 
     def newsample(self, sample):
@@ -83,10 +87,12 @@ class DB(object):
             cursor.execute("DELETE FROM pgm_samples WHERE program=%s",(self.id,))
 
     def setvol(self, sample,volvar: str):
+        if self.id is None:
+            return
         worklist.pyrun("DB\db.py setvol %s %s %s ~%s~ %.2f"%(sample.name.replace(' ','_'),sample.plate.name,sample.plate.wellname(sample.well),volvar,sample.volume))
 
     def volchange(self, sample, volume:float, tip: int):
-        if self.db is None:
+        if self.id is None:
             return
         sampid=self.sampids[sample]
         self.ops.append([sampid,clock.elapsed(),tip, sample.volume,volume])
