@@ -859,13 +859,22 @@ class Sample(object):
             
         s+=" %-30s"%("(%s.%s,%s ul%s%s)"%(self.plate.name,self.plate.wellname(self.well),volString,evapString,beadString))
         hist=self.history
-        trunchistory=self.plate.name!="Samples"
+        trunchistory=True # self.plate.name!="Samples"
         if trunchistory and len(hist)>0:
             # Remove any trailing {xx} or (xx) markers from history
             wds=hist.strip().split(' ')
+            pcnt=0;bcnt=0;
             for i in range(len(wds)-1,-1,-1):
-                if wds[i][0]!='(' and wds[i][0]!='{':
+                if wds[i][0]=='(':
+                    pcnt+=1
+                elif wds[i][0]=='{':
+                    bcnt+=1
+                else:
                     hist=' '.join(wds[:i+1])
+                    if bcnt>0:
+                        hist+=' {}*%d'%bcnt
+                    if pcnt > 0:
+                        hist += ' ()*%d' % pcnt
                     break
 
         s+=" %s"%hist
