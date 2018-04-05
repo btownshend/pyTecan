@@ -21,7 +21,7 @@ TROUGH = PlateType("Trough",nx=1,ny=4,pierce=False,unusableVolume=100,maxVolume=
 EPPLOWBIND=PlateType("EppLowBind",nx=12,ny=8,pierce=False,unusableVolume=15,maxVolume=200,
                 angle=17.5,r1=2.698,h1=9.31,v0=17.21,
                 gemDepth=2.81,gemArea=16.41,
-                gemShape='v-shaped',maxspeeds=eppmaxspeeds,minspeeds=eppminspeeds,glycerolmaxspeeds=eppglycerolmaxspeeds,glycerol=0.005)  # EppLoBind
+                gemShape='v-shaped',maxspeeds=eppmaxspeeds,minspeeds=eppminspeeds,glycerolmaxspeeds=eppglycerolmaxspeeds,glycerol=1)  # EppLoBind
 RICBLOCK=PlateType("RICBlock",nx=6,ny=5,pierce=False,unusableVolume=20,maxVolume=1700,angle=17.5,r1=4.062,h1=17.75,v0=13.7,gemDepth=9.59,gemArea=43.03,gemShape='v-shaped')
 WHITEQPCR=PlateType("qPCRPlate",nx=12,ny=8,pierce=False,unusableVolume=15,maxVolume=200,
                 angle=17.5,r1=2.704,h1=10.89,v0=0.44,gemDepth=3.17,gemArea=14.33,gemShape='v-shaped')
