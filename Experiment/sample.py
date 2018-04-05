@@ -722,7 +722,8 @@ class Sample(object):
             else:
                 maxspeed=maxspeed+(gmaxspeed-maxspeed)*(glycerol/ptype.glycerol)
             if maxspeed<minspeed:
-                logging.notice("%s with %.1ful and %.1f%% glycerol has minspeed of %.0f greater than maxspeed of %.0f"%(self.name,self.volume,glycerol*100,minspeed,maxspeed))
+                if maxspeed<minspeed-1:
+                    logging.notice("%s with %.1ful and %.1f%% glycerol has minspeed of %.0f greater than maxspeed of %.0f"%(self.name,self.volume,glycerol*100,minspeed,maxspeed))
                 minspeed=maxspeed	# Glycerol presence should also reduce minspeed
         return minspeed, maxspeed
     
