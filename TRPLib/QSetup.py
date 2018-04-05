@@ -108,7 +108,7 @@ class QSetup(object):
             self.nreplicates=self.nreplicates+[nreplicates]
                 
     def allprimers(self):
-        return set([p for sublist in self.primers for p in sublist])
+        return sorted(set([p for sublist in self.primers for p in sublist]))
 
     def addReferences(self,mindil=1,nsteps=6,dstep=4,nreplicates=1,ref=None,primers=None):
         """Add all needed references"""
