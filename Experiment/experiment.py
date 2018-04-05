@@ -500,7 +500,7 @@ class Experiment(object):
             others=""
             for x in allsamps:
                 (a,b)=x.getmixspeeds()
-                if b<speed or a>speed:
+                if b==speed or (a>speed and not x.isMixed() and x in samps):
                     if a is not None and a>0:
                         others+=" {%s: %.1ful,G=%.2f%%,min=%.0f,max=%.0f}"%(x.name,x.volume,x.glycerolfrac()*100,a,b)
                     else:
