@@ -476,7 +476,7 @@ class TRP(object):
         # Wash
 
         for washnum in range(numWashes):
-            if src[0].plate.curloc!="Home" and src[0].plate.curloc!="Magnet":
+            if src[0].plate.location!=src[0].plate.homeLocation and src[0].plate.location!=decklayout.MAGPLATELOC:
                 self.e.moveplate(src[0].plate,"Home")
             if keepFinal and washnum==numWashes-1:
                 'Retain sample of final'

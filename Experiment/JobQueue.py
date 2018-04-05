@@ -88,14 +88,14 @@ class JobQueue(object):
 
         for id in self.jobs:
             j=self.jobs[id]
-            if j['type']!='transfer' or len(j['prereqs'])>0 or  j['src'].plate.curloc!='Home' or  j['dest'].plate.curloc!='Home':
+            if j['type']!='transfer' or len(j['prereqs'])>0 or  j['src'].plate.location!=j['src'].plate.homeLocation or j['dest'].plate.location!=j['dest'].plate.homeLocation:
                 #if j['type']=='transfer':
                 #   print "Can't execute job ",id,": ",j,", curlocs=",j['src'].plate.curloc,", ",j['dest'].plate.curloc
                 continue
             return id
 
         for id,j in self.jobs.items():
-            if j['type']!='multitransfer' or len(j['prereqs'])>0 or  j['src'].plate.curloc!='Home'  or  j['dest'].plate.curloc!='Home':
+            if j['type']!='multitransfer' or len(j['prereqs'])>0 or  j['src'].plate.location!=j['src'].plate.homeLocation  or  j['dest'].plate.location!=j['dest'].plate.homeLocation:
                 continue
             # Combine with all other multitransfers from same src
             alldest=[]
@@ -111,7 +111,7 @@ class JobQueue(object):
 
         for id in self.jobs:
             j=self.jobs[id]
-            if j['type']!='shake' or len(j['prereqs'])>0 or not j['sample'].plate.curloc=='Home' or Experiment.shakerIsActive():
+            if j['type']!='shake' or len(j['prereqs'])>0 or not j['sample'].plate.location==j['sample'].plate.homeLocation or Experiment.shakerIsActive():
                 continue
             return id
         # Nothing to do
@@ -126,7 +126,7 @@ class JobQueue(object):
             if job['sample'].isMixed():
                 if self.debug:
                     print("no need to shake ",job['sample'].plate," because ",job['sample'].name," is already mixed.", end=' ')
-            elif job['sample'].plate.maxspeeds is None:
+            elif job['sample'].plate.plateType.maxspeeds is None:
                 if self.debug:
                     print("Not shaking ",job['sample'].plate," because it is not compatible with shaker.", end=' ')
             elif job['sample'].hasBeads:
