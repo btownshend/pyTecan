@@ -641,11 +641,11 @@ class PGMSelect(TRP):
                     print("Skipping save of final PCR")
                     sv=pcr
                 else:
-                    sv=self.saveSamps(src=pcr[:len(rxs)],vol=[min([maxSaveVol,x.volume]) for x in pcr[:len(rxs)]],dil=1,plate=(decklayout.DILPLATE if self.savedilplate else decklayout.EPPENDORFS),tgt=pcrtgt)
+                    sv=self.saveSamps(src=pcr[:len(rxs)],vol=[min([maxSaveVol,x.volume-2.4]) for x in pcr[:len(rxs)]],dil=1,plate=(decklayout.DILPLATE if self.savedilplate else decklayout.EPPENDORFS),tgt=pcrtgt)
                     if nsplit>1:
                         # Combine split
                         for i in range(len(rxs),len(rxs)*nsplit):
-                            self.e.transfer(min([maxSaveVol,pcr[i].volume]),pcr[i],sv[i%len(sv)],mix=(False,i>=len(rxs)*(nsplit-1)))
+                            self.e.transfer(min([maxSaveVol,pcr[i].volume-2.4]),pcr[i],sv[i%len(sv)],mix=(False,i>=len(rxs)*(nsplit-1)))
                         # Correct concentration (above would've assumed it was diluted)
                         for i in range(len(sv)):
                             sv[i].conc=pcr[i].conc
