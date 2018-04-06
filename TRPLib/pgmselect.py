@@ -147,7 +147,21 @@ class PGMSelect(TRP):
         self.t7extravols=((4+1.4)*0.9 if 'stopped' in self.qpcrStages else 0)+ ((5+1.4)*0.9 if self.saveRNA else 0) + 3.3  # 3.3 in case pipette mixing used
         #print "self.t7extravols=%.1f ul\n"%self.t7extravols
         #print "self.rtvol=%s ul\n"%(",".join(["%.1f "%x for x in self.rtvol]))
-        self.t7vol=[max((15.1+self.rtvol[i]/4.0+1.4)*0.9+self.t7extravols,self.pmolesIn*1000.0/self.tmplFinalConc/math.pow(self.enrich,i*1.0)) for i in range(len(self.rounds))]
+
+        # Compute dilutions due to tref additions
+        trefdil=[1 for _ in self.rnddef ]
+        for i in range(len(self.rnddef)-1):
+            rd=self.rnddef[i]
+            if 'tref' in rd:
+                tref = rd['tref'][0]
+                if tref is not None:
+                    trefname = 'TRef%d' % tref
+                    if not reagents.isReagent(trefname):
+                        reagents.add(name=trefname, conc=10, extraVol=30, well="E4")
+                    trefs = reagents.getsample(trefname)
+                    trefdil[i+1]=(trefs.conc.dilutionneeded())/(trefs.conc.dilutionneeded()-1)
+        print("Extra dilution due to tref additions: ",trefdil)
+        self.t7vol=[max((15.1+self.rtvol[i]/4.0+1.4)*0.9+self.t7extravols,self.pmolesIn*1000.0/self.tmplFinalConc*trefdil[i]/math.pow(self.enrich,i*1.0)) for i in range(len(self.rounds))]
         #print "self.t7vol=%s ul\n"%(",".join(["%.1f "%x for x in self.t7vol]))
         self.t7vol=[max(18.0,v) for v in self.t7vol]   # Make sure that there's enough to add at least 2ul of stop
         self.t7vol=[min(self.maxSampVolume,v) for v in self.t7vol]   # Make sure no tubes overflow
@@ -266,7 +280,12 @@ class PGMSelect(TRP):
                         if not reagents.isReagent(trefname):
                             reagents.add(name=trefname,conc=10,extraVol=30,well="E4")
                         tref=reagents.getsample(trefname)
+                        oldConc=r1[i].conc.stock
+                        oldUnits=r1[i].conc.units
+                        oldVol=r1[i].volume
                         self.e.transfer(r1[i].volume/(tref.conc.dilutionneeded()-1),tref,r1[i],mix=(False,False))    # TODO: Check that these end up mixed
+                        r1[i].conc=Concentration(stock=oldConc*oldVol/r1[i].volume, units=oldUnits)   # Treat TRef as straight dilution
+                        print("New conc=",r1[i].conc)
 
             for i in range(len(r1)):
                 r1[i].name="%s_%d"%(prefixOut[i],self.nextID)
