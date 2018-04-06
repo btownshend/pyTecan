@@ -1,6 +1,12 @@
 import debughook
-import time
 import re
+import time
+
+from Experiment.config import Config
+print("Config=",Config)
+Config.usedb=False
+
+
 from datalog import Datalog
 
 'Parse a GEMINI log file'
@@ -160,11 +166,11 @@ def gemtip(tipcmd,line2):
     """Handle Gemini command of form:  tip 2 : aspirate 9.00ul 10, 1 HSP96xx on carrier [4,2]                 8.00ul "Water-InLiquid" Standard <all volumes> Multi"""
     fullcmd=tipcmd[8:]+line2
     if debug:
-        print "XFR ",fullcmd
+        print("XFR ",fullcmd)
     # Parse the line
     parser1=re.compile(r"tip (\d+) : (\S+) +(?:(\d+\.\d+)(.l) +)?(?:\((\d)+x\))? *(\d+), *(\d+) +(.+) +\[(\d+),(\d+)\]")
     if debug:
-        print displaymatch(parser1.match(tipcmd))
+        print(displaymatch(parser1.match(tipcmd)))
     match=parser1.match(tipcmd)
     g=match.groups()
     assert(len(g)==10)
@@ -188,7 +194,7 @@ def gemtip(tipcmd,line2):
     pos=int(g[9])
     parser2=re.compile(r" +(?:(\d+\.\d+)(.l) +)?\"(.+)\" (?:(.+) <(.+)> (\S+))?")
     if debug:
-        print displaymatch(parser2.match(line2))
+        print(displaymatch(parser2.match(line2)))
     match=parser2.match(line2)
     g=match.groups()
     assert(len(g)==6)
@@ -208,20 +214,20 @@ def gemtip(tipcmd,line2):
     msg1="tip=%d, op=%s, vol=%.2f/%.2f, wellx=%d, welly=%d, rack=%s, grid=%d, pos=%d, lc=%s, pytpe=%s"%(tip,op,vol,vol2,wellx,welly,rack,grid,pos,lc,ptype)
     #msg2="tip=%d, wellx=%d, welly=%d, rack=%s, grid=%d, pos=%d, lc=%s"%(tip,wellx,welly,rack,grid,pos,lc)
     if debug:
-        print "XFR",msg1
+        print("XFR",msg1)
     dl.logop(op,tip,vol,wellx,welly,rack,grid,pos,lc,std,volset,ptype=='Multi')
     
 def fwparse(dev,send,reply,error,lasttime):
     global lnum, sbl, sml, tipSelect, ldpending, zadd
     if debug:
         if error:
-            print "\tSEND:%s  ERROR:%s"%(str(send),str(reply))
+            print("\tSEND:%s  ERROR:%s"%(str(send),str(reply)))
         else:
-            print "\tSEND:%s  REPLY:%s"%(str(send),str(reply))
+            print("\tSEND:%s  REPLY:%s"%(str(send),str(reply)))
     if  reply[0].isdigit():
         replyecode=int(reply[0])
     else:
-        print "First reply argument is not an integer: %s"%reply[0]
+        print("First reply argument is not an integer: %s"%reply[0])
         replyecode=-1
     reply=reply[1:]
     op=send[0]
@@ -237,19 +243,19 @@ def fwparse(dev,send,reply,error,lasttime):
        devname='UNKNOWN(%s)'%dev
        cmd=['UNKNOWN',[],[]]
 
-    print "  %s %s (%s) "%(devname,op,cmd[0]),
+    print("  %s %s (%s) "%(devname,op,cmd[0]), end=' ')
     for i in range(len(args)):
         if i<len(cmd[1]):
-            print "%s=%s, "%(cmd[1][i],args[i]),
+            print("%s=%s, "%(cmd[1][i],args[i]), end=' ')
         else:
-            print "?=%s, "%args[i],
-    print " ->  ecode=%d, "%replyecode,
+            print("?=%s, "%args[i], end=' ')
+    print(" ->  ecode=%d, "%replyecode, end=' ')
     for i in range(len(reply)):
         if i<len(cmd[2]):
-            print "%s=%s, "%(cmd[2][i],reply[i]),
+            print("%s=%s, "%(cmd[2][i],reply[i]), end=' ')
         else:
-            print "?=%s, "%reply[i],
-    print 
+            print("?=%s, "%reply[i], end=' ')
+    print() 
     if error or replyecode!=0:
         if replyecode in errors:
             emsg=errors[replyecode]
@@ -261,7 +267,7 @@ def fwparse(dev,send,reply,error,lasttime):
             emsg=errorsM[replyecode]
         else:
             emsg='Unknown error: <%s>'%replyecode
-        print "**** Error message: %s"%emsg
+        print("**** Error message: %s"%emsg)
     if op=='SBL':
         sbl=[int(r) if len(r)>0 else 0 for r in args]
         #print "TIPS SBL=",sbl
@@ -280,7 +286,7 @@ def fwparse(dev,send,reply,error,lasttime):
             heights=[-1,-1,-1,-1]
             for i in range(len(heights)):
                 if 1<<i & tipSelect != 0:
-                    print "TIPS %d %s "%(lnum,op),heights[i],sbl[i],sml[i],heights[i]+sbl[i]-sml[i]
+                    print("TIPS %d %s "%(lnum,op),heights[i],sbl[i],sml[i],heights[i]+sbl[i]-sml[i])
                     dl.logmeasure(i+1,heights[i],sbl[i],sml[i],zadd[i],lasttime)
     elif op=='REE' or op=='RVZ':
         pass
@@ -289,21 +295,21 @@ def fwparse(dev,send,reply,error,lasttime):
         assert(len(heights)==len(sbl))
         for i in range(len(heights)):
             if 1<<i & tipSelect != 0:
-                print "TIPS %d  "%(lnum),heights[i],sbl[i],sml[i],heights[i]+sbl[i]-sml[i]
+                print("TIPS %d  "%(lnum),heights[i],sbl[i],sml[i],heights[i]+sbl[i]-sml[i])
                 dl.logmeasure(i+1,heights[i],sbl[i],sml[i],zadd[i],lasttime)
         ldpending=False
     elif ldpending:
-        print "**** Parser error:  got op %s without a RPZ while ldpending"%op
+        print("**** Parser error:  got op %s without a RPZ while ldpending"%op)
         #assert(False)
         ldpending=False
 
         
 import sys
 if len(sys.argv)!=2 and len(sys.argv)!=1:
-    print "Usage: %s [logfile]"%sys.argv[0]
+    print("Usage: %s [logfile]"%sys.argv[0])
     exit(1)
 if len(sys.argv)==2:
-      fd=open(sys.argv[1],'r')
+      fd=open(sys.argv[1],'rb')
 else:
       fd=sys.stdin
 
@@ -326,20 +332,23 @@ while True:
     line=fd.readline()
     if len(line)==0:
         break
-    line=line.rstrip('\r\n')
+    while len(line)>0 and (line[-1]==13 or line[-1]==10):
+        line=line[:-1]
+    #line=line.rstrip('\r\n')
     if len(line)==0:
         continue
+    line=line.decode('latin-1')
     code=line[0]
     gtime=line[2:10]
     cmd=line[11:]
     if debug:
-        print "\tcode=%s(%d),time=%s,cmd=%s"%(code,ord(code[0]),gtime,cmd)
+        print("\tcode=%s(%d),time=%s,cmd=%s"%(code,ord(code[0]),gtime,cmd))
     if code[0]==' ':
           if prevcode[0]!='D':
                 # print "Copying previous code: %c"%prevcode
                 code=prevcode
           else:
-                print "Blank code, previous=D, assuming new one is F"
+                print("Blank code, previous=D, assuming new one is F")
                 code='F'
     if len(gtime)<1 or gtime[0]==' ':
         gtime=prevtime
@@ -350,23 +359,23 @@ while True:
         dev=spcmd[0][1:]
         spcmd=spcmd[1:]
         if len(cmd)<1:
-            print "Empty cmd"
+            print("Empty cmd")
         elif cmd[0]=='>':
             if dev in send:
-                print "Double cmd to %s: %s AND %s"%(dev,send[dev],str(spcmd))
+                print("Double cmd to %s: %s AND %s"%(dev,send[dev],str(spcmd)))
             send[dev]=[spcmd[0][0:3],spcmd[0][3:]]+spcmd[1:]
         elif cmd[0]=='-' or cmd[0]=='*':
             if dev not in send:
-                print "Missing cmd when received reply from %s: %s"%(dev,str(spcmd))
+                print("Missing cmd when received reply from %s: %s"%(dev,str(spcmd)))
                 exit(1)
             error=cmd[0]=='*'
             fwparse(dev,send[dev],spcmd,error,lasttime)
             send.pop(dev)
         else:
-            print "Bad cmd: %s"%cmd
+            print("Bad cmd: %s"%cmd)
     else:
           if cmd.find('detected_volume_')==-1 or cmd.find('= -1')==-1:
-                print "Gemini %s %s"%(gtime,cmd)
+                print("Gemini %s %s"%(gtime,cmd))
                 if cmd[0:3]=='tip':
                     tipcmd=cmd
                 else:
@@ -377,13 +386,13 @@ while True:
           if cmd.find("setShakeTargetSpeed")!=-1:
                 pos=cmd.find("setShakeTargetSpeed")
                 speed=int(cmd[pos+19:])
-                print "SPEED %d"%speed
+                print("SPEED %d"%speed)
                 dl.logspeed(shakePlate,speed)
 
           if cmd.startswith("moveplate") and cmd.find("Shaker")!=-1:
                 pos=cmd.find("Shaker")
                 shakePlate=cmd[10:pos-1]
-                print "SHAKEPLATE %s"%shakePlate
+                print("SHAKEPLATE %s"%shakePlate)
                 
           if cmd.startswith('Line'):
                 colon=cmd.find(':')
@@ -395,10 +404,10 @@ while True:
                 t=time.mktime(tdata)
                 if lastgeminicmd is not None:
                     if t-lasttime > 30:
-                        print  "Skipping long pause of %d seconds for %s"%(t-lasttime,lastgeminicmd)
+                        print("Skipping long pause of %d seconds for %s"%(t-lasttime,lastgeminicmd))
                     elif t<lasttime:
-                        print  "Skipping negative elapsed time of %d seconds for %s"%(t-lasttime,lastgeminicmd)
-                    elif lastgeminicmd in geminicmdtimes.keys():
+                        print("Skipping negative elapsed time of %d seconds for %s"%(t-lasttime,lastgeminicmd))
+                    elif lastgeminicmd in list(geminicmdtimes.keys()):
                         geminicmdtimes[lastgeminicmd]+=(t-lasttime)
                         geminicmdcnt[lastgeminicmd]+=1
                     else:
@@ -409,5 +418,5 @@ while True:
 #print "log=",dl
 dl.printallsamples()
 
-for cmd in geminicmdtimes.keys():
-      print "%s: %.0f seconds for %.0f occurrences:   %.2f second/call"%(cmd,geminicmdtimes[cmd],geminicmdcnt[cmd], geminicmdtimes[cmd]*1.0/geminicmdcnt[cmd])
+for cmd in list(geminicmdtimes.keys()):
+      print("%s: %.0f seconds for %.0f occurrences:   %.2f second/call"%(cmd,geminicmdtimes[cmd],geminicmdcnt[cmd], geminicmdtimes[cmd]*1.0/geminicmdcnt[cmd]))
