@@ -14,3 +14,5 @@ create table flags(
 insert into flags(run,name,value,lastupdate,synctime) select run,name,value,lastupdate,synctime from flags_old;
 
 select * from flags;
+
+alter table runs add pgm_id integer;

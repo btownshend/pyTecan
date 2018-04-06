@@ -65,11 +65,11 @@ class TecanDB(object):
                 logging.error('Usage: db.py setvol <sampname> <plate> <well> <gemvol> <expectvol>')
             else:
                 retval = self.setvol(argv[2], argv[3], argv[4], argv[5], argv[6])
-        elif argv[1] == 'startrun':  # Usage startrun name gentime checksum gitlabel
-            if len(argv) != 6:
-                logging.error('Usage: db.py startrun <name> <gentime> <checksum> <gitlabel>')
+        elif argv[1] == 'startrun':  # Usage startrun name gentime checksum gitlabel pgmid
+            if len(argv) != 7:
+                logging.error('Usage: db.py startrun <name> <gentime> <checksum> <gitlabel> <pgmid>')
             else:
-                retval = self.startrun(argv[2], argv[3], argv[4], argv[5])
+                retval = self.startrun(argv[2], argv[3], argv[4], argv[5], argv[6])
         elif argv[1] == 'endrun':
             if len(argv) != 3:
                 logging.error('Usage: db.py endrun <name>')
@@ -104,14 +104,14 @@ class TecanDB(object):
             self.remoteconn = None
         return retval
 
-    def startrun(self, program, gentime, checksum, gitlabel):
+    def startrun(self, program, gentime, checksum, gitlabel, pgm_id):
         run = uuid.uuid4()
-        logging.debug(str(("run=", run, ",gentime=", gentime, ",checksum=", checksum, ",gitlabel=", gitlabel)))
+        logging.debug(str(("run=", run, ",gentime=", gentime, ",checksum=", checksum, ",gitlabel=", gitlabel, ",pgm_id=",pgm_id)))
         self.con.execute("update runs set endtime=datetime('now') where endtime is null")
         # Store values in DB in UTC ('now' always gives UTC, gentime passed on the command line to db.py in the .gem file is UTC already)
         self.con.execute(
-            "insert into runs(run,program,starttime,gentime,checksum,gitlabel) values (?,?,datetime('now'),datetime(?),?,?)",
-            (run.hex, program, gentime, checksum, gitlabel))
+            "insert into runs(run,program,starttime,gentime,checksum,gitlabel,pgm_id) values (?,?,datetime('now'),datetime(?),?,?,?)",
+            (run.hex, program, gentime, checksum, gitlabel, pgm_id))
         self.con.commit()
         return 0
 
@@ -302,7 +302,7 @@ class TecanDB(object):
         """Push all completed runs to server"""
         clocal = self.con.cursor()
         clocal.execute(
-            "select run,program,starttime,gentime,checksum,gitlabel,endtime from runs where synctime is null")
+            "select run,program,starttime,gentime,checksum,gitlabel,endtime,pgm_id from runs where synctime is null")
         runs = clocal.fetchall()
         clocal.execute(
             "select run,endtime from runs where synctime is not null and endtime is not null and endtime>synctime ")
@@ -323,7 +323,7 @@ class TecanDB(object):
             self.openremote()
             try:
                 # run primary key is persistent across both local and remote
-                sql1 = "INSERT INTO runs (run,program,starttime,gentime,checksum,gitlabel,endtime) VALUES(%s,%s,CONVERT_TZ(%s,'UTC','SYSTEM'),CONVERT_TZ(%s,'UTC','SYSTEM'),%s,%s,CONVERT_TZ(%s,'UTC','SYSTEM'))"
+                sql1 = "INSERT INTO runs (run,program,starttime,gentime,checksum,gitlabel,endtime,pgm_id) VALUES(%s,%s,CONVERT_TZ(%s,'UTC','SYSTEM'),CONVERT_TZ(%s,'UTC','SYSTEM'),%s,%s,CONVERT_TZ(%s,'UTC','SYSTEM'),%s)"
                 sql1u = "UPDATE runs SET endtime=CONVERT_TZ(%s,'UTC','SYSTEM') WHERE run=%s"
                 # Local and remote maintain their own primary keys for sampnames,vols, ticks, flags
                 sql2 = "INSERT INTO sampnames (run,plate,well,name) VALUES(%s,%s,%s,%s)"

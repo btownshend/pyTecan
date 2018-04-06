@@ -1,9 +1,11 @@
+-- Setup for SQLLite on robot
 .open robot.dbs
 pragma foreign_keys = ON;
 -- Header for a run
 -- Inserted,updated on robot only, read-only on master
 create table runs(
-       run text primary key, 
+       run text primary key,
+       pgm_id integer,   -- FK into programs when transferred to server
        program text not null, 
        starttime datetime not null,
        gentime datetime not null,

@@ -9,7 +9,8 @@ use robot;
 -- Header for a run
 -- Inserted,updated on robot only, read-only on master
 create table runs(
-       run varchar(36), primary key(run), 
+       run varchar(36), primary key(run),
+       pgm_id integer, foreign key(pgm_id) references programs(program),
        program varchar(50) not null, 
        starttime timestamp not null default current_timestamp,
        gentime timestamp not null default current_timestamp,
