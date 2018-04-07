@@ -300,7 +300,7 @@ class Sample(object):
     @classmethod
     def lookupByWell(cls,plate,well):
         for s in Sample.__allsamples:
-            if s.plate==plate and s.well==well:
+            if s.plate==plate and (s.well==well or s.well is None):
                 return s
         return None
 
