@@ -1,4 +1,3 @@
-#from .sample import Sample
 import sys
 from . import worklist
 import pymysql.cursors
@@ -41,14 +40,14 @@ class DB(object):
             self.connect()
         if self.id is None:
             return
-        worklist.pyrun("DB\db.py startrun %s %s %s %s %s"%(name.replace(' ','_'),gentime.replace(' ','T'),checksum,gitlabel,self.id))
+        worklist.pyrun("DB\db.py startrun %s %s %s %s %s"%(name,gentime.replace(' ','T'),checksum,gitlabel,self.id))
         with self.db.cursor() as cursor:
-            cursor.execute('update programs set gentime=%s, checksum=%s,gitlabel=%s where program=%s',(gentime, checksum, gitlabel,self.id))
+            cursor.execute('update programs set name=%s, gentime=%s, checksum=%s,gitlabel=%s where program=%s',(name.replace(' ','_'), gentime, checksum, gitlabel,self.id))
 
     def tick(self, elapsed: float,remaining: float):
         if self.id is None:
             return
-        worklist.pyrun("DB\db.py tick %f %f"%(elapsed,remaining))
+        worklist.pyrun("DB\db.py tick %f %f %d"%(elapsed,remaining,worklist.getline()))
 
     def endrun(self, name: str):
         if self.id is None:
@@ -57,7 +56,7 @@ class DB(object):
         if len(self.ops)>0:
             print("Insert %d ops..."%len(self.ops),end='')
             with self.db.cursor() as cursor:
-                cursor.executemany('insert into pgm_ops(pgm_sample, elapsed, tip, volume,volchange) values(%s,%s,%s,%s,%s)',self.ops)
+                cursor.executemany('insert into pgm_ops(pgm_sample, op, elapsed, tip, volume,volchange,lineno, liquidClass) values(%s,%s,%s,%s,%s,%s,%s,%s)',self.ops)
             print("done")
             self.ops=[]
         self.db.commit()
@@ -86,17 +85,40 @@ class DB(object):
             # Delete any sample names entered
             cursor.execute("DELETE FROM pgm_samples WHERE program=%s",(self.id,))
 
-    def setvol(self, sample,volvar: str):
+    def setvol(self, sample, lineno: int, tip: int):
         if self.id is None:
             return
-        worklist.pyrun("DB\db.py setvol %s %s %s ~%s~ %.2f"%(sample.name.replace(' ','_'),sample.plate.name,sample.plate.wellname(sample.well),volvar,sample.volume))
+        worklist.pyrun("DB\db.py setvol %s %s ~DETECTED_VOLUME_%d~ %d %d %.2f"%(sample.plate.name,sample.plate.wellname(sample.well),tip,tip,lineno,sample.volume),flush=False)
+        # TODO: May be able to extract this from log file instead of calling python all the time
 
-    def volchange(self, sample, volume:float, tip: int):
+    def volchange(self, sample, op:str, volume:float, lineno: int, tip: int, liquidClass):
         if self.id is None:
+            return
+        if sample not in self.sampids:
+            logging.warning("Unable to find sample %s in sampids"%sample.name)
             return
         sampid=self.sampids[sample]
-        self.ops.append([sampid,clock.elapsed(),tip, sample.volume,volume])
+        self.ops.append([sampid,op,clock.elapsed(),tip, sample.volume,volume,lineno,liquidClass.name])
 
-
+    def wlistOp(self,op:str, lineno:int, tipMask:int,liquidClass,volume,plate,wellNames):
+        if op=='Mix':
+            return
+        tip = 1
+        tipTmp = tipMask
+        for i in range(len(wellNames)):
+            while tipTmp & 1 == 0:
+                tipTmp = tipTmp >> 1
+                tip = tip + 1
+            from .sample import Sample
+            samp=Sample.lookupByWell(plate,wellNames[i])
+            if samp is None:
+                logging.warning("Unable to find sample %s.%s"%(plate.name,wellNames[i]))
+            else:
+                self.volchange(samp,op,volume[i],lineno, tip, liquidClass)
+                if op=='Detect_Liquid':
+                    # Also put a command in .gem to push measured volume
+                    self.setvol(samp,lineno,tip)
+            tipTmp = tipTmp >> 1
+            tip += 1
 
 db=DB()

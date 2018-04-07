@@ -61,10 +61,10 @@ class TecanDB(object):
             else:
                 retval = self.getvol(argv[2], argv[3])
         elif argv[1] == 'setvol':
-            if len(argv) != 7:
-                logging.error('Usage: db.py setvol <sampname> <plate> <well> <gemvol> <expectvol>')
+            if len(argv) != 8:
+                logging.error('Usage: db.py setvol <plate> <well> <gemvol> <tip> <line> <expectvol>')
             else:
-                retval = self.setvol(argv[2], argv[3], argv[4], argv[5], argv[6])
+                retval = self.setvol(argv[2], argv[3], argv[4], argv[5], argv[6], argv[7])
         elif argv[1] == 'startrun':  # Usage startrun name gentime checksum gitlabel pgmid
             if len(argv) != 7:
                 logging.error('Usage: db.py startrun <name> <gentime> <checksum> <gitlabel> <pgmid>')
@@ -76,10 +76,10 @@ class TecanDB(object):
             else:
                 retval = self.endrun(argv[2])
         elif argv[1] == 'tick':
-            if len(argv) != 4:
-                logging.error('Usage db.py tick <elapsed> <remaining>')
+            if len(argv) != 5:
+                logging.error('Usage db.py tick <elapsed> <remaining> <lineno>')
             else:
-                retval = self.tick(argv[2], argv[3])
+                retval = self.tick(argv[2], argv[3], argv[4])
         elif argv[1] == 'push':
             if len(argv) != 2:
                 logging.error('Usage db.py push')
@@ -115,7 +115,7 @@ class TecanDB(object):
         self.con.commit()
         return 0
 
-    def tick(self, elapsed, remaining):
+    def tick(self, elapsed, remaining, lineno):
         try:
             elapsed = float(elapsed)
             remaining = float(remaining)
@@ -128,10 +128,10 @@ class TecanDB(object):
             return -1
         cursor = self.con.cursor()
         cursor.execute(
-            "insert into ticks(run,elapsed,remaining,time)  select run,?,?,datetime('now') from runs where endtime is null",
-            (elapsed, remaining))
+            "insert into ticks(run,elapsed,remaining,time,lineno)  select run,?,?,?,datetime('now') from runs where endtime is null",
+            (elapsed, remaining, lineno))
         if cursor.rowcount != 1:
-            logging.error('tick: Failed insert of (%f,%f) into ticks: rowcount=%d', elapsed, remaining, cursor.rowcount)
+            logging.error('tick: Failed insert of (%f,%f,%d) into ticks: rowcount=%d', elapsed, remaining, lineno, cursor.rowcount)
         else:
             logging.info("inserted %d rows", cursor.rowcount)
         self.con.commit()
@@ -215,7 +215,7 @@ class TecanDB(object):
         logging.info("volume=%f, measured=%f", volume, measured)
         return volume
 
-    def setvol(self, sampname, platename, well, gemvolume, expectvol):
+    def setvol(self, platename, well, gemvolume, tip, lineno, expectvol):
         try:
             gemvolume = float(gemvolume)
             expectvol = float(expectvol)
@@ -227,13 +227,6 @@ class TecanDB(object):
         if run is None:
             return -1
         cursor = self.con.cursor()
-        if sampname is not None:
-            cursor.execute("insert or replace into sampnames(run,plate,well,name) values(?,?,?,?)",
-                           (run, platename, well, sampname))
-            if cursor.rowcount != 1:
-                logging.error("setvol: Failed insert of (%s,%s,%s,%s) into sampname: rowcount=%d", run, platename, well,
-                              sampname, cursor.rowcount)
-
         gemvolume = float(gemvolume)
         if platename == 'Reagents':
             plate = decklayout.REAGENTPLATE
@@ -259,11 +252,11 @@ class TecanDB(object):
                 logging.error("setvol: Unable to convert gemvolume of %f to actual volume ", gemvolume)
 
         cursor.execute(
-            "insert or replace into vols(run,plate,well,gemvolume,volume,expected,measured) values(?,?,?,?,?,?,datetime('now'))",
-            (run, platename, well, gemvolume, volume, expectvol))
+            "insert or replace into vols(run,tip,lineno,gemvolume,volume,measured) values(?,?,?,?,?,datetime('now'))",
+            (run, tip, lineno, gemvolume, volume))
         if cursor.rowcount != 1:
-            logging.error("setvol: Failed insert of (%s,%s,%s,%.1f,%s) into vols: rowcount=%d", platename, well,
-                          gemvolume, volume, expectvol, cursor.rowcount)
+            logging.error("setvol: Failed insert of (%s,%s,%s,%s) into vols: rowcount=%d",
+                          tip, lineno, gemvolume, volume, cursor.rowcount)
         self.con.commit()
         self.dbchanged = True
         return 0
@@ -307,28 +300,25 @@ class TecanDB(object):
         clocal.execute(
             "select run,endtime from runs where synctime is not null and endtime is not null and endtime>synctime ")
         runends = clocal.fetchall()
-        clocal.execute("select sampname,run,plate,well,name  from sampnames where synctime is null")
-        sampnames = clocal.fetchall()
-        clocal.execute("select vol,run,plate,well,gemvolume,volume,expected,measured from vols where synctime is null")
+        clocal.execute("select vol,gemvolume,volume,measured,run,lineno,tip from vols where synctime is null")
         vols = clocal.fetchall()
         clocal.execute("select flag,run,name,value,lastupdate from flags where synctime is null")
         flags = clocal.fetchall()
-        clocal.execute("select tick,run,elapsed,remaining,time from ticks where synctime is null")
+        clocal.execute("select tick,run,elapsed,remaining,time,lineno from ticks where synctime is null")
         ticks = clocal.fetchall()
 
-        logging.info("Pushing: %d runs,  %d endruns, %d sampnames, %d vols, %d flags, %d ticks", len(runs),
-                     len(runends), len(sampnames), len(vols), len(flags), len(ticks))
-        if len(runs) + len(runends) + len(sampnames) + len(vols) + len(flags) + len(ticks) > 0:
+        logging.info("Pushing: %d runs,  %d endruns,  %d vols, %d flags, %d ticks", len(runs),
+                     len(runends), len(vols), len(flags), len(ticks))
+        if len(runs) + len(runends) + len(vols) + len(flags) + len(ticks) > 0:
             # Connect to the database if needed
             self.openremote()
             try:
                 # run primary key is persistent across both local and remote
                 sql1 = "INSERT INTO runs (run,program,starttime,gentime,checksum,gitlabel,endtime,pgm_id) VALUES(%s,%s,CONVERT_TZ(%s,'UTC','SYSTEM'),CONVERT_TZ(%s,'UTC','SYSTEM'),%s,%s,CONVERT_TZ(%s,'UTC','SYSTEM'),%s)"
                 sql1u = "UPDATE runs SET endtime=CONVERT_TZ(%s,'UTC','SYSTEM') WHERE run=%s"
-                # Local and remote maintain their own primary keys for sampnames,vols, ticks, flags
-                sql2 = "INSERT INTO sampnames (run,plate,well,name) VALUES(%s,%s,%s,%s)"
-                sql3 = "INSERT INTO vols (run,plate,well,gemvolume,volume,expected,measured) VALUES(%s,%s,%s,%s,%s,%s,CONVERT_TZ(%s,'UTC','SYSTEM'))"
-                sql4 = "INSERT INTO ticks (run,elapsed,remaining,time) VALUES(%s,%s,%s,%s)"
+                # Local and remote maintain their own primary keys for vols, ticks, flags
+                sql3 = "INSERT INTO vols (run,pgm_op,gemvolume,volume,measured) SELECT r.run,pgm_op,%s,%s,CONVERT_TZ(%s,'UTC','SYSTEM') FROM pgm_ops o, pgm_samples s, runs r WHERE o.pgm_sample=s.pgm_sample AND s.program=r.pgm_id AND r.run=%s AND o.lineno=%s AND o.tip=%s"
+                sql4 = "INSERT INTO ticks (run,elapsed,remaining,lineno,time) VALUES(%s,%s,%s,%s,%s)"
                 sql5 = "INSERT INTO flags (run,name,value,lastupdate,pulltime) VALUES(%s,%s,%s,CONVERT_TZ(%s,'UTC','SYSTEM'),now())"
                 with self.remoteconn.cursor() as cremote:
                     for run in runs:
@@ -339,25 +329,27 @@ class TecanDB(object):
                         clocal.execute("update runs set synctime=datetime('now') where run=?", (run[0],))
                     for runend in runends:
                         logging.debug("pushing run endtime %s", runend[0])
-                        if cremote.execute(sql1u, (runend[1], runend[0])) != -1:
+                        if cremote.execute(sql1u, (runend[1], runend[0])) < 0:
                             logging.error("Failed %s", sql1u % (runend[1], runend[0]))
                             return -1
                         clocal.execute("update runs set synctime=datetime('now') where run=?", (runend[0],))
-                    for sampname in sampnames:
-                        logging.debug("pushing sampname %d (run %s)", sampname[0], sampname[1])
-                        cremote.execute(sql2, sampname[1:])
-                        clocal.execute("update sampnames set synctime=datetime('now') where sampname=?", (sampname[0],))
                     for vol in vols:
                         logging.debug("pushing vol %d (run %s)", vol[0], vol[1])
-                        cremote.execute(sql3, vol[1:])
+                        if cremote.execute(sql3, vol[1:]) != 1:
+                            logging.error("Failed %s", sql3%vol[1:])
+                            return -1
                         clocal.execute("update vols set synctime=datetime('now') where vol=?", (vol[0],))
                     for tick in ticks:
                         logging.debug("pushing tick %d (run %s)", tick[0], tick[1])
-                        cremote.execute(sql4, tick[1:])
+                        if cremote.execute(sql4, tick[1:]) != 1:
+                            logging.error("Failed %s", sql4%tick[1:])
+                            return -1
                         clocal.execute("update ticks set synctime=datetime('now') where tick=?", (tick[0],))
                     for flag in flags:
                         logging.debug("pushing flag %d (run %s)", flag[0], flag[1])
-                        cremote.execute(sql5, flag[1:])
+                        if cremote.execute(sql5, flag[1:]) != 1:
+                            logging.error("Failed %s", sql5%flag[1:])
+                            return -1
                         clocal.execute("update flags set synctime=datetime('now') where flag=?", (flag[0],))
                 self.remoteconn.commit()
                 self.con.commit()

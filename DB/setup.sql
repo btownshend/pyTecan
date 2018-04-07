@@ -20,7 +20,8 @@ create table ticks(
        tick integer primary key, 
        run text not null, 
        elapsed float not null, 
-       remaining float, 
+       remaining float,
+       lineno integer, -- not null
        time datetime not null,
        synctime datetime,  -- Time this record was last pushed to master
        foreign key(run) references runs(run) on delete cascade
@@ -35,18 +36,6 @@ create table flags(
        lastupdate datetime not null, 
        synctime datetime,  -- Time this record was last pushed to master
        foreign key(run) references runs(run) on delete cascade
-);
--- Sample names for a run
--- Inserted on robot only, read-only on master, never updated (except synctime)
-create table sampnames(
-       sampname integer primary key,
-       run text not null,
-       plate text not null,
-       well text not null,
-       name text not null,
-       synctime datetime,  -- Time this record was last pushed to master
-       foreign key(run) references runs(run)  on delete cascade,
-       unique(run,plate,well)
 );
 
 -- Vols for a run

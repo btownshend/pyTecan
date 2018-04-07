@@ -61,11 +61,9 @@ create table sampnames(
 create table vols(
        vol integer primary key auto_increment,
        run varchar(36),
-       lineno integer, --  not null,  -- FIXME: should fk into pgm_ops
-       tip integer not null,
+       pgm_op integer, foreign key(pgm_op) references pgm_ops(pgm_op), -- not null
        gemvolume float not null,	  -- Volume as reported by Gemini
        volume float,   -- gemvolume converted to true volume
-       expected float,   -- expected true volume
        measured timestamp not null default current_timestamp,	-- when was measurement made
        foreign key(run) references runs(run) on delete cascade
 );
@@ -93,8 +91,7 @@ create table pgm_samples (
 create table pgm_ops (
        pgm_op integer primary key auto_increment,
        pgm_sample integer not null, foreign key(pgm_sample) references pgm_samples(pgm_sample) on delete cascade,
-       elapsed float not null,
-       op varchar(20), -- not null 
+       op varchar(20), -- not null
        lineno integer, -- not null,  -- line number in program
        tip integer not null,   -- which tip was used (1..4)
        liquidClass varchar(20),
