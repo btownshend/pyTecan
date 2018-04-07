@@ -541,9 +541,10 @@ def romahome():
 def email(dest,subject,body='',profile='cdsrobot',onerror=0,attachscreen=1):
     wlist.append('Notification(%d,"%s","%s","%s","%s",%d)'%(attachscreen,profile,dest,subject,body,onerror))
 
-def condition(varname,cond,value,dest):
+def condition(varname,cond,value,dest,flush=True):
     """Conditional - jump to given label (comment) if (variable cond value) is true"""
-    flushQueue()
+    if flush:
+        flushQueue()
     condval=None
     if cond=='==':
         condval=0
@@ -594,8 +595,9 @@ def waittimer(duration,timer=1):
     wlist.append('WaitTimer("%d","%f")'%(timer,duration))
     clock.pipetting=max(clock.pipetting,timerstart+duration)	# Assume the clock.pipetting time is the timer length
 
-def userprompt( text,timeout=-1):
-    flushQueue()
+def userprompt( text,timeout=-1,flush=True):
+    if flush:
+        flushQueue()
     cmd='UserPrompt("%s",0,%d)'%(text,timeout)
     wlist.append(cmd)
     if timeout>0:
@@ -632,9 +634,10 @@ def beginloop(loopname,n):
 def endloop():
     wlist.append('EndLoop()')
         
-def execute( command, wait=True, resultvar=None):
+def execute( command, wait=True, resultvar=None, flush=True):
     """Execute an external command"""
-    flushQueue()
+    if flush:
+        flushQueue()
     flags=0
     if wait:
         flags=flags | 2
@@ -645,13 +648,18 @@ def execute( command, wait=True, resultvar=None):
     wlist.append('Execute("%s",%d,"%s")'%(command,flags,resultvar))
     clock.pipetting+=2.15   # Just overhead time, not actually time that command itself takes
 
-def pyrun( cmd):
+def pyrun( cmd, version=3, flush=True):
     label=getlabel()
-    execute(r"C:\Python27\python.exe C:\cygwin\Home\Admin\%s"%cmd,resultvar="ecode")
-    condition("ecode","==","0",label)
-    msg='Python command %s failed with ecode=~ecode~'%cmd
+    if version==2:
+        execute(r"C:\Python27\python.exe C:\cygwin\Home\Admin\%s"%cmd,resultvar="ecode",flush=flush)
+    else:
+        assert version==3
+        execute(r"C:\Python3\python.exe C:\cygwin\Home\Admin\%s" % cmd, resultvar="ecode",flush=flush)
+
+    condition("ecode","==","0",label,flush=flush)
+    msg='Python%d command %s failed with ecode=~ecode~'%(version,cmd)
     email(dest='cdsrobot@gmail.com',subject=msg)
-    userprompt(msg)
+    userprompt(msg,flush=flush)
     comment(label)
 
 def getlabel():
