@@ -26,7 +26,8 @@ create table ticks(
        tick integer primary key  auto_increment,
        run varchar(36) not null, 
        elapsed float not null, 
-       remaining float, 
+       remaining float,
+       lineno integer, -- not null,   -- Line number in GEM program
        time timestamp not null default current_timestamp,
        foreign key(run) references runs(run) on delete cascade
 );
@@ -56,11 +57,12 @@ create table sampnames(
 
 -- Vols for a run
 -- Inserted on robot only, read-only on master, never updated
+-- Volume measurement occuring during a particular program operation
 create table vols(
-       vol integer primary key auto_increment, 
-       run varchar(36), 
-       plate varchar(20) not null, 
-       well varchar(4) not null,
+       vol integer primary key auto_increment,
+       run varchar(36),
+       lineno integer, --  not null,  -- FIXME: should fk into pgm_ops
+       tip integer not null,
        gemvolume float not null,	  -- Volume as reported by Gemini
        volume float,   -- gemvolume converted to true volume
        expected float,   -- expected true volume
@@ -92,7 +94,11 @@ create table pgm_ops (
        pgm_op integer primary key auto_increment,
        pgm_sample integer not null, foreign key(pgm_sample) references pgm_samples(pgm_sample) on delete cascade,
        elapsed float not null,
+       op varchar(20), -- not null 
+       lineno integer, -- not null,  -- line number in program
+       tip integer not null,   -- which tip was used (1..4)
+       liquidClass varchar(20),
        volume float not null,   -- expected volume after operation (FIXME: not needed?)
-       volchange float not null  -- increase/decrease in volume
+       volchange float not null  -- increase/decrease in volume  (+ for dispense, -ve for aspirate, 0 for LD)
 );
 

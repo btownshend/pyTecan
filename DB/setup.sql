@@ -53,12 +53,11 @@ create table sampnames(
 -- Inserted on robot only, read-only on master, never updated (except synctime)
 create table vols(
        vol integer primary key, 
-       run text not null, 
-       plate text not null, 
-       well text not null,
+       run text not null,
+       lineno integer, -- not null
+       tip integer, -- not null
        gemvolume float not null,	  -- Volume as reported by Gemini
        volume float,   -- gemvolume converted to true volume
-       expected float,   -- expected true volume
        measured datetime not null,	-- when was measurement made
        synctime datetime,  -- Time this record was last pushed to master
        foreign key(run) references runs(run) on delete cascade
