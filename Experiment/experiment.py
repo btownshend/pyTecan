@@ -79,14 +79,14 @@ class Experiment(object):
     @staticmethod
     def setreagenttemp(temp: float=None):
         if temp is None:
-            worklist.pyrun("RIC\\ricset.py IDLE")
+            worklist.pyrun("RIC\\ricset.py IDLE",version=2)
             decklayout.REAGENTPLATE.liquidTemp=22.7
         else:
             worklist.variable("dewpoint",temp,userprompt="Enter dewpoint",minval=0,maxval=20)
             worklist.variable("rictemp","~dewpoint~+2")
-            worklist.pyrun("RIC\\ricset.py ~rictemp~")
+            worklist.pyrun("RIC\\ricset.py ~rictemp~",version=2)
             decklayout.REAGENTPLATE.liquidTemp=temp+2   # Assumes that temp is the one used
-#            worklist.pyrun("RIC\\ricset.py %s"%temp)
+#            worklist.pyrun("RIC\\ricset.py %s"%temp,version=2)
 
     @staticmethod
     def saveworklist(filename: str):
@@ -512,18 +512,18 @@ class Experiment(object):
         oldloc=plate.location
         self.moveplate(plate,decklayout.SHAKERPLATELOC,returnHome=False)
         Experiment.__shakerActive=True
-        worklist.pyrun("BioShake\\bioexec.py setElmLockPos")
-        worklist.pyrun("BioShake\\bioexec.py setShakeTargetSpeed%.0f"%speed)
-        worklist.pyrun("BioShake\\bioexec.py setShakeAcceleration%d"%accel)
-        worklist.pyrun("BioShake\\bioexec.py shakeOn")
+        worklist.pyrun("BioShake\\bioexec.py setElmLockPos",version=2)
+        worklist.pyrun("BioShake\\bioexec.py setShakeTargetSpeed%.0f"%speed,version=2)
+        worklist.pyrun("BioShake\\bioexec.py setShakeAcceleration%d"%accel,version=2)
+        worklist.pyrun("BioShake\\bioexec.py shakeOn",version=2)
         self.starttimer()
         Sample.shaken(plate.name,speed)
         Sample.addallhistory("(S%d@%.0f)" % (dur,speed), onlyplate=plate.name, htype="shake")
         self.waittimer(dur)
-        worklist.pyrun("BioShake\\bioexec.py shakeOff")
+        worklist.pyrun("BioShake\\bioexec.py shakeOff",version=2)
         self.starttimer()
         self.waittimer(accel+1)
-        worklist.pyrun("BioShake\\bioexec.py setElmUnlockPos")
+        worklist.pyrun("BioShake\\bioexec.py setElmUnlockPos",version=2)
         Experiment.__shakerActive=False
         if returnPlate:
             self.moveplate(plate,oldloc)
