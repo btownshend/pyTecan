@@ -281,7 +281,7 @@ def aspirateDispense(op,tipMask,wells, liquidClass, volume, plate, cycles=None,a
     elif op=='Dispense':
         clock.pipetting+=3.70
     elif op=='Aspirate':
-        clock.pipetting+=5.14+3.70   # Extra for conditioning volume
+        clock.pipetting+=5.14
     elif op=='AspirateNC':
         clock.pipetting+=5.14
     elif op=='Detect_Liquid':
@@ -392,6 +392,7 @@ def aspirateDispense(op,tipMask,wells, liquidClass, volume, plate, cycles=None,a
         wlist.append( '%s(%d,"%s",%s,%d,%d,%d,"%s",0)'%(op,tipMask,liquidClass,volstr,loc.grid,loc.pos-1,spacing,ws))
         db.wlistOp(op,getline(),tipMask,liquidClass,[-(v+2) for v in volume],plate,pos)
         # Return conditioning volume
+        clock.pipetting+3.70  # Extra for conditioning volume
         wlist.append( '%s(%d,"%s",%s,%d,%d,%d,"%s",0)'%("Dispense",tipMask,liquidClass,condvol,loc.grid,loc.pos-1,spacing,ws))
         db.wlistOp("Dispense",getline(),tipMask,liquidClass,[2 for _ in volume],plate,pos)
     else:
@@ -400,9 +401,8 @@ def aspirateDispense(op,tipMask,wells, liquidClass, volume, plate, cycles=None,a
 
     if op!="Detect_Liquid" and op!="Aspirate" and (loc.grid!=QPCRLOC.grid or loc.pos!=QPCRLOC.pos) and loc.grid>3 and liquidClass.name!='Air' and liquidClass.name[0:3]!='Mix' and liquidClass.name[0:7]!='Blowout':
         # Do final liquid detect (but not on qPCR plate, since that doesn't work anyway)
-        wlist.append( 'Detect_Liquid(%d,"%s",%d,%d,%d,"%s",0)'%(tipMask,"Water-InLiquid",loc.grid,loc.pos-1,spacing,ws))
         clock.pipetting+=2.90    # Unsure of this one
-        
+        wlist.append( 'Detect_Liquid(%d,"%s",%d,%d,%d,"%s",0)'%(tipMask,LCWaterInLiquid.name,loc.grid,loc.pos-1,spacing,ws))
         db.wlistOp("Detect_Liquid",getline(),tipMask,LCWaterInLiquid,[0 for _ in volume],plate,pos)
 
     ptr=0
