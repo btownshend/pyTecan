@@ -11,7 +11,9 @@ from . import logging
 from .plate import Plate
 from .platelocation import PlateLocation
 from .decklayout import QPCRLOC,WASHLOC
-
+from .db import db
+from .sample import MIXLOSS
+from .liquidclass import LCWaterInLiquid
 
 DITI200=0
 DITI10=2
@@ -376,21 +378,33 @@ def aspirateDispense(op,tipMask,wells, liquidClass, volume, plate, cycles=None,a
 
     if op=="Mix":
         wlist.append( '%s(%d,"%s",%s,%d,%d,%d,"%s",%d,0)'%(op,tipMask,liquidClass,volstr,loc.grid,loc.pos-1,spacing,ws,cycles))
+        db.wlistOp(op,getline(),tipMask,liquidClass,[-MIXLOSS for _ in volume],plate,pos)
     elif op=="AspirateNC":
         wlist.append( '%s(%d,"%s",%s,%d,%d,%d,"%s",0)'%("Aspirate",tipMask,liquidClass,volstr,loc.grid,loc.pos-1,spacing,ws))
+        db.wlistOp("Aspirate",getline(),tipMask,liquidClass,[-v for v in volume],plate,pos)
     elif op=="Detect_Liquid":
         wlist.append( '%s(%d,"%s",%d,%d,%d,"%s",0)'%(op,tipMask,liquidClass,loc.grid,loc.pos-1,spacing,ws))
-    else:
+        db.wlistOp(op,getline(),tipMask,liquidClass,[0 for _ in volume],plate,pos)
+    elif op=="Dispense":
         wlist.append( '%s(%d,"%s",%s,%d,%d,%d,"%s",0)'%(op,tipMask,liquidClass,volstr,loc.grid,loc.pos-1,spacing,ws))
-    if op=="Aspirate":
+        db.wlistOp(op,getline(),tipMask,liquidClass,volume,plate,pos)
+    elif op=="Aspirate":
+        wlist.append( '%s(%d,"%s",%s,%d,%d,%d,"%s",0)'%(op,tipMask,liquidClass,volstr,loc.grid,loc.pos-1,spacing,ws))
+        db.wlistOp(op,getline(),tipMask,liquidClass,[-(v+2) for v in volume],plate,pos)
         # Return conditioning volume
         wlist.append( '%s(%d,"%s",%s,%d,%d,%d,"%s",0)'%("Dispense",tipMask,liquidClass,condvol,loc.grid,loc.pos-1,spacing,ws))
+        db.wlistOp("Dispense",getline(),tipMask,liquidClass,[2 for _ in volume],plate,pos)
+    else:
+        logging.error("Bad operation: %s"%op)
+
 
     if op!="Detect_Liquid" and op!="Aspirate" and (loc.grid!=QPCRLOC.grid or loc.pos!=QPCRLOC.pos) and loc.grid>3 and liquidClass.name!='Air' and liquidClass.name[0:3]!='Mix' and liquidClass.name[0:7]!='Blowout':
         # Do final liquid detect (but not on qPCR plate, since that doesn't work anyway)
         wlist.append( 'Detect_Liquid(%d,"%s",%d,%d,%d,"%s",0)'%(tipMask,"Water-InLiquid",loc.grid,loc.pos-1,spacing,ws))
         clock.pipetting+=2.90    # Unsure of this one
         
+        db.wlistOp("Detect_Liquid",getline(),tipMask,LCWaterInLiquid,[0 for _ in volume],plate,pos)
+
     ptr=0
     for i in range(len(allvols)):
         if allvols[i]>0:

@@ -414,7 +414,6 @@ class Sample(object):
         volvar='detected_volume_%d'%tipnum
         worklist.variable(volvar,-2)
         worklist.detectLiquid(tipMask,well,self.inliquidLC,self.plate)
-        db.setvol(self,volvar)
         doneLabel=worklist.getlabel()
         worklist.condition(volvar,">",gemvolwarn,doneLabel)
         ptmp=clock.pipetting
@@ -502,7 +501,6 @@ class Sample(object):
                 remove=self.volume-0.1   # Leave residual
 
         self.removeVolume(remove)
-        db.volchange(self,-remove,tipMask)
 
         if self.volume+.001<self.plate.unusableVolume() and self.volume+remove>0 and not (self.hasBeads and self.plate.location==MAGPLATELOC) and not removeAll:
             logging.warning("Aspiration of %.1ful from %s brings volume down to %.1ful which is less than its unusable volume of %.1f ul"%(remove,self.name,self.volume,self.plate.unusableVolume()))
@@ -588,7 +586,6 @@ class Sample(object):
             self.hasBeads=True
 
         self.volume=self.volume+volume
-        db.volchange(self,volume,tipMask)
 
         self.emptied=False
         #self.addhistory("%06x %s"%(self.getHash(w)&0xffffff,src.name),volume,tipMask)
@@ -831,7 +828,6 @@ class Sample(object):
                         worklist.dispense(tipMask,well,liquidclass.LCDip,0.1,self.plate)
 
             self.removeVolume(MIXLOSS)
-            db.volchange(self,-MIXLOSS,tipMask)
             self.addhistory(mstr,-MIXLOSS,tipMask)
             self.lastMixed=clock.elapsed()
             self.wellMixed=True
@@ -864,7 +860,7 @@ class Sample(object):
         if trunchistory and len(hist)>0:
             # Remove any trailing {xx} or (xx) markers from history
             wds=hist.strip().split(' ')
-            pcnt=0;bcnt=0;
+            pcnt=0;bcnt=0
             for i in range(len(wds)-1,-1,-1):
                 if wds[i][0]=='(':
                     pcnt+=1
