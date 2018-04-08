@@ -392,7 +392,7 @@ def aspirateDispense(op,tipMask,wells, liquidClass, volume, plate, cycles=None,a
         wlist.append( '%s(%d,"%s",%s,%d,%d,%d,"%s",0)'%(op,tipMask,liquidClass,volstr,loc.grid,loc.pos-1,spacing,ws))
         db.wlistOp(op,getline(),tipMask,liquidClass,[-(v+2) for v in volume],plate,pos)
         # Return conditioning volume
-        clock.pipetting+3.70  # Extra for conditioning volume
+        clock.pipetting+=3.70  # Extra for conditioning volume
         wlist.append( '%s(%d,"%s",%s,%d,%d,%d,"%s",0)'%("Dispense",tipMask,liquidClass,condvol,loc.grid,loc.pos-1,spacing,ws))
         db.wlistOp("Dispense",getline(),tipMask,liquidClass,[2 for _ in volume],plate,pos)
     else:
