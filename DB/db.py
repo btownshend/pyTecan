@@ -72,7 +72,7 @@ class TecanDB(object):
                 retval = self.startrun(argv[2], argv[3], argv[4], argv[5], argv[6])
         elif argv[1] == 'endrun':
             if len(argv) != 3:
-                logging.error('Usage: db.py endrun <name>')
+                logging.error('Usage: db.py endrun <program>')
             else:
                 retval = self.endrun(argv[2])
         elif argv[1] == 'tick':
@@ -104,14 +104,14 @@ class TecanDB(object):
             self.remoteconn = None
         return retval
 
-    def startrun(self, program, gentime, checksum, gitlabel, pgm_id):
+    def startrun(self, name, gentime, checksum, gitlabel, program):
         run = uuid.uuid4()
-        logging.debug(str(("run=", run, ",gentime=", gentime, ",checksum=", checksum, ",gitlabel=", gitlabel, ",pgm_id=",pgm_id)))
+        logging.debug(str(("run=", run, ",gentime=", gentime, ",checksum=", checksum, ",gitlabel=", gitlabel, ",id=", program)))
         self.con.execute("update runs set endtime=datetime('now') where endtime is null")
         # Store values in DB in UTC ('now' always gives UTC, gentime passed on the command line to db.py in the .gem file is UTC already)
         self.con.execute(
-            "insert into runs(run,program,starttime,gentime,checksum,gitlabel,pgm_id) values (?,?,datetime('now'),datetime(?),?,?,?)",
-            (run.hex, program, gentime, checksum, gitlabel, pgm_id))
+            "insert into runs(run,name,starttime,gentime,checksum,gitlabel,program) values (?,?,datetime('now'),datetime(?),?,?,?)",
+            (run.hex, name, gentime, checksum, gitlabel, program))
         self.con.commit()
         return 0
 
@@ -295,7 +295,7 @@ class TecanDB(object):
         """Push all completed runs to server"""
         clocal = self.con.cursor()
         clocal.execute(
-            "select run,program,starttime,gentime,checksum,gitlabel,endtime,pgm_id from runs where synctime is null")
+            "select run,program,starttime,endtime from runs where synctime is null")
         runs = clocal.fetchall()
         clocal.execute(
             "select run,endtime from runs where synctime is not null and endtime is not null and endtime>synctime ")
@@ -314,10 +314,10 @@ class TecanDB(object):
             self.openremote()
             try:
                 # run primary key is persistent across both local and remote
-                sql1 = "INSERT INTO runs (run,program,starttime,gentime,checksum,gitlabel,endtime,pgm_id) VALUES(%s,%s,CONVERT_TZ(%s,'UTC','SYSTEM'),CONVERT_TZ(%s,'UTC','SYSTEM'),%s,%s,CONVERT_TZ(%s,'UTC','SYSTEM'),%s)"
+                sql1 = "INSERT INTO runs (run,program,starttime,endtime) VALUES(%s,%s,CONVERT_TZ(%s,'UTC','SYSTEM'),CONVERT_TZ(%s,'UTC','SYSTEM'))"
                 sql1u = "UPDATE runs SET endtime=CONVERT_TZ(%s,'UTC','SYSTEM') WHERE run=%s"
                 # Local and remote maintain their own primary keys for vols, ticks, flags
-                sql3 = "INSERT INTO vols (run,pgm_op,gemvolume,volume,measured) SELECT r.run,pgm_op,%s,%s,CONVERT_TZ(%s,'UTC','SYSTEM') FROM pgm_ops o, pgm_samples s, runs r WHERE o.pgm_sample=s.pgm_sample AND s.program=r.pgm_id AND r.run=%s AND o.lineno=%s AND o.tip=%s"
+                sql3 = "INSERT INTO vols (run,op,gemvolume,volume,measured) SELECT r.run,op,%s,%s,CONVERT_TZ(%s,'UTC','SYSTEM') FROM ops o, samples s, runs r WHERE o.sample=s.sample AND s.program=r.program AND r.run=%s AND o.lineno=%s AND o.tip=%s"
                 sql4 = "INSERT INTO ticks (run,elapsed,remaining,lineno,time) VALUES(%s,%s,%s,%s,%s)"
                 sql5 = "INSERT INTO flags (run,name,value,lastupdate,pulltime) VALUES(%s,%s,%s,CONVERT_TZ(%s,'UTC','SYSTEM'),now())"
                 with self.remoteconn.cursor() as cremote:
@@ -334,7 +334,7 @@ class TecanDB(object):
                             return -1
                         clocal.execute("update runs set synctime=datetime('now') where run=?", (runend[0],))
                     for vol in vols:
-                        logging.debug("pushing vol %d (run %s)", vol[0], vol[1])
+                        logging.debug("pushing vol %d (run %s)", vol[0], vol[4])
                         if cremote.execute(sql3, vol[1:]) != 1:
                             logging.error("Failed %s", sql3%vol[1:])
                             return -1

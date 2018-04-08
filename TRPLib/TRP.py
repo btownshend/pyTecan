@@ -174,7 +174,7 @@ class TRP(object):
     
     def finish(self):
         self.e.lihahome()
-        db.endrun(sys.argv[0])   # May have already been ended before waiting to turn off reagent chiller; idempotent
+        db.endrun()   # May have already been ended before waiting to turn off reagent chiller; idempotent
         worklist.userprompt("Process complete. Continue to turn off reagent cooler")
         Sample.evapcheckallsamples()   #  Run an evap check to ensure that we compute with correct reagent block temp
         self.e.setreagenttemp(None)

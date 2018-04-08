@@ -2,7 +2,7 @@ import sys
 
 from PyQt5 import QtSql
 from PyQt5.QtCore import QTimeZone, QModelIndex
-from PyQt5.QtWidgets import QApplication, QMainWindow, QTableWidgetItem
+from PyQt5.QtWidgets import QApplication, QMainWindow
 
 from gui_auto import Ui_MainWindow
 
@@ -14,6 +14,8 @@ class GUI(Ui_MainWindow):
         self.currentPlate = None
         self.currentWell = None
         self.currentSample = None
+        self.currentProgram = None
+        self.db = None
 
     def dbopen(self):
         self.db = QtSql.QSqlDatabase.addDatabase('QMYSQL')
@@ -34,10 +36,9 @@ class GUI(Ui_MainWindow):
         self.runsTable.clicked.connect(ui.selectRun)
         self.plateTable.clicked.connect(ui.selectPlate)
         self.sampleTable.clicked.connect(ui.selectSample)
-
         self.pgmvolsTable.hide()
         self.dbopen()
-        self.refreshAll(False)
+        self.refreshAll()
         print("timezone=",QTimeZone.systemTimeZone().comment())
 
     def sqlErrorCheck(self,lastError):
@@ -47,15 +48,30 @@ class GUI(Ui_MainWindow):
 
     def refreshRunsTable(self):
         q=QtSql.QSqlQueryModel()
-        q.setQuery("SELECT r.run, right(r.run,4) runid, program, gentime, starttime, endtime, if(endtime is null,round(min(remaining)),'')  remtime from runs r, ticks t where r.run=t.run group by r.run order by starttime desc")
+        q.setQuery("SELECT r.run, right(r.run,4) runid, program, id, gentime, starttime, endtime, if(endtime is null,round(min(remaining)),'')  remtime from runs r, ticks t where r.run=t.run group by r.run order by starttime desc")
         self.sqlErrorCheck(q.lastError())
         self.runsTable.setModel(q)
         self.runsTable.setColumnHidden(0,True)
         self.runsTable.resizeColumnsToContents()
 
+    def refreshPgmGroup(self):
+        print("refreshRunsGroup: pgm=",self.currentProgram,",plate=",self.currentPlate,",sample=",self.currentSample)
+        if self.currentProgram is None:
+            self.pgmvolsTable.hide()
+            return
+        self.pgmvolsTable.show()
+        self.refreshPgmVolsTable()
+
     def refreshPgmVolsTable(self):
         q=QtSql.QSqlQueryModel()
-        q.setQuery("select s.program,s.name,s.plate,s.well,o.elapsed,o.tip,o.volchange,o.volume from pgm_ops o, pgm_samples s where o.pgm_sample=s.pgm_sample order by s.plate,s.well,o.pgm_op")
+        conds="AND s.program=%d "%self.currentProgram
+        if self.currentSample is not None:
+            conds+="AND s.name='%s' "%self.currentSample
+        if self.currentPlate is not None:
+            conds+="AND s.plate='%s' "%self.currentPlate
+        query = "select s.program,s.name,s.plate,s.well,o.elapsed,o.tip,o.volchange,o.volume from ops o, samples s where o.sample=s.sample %s order by s.plate,s.well,o.op" % conds
+        print(query)
+        q.setQuery(query)
         self.sqlErrorCheck(q.lastError())
         self.pgmvolsTable.setModel(q)
         self.pgmvolsTable.resizeColumnsToContents()
@@ -136,10 +152,9 @@ class GUI(Ui_MainWindow):
         self.wellName.setText(self.currentPlate+"."+self.currentWell)
         self.refreshVolsTable()
 
-    def refreshAll(self,arg):
-        print("refresh",arg)
+    def refreshAll(self):
         self.refreshRunsTable()
-        #self.refreshPgmVolsTable()
+        self.refreshPgmGroup()
         self.refreshRunGroup()
         self.refreshPlateGroup()
         self.refreshSampleGroup()
@@ -153,8 +168,12 @@ class GUI(Ui_MainWindow):
         for i in range(rec.count()):
             print(rec.fieldName(i),"=",rec.field(i).value())
         self.currentRun=rec.field(0).value()
+        self.currentProgram=rec.field(3).value()
+        self.currentPlate=None
+        self.currentSample=None
+        self.currentWell=None
         #self.runsTable.selectRow(index.row())
-        self.refreshRunGroup()
+        self.refreshAll()
 
     def selectPlate(self,index: QModelIndex):
         print("select row",index.row(),"column",index.column(),"id",index.internalId())
@@ -163,7 +182,9 @@ class GUI(Ui_MainWindow):
             print(rec.fieldName(i),"=",rec.field(i).value())
         self.currentPlate=rec.field(0).value()
         #self.plateTable.selectRow(index.row())
-        self.refreshPlateGroup()
+        self.currentSample=None
+        self.currentWell=None
+        self.refreshAll()
 
     def selectSample(self,index: QModelIndex):
         print("select row",index.row(),"column",index.column(),"id",index.internalId())
@@ -173,7 +194,7 @@ class GUI(Ui_MainWindow):
         self.currentWell=rec.field(0).value()
         self.currentSample=rec.field(1).value()
         #self.plateTable.selectRow(index.row())
-        self.refreshSampleGroup()
+        self.refreshAll()
 
     def quit(self):
         print("quit")

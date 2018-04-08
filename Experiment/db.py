@@ -11,6 +11,7 @@ class DB(object):
         self.id = None
         self.sampids={}
         self.ops=[]
+        self.liquidclasses={}
 
     def connect(self):
         if Config.usedb:
@@ -49,18 +50,40 @@ class DB(object):
             return
         worklist.pyrun("DB\db.py tick %f %f %d"%(elapsed,remaining,worklist.getline()))
 
-    def endrun(self, name: str):
+    def endrun(self):
         if self.id is None:
             return
-        worklist.pyrun("DB\db.py endrun %s"%(name.replace(' ','_'),))
+        worklist.pyrun("DB\db.py endrun %d"%self.id)
         if len(self.ops)>0:
-            print("Insert %d ops..."%len(self.ops),end='')
+            print("ops=",self.ops[:20],'...')
+            print("Insert %d ops..."%len(self.ops),end='',flush=True)
             with self.db.cursor() as cursor:
-                cursor.executemany('insert into pgm_ops(pgm_sample, op, elapsed, tip, volume,volchange,lineno, liquidClass) values(%s,%s,%s,%s,%s,%s,%s,%s)',self.ops)
+                cursor.executemany('insert into ops(sample, cmd, elapsed, tip, volume,volchange,lineno, lc,program) values(%s,%s,%s,%s,%s,%s,%s,%s,%s)',self.ops)
             print("done")
             self.ops=[]
         self.db.commit()
         #self.db.close()
+
+    def getlc(self,lc):
+        # Convert a liquidclass name to a pk
+        if lc is None:
+            return None
+        if len(self.liquidclasses)==0:
+            with self.db.cursor() as cursor:
+                cursor.execute('select lc, name from liquidclasses')
+                rows = cursor.fetchall()
+                for row in rows:
+                    self.liquidclasses[row['name']] = row['lc']
+
+        if lc.name not in self.liquidclasses:
+            print('Adding liquid class %s to database',lc.name)
+            with self.db.cursor() as cursor:
+                cursor.execute('insert ignore into liquidclasses(name) values(%s)', lc.name)
+                cursor.execute('select lc from liquidclasses where name=%s',lc.name)
+                res =cursor.fetchone()
+                self.liquidclasses[lc.name]=res['lc']
+                return res['lc']
+        return self.liquidclasses[lc.name]
 
     def newsample(self, sample):
         # Add sample to database
@@ -68,13 +91,13 @@ class DB(object):
             return
         with self.db.cursor() as cursor:
             # Check if it already exists
-            cursor.execute("SELECT pgm_sample,name FROM pgm_samples WHERE program=%s AND plate=%s and well=%s",(self.id,sample.plate.name,sample.plate.wellname(sample.well)))
+            cursor.execute("SELECT sample,name FROM samples WHERE program=%s AND plate=%s and well=%s",(self.id,sample.plate.name,sample.plate.wellname(sample.well)))
             res=cursor.fetchone()
             if res is not None:
                 logging.warning("newsample: Attempt to add sample %s in well %s.%s, but already have %s there"%(sample.name,sample.plate.name,sample.plate.wellname(sample.well),res['name']))
-                self.sampids[sample]=res['pgm_sample']  # Treat it as an alias
+                self.sampids[sample]=res['sample']  # Treat it as an alias
             else:
-                cursor.execute("INSERT INTO pgm_samples(program,name,plate,well,initialvolume) VALUES(%s,%s,%s,%s,%s)",(self.id,sample.name.replace(' ','_'),sample.plate.name,sample.plate.wellname(sample.well),sample.initVol))
+                cursor.execute("INSERT INTO samples(program,name,plate,well,initialvolume) VALUES(%s,%s,%s,%s,%s)",(self.id,sample.name.replace(' ','_'),sample.plate.name,sample.plate.wellname(sample.well),sample.initVol))
                 self.sampids[sample]=cursor.lastrowid
 
     def clearSamples(self):
@@ -83,7 +106,7 @@ class DB(object):
             return
         with self.db.cursor() as cursor:
             # Delete any sample names entered
-            cursor.execute("DELETE FROM pgm_samples WHERE program=%s",(self.id,))
+            cursor.execute("DELETE FROM samples WHERE program=%s",(self.id,))
 
     def setvol(self, sample, lineno: int, tip: int):
         if self.id is None:
@@ -91,33 +114,41 @@ class DB(object):
         worklist.pyrun("DB\db.py setvol %s %s ~DETECTED_VOLUME_%d~ %d %d %.2f"%(sample.plate.name,sample.plate.wellname(sample.well),tip,tip,lineno,sample.volume),flush=False)
         # TODO: May be able to extract this from log file instead of calling python all the time
 
-    def volchange(self, sample, op:str, volume:float, lineno: int, tip: int, liquidClass):
+    def volchange(self, sample, cmd:str, volume:float, tip: int, liquidClass):
         if self.id is None:
             return
         if sample not in self.sampids:
             logging.warning("Unable to find sample %s in sampids"%sample.name)
-            return
-        sampid=self.sampids[sample]
-        self.ops.append([sampid,op,clock.elapsed(),tip, sample.volume,volume,lineno,liquidClass.name])
+            sampid = None
+            sampvol = None
+        else:
+            sampid=self.sampids[sample]
+            sampvol=sample.volume
 
-    def wlistOp(self,op:str, lineno:int, tipMask:int,liquidClass,volume,plate,wellNames):
-        if op=='Mix':
+        worklist.comment("@op('%s','%s',%d,'%s',%.2f,%d,%.2f,%.2f,'%s',%d,%d)"%(sample.plate.name,sample.name,sampid,cmd,clock.elapsed(),tip,sampvol,volume,liquidClass,self.getlc(liquidClass),self.id))
+        self.ops.append([sampid, cmd, clock.elapsed(), tip, sampvol, volume, worklist.getline(), self.getlc(liquidClass),self.id])
+
+    def wlistOp(self, cmd:str, tipMask:int, liquidClass, volume, plate, wellNums):
+        if cmd== 'Mix':
             return
         tip = 1
         tipTmp = tipMask
-        for i in range(len(wellNames)):
+        for i in range(len(wellNums)):
             while tipTmp & 1 == 0:
+                assert tipTmp!=0
                 tipTmp = tipTmp >> 1
                 tip = tip + 1
-            from .sample import Sample
-            samp=Sample.lookupByWell(plate,wellNames[i])
             if samp is None:
                 logging.warning("Unable to find sample %s.%s"%(plate.name,wellNames[i]))
             else:
-                self.volchange(samp,op,volume[i],lineno, tip, liquidClass)
-                if op=='Detect_Liquid':
+                from .sample import Sample
+                samp=Sample.lookupByWell(plate, wellNums[i])
+                if samp is None:
+                    logging.warning("Unable to find sample %s.%s" % (plate.name, wellNums[i]))
+                self.volchange(samp, cmd, volume[i], lineno, tip, liquidClass)
+                if cmd== 'Detect_Liquid':
                     # Also put a command in .gem to push measured volume
-                    self.setvol(samp,lineno,tip)
+                    self.setvol(samp,tip)
             tipTmp = tipTmp >> 1
             tip += 1
 
