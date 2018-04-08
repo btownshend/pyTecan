@@ -581,13 +581,16 @@ def goto(dest):
     variable('dummy',0)
     condition('dummy','==',0,dest)
         
-def comment( text,prepend=False):
-    if len(text) > 200:
-        text=text[0:197]+"..."
-    if prepend:
-        wlist.insert(0,'Comment("%s")'%text)
-    else:
-        wlist.append('Comment("%s")'%text)
+def comment(text: str):
+    while len(text)>0:
+        if len(text) > 200:
+            line=text[0:197]+"..."
+            text=text[197:]
+        else:
+            line=text
+            text=''
+
+        wlist.append('Comment("%s")'%line)
 
 def starttimer(timer=1):
     global timerstart
