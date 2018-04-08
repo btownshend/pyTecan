@@ -1037,11 +1037,7 @@ class TRP(object):
         
         print("Estimating evaporation for dew point of %.1f C"%args.dewpoint)
         globals.dewpoint=args.dewpoint
-        if args.nodb:
-            Config.usedb=False
-        elif args.password is not None:
-            Config.password = args.password
-
+        Config.usedb = False  # Can skip DB ops during prelimary setups
         self.reset()
 
         self.setup()
@@ -1059,6 +1055,10 @@ class TRP(object):
             print('------ Main run -----')
         else:
             sys.stdout=sys.__stdout__
+        # Turn on DB access if needed
+        Config.usedb=not args.nodb
+        if args.password is not None:
+            Config.password = args.password
         self.reset()
         self.pgm()
         self.finish()
