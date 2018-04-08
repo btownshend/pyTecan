@@ -137,7 +137,16 @@
        </widget>
       </item>
       <item>
-       <widget class="QTableView" name="pgmvolsTable"/>
+       <widget class="QGroupBox" name="pgmGroup">
+        <property name="title">
+         <string>Program</string>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout_2">
+         <item>
+          <widget class="QTableView" name="pgmvolsTable"/>
+         </item>
+        </layout>
+       </widget>
       </item>
      </layout>
     </item>
