@@ -144,8 +144,6 @@ class Experiment(object):
         self.cleanTips|=fixedTips
         # print "* Sanitize"
         worklist.comment(clock.statusString())
-        if clock.totalTime is not None:
-            db.tick(clock.elapsed()/60.0,(clock.totalTime-clock.elapsed())/60.0)
 
     def cleantip(self):
         """Get the mask for a clean tip, washing if needed"""
