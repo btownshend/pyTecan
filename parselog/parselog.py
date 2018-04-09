@@ -416,7 +416,7 @@ while True:
                 lastgeminicmd=cname
                 lasttime=t
 #print "log=",dl
-dl.printallsamples()
+dl.printallsamples(fd=sys.stdout)  # This 'sys.stdout' (modified above) seems different from the default one that Samples.print* would use
 
 for cmd in list(geminicmdtimes.keys()):
       print("%s: %.0f seconds for %.0f occurrences:   %.2f second/call"%(cmd,geminicmdtimes[cmd],geminicmdcnt[cmd], geminicmdtimes[cmd]*1.0/geminicmdcnt[cmd]))

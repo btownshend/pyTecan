@@ -157,5 +157,5 @@ class Datalog(object):
         return s
 
     @staticmethod
-    def printallsamples():
-        Sample.printallsamples()
+    def printallsamples(fd):
+        Sample.printallsamples(fd=fd)
