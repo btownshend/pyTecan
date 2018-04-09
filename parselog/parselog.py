@@ -1,6 +1,7 @@
 import debughook
 import re
 import time
+import codecs
 
 from Experiment.config import Config
 print("Config=",Config)
@@ -328,16 +329,20 @@ tipcmd=""
 lasttime=0
 shakePlate=None   # Plate on shaker
 
+sys.stdout = codecs.getwriter("latin-1")(sys.stdout.detach())
+# Handle high-bit characters in stdout (since .log contains 0xb5 (\micro) charactures
+
 while True:
-    line=fd.readline()
-    if len(line)==0:
+    bline=fd.readline()
+    if len(bline)==0:
         break
-    while len(line)>0 and (line[-1]==13 or line[-1]==10):
-        line=line[:-1]
+    while len(bline)>0 and (bline[-1]==13 or bline[-1]==10):
+        bline=bline[:-1]
     #line=line.rstrip('\r\n')
-    if len(line)==0:
+    if len(bline)==0:
         continue
-    line=line.decode('latin-1')
+
+    line=bline.decode('latin-1')
     code=line[0]
     gtime=line[2:10]
     cmd=line[11:]
