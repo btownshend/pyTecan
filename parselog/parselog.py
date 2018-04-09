@@ -9,6 +9,7 @@ Config.usedb=False
 
 
 from datalog import Datalog
+from embedded import Embedded
 
 'Parse a GEMINI log file'
 debug=False
@@ -20,6 +21,7 @@ sml=[0,0,0,0]
 zadd=[0,0,0,0]
 tipSelect=0
 ldpending=False
+embed=Embedded()
 
 syscmds={
       'ALO':['Activate door lock output',['locknum','setting'],[]],
@@ -296,7 +298,7 @@ def fwparse(dev,send,reply,error,lasttime):
         assert(len(heights)==len(sbl))
         for i in range(len(heights)):
             if 1<<i & tipSelect != 0:
-                print("TIPS %d  "%(lnum),heights[i],sbl[i],sml[i],heights[i]+sbl[i]-sml[i])
+                print("TIPS %d  " % lnum, heights[i], sbl[i], sml[i], heights[i] + sbl[i] - sml[i])
                 dl.logmeasure(i+1,heights[i],sbl[i],sml[i],zadd[i],lasttime)
         ldpending=False
     elif ldpending:
@@ -420,6 +422,9 @@ while True:
                         geminicmdcnt[lastgeminicmd]=1
                 lastgeminicmd=cname
                 lasttime=t
+          if cmd.startswith('@'):
+              print("PYTHON: %s"%cmd[1:])
+              eval("embed."+cmd[1:])
 #print "log=",dl
 dl.printallsamples(fd=sys.stdout)  # This 'sys.stdout' (modified above) seems different from the default one that Samples.print* would use
 
