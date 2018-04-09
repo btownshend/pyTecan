@@ -37,6 +37,13 @@ class Plate(object):
         return None
 
     @classmethod
+    def lookupByName(cls,name):
+        for p in Plate.__allplates:
+            if p.name==name:
+                return p
+        return None
+
+    @classmethod
     def reset(cls):
         for p in Plate.__allplates:
             p.movetoloc(p.homeLocation)
