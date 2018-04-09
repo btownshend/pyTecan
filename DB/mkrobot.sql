@@ -10,11 +10,10 @@ use robot;
 -- Inserted,updated on robot only, read-only on master
 create table runs(
        run varchar(36), primary key(run),
-       program integer, foreign key(program) references programs(program),
+       program integer not null, foreign key(program) references programs(program),
        starttime timestamp not null default current_timestamp,
        endtime timestamp null
 );
-
 
 -- Ticks for a run
 -- Inserted on robot only, read-only on master, never updated (except synctime)
@@ -45,10 +44,14 @@ create table flags(
 -- Volume measurement occuring during a particular program operation
 create table vols(
        vol integer primary key auto_increment,
-       run varchar(36),
-       op integer, foreign key(op) references ops(op), -- not null
+       run varchar(36) not null,
+       op integer not null, foreign key(op) references ops(op) on delete cascade, -- not null
        gemvolume float not null,	  -- Volume as reported by Gemini
        volume float,   -- gemvolume converted to true volume
+       height integer not null,  -- tip height as reported by Gemini (in native units of 1/10 mm)
+       submerge integer not null, -- submerge depth
+       zmax integer not null,  -- zmax - bottom of tube
+       zadd integer not null,  -- zadd - extra height needed after submerge (to permit tracking during aspirate?)
        measured timestamp not null default current_timestamp,	-- when was measurement made
        foreign key(run) references runs(run) on delete cascade
 );
@@ -57,10 +60,13 @@ create table vols(
 -- inserted during build of progam (generation time)
 create table programs(
     program integer primary key auto_increment,
-    name varchar(50) default null,
-    gentime timestamp,
-    checksum varchar(8) default null,
-    gitlabel varchar(8) default null
+    name varchar(50) not null,
+    gentime not null timestamp,
+    checksum varchar(8) not null,
+    gitlabel varchar(8) not null,
+    totaltime float default null, -- Total execution time estimate in minutes
+    complete boolean not null,  -- True if all data for this program is in database
+    unique(name,gentime)
 );
 
 create table samples (
@@ -83,12 +89,12 @@ create table liquidclasses (
 create table ops (
        op integer primary key auto_increment,
        program integer not null, foreign key(program) references programs(program) on delete cascade,
-       sample integer, foreign key(sample) references samples(sample) on delete cascade,
+       sample integer not null, foreign key(sample) references samples(sample) on delete cascade,
        cmd varchar(20) not null,
        lineno integer not null,  -- line number in program
        elapsed float not null,   -- elapsed time in program
        tip integer not null,   -- which tip was used (1..4)
-       lc integer null, foreign key(lc) references liquidclasses(lc),
+       lc integer not null, foreign key(lc) references liquidclasses(lc),
        volume float,   -- expected volume after operation (FIXME: not needed?)
        volchange float not null  -- increase/decrease in volume  (+ for dispense, -ve for aspirate, 0 for LD)
 );

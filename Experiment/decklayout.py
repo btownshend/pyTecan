@@ -36,8 +36,8 @@ SSDDILLOC=PlateLocation("SSDDil",3,1,zmax=1367)
 RICLOC=PlateLocation("RIC",18,1,slopex=-0.022,slopey=-0.038,zmax=569)
 MAGPLATELOC=PlateLocation("MagPlate",18,2,zmax=1459,vectorName="Magplate")
 SHAKERPLATELOC=PlateLocation("Shaker",9,0,vectorName="Shaker")
-SAMPLELOC=PlateLocation("Home",4,3,zmax=1033,vectorName="Microplate Landscape")
-DILUTIONLOC=PlateLocation("DilutionLoc",4,2,zmax=1033,vectorName="Microplate Landscape")
+SAMPLELOC=PlateLocation("Home",4,3,zmax=1023,vectorName="Microplate Landscape")
+DILUTIONLOC=PlateLocation("DilutionLoc",4,2,zmax=1023,vectorName="Microplate Landscape")
 QPCRLOC=PlateLocation("QPCRLoc",4,1,zmax=996)  # defined in worklist.py
 WASHLOC=PlateLocation("Wash",1,2)  # defined in worklist.py
 EPPLOC=PlateLocation("EppLoc",13,1,zmax=1337)
@@ -57,7 +57,8 @@ EPPENDORFS=Plate(name="Eppendorfs",plateType=EPPRACK,plateLocation=EPPLOC)
 REAGENTPLATE=Plate(name="Reagents",plateType=RICBLOCK, plateLocation=RICLOC)
 QPCRPLATE=Plate(name="QPCR",plateType=WHITEQPCR, plateLocation=QPCRLOC)
 
-TIPOFFSETS=[390, 390, 394, 386]
+TIPOFFSETS=[390, 389, 394, 387]
+#TIPOFFSETS=[390, 390, 390, 390]
 
 
 ############ Well-known samples  #############

@@ -9,7 +9,7 @@ Config.usedb=False
 
 
 from datalog import Datalog
-from embedded import Embedded
+from Experiment.db import logdb   # Note: parselog is both the parent and current module name
 
 'Parse a GEMINI log file'
 debug=False
@@ -21,7 +21,6 @@ sml=[0,0,0,0]
 zadd=[0,0,0,0]
 tipSelect=0
 ldpending=False
-embed=Embedded()
 
 syscmds={
       'ALO':['Activate door lock output',['locknum','setting'],[]],
@@ -291,6 +290,7 @@ def fwparse(dev,send,reply,error,lasttime):
                 if 1<<i & tipSelect != 0:
                     print("TIPS %d %s "%(lnum,op),heights[i],sbl[i],sml[i],heights[i]+sbl[i]-sml[i])
                     dl.logmeasure(i+1,heights[i],sbl[i],sml[i],zadd[i],lasttime)
+                    logdb.lastmeasure(i+1,lnum,heights[i],sbl[i],sml[i],zadd[i],lasttime)
     elif op=='REE' or op=='RVZ':
         pass
     elif ldpending and op=='RPZ' and int(args[0])==0:
@@ -300,6 +300,7 @@ def fwparse(dev,send,reply,error,lasttime):
             if 1<<i & tipSelect != 0:
                 print("TIPS %d  " % lnum, heights[i], sbl[i], sml[i], heights[i] + sbl[i] - sml[i])
                 dl.logmeasure(i+1,heights[i],sbl[i],sml[i],zadd[i],lasttime)
+                logdb.lastmeasure(i+1,lnum,heights[i], sbl[i], sml[i], zadd[i], lasttime)
         ldpending=False
     elif ldpending:
         print("**** Parser error:  got op %s without a RPZ while ldpending"%op)
@@ -308,13 +309,27 @@ def fwparse(dev,send,reply,error,lasttime):
 
         
 import sys
-if len(sys.argv)!=2 and len(sys.argv)!=1:
-    print("Usage: %s [logfile]"%sys.argv[0])
-    exit(1)
-if len(sys.argv)==2:
-      fd=open(sys.argv[1],'rb')
+import argparse
+from Experiment.config import Config
+from Experiment import globals
+
+parser = argparse.ArgumentParser(description="parselog")
+parser.add_argument('-v', '--verbose', help='Enable verbose output', default=False, action="store_true")
+parser.add_argument('-p', '--password', type=str, help='DB Password')
+parser.add_argument('-N', '--nodb', help='No DB logging', default=False, action="store_true")
+parser.add_argument("logfile",default=None)
+
+args = parser.parse_args()
+# Turn on DB access if needed
+Config.usedb = not args.nodb
+if args.password is not None:
+    Config.password = args.password
+
+if args.logfile is not None:
+      fd=open(args.logfile,'rb')
 else:
       fd=sys.stdin
+globals.verbose=args.verbose
 
 csum=fd.readline()
 hdr=fd.readline()
@@ -428,7 +443,7 @@ while True:
                 lasttime=t
           if cmd.startswith('@'):
               print("PYTHON: %s"%cmd[1:])
-              eval("embed."+cmd[1:])
+              eval("logdb."+cmd[1:])
 #print "log=",dl
 dl.printallsamples(fd=sys.stdout)  # This 'sys.stdout' (modified above) seems different from the default one that Samples.print* would use
 

@@ -9,9 +9,6 @@ from Experiment.plate import Plate
 from Experiment.sample import Sample
 from Experiment import sample
 
-ex=Experiment()		# This casuses all the plate definitions in Experiment to be loaded
-sample.SHOWTIPS=True
-
 def getSample(wellx,welly,rack,grid,pos):
         plate=Plate.lookup(grid,pos)
         if plate is None:
@@ -37,6 +34,8 @@ class LogEntry(object):
         self.volset=volset
         self.isMulti=isMulti
         self.sample=getSample(wellx,welly,rack,grid,pos)
+
+
         if lc=='Air' or lc[0:7]=='Blowout' or lc=='Dip':
             if op=='dispense':
                 self.sample.addhistory(lc,vol,tip)
@@ -76,6 +75,8 @@ class Datalog(object):
     def __init__(self):
         self.logentries={}
         self.lastSample={}
+        self.ex = Experiment()  # This casuses all the plate definitions in Experiment to be loaded
+        sample.SHOWTIPS = True
         
     def logop(self,op,tip,vol,wellx,welly,rack,grid,pos,lc,std,volset,isMulti):
         if grid==18 and pos==2:   # Make magplate refer to samples
