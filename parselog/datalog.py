@@ -16,14 +16,14 @@ def getSample(wellx,welly,rack,grid,pos):
             plate=Plate(rack,grid,pos)
         wellname="%c%d"%(ord('A')+welly-1,wellx)
         well=plate.wellnumber(wellname)
-        sample=Sample.lookupByWell(plate,well)
-        if sample is None:
-            sample=Sample("%s.%d.%d.%d"%(rack,grid,pos,well),plate,well)
+        s=Sample.lookupByWell(plate, well)
+        if s is None:
+            s=Sample("%s.%d.%d.%d" % (rack, grid, pos, well), plate, well)
             if grid==3:
-                sample.volume=20000   # Troughs
+                s.volume=20000   # Troughs
             else:
-                sample.volume=0
-        return sample
+                s.volume=0
+        return s
     
 class LogEntry(object):
     def __init__(self,op,tip,vol,wellx,welly,rack,grid,pos,lc,std,volset,isMulti):
