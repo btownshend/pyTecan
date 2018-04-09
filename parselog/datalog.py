@@ -7,7 +7,7 @@ from Experiment.plate import Plate
 from Experiment.sample import Sample
 from Experiment import sample
 
-e=Experiment()		# This casuses all the plate definitions in Experiment to be loaded
+ex=Experiment()		# This casuses all the plate definitions in Experiment to be loaded
 sample.SHOWTIPS=True
 
 def getSample(wellx,welly,rack,grid,pos):
@@ -42,7 +42,7 @@ class LogEntry(object):
                 self.sample.addhistory(lc,-vol,tip)
             else:
                 print("LogEntry: bad op (%s) for LC %s"%(op,lc))
-                assert(False)
+                assert False
             self.sample.lastadd=0
         elif op=='dispense':
             self.sample.addhistory("",vol,tip)
@@ -58,7 +58,7 @@ class LogEntry(object):
             self.sample.lastadd=0
         else:
             print("LogEntry: bad op: ",op)
-            assert(False)
+            assert False
         if self.sample.volume+self.sample.lastadd<0 and self.sample.volume!=0:
             self.sample.history=self.sample.history + ("{Emptied%.2f}"%(self.sample.volume+self.sample.lastadd))
             self.sample.volume=0
