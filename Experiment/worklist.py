@@ -378,23 +378,23 @@ def aspirateDispense(op,tipMask,wells, liquidClass, volume, plate, cycles=None,a
 
     if op=="Mix":
         wlist.append( '%s(%d,"%s",%s,%d,%d,%d,"%s",%d,0)'%(op,tipMask,liquidClass,volstr,loc.grid,loc.pos-1,spacing,ws,cycles))
-        db.wlistOp(op,getline(),tipMask,liquidClass,[-MIXLOSS for _ in volume],plate,pos)
+        db.wlistOp(op,getline()-1,tipMask,liquidClass,[-MIXLOSS for _ in volume],plate,pos)
     elif op=="AspirateNC":
         wlist.append( '%s(%d,"%s",%s,%d,%d,%d,"%s",0)'%("Aspirate",tipMask,liquidClass,volstr,loc.grid,loc.pos-1,spacing,ws))
-        db.wlistOp("Aspirate",getline(),tipMask,liquidClass,[-v for v in volume],plate,pos)
+        db.wlistOp("Aspirate",getline()-1,tipMask,liquidClass,[-v for v in volume],plate,pos)
     elif op=="Detect_Liquid":
         wlist.append( '%s(%d,"%s",%d,%d,%d,"%s",0)'%(op,tipMask,liquidClass,loc.grid,loc.pos-1,spacing,ws))
-        db.wlistOp(op,getline(),tipMask,liquidClass,[0 for _ in volume],plate,pos)
+        db.wlistOp(op,getline()-1,tipMask,liquidClass,[0 for _ in volume],plate,pos)
     elif op=="Dispense":
         wlist.append( '%s(%d,"%s",%s,%d,%d,%d,"%s",0)'%(op,tipMask,liquidClass,volstr,loc.grid,loc.pos-1,spacing,ws))
-        db.wlistOp(op,getline(),tipMask,liquidClass,volume,plate,pos)
+        db.wlistOp(op,getline()-1,tipMask,liquidClass,volume,plate,pos)
     elif op=="Aspirate":
         wlist.append( '%s(%d,"%s",%s,%d,%d,%d,"%s",0)'%(op,tipMask,liquidClass,volstr,loc.grid,loc.pos-1,spacing,ws))
-        db.wlistOp(op,getline(),tipMask,liquidClass,[-(v+2) for v in volume],plate,pos)
+        db.wlistOp(op,getline()-1,tipMask,liquidClass,[-(v+2) for v in volume],plate,pos)
         # Return conditioning volume
         clock.pipetting+=3.70  # Extra for conditioning volume
         wlist.append( '%s(%d,"%s",%s,%d,%d,%d,"%s",0)'%("Dispense",tipMask,liquidClass,condvol,loc.grid,loc.pos-1,spacing,ws))
-        db.wlistOp("Dispense",getline(),tipMask,liquidClass,[2 for _ in volume],plate,pos)
+        db.wlistOp("Dispense",getline()-1,tipMask,liquidClass,[2 for _ in volume],plate,pos)
     else:
         logging.error("Bad operation: %s"%op)
 
@@ -403,7 +403,7 @@ def aspirateDispense(op,tipMask,wells, liquidClass, volume, plate, cycles=None,a
         # Do final liquid detect (but not on qPCR plate, since that doesn't work anyway)
         clock.pipetting+=2.90    # Unsure of this one
         wlist.append( 'Detect_Liquid(%d,"%s",%d,%d,%d,"%s",0)'%(tipMask,LCWaterInLiquid.name,loc.grid,loc.pos-1,spacing,ws))
-        db.wlistOp("Detect_Liquid",getline(),tipMask,LCWaterInLiquid,[0 for _ in volume],plate,pos)
+        db.wlistOp("Detect_Liquid",getline()-1,tipMask,LCWaterInLiquid,[0 for _ in volume],plate,pos)
 
     ptr=0
     for i in range(len(allvols)):
@@ -506,15 +506,19 @@ def wash( tipMask,wasteVol=1,cleanerVol=2,deepClean=False):
     wlist.append('Wash(%d,%d,%d,%d,%d,%.1f,%d,%.1f,%d,%.1f,%d,%d,%d,%d,%d)'%(tipMask,wasteLoc[0],wasteLoc[1],cleanerLoc[0],cleanerLoc[1],wasteVol,wasteDelay,cleanerVol,cleanerDelay,airgap, airgapSpeed, retractSpeed, fastWash, lowVolume, atFreq))
     #print "Wash %d,%.1fml,%.1fml,deep="%(tipMask,wasteVol,cleanerVol),deepClean
     clock.pipetting+=19.00
-    if tipMask&1:
-        tipHash[0]=0
-    if tipMask&2:
-        tipHash[1]=0
-    if tipMask&4:
-        tipHash[2]=0
-    if tipMask&8:
-        tipHash[3]=0
+    tip=0
+    ntips=0
+    tipTmp=tipMask
+    while tipTmp>0:
+        if tipTmp&1 != 0:
+            tipHash[tip]=0
+            ntips+=1
+        tipTmp>>=1
+        tip+=1
+
     #print "tipHash=[%06x,%06x,%06x,%06x]"%(tipHash[0],tipHash[1],tipHash[2],tipHash[3])
+    db.wlistWash("Wash", tipMask)
+
 
 def periodicWash(tipMask,period):
     wasteLoc=(1,1)
