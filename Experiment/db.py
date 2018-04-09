@@ -25,7 +25,7 @@ class DB(object):
             except Exception as e:
                 logging.error("Unable to connect to mysql database -- skipping db entry: ",e)
         else:
-            logging.warning("Not connecting to mysql database -- no logging of run will occur")
+            logging.notice("Not connecting to mysql database -- no logging of run will occur")
 
 
         if self.db is None:
