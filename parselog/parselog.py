@@ -1,7 +1,7 @@
 import debughook
 import re
-import time
 import codecs
+from datetime import datetime, timedelta, time
 
 from Experiment.config import Config
 print("Config=",Config)
@@ -328,7 +328,8 @@ lastgeminitime=None
 geminicmdtimes={}
 geminicmdcnt={}
 tipcmd=""
-lasttime=0
+lasttime=datetime.strptime(hdr[:15].decode('latin-1'),'%Y%m%d_%H%M%S')
+print("Header time: %s"%str(lasttime))
 shakePlate=None   # Plate on shaker
 
 sys.stdout = codecs.getwriter("latin-1")(sys.stdout.detach())
@@ -406,19 +407,22 @@ while True:
                 cname=cmd[(colon+2):]
                 lnum=int(cmd[4:(colon-1)])
                 #print "cname=",cname
-                year=time.strftime("%Y")  # Use current year since log doesn't contain year
-                tdata=time.strptime(year+" "+gtime,"%Y %H:%M:%S")
-                t=time.mktime(tdata)
+                t=datetime.combine(lasttime.date(),datetime.strptime(gtime,'%H:%M:%S').time())
+                if (t-lasttime).total_seconds()<0:
+                    t=t+datetime.timedelta(1)   # Wrapped around
+                    logging.notice("Gemini time wrapped from %s to %s"%(lasttime,t))
+
                 if lastgeminicmd is not None:
-                    if t-lasttime > 30:
-                        print("Skipping long pause of %d seconds for %s"%(t-lasttime,lastgeminicmd))
+                    if (t-lasttime).total_seconds() > 30:
+                        print("Skipping long pause of %s for %s"%(str(t-lasttime),lastgeminicmd))
                     elif t<lasttime:
-                        print("Skipping negative elapsed time of %d seconds for %s"%(t-lasttime,lastgeminicmd))
+                        assert False # Shouldn't happen
+                        print("Skipping negative elapsed time of %d seconds for %s"%((t-lasttime).total_seconds(),lastgeminicmd))
                     elif lastgeminicmd in list(geminicmdtimes.keys()):
-                        geminicmdtimes[lastgeminicmd]+=(t-lasttime)
+                        geminicmdtimes[lastgeminicmd]+=(t-lasttime).total_seconds()
                         geminicmdcnt[lastgeminicmd]+=1
                     else:
-                        geminicmdtimes[lastgeminicmd]=(t-lasttime)
+                        geminicmdtimes[lastgeminicmd]=(t-lasttime).total_seconds()
                         geminicmdcnt[lastgeminicmd]=1
                 lastgeminicmd=cname
                 lasttime=t

@@ -1,5 +1,7 @@
 #sys.path.append(os.path.join(os.path.dirname(__file__),'../Experiment'))
 #print("path=",sys.path)
+from datetime import timedelta
+
 from Experiment.decklayout import TIPOFFSETS
 from Experiment.experiment import Experiment
 from Experiment.liquidclass import SURFACEREMOVE
@@ -94,7 +96,7 @@ class Datalog(object):
         if len(sample.extrainfo)>0:
             elapsed=time-sample.extrainfo[0]
         else:
-            elapsed=0
+            elapsed=timedelta(0)
 
         #print "%s: %f"%(sample.name,elapsed)
         sample.extrainfo=[time]    # Keep track of last measurement time of this sample in the extrainfo list
@@ -137,8 +139,8 @@ class Datalog(object):
                 sample.volume=sample.volume+(vol-prevol)
         # Insert BEFORE last history entry since the liquid height is measured before aspirate/dispense
         hsplit=sample.history.split(' ')
-        if elapsed>=600:   # Log elapsed time if more than 10 min
-            sample.history=" ".join(hsplit[:-1]+["(T%.0f)"%(elapsed/60)]+[h]+hsplit[-1:])
+        if elapsed.total_seconds()>=600:   # Log elapsed time if more than 10 min
+            sample.history=" ".join(hsplit[:-1]+["(T%.0f)"%(elapsed.total_seconds()/60)]+[h]+hsplit[-1:])
         else:
             sample.history=" ".join(hsplit[:-1]+[h]+hsplit[-1:])
 
