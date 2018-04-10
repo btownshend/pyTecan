@@ -9,6 +9,8 @@ from .config import Config
 from .plate import Plate
 from . import decklayout
 from .liquidclass import LCPrefilled
+import pytz
+
 
 class DB(object):
     def __init__(self):
@@ -128,7 +130,7 @@ class DB(object):
 
     def insertVol(self, run, op, gemvolume, volume, measured, height, submerge, zmax, zadd):
         with self.db.cursor() as cursor:
-            cursor.execute("insert into vols(run,op,gemvolume,volume,measured, height, submerge, zmax, zadd) VALUES(%s,%s,%s,%s,CONVERT_TZ(%s,'US/Pacific','UTC'),%s,%s,%s,%s)", (run.hex, op, gemvolume, volume, measured, height, submerge, zmax, zadd))
+            cursor.execute("insert into vols(run,op,gemvolume,volume,measured, height, submerge, zmax, zadd) VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s)", (run.hex, op, gemvolume, volume, measured, height, submerge, zmax, zadd))
             logging.notice("Inserted vol as %d" % cursor.lastrowid)
             return cursor.lastrowid
 
@@ -243,6 +245,8 @@ class LogDB(DB):
         self.tz = pytz.timezone('US/Pacific')
         self.logfile = logfile
 
+    def local2utc(self,dt):
+        return self.tz.localize(dt).astimezone(pytz.utc)
 
     def log_startrun(self, program, lineno, elapsed, startTime, name, genTime, checksum, gitlabel, totalTime):
         if self.db is None:
@@ -250,6 +254,8 @@ class LogDB(DB):
         print(
             "startrun: program=%d,lineno=%d,elapsed=%f,name=%s,gentime=%s,checksum=%s,gitlabel=%s,totalTime=%f" % (
                 program, lineno, elapsed, name, genTime, checksum, gitlabel, totalTime))
+        startTime=self.local2utc(startTime)  ## Naive datetimes read from log file
+        # Note: gentime is already UTC
         if not Config.usedb:
             return
         if program > 0:
@@ -270,6 +276,7 @@ class LogDB(DB):
             self.db.commit()
 
     def log_endrun(self,program,lineno,elapsed, endTime):
+        endTime=self.local2utc(endTime)
         self.setProgramComplete()
         self.setRunEndTime(endTime)
         self.db.commit()
@@ -281,6 +288,7 @@ class LogDB(DB):
             logging.notice('Added endtime to run %s'%self.run)
 
     def lastmeasure(self,tip,lineno,height,sbl,sml,zadd,lasttime):
+        lasttime=self.local2utc(lasttime)
         logging.notice("lastmeasure(%d,%d,%d,%d,%d,%d,%s)"%(tip,lineno,height,sbl,sml,zadd,str(lasttime)))
         self.measurements[(lineno,tip)]=[height,sbl,sml,zadd,lasttime]
 
