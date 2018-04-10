@@ -18,7 +18,7 @@ def callhistory(includeLibs=False):
             h=["%s:%d"%(nm[-1],f[2])]
     return h
 
-def notice(msg: str) -> object:
+def notice(msg: str):
     if globals.verbose:
         print("NOTICE: %s [%s]" % (msg, "->".join(callhistory())))
     
