@@ -84,7 +84,8 @@ class DB(object):
             return cursor.lastrowid
 
     def setProgramComplete(self):
-        assert self.program is not None
+        if self.program is None:
+            return
         with self.db.cursor() as cursor:
             cursor.execute('update programs set complete=True where program=%s',(self.program,))
             logging.notice('Marked program %d as complete'%self.program)
@@ -276,16 +277,17 @@ class LogDB(DB):
             self.db.commit()
 
     def log_endrun(self,program,lineno,elapsed, endTime):
+        if self.db is None:
+            return
         endTime=self.local2utc(endTime)
         self.setProgramComplete()
         self.setRunEndTime(endTime)
         self.db.commit()
 
     def setRunEndTime(self,endTime):
-        assert self.run is not None
         with self.db.cursor() as cursor:
-            cursor.execute('update runs set endtime=%s where run=%s',(endTime, self.run))
-            logging.notice('Added endtime to run %s'%self.run)
+            cursor.execute('update runs set endtime=%s where run=%s',(endTime, self.run.hex))
+            logging.notice('Added endtime to run %s'%self.run.hex)
 
     def lastmeasure(self,tip,lineno,height,sbl,sml,zadd,lasttime):
         lasttime=self.local2utc(lasttime)
@@ -338,4 +340,3 @@ class LogDB(DB):
 
 
 db=BuildDB()   # For use during compile
-logdb=LogDB()
