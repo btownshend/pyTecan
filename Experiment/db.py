@@ -8,6 +8,7 @@ from . import logging
 from .config import Config
 from .plate import Plate
 from . import decklayout
+from .liquidclass import LCPrefilled, LC
 
 class DB(object):
     def __init__(self):
@@ -57,16 +58,6 @@ class DB(object):
                 return res['lc']
         return self.liquidclasses[lcname]
 
-    def newsample(self, sample):
-        # Add sample to database
-        print("newsample",sample,",program=",self.program)
-        if self.program is None:
-            return
-        sampid=self.getSample(sample.plate.name,sample.plate.wellname(sample.well))
-        if sampid is None:
-            return self.insertSample(sample.plate.name, sample.plate.wellname(sample.well),sample.name, sample.initVol)
-        else:
-            return sampid
 
     def clearSamples(self):
         self.ops=[]
@@ -128,9 +119,9 @@ class DB(object):
             return self.sampids[key]
         return None
 
-    def insertSample(self, plateName, wellName, sampleName, initialVolume):
+    def insertSample(self, plateName, wellName, sampleName):
         with self.db.cursor() as cursor:
-            cursor.execute("insert into samples(program,name,plate,well,initialVolume) VALUES(%s,%s,%s,%s,%s)", (self.program, sampleName, plateName, wellName, initialVolume))
+            cursor.execute("insert into samples(program,name,plate,well) VALUES(%s,%s,%s,%s)", (self.program, sampleName, plateName, wellName))
             self.sampids[(plateName,wellName)]=cursor.lastrowid
             logging.notice("Inserted sample %s as %d"%(sampleName,cursor.lastrowid))
             return cursor.lastrowid
@@ -184,22 +175,36 @@ class BuildDB(DB):
             print("ops=",self.ops[:20],'...')
             print("Insert %d ops..."%len(self.ops),end='',flush=True)
             with self.db.cursor() as cursor:
-                cursor.executemany('insert into ops(sample, cmd, elapsed, tip, volume,volchange,lineno, lc,program) values(%s,%s,%s,%s,%s,%s,%s,%s,%s)',self.ops)
+                cursor.executemany('insert into ops(sample, cmd, elapsed, tip,volchange,lineno, lc,program) values(%s,%s,%s,%s,%s,%s,%s,%s)',self.ops)
             print("done")
             self.ops=[]
         self.db.commit()
         self.setProgramComplete()
         #self.db.close()
 
+
+    def newsample(self, sample):
+        # Add sample to database
+        print("newsample",sample,",program=",self.program)
+        if self.program is None:
+            return
+        sampid=self.getSample(sample.plate.name,sample.plate.wellname(sample.well))
+        if sampid is None:
+            sampid=self.insertSample(sample.plate.name, sample.plate.wellname(sample.well),sample.name)
+        if sample.initVol>0:
+            # Initial op
+            self.addop(sample,'Initial',sample.initVol, 0, 0, LCPrefilled )
+        else:
+            return sampid
+
     def addop(self, sample, cmd:str, volume:float, lineno: int, tip: int, liquidClass):
         sampid = self.getSample(sample.plate.name,sample.plate.wellname(sample.well))
         if sampid is None:
             logging.warning("Unable to find sample %s"%sample.name)
             sampid = -1
-        sampvol=sample.volume
-        self.embed("log_op","'%s','%s','%s',%d,'%s',%d,%.2f,%.2f,'%s',%d"%(sample.plate.name,sample.name,sample.plate.wellname(sample.well),sampid,cmd,tip,sampvol,volume,liquidClass,self.getlc(liquidClass.name)),lineno=lineno)
+        self.embed("log_op","'%s','%s','%s',%d,'%s',%d,%.2f,'%s',%d"%(sample.plate.name,sample.name,sample.plate.wellname(sample.well),sampid,cmd,tip,volume,liquidClass,self.getlc(liquidClass.name)),lineno=lineno)
         if self.program is not None:
-            self.ops.append([sampid, cmd, clock.elapsed(), tip, sampvol, volume, lineno, self.getlc(liquidClass.name), self.program])
+            self.ops.append([sampid, cmd, clock.elapsed(), tip, volume, lineno, self.getlc(liquidClass.name), self.program])
 
     def wlistOp(self, cmd:str, lineno:int, tipMask:int, liquidClass, volume, plate, wellNums):
         if cmd== 'Mix':
@@ -215,7 +220,13 @@ class BuildDB(DB):
             samp=Sample.lookupByWell(plate, wellNums[i])
             if samp is None:
                 logging.warning("Unable to find sample %s.%s" % (plate.name, wellNums[i]))
-            self.addop(samp, cmd, volume[i], lineno, tip, liquidClass)
+            if liquidClass.name.startswith('Mix') and volume[i]<0:
+                vol=volume[i]-2.9/4    # Similar to Sample.MIXLOSS assuming 4 cycles  FIXME: This is a kludge and redundant
+            elif volume[i]<0:
+                vol=-liquidClass.volRemoved(-volume[i])  # FIXME: Should probably lose some volume on dispenses too
+            else:
+                vol=volume[i]
+            self.addop(samp, cmd, vol, lineno, tip, liquidClass)
             tipTmp = tipTmp >> 1
             tip += 1
 
@@ -230,7 +241,7 @@ class LogDB(DB):
         self.run=None
         self.measurements={}
 
-    def log_startrun(self, startTime, program, lineno, elapsed, name, genTime, checksum, gitlabel, totalTime):
+    def log_startrun(self, program, lineno, elapsed, startTime, name, genTime, checksum, gitlabel, totalTime):
         if self.db is None:
             self.connect()
         print(
@@ -250,7 +261,7 @@ class LogDB(DB):
         # Create a run
         self.run = uuid.uuid4()
         with self.db.cursor() as cursor:
-            cursor.execute("insert into runs(run,starttime,program) values (%s,now(),%s)",
+            cursor.execute("insert into runs(run,starttime,program) values (%s,%s,%s)",
                            (self.run.hex, startTime, self.program))
             logging.notice("Inserted run %s"%self.run)
             self.db.commit()
@@ -274,10 +285,10 @@ class LogDB(DB):
            liquidClassName, lc):
         logging.notice("op(%s,%d,%.2f,%s,%s,%s,%d,%s,%d,%.2f,%.2f,%s,%d)"%(program, lineno, elapsed, plateName, sampleName, wellName, sampid, cmd, tip, volume, volchange,
               liquidClassName, lc))
-        # Locate op in current program
-        assert program == -1 or self.program == program  # Make sure we're still referring to correct program
         if self.db is None:
             return
+        # Locate op in current program
+        assert program == -1 or self.program == program  # Make sure we're still referring to correct program
         op = self.getOp(lineno, tip)
         if op is None:
             if self.programComplete:
@@ -288,7 +299,7 @@ class LogDB(DB):
             if sampid==-1:
                 sampid=self.getSample(plateName,wellName)
                 if sampid is None:
-                    sampid=self.insertSample(plateName, wellName, sampleName, initialVolume=0.0)
+                    sampid=self.insertSample(plateName, wellName, sampleName)  # FIXME: This won't take initial volume into account
             op = self.insertOp(lineno, elapsed, sampid, cmd, tip, volume, volchange, lc)
         logging.notice("lc=%d, sampid=%d, op=%d"%(lc,sampid,op))
         logging.notice("measurements="+str(self.measurements))

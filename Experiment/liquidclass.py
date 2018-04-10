@@ -34,6 +34,13 @@ class LC(object):
         #        return "%s(%d,%d,%d)"%(self.name,self.singletag,self.multicond,self.multiexcess)
         return self.name
 
+    @classmethod
+    def lookupByName(cls,name):
+        for p in LC.__alllc:
+            if p.name==name:
+                return p
+        return None
+
     def fullstr(self):
         # Full details
         return "%-20s"%self.name+"("+" ".join(sorted(list(self.used.keys())))+") multi: (cond=%.1f, excess=%.1f, tag=%.1f)"%(self.multicond,self.multiexcess,self.multitag)+ ", single: (tag=%.1f, lag=%.1f)"%(self.singletag,self.singlelag)+", wetvol=%.1f"%self.wetvolume+", ldetect=%d"%self.ldetect
@@ -60,4 +67,5 @@ LCBlowoutLD=LC("Blowout_LD",multiexcess=1,singlelag=1,ldetect=True)
 LCAir=LC("Air")
 LCBleachMix=LC("RNaseAway-Mix",  singletag=10,multiexcess=2,multitag=10)
 LCDip=LC("Dip",multiexcess=1)
+LCPrefilled=LC("Prefilled")
 
