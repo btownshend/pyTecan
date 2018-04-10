@@ -323,9 +323,14 @@ class LogDB(DB):
             curzmax=2100-plate.location.zmax-390+decklayout.TIPOFFSETS[tip-1]
             if zmax!=curzmax:
                 logging.warning("ZMax for plate %s, tip %d at time of run was %.0f, currently at %.0f"%(plate.name, tip, zmax, curzmax))
-            gemvolume=plate.plateType.getgemliquidvolume((height+submerge-zmax)/10.0)
-            volume=plate.plateType.getliquidvolume((height+submerge-zmax)/10.0)
-            logging.notice("meastime=%s,gemvolume=%.0f,volume=%.0f"%(str(meastime),gemvolume,volume))
+            if height==-1:
+                height=None
+                gemvolume=None
+                volume=None
+            else:
+                gemvolume=plate.plateType.getgemliquidvolume((height+submerge-zmax)/10.0)
+                volume=plate.plateType.getliquidvolume((height+submerge-zmax)/10.0)
+            logging.notice("meastime=%s,gemvolume=%s,volume=%s"%(str(meastime),gemvolume,volume))
             self.insertVol(self.run, op, gemvolume, volume, meastime, height, submerge, zmax, zadd)
         self.db.commit()
 
