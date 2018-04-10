@@ -8,7 +8,7 @@ from . import logging
 from .config import Config
 from .plate import Plate
 from . import decklayout
-from .liquidclass import LCPrefilled, LC
+from .liquidclass import LCPrefilled
 
 class DB(object):
     def __init__(self):
@@ -94,11 +94,11 @@ class DB(object):
             res = cursor.fetchone()
             return None if res is None else res['op']
 
-    def insertOp(self, lineno, elapsed, sampid, cmd, tip, volume, volchange, lc):
+    def insertOp(self, lineno, elapsed, sampid, cmd, tip, volchange, lc):
         with self.db.cursor() as cursor:
             cursor.execute(
-                'insert into ops(program,lineno,tip,sample,cmd,lc,volume,volchange,elapsed) values(%s,%s,%s,%s,%s,%s,%s,%s,%s)',
-                (self.program, lineno, tip, sampid, cmd, lc, volume, volchange, elapsed))
+                'insert into ops(program,lineno,tip,sample,cmd,lc,volchange,elapsed) values(%s,%s,%s,%s,%s,%s,%s,%s)',
+                (self.program, lineno, tip, sampid, cmd, lc, volchange, elapsed))
             return cursor.lastrowid
 
     def getSample(self, plateName, wellName):
@@ -275,15 +275,14 @@ class LogDB(DB):
         assert self.run is not None
         with self.db.cursor() as cursor:
             cursor.execute('update runs set endtime=%s where run=%s',(endTime, self.run))
-            logging.notice('Added endtime to run %s',self.run)
+            logging.notice('Added endtime to run %s'%self.run)
 
     def lastmeasure(self,tip,lineno,height,sbl,sml,zadd,lasttime):
         logging.notice("lastmeasure(%d,%d,%d,%d,%d,%d,%s)"%(tip,lineno,height,sbl,sml,zadd,str(lasttime)))
         self.measurements[(lineno,tip)]=[height,sbl,sml,zadd,lasttime]
 
-    def log_op(self, program, lineno, elapsed, plateName, sampleName, wellName, sampid, cmd, tip, volume, volchange,
-           liquidClassName, lc):
-        logging.notice("op(%s,%d,%.2f,%s,%s,%s,%d,%s,%d,%.2f,%.2f,%s,%d)"%(program, lineno, elapsed, plateName, sampleName, wellName, sampid, cmd, tip, volume, volchange,
+    def log_op(self, program, lineno, elapsed, plateName, sampleName, wellName, sampid, cmd, tip, volchange,liquidClassName, lc):
+        logging.notice("op(%s,%d,%.2f,%s,%s,%s,%d,%s,%d,%.2f,%s,%d)"%(program, lineno, elapsed, plateName, sampleName, wellName, sampid, cmd, tip, volchange,
               liquidClassName, lc))
         if self.db is None:
             return
@@ -300,7 +299,7 @@ class LogDB(DB):
                 sampid=self.getSample(plateName,wellName)
                 if sampid is None:
                     sampid=self.insertSample(plateName, wellName, sampleName)  # FIXME: This won't take initial volume into account
-            op = self.insertOp(lineno, elapsed, sampid, cmd, tip, volume, volchange, lc)
+            op = self.insertOp(lineno, elapsed, sampid, cmd, tip, volchange, lc)
         logging.notice("lc=%d, sampid=%d, op=%d"%(lc,sampid,op))
         logging.notice("measurements="+str(self.measurements))
         if (lineno,tip) in self.measurements:
