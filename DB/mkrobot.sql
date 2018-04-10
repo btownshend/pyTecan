@@ -46,9 +46,9 @@ create table vols(
        vol integer primary key auto_increment,
        run varchar(36) not null,
        op integer not null, foreign key(op) references ops(op) on delete cascade, -- not null
-       gemvolume float not null,	  -- Volume as reported by Gemini
+       gemvolume float,	  -- Volume as reported by Gemini
        volume float,   -- gemvolume converted to true volume
-       height integer not null,  -- tip height as reported by Gemini (in native units of 1/10 mm)
+       height integer,  -- tip height as reported by Gemini (in native units of 1/10 mm)
        submerge integer not null, -- submerge depth
        zmax integer not null,  -- zmax - bottom of tube
        zadd integer not null,  -- zadd - extra height needed after submerge (to permit tracking during aspirate?)
