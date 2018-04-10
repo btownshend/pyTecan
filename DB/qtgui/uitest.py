@@ -36,7 +36,6 @@ class GUI(Ui_MainWindow):
         self.runsTable.clicked.connect(ui.selectRun)
         self.plateTable.clicked.connect(ui.selectPlate)
         self.sampleTable.clicked.connect(ui.selectSample)
-        self.pgmvolsTable.hide()
         self.dbopen()
         self.refreshAll()
         print("timezone=",QTimeZone.systemTimeZone().comment())
@@ -48,33 +47,11 @@ class GUI(Ui_MainWindow):
 
     def refreshRunsTable(self):
         q=QtSql.QSqlQueryModel()
-        q.setQuery("SELECT r.run, right(r.run,4) runid, program, id, gentime, starttime, endtime, if(endtime is null,round(min(remaining)),'')  remtime from runs r, ticks t where r.run=t.run group by r.run order by starttime desc")
+        q.setQuery("SELECT r.run, right(r.run,4) runid, program, logfile, starttime, endtime from runs r order by starttime desc")
         self.sqlErrorCheck(q.lastError())
         self.runsTable.setModel(q)
         self.runsTable.setColumnHidden(0,True)
         self.runsTable.resizeColumnsToContents()
-
-    def refreshPgmGroup(self):
-        print("refreshRunsGroup: pgm=",self.currentProgram,",plate=",self.currentPlate,",sample=",self.currentSample)
-        if self.currentProgram is None:
-            self.pgmvolsTable.hide()
-            return
-        self.pgmvolsTable.show()
-        self.refreshPgmVolsTable()
-
-    def refreshPgmVolsTable(self):
-        q=QtSql.QSqlQueryModel()
-        conds="AND s.program=%d "%self.currentProgram
-        if self.currentSample is not None:
-            conds+="AND s.name='%s' "%self.currentSample
-        if self.currentPlate is not None:
-            conds+="AND s.plate='%s' "%self.currentPlate
-        query = "select s.program,s.name,s.plate,s.well,o.elapsed,o.tip,o.volchange,o.volume from ops o, samples s where o.sample=s.sample %s order by s.plate,s.well,o.op" % conds
-        print(query)
-        q.setQuery(query)
-        self.sqlErrorCheck(q.lastError())
-        self.pgmvolsTable.setModel(q)
-        self.pgmvolsTable.resizeColumnsToContents()
 
     def refreshRunGroup(self):
         print("refreshRunsGroup: run=",self.currentRun)
@@ -88,22 +65,21 @@ class GUI(Ui_MainWindow):
         self.refreshPlateGroup()
 
     def refreshRunsDetail(self):
-        q=QtSql.QSqlQuery("SELECT program, date_format(gentime,'%%m/%%d/%%y %%H:%%i'), date_format(starttime,'%%m/%%d/%%y %%H:%%i'), date_format(endtime,'%%m/%%d/%%y %%H:%%i'), if(endtime is null,round(min(remaining)),'')  remtime from runs r, ticks t where r.run='%s' and r.run=t.run group by r.run order by starttime desc"%self.currentRun)
+        q=QtSql.QSqlQuery("SELECT p.name, date_format(gentime,'%%m/%%d/%%y %%H:%%i'), date_format(starttime,'%%m/%%d/%%y %%H:%%i'), date_format(endtime,'%%m/%%d/%%y %%H:%%i'),r.logfile from runs r, programs p where r.program=p.program and r.run='%s' group by r.run order by starttime desc"%self.currentRun)
         self.sqlErrorCheck(q.lastError())
         q.next()
         self.programName.setText(q.value(0))
         print("q.value(1)=",q.value(1))
         self.generated.setText("Gen: "+q.value(1))
         self.starttime.setText("Start: "+q.value(2))
+        self.logFile.setText(q.value(4))
         print("q.value(3)=",q.value(3))
-        if q.value(3) is None:
-            self.endtime.setText("Rem: "+q.value(4)+" min")
-        else:
+        if q.value(3) is not None:
             self.endtime.setText("End: "+q.value(3))
 
     def refreshPlatesTable(self):
         q=QtSql.QSqlQueryModel()
-        query="SELECT plate,count(*) numsamps from sampnames s where s.run='%s' group by plate order by plate"%self.currentRun
+        query="SELECT plate,count(*) numsamps from samples s where s.program=(select program from runs where run='%s') group by plate order by plate"%self.currentRun
         print(query)
         q.setQuery(query)
         self.sqlErrorCheck(q.lastError())
@@ -112,20 +88,29 @@ class GUI(Ui_MainWindow):
 
     def refreshSamplesTable(self):
         q=QtSql.QSqlQueryModel()
-        query = "select s.well,s.name,v.volume,v.expected,v.measured,v.vol from sampnames s, vols v where v.vol=(select max(vol) from vols vm where vm.run=s.run and vm.plate=s.plate and vm.well=s.well) and s.plate='%s' and s.run='%s' order by right(s.well,length(s.well)-1),s.well;" % (
-        self.currentPlate, self.currentRun)
+        query = "select s.sample,s.well,s.name  from samples s where s.plate='%s' and s.program=%d order by right(s.well,length(s.well)-1),s.well;" % (self.currentPlate, self.currentProgram)
         print(query)
         q.setQuery(query)
         self.sqlErrorCheck(q.lastError())
         self.sampleTable.setModel(q)
+        self.sampleTable.setColumnHidden(0,True)
         self.sampleTable.resizeColumnsToContents()
 
     def refreshSampleDetail(self):
-        pass
+        print("currentSample=",self.currentSample)
+        query = "SELECT name,plate,well FROM samples WHERE sample=%d" % self.currentSample
+        print(query)
+        q=QtSql.QSqlQuery(query)
+        self.sqlErrorCheck(q.lastError())
+        q.next()
+        self.sampleName.setText(q.value(0))
+        self.wellName.setText(q.value(1)+"."+q.value(2))
 
     def refreshVolsTable(self):
         q=QtSql.QSqlQueryModel()
-        q.setQuery("select gemvolume,volume,expected,measured from vols v where v.plate='%s' and v.well='%s' and v.run='%s' order by v.vol;"%(self.currentPlate,self.currentWell,self.currentRun))
+        query="select lineno,round(elapsed/60.0,1) elapsed,cmd,tip,round(priorvol,1) priorvol,round(volume,1) observed,measured,round(volchange,1) volchange from v_sum where run='%s' and sample=%d order by lineno;"%(self.currentRun, self.currentSample)
+        print(query)
+        q.setQuery(query)
         self.sqlErrorCheck(q.lastError())
         self.volsTable.setModel(q)
         self.volsTable.resizeColumnsToContents()
@@ -148,16 +133,15 @@ class GUI(Ui_MainWindow):
             return
         self.sampleGroup.show()
         self.refreshSampleDetail()
-        self.sampleName.setText(self.currentSample)
-        self.wellName.setText(self.currentPlate+"."+self.currentWell)
         self.refreshVolsTable()
+        self.sampleGroup.layout()
 
     def refreshAll(self):
         self.refreshRunsTable()
-        self.refreshPgmGroup()
         self.refreshRunGroup()
         self.refreshPlateGroup()
         self.refreshSampleGroup()
+        self.central.layout()
 
     def runs(self,arg):
         print("runs",arg)
@@ -168,7 +152,7 @@ class GUI(Ui_MainWindow):
         for i in range(rec.count()):
             print(rec.fieldName(i),"=",rec.field(i).value())
         self.currentRun=rec.field(0).value()
-        self.currentProgram=rec.field(3).value()
+        self.currentProgram=rec.field(2).value()
         self.currentPlate=None
         self.currentSample=None
         self.currentWell=None
@@ -192,7 +176,7 @@ class GUI(Ui_MainWindow):
         for i in range(rec.count()):
             print(rec.fieldName(i),"=",rec.field(i).value())
         self.currentWell=rec.field(0).value()
-        self.currentSample=rec.field(1).value()
+        self.currentSample=rec.field(0).value()
         #self.plateTable.selectRow(index.row())
         self.refreshAll()
 

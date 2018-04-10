@@ -13,12 +13,18 @@
   <property name="windowTitle">
    <string>Robot Explorer</string>
   </property>
-  <widget class="QWidget" name="centralwidget">
+  <widget class="QWidget" name="central">
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
-     <layout class="QHBoxLayout" name="horizontalLayout">
+     <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,0,0,1">
       <item>
-       <widget class="QGroupBox" name="groupBox_4">
+       <widget class="QGroupBox" name="runsGroup">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
         <property name="title">
          <string>Runs</string>
         </property>
@@ -58,9 +64,6 @@
            </property>
           </widget>
          </item>
-         <item row="2" column="0" colspan="2">
-          <widget class="QTableView" name="plateTable"/>
-         </item>
          <item row="0" column="0">
           <widget class="QLabel" name="programName">
            <property name="text">
@@ -85,11 +88,27 @@
            </property>
           </widget>
          </item>
+         <item row="3" column="0" colspan="2">
+          <widget class="QTableView" name="plateTable"/>
+         </item>
+         <item row="2" column="0">
+          <widget class="QLabel" name="logFile">
+           <property name="text">
+            <string>LogFile</string>
+           </property>
+          </widget>
+         </item>
         </layout>
        </widget>
       </item>
       <item>
        <widget class="QGroupBox" name="plateGroup">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
         <property name="title">
          <string>Plate Details</string>
         </property>
@@ -113,7 +132,7 @@
          <string>Sample Details</string>
         </property>
         <layout class="QGridLayout" name="gridLayout">
-         <item row="0" column="1">
+         <item row="0" column="2">
           <widget class="QLabel" name="wellName">
            <property name="text">
             <string>Plate.Well</string>
@@ -130,20 +149,28 @@
            </property>
           </widget>
          </item>
-         <item row="2" column="0" colspan="2">
-          <widget class="QTableView" name="volsTable"/>
+         <item row="2" column="0" colspan="3">
+          <widget class="QTableView" name="volsTable">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+          </widget>
          </item>
-        </layout>
-       </widget>
-      </item>
-      <item>
-       <widget class="QGroupBox" name="pgmGroup">
-        <property name="title">
-         <string>Program</string>
-        </property>
-        <layout class="QVBoxLayout" name="verticalLayout_2">
-         <item>
-          <widget class="QTableView" name="pgmvolsTable"/>
+         <item row="0" column="1">
+          <spacer name="horizontalSpacer_2">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
          </item>
         </layout>
        </widget>
@@ -196,25 +223,11 @@
     <property name="title">
      <string>File</string>
     </property>
-    <addaction name="actionCurrent_Run"/>
-    <addaction name="actionRuns"/>
     <addaction name="actionQuit"/>
    </widget>
-   <widget class="QMenu" name="menuVolumes">
-    <property name="title">
-     <string>Volumes</string>
-    </property>
-    <addaction name="actionList"/>
-   </widget>
    <addaction name="menuFile"/>
-   <addaction name="menuVolumes"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
-  <action name="actionRuns">
-   <property name="text">
-    <string>Runs</string>
-   </property>
-  </action>
   <action name="actionQuit">
    <property name="text">
     <string>Quit</string>
@@ -223,11 +236,6 @@
   <action name="actionList">
    <property name="text">
     <string>List</string>
-   </property>
-  </action>
-  <action name="actionCurrent_Run">
-   <property name="text">
-    <string>Current Run</string>
    </property>
   </action>
  </widget>
