@@ -161,11 +161,6 @@ class BuildDB(DB):
         #worklist.pyrun("DB\db.py startrun %s %s %s %s %s"%(name,gentime.replace(' ','T'),checksum,gitlabel,self.id))
         self.embed("log_startrun","lasttime,'%s','%s','%s','%s',%.0f"%(name,gentime.replace(' ','T'),checksum,gitlabel,clock.totalTime if clock.totalTime is not None else -1))
 
-
-    def tick(self, remaining: float):
-        #worklist.pyrun("DB\db.py tick %f %f %d"%(elapsed,remaining,worklist.getline()))
-        self.embed("log_tick","%d"%remaining)
-
     def endrun(self):
         # noinspection PyStringFormat
         #worklist.pyrun("DB\db.py endrun %d"%self.id)

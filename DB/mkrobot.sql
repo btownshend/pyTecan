@@ -16,18 +16,6 @@ create table runs(
        endtime timestamp null
 );
 
--- Ticks for a run
--- Inserted on robot only, read-only on master, never updated (except synctime)
-create table ticks(
-       tick integer primary key  auto_increment,
-       run integer not null,
-       elapsed float not null, 
-       remaining float,
-       lineno integer not null,   -- Line number in GEM program
-       time timestamp not null default current_timestamp,
-       foreign key(run) references runs(run) on delete cascade
-);
-
 -- Flags for a run
 -- Inserted on either robot or master, never updated (just add a later record instead)
 create table flags(
