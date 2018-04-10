@@ -1,5 +1,4 @@
 import sys
-import uuid
 
 from . import worklist
 import pymysql.cursors
@@ -131,7 +130,7 @@ class DB(object):
 
     def insertVol(self, run, op, gemvolume, volume, measured, height, submerge, zmax, zadd):
         with self.db.cursor() as cursor:
-            cursor.execute("insert into vols(run,op,gemvolume,volume,measured, height, submerge, zmax, zadd) VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s)", (run.hex, op, gemvolume, volume, measured, height, submerge, zmax, zadd))
+            cursor.execute("insert into vols(run,op,gemvolume,volume,measured, height, submerge, zmax, zadd) VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s)", (run, op, gemvolume, volume, measured, height, submerge, zmax, zadd))
             logging.notice("Inserted vol as %d" % cursor.lastrowid)
             return cursor.lastrowid
 
@@ -269,11 +268,10 @@ class LogDB(DB):
                 self.insertProgram(name, genTime, checksum, gitlabel, totalTime, False)
 
         # Create a run
-        self.run = uuid.uuid4()
         with self.db.cursor() as cursor:
-            cursor.execute("insert into runs(run,starttime,program,logfile) values (%s,%s,%s,%s)",
-                           (self.run.hex, startTime, self.program, self.logfile))
-            logging.notice("Inserted run %s"%self.run)
+            cursor.execute("insert into runs(starttime,program,logfile) values (%s,%s,%s)",(startTime, self.program, self.logfile))
+            self.run=cursor.lastrowid
+            logging.notice("Inserted run %d"%self.run)
             self.db.commit()
 
     def log_endrun(self,program,lineno,elapsed, endTime):
@@ -286,8 +284,8 @@ class LogDB(DB):
 
     def setRunEndTime(self,endTime):
         with self.db.cursor() as cursor:
-            cursor.execute('update runs set endtime=%s where run=%s',(endTime, self.run.hex))
-            logging.notice('Added endtime to run %s'%self.run.hex)
+            cursor.execute('update runs set endtime=%s where run=%s',(endTime, self.run))
+            logging.notice('Added endtime to run %d'%self.run)
 
     def lastmeasure(self,tip,lineno,height,sbl,sml,zadd,lasttime):
         lasttime=self.local2utc(lasttime)

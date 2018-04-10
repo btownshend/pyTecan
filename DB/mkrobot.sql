@@ -9,7 +9,7 @@ use robot;
 -- Header for a run
 -- Inserted,updated on robot only, read-only on master
 create table runs(
-       run varchar(36), primary key(run),
+       run integer primary key auto_increment,
        program integer not null, foreign key(program) references programs(program),
        logfile varchar(50),
        starttime timestamp not null default current_timestamp,
@@ -20,7 +20,7 @@ create table runs(
 -- Inserted on robot only, read-only on master, never updated (except synctime)
 create table ticks(
        tick integer primary key  auto_increment,
-       run varchar(36) not null, 
+       run integer not null,
        elapsed float not null, 
        remaining float,
        lineno integer not null,   -- Line number in GEM program
@@ -32,7 +32,7 @@ create table ticks(
 -- Inserted on either robot or master, never updated (just add a later record instead)
 create table flags(
        flag integer primary key  auto_increment, 
-       run varchar(36)  not null, 
+       run integer  not null,
        name varchar(50)  not null, 
        value integer, 
        lastupdate timestamp not null,
@@ -45,7 +45,7 @@ create table flags(
 -- Volume measurement occuring during a particular program operation
 create table vols(
        vol integer primary key auto_increment,
-       run varchar(36) not null,
+       run integer not null,
        op integer not null, foreign key(op) references ops(op) on delete cascade, -- not null
        gemvolume float,	  -- Volume as reported by Gemini
        volume float,   -- gemvolume converted to true volume
