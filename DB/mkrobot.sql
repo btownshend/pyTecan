@@ -11,6 +11,7 @@ use robot;
 create table runs(
        run varchar(36), primary key(run),
        program integer not null, foreign key(program) references programs(program),
+       logfile varchar(50),
        starttime timestamp not null default current_timestamp,
        endtime timestamp null
 );

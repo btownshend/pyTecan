@@ -9,7 +9,7 @@ Config.usedb=False
 
 
 from datalog import Datalog
-from Experiment.db import logdb   # Note: parselog is both the parent and current module name
+from Experiment.db import LogDB   # Note: parselog is both the parent and current module name
 
 'Parse a GEMINI log file'
 debug=False
@@ -346,7 +346,7 @@ tipcmd=""
 lasttime=datetime.strptime(hdr[:15].decode('latin-1'),'%Y%m%d_%H%M%S')
 print("Header time: %s"%str(lasttime))
 shakePlate=None   # Plate on shaker
-
+logdb=LogDB(args.logfile)
 sys.stdout = codecs.getwriter("latin-1")(sys.stdout.detach())
 # Handle high-bit characters in stdout (since .log contains 0xb5 (\micro) charactures
 

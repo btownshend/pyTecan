@@ -236,10 +236,13 @@ class BuildDB(DB):
 
 class LogDB(DB):
     """Log actions when accessed from log-file parsing"""
-    def __init__(self):
+    def __init__(self,logfile):
         super().__init__()
         self.run=None
         self.measurements={}
+        self.tz = pytz.timezone('US/Pacific')
+        self.logfile = logfile
+
 
     def log_startrun(self, program, lineno, elapsed, startTime, name, genTime, checksum, gitlabel, totalTime):
         if self.db is None:
@@ -261,8 +264,8 @@ class LogDB(DB):
         # Create a run
         self.run = uuid.uuid4()
         with self.db.cursor() as cursor:
-            cursor.execute("insert into runs(run,starttime,program) values (%s,%s,%s)",
-                           (self.run.hex, startTime, self.program))
+            cursor.execute("insert into runs(run,starttime,program,logfile) values (%s,%s,%s,%s)",
+                           (self.run.hex, startTime, self.program, self.logfile))
             logging.notice("Inserted run %s"%self.run)
             self.db.commit()
 
