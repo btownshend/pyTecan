@@ -1,7 +1,8 @@
 import debughook
 import re
 import codecs
-from datetime import datetime, timedelta, time
+import datetime
+import time
 
 from Experiment.config import Config
 print("Config=",Config)
@@ -315,6 +316,7 @@ from Experiment import globals
 
 parser = argparse.ArgumentParser(description="parselog")
 parser.add_argument('-v', '--verbose', help='Enable verbose output', default=False, action="store_true")
+parser.add_argument('-f', '--follow', help='Wait for more output', default=False, action="store_true")
 parser.add_argument('-p', '--password', type=str, help='DB Password')
 parser.add_argument('-N', '--nodb', help='No DB logging', default=False, action="store_true")
 parser.add_argument("logfile",default=None)
@@ -343,17 +345,28 @@ lastgeminitime=None
 geminicmdtimes={}
 geminicmdcnt={}
 tipcmd=""
-lasttime=datetime.strptime(hdr[:15].decode('latin-1'),'%Y%m%d_%H%M%S')
+lasttime=datetime.datetime.strptime(hdr[:15].decode('latin-1'),'%Y%m%d_%H%M%S')
 print("Header time: %s"%str(lasttime))
 shakePlate=None   # Plate on shaker
 logdb=LogDB(args.logfile)
 sys.stdout = codecs.getwriter("latin-1")(sys.stdout.detach())
 # Handle high-bit characters in stdout (since .log contains 0xb5 (\micro) charactures
+sleeping=False
 
 while True:
     bline=fd.readline()
-    if len(bline)==0:
-        break
+    if not bline:
+        if args.follow:
+            if not sleeping:
+                print("sleeping...",end='',flush=True)
+                sleeping=True
+            time.sleep(0.1)
+            continue
+        else:
+            break
+    if sleeping:
+        print("done")
+        sleeping=False
     while len(bline)>0 and (bline[-1]==13 or bline[-1]==10):
         bline=bline[:-1]
     #line=line.rstrip('\r\n')
@@ -416,13 +429,13 @@ while True:
                 pos=cmd.find("Shaker")
                 shakePlate=cmd[10:pos-1]
                 print("SHAKEPLATE %s"%shakePlate)
-                
+
           if cmd.startswith('Line'):
                 colon=cmd.find(':')
                 cname=cmd[(colon+2):]
                 lnum=int(cmd[4:(colon-1)])
                 #print "cname=",cname
-                t=datetime.combine(lasttime.date(),datetime.strptime(gtime,'%H:%M:%S').time())
+                t=datetime.datetime.combine(lasttime.date(),datetime.datetime.strptime(gtime,'%H:%M:%S').time())
                 if (t-lasttime).total_seconds()<0:
                     t=t+datetime.timedelta(1)   # Wrapped around
                     logging.notice("Gemini time wrapped from %s to %s"%(lasttime,t))
@@ -442,8 +455,15 @@ while True:
                 lastgeminicmd=cname
                 lasttime=t
           if cmd.startswith('@'):
-              print("PYTHON: %s"%cmd[1:])
-              eval("logdb."+cmd[1:])
+              print("PYTHON: %s" % cmd[1:])
+              eval("logdb." + cmd[1:])
+              if cmd.startswith('@log_endrun'):
+                  # Done processing file
+                  break
+          if cmd.find('closing log-file'):
+              # End of log (in case we're in -f mode)
+              break
+
 #print "log=",dl
 dl.printallsamples(fd=sys.stdout)  # This 'sys.stdout' (modified above) seems different from the default one that Samples.print* would use
 
