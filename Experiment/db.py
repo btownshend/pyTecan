@@ -158,7 +158,7 @@ class BuildDB(DB):
         if params is None:
             cmt="%s)"%cmt
         else:
-            cmt="%s,%s)"%(cmt,params)
+            cmt="%s,%s)"%(cmt,params.replace("'None'","None"))
         worklist.comment(cmt)
 
     def startrun(self, name: str, gentime: str, checksum: str, gitlabel: str):
