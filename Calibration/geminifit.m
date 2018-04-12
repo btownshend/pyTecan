@@ -4,18 +4,18 @@
 function gmdl=geminifit(vol,heights,x0,gmdl)
 useoffset=false;
 fitradius=true;
-plot(vol,heights,'k');
+plot(vol,heights,'g','LineWidth',2);
 leg={'Desired'};
 hold on;
 xlabel('Volume (ul)');
 ylabel('Height above ZMax (mm)');
 if nargin<4
   if nargin<3
-    x0=[10,pi*4.062^2,0];
+    x0=[4,16.4,0];
   end
   gmdl0=struct('depth',x0(1),'area',x0(2),'hoffset',x0(3));
-  plot(gemcalcvol(heights,gmdl0),heights,'m','LineWidth',2);
-  leg{end+1}='Initial';
+  %plot(gemcalcvol(heights,gmdl0),heights,'m','LineWidth',2);
+  %leg{end+1}='IC';
   options=optimset('Display','notify','TolFun',1e-8,'TolX',1e-8);
   fprintf('Matching Gemini model over range of %.1f-%.1f ul using %d points\n', min(vol), max(vol), length(vol));
   if useoffset
@@ -46,7 +46,7 @@ vmaxfrac=max(abs((vol-vest)./vol));
 fprintf('Gemini fit:  depth=%.2f mm, area=%.2f mm^2, r=%.2fmm, offset=%.2fmm\n', gmdl.depth, gmdl.area,sqrt(gmdl.area/pi),gmdl.hoffset);
 fprintf('Height RMSE = %.2f mm, max = %.2f:%.2f mm\n', rmse,maxerr);
 fprintf('Volume RMSE = %.2f ul, max = %.2f:%.2f ul (%.0f%%)\n', vrmse,vmaxerr,vmaxfrac*100);
-plot(gemcalcvol([0,heights],gmdl),[0,heights],'g','LineWidth',2);
+plot(gemcalcvol([0,heights],gmdl),[0,heights],'k','LineWidth',2);
 leg{end+1}='Fit';
-plot(vol,gemcalcheight(vol,gmdl),'g','LineWidth',2);
+plot(vol,gemcalcheight(vol,gmdl),'k','LineWidth',2);
 legend(leg,'Location','NorthWest');

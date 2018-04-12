@@ -9,9 +9,6 @@ heights=heights(sel);
 wells=wells(sel,:);
 tips=tips(sel);
 
-plot(vol,heights,'o');
-xlabel('Volume (ul)');
-ylabel('Height above ZMax (mm)');
 if nargin<5
   angle=17.5;
 end

@@ -61,6 +61,7 @@ meanoffset=-[0,fit(6:8)];
 meanoffset=meanoffset-mean(meanoffset);
 fprintf('Tip offset (distance higher than mean): %s mm\n', sprintf('%.2f ',meanoffset));
 fprintf('  -> should set LIHA Tip Offsets to [%s]\n',sprintf('%.0f ',390+meanoffset*10));
+fprintf('  or adjust firmware C5SOZ by [%s]\n',sprintf('%.0f ',-meanoffset*10));
 if isempty(offsets)
   offsets=meanoffset*10+390;
 else
