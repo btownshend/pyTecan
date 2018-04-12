@@ -58,7 +58,8 @@ class Experiment(object):
         # self.sanitize()  # Not needed, TRP does it, also first use of tips will do this
         self.useDiTis=False
         self.tcrunning=False
-        self.overrideSanitize=False
+        self.overrideSanitize=False   # True to not sanitize (only wash for new tips)
+        self.overrideWash=False   # True to not even wash
         self.pgmStartTime=None
         self.pgmEndTime=None
 
@@ -132,9 +133,10 @@ class Experiment(object):
             worklist.comment("Sanitize not needed cleanTips=%d"%self.cleanTips)
             return
         worklist.comment("Sanitize (cleanTips=%d)"%self.cleanTips)
-        worklist.wash(15,1,2)
+        if not self.overrideWash:
+            worklist.wash(15,1,2)
         fixedWells=[]
-        if not self.overrideSanitize:
+        if not self.overrideSanitize and not self.overrideWash:
             for i in range(4):
                 if (fixedTips & (1<<i)) != 0:
                     fixedWells.append(i)
