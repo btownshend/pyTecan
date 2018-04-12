@@ -39,9 +39,9 @@ create table vols(
        gemvolume float,	  -- Volume as reported by Gemini
        volume float,   -- gemvolume converted to true volume
        height integer,  -- tip height as reported by Gemini (in native units of 1/10 mm)
-       submerge integer not null, -- submerge depth
-       zmax integer not null,  -- zmax - bottom of tube
-       zadd integer not null,  -- zadd - extra height needed after submerge (to permit tracking during aspirate?)
+       submerge integer, -- submerge depth
+       zmax integer,  -- zmax - bottom of tube
+       zadd integer,  -- zadd - extra height needed after submerge (to permit tracking during aspirate?)
        measured timestamp not null default current_timestamp,	-- when was measurement made
        foreign key(run) references runs(run) on delete cascade
 );
