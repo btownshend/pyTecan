@@ -154,7 +154,7 @@ class BuildDB(DB):
         else:
             program=self.program
 
-        cmt="@%s(%d,%d,%.1f"%(cmd,program,lineno,clock.elapsed())
+        cmt="@%s(%d,%d,%.1f,lasttime"%(cmd,program,lineno,clock.elapsed())
         if params is None:
             cmt="%s)"%cmt
         else:
@@ -167,7 +167,7 @@ class BuildDB(DB):
         if self.db is not None and self.program is None:
             self.program=self.insertProgram(name,gentime,checksum,gitlabel,clock.totalTime,False)
         #worklist.pyrun("DB\db.py startrun %s %s %s %s %s"%(name,gentime.replace(' ','T'),checksum,gitlabel,self.id))
-        self.embed("log_startrun","lasttime,'%s','%s','%s','%s',%.0f"%(name,gentime.replace(' ','T'),checksum,gitlabel,clock.totalTime if clock.totalTime is not None else -1))
+        self.embed("log_startrun","'%s','%s','%s','%s',%.0f"%(name,gentime.replace(' ','T'),checksum,gitlabel,clock.totalTime if clock.totalTime is not None else -1))
 
     def endrun(self):
         # noinspection PyStringFormat
@@ -263,13 +263,13 @@ class LogDB(DB):
     def local2utc(self,dt):
         return self.tz.localize(dt).astimezone(pytz.utc)
 
-    def log_startrun(self, program, lineno, elapsed, startTime, name, genTime, checksum, gitlabel, totalTime):
+    def log_startrun(self, program, lineno, elapsed, lasttime, name, genTime, checksum, gitlabel, totalTime):
+        lasttime=self.local2utc(lasttime)  ## Naive datetimes read from log file
         if self.db is None:
             self.connect()
         print(
             "startrun: program=%d,lineno=%d,elapsed=%f,name=%s,gentime=%s,checksum=%s,gitlabel=%s,totalTime=%f" % (
                 program, lineno, elapsed, name, genTime, checksum, gitlabel, totalTime))
-        startTime=self.local2utc(startTime)  ## Naive datetimes read from log file
         # Note: gentime is already UTC
         if not Config.usedb:
             return
@@ -289,7 +289,8 @@ class LogDB(DB):
             logging.notice("Inserted run %d"%self.run)
             self.db.commit()
 
-    def log_endrun(self,program,lineno,elapsed, endTime):
+    def log_endrun(self,program,lineno,elapsed, lasttime, endTime):
+        lasttime=self.local2utc(lasttime)
         if self.db is None:
             return
         endTime=self.local2utc(endTime)
@@ -307,7 +308,8 @@ class LogDB(DB):
         logging.notice("lastmeasure(%d,%d,%d,%d,%d,%d,%s)"%(tip,lineno,height,sbl,sml,zadd,str(lasttime)))
         self.measurements[(lineno,tip)]=[height,sbl,sml,zadd,lasttime]
 
-    def log_op(self, program, lineno, elapsed, plateName, sampleName, wellName, sampid, cmd, tip, volchange,liquidClassName, lc):
+    def log_op(self, program, lineno, elapsed, lasttime, plateName, sampleName, wellName, sampid, cmd, tip, volchange,liquidClassName, lc):
+        lasttime=self.local2utc(lasttime)
         logging.notice("op(%s,%d,%.2f,%s,%s,%s,%d,%s,%d,%.2f,%s,%d)"%(program, lineno, elapsed, plateName, sampleName, wellName, sampid, cmd, tip, volchange,
               liquidClassName, lc))
         if self.db is None:
