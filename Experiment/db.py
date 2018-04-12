@@ -82,12 +82,16 @@ class DB(object):
             print("Inserted program %s as %d" % (name, cursor.lastrowid))
             return cursor.lastrowid
 
-    def setProgramComplete(self):
+    def setProgramComplete(self,totalTime=None):
         if self.program is None:
             return
         with self.db.cursor() as cursor:
-            cursor.execute('update programs set complete=True where program=%s',(self.program,))
-            logging.notice('Marked program %d as complete'%self.program)
+            if totalTime is None:
+                cursor.execute('update programs set complete=True where program=%s',(self.program,))
+            else:
+                cursor.execute('update programs set complete=True,totaltime=%s where program=%s',(totalTime, self.program,))
+
+            logging.notice('Marked program %d as complete with totalTime=%f'%(self.program,totalTime))
 
     def getOp(self, lineno, tip):
         with self.db.cursor() as cursor:
@@ -179,8 +183,9 @@ class BuildDB(DB):
                 cursor.executemany('insert into ops(sample, cmd, elapsed, tip,volchange,lineno, lc,program,clean) values(%s,%s,%s,%s,%s,%s,%s,%s,%s)',self.ops)
             print("done")
             self.ops=[]
+        self.setProgramComplete(totalTime=clock.elapsed())
         self.db.commit()
-        self.setProgramComplete()
+
         #self.db.close()
 
 
