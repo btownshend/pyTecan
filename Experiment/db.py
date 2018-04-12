@@ -218,8 +218,8 @@ class BuildDB(DB):
         self.clean[tip]=False
 
     def wlistOp(self, cmd:str, lineno:int, tipMask:int, liquidClass, volume, plate, wellNums):
-        if cmd== 'Mix':
-            return
+        # if cmd== 'Mix':
+        #     return
         tip = 1
         tipTmp = tipMask
         for i in range(len(wellNums)):
