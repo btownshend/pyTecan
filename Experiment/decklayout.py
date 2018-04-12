@@ -19,8 +19,8 @@ eppminspeeds={0:1900,20:1900,32:1800,64:1700,96:1400,150:1100}  # 1100@150ul unt
 
 TROUGH = PlateType("Trough",nx=1,ny=4,pierce=False,unusableVolume=100,maxVolume=100000,gemDepth=0,gemArea=1232,gemShape='flat')
 EPPLOWBIND=PlateType("EppLowBind",nx=12,ny=8,pierce=False,unusableVolume=15,maxVolume=200,
-                angle=17.5,r1=2.698,h1=9.31,v0=17.21,
-                gemDepth=2.81,gemArea=16.41,
+                angle=17.5, r1=2.752, h1=9.79, v0=12.41,
+                gemDepth=2.42, gemArea=13.65,
                 gemShape='v-shaped',maxspeeds=eppmaxspeeds,minspeeds=eppminspeeds,glycerolmaxspeeds=eppglycerolmaxspeeds,glycerol=1)  # EppLoBind
 RICBLOCK=PlateType("RICBlock",nx=6,ny=5,pierce=False,unusableVolume=20,maxVolume=1700,angle=17.5,r1=4.062,h1=17.75,v0=13.7,gemDepth=9.59,gemArea=43.03,gemShape='v-shaped')
 WHITEQPCR=PlateType("qPCRPlate",nx=12,ny=8,pierce=False,unusableVolume=15,maxVolume=200,
@@ -33,14 +33,14 @@ WATERLOC=PlateLocation("Water",3,2,zmax=1367)
 BLEACHLOC=PlateLocation("Bleach",3,3,zmax=1367)
 SSDDILLOC=PlateLocation("SSDDil",3,1,zmax=1367)
 
-RICLOC=PlateLocation("RIC",18,1,slopex=-0.022,slopey=-0.038,zmax=569)
+RICLOC=PlateLocation("RIC",18,1,slopex=-0.022,slopey=-0.038,zmax=567)
 MAGPLATELOC=PlateLocation("MagPlate",18,2,zmax=1459,vectorName="Magplate")
 SHAKERPLATELOC=PlateLocation("Shaker",9,0,vectorName="Shaker")
-SAMPLELOC=PlateLocation("Home",4,3,zmax=1023,vectorName="Microplate Landscape")
-DILUTIONLOC=PlateLocation("DilutionLoc",4,2,zmax=1023,vectorName="Microplate Landscape")
+SAMPLELOC=PlateLocation("Home",4,3,zmax=1031,vectorName="Microplate Landscape")
+DILUTIONLOC=PlateLocation("DilutionLoc",4,2,zmax=1031,vectorName="Microplate Landscape")
 QPCRLOC=PlateLocation("QPCRLoc",4,1,zmax=996)  # defined in worklist.py
 WASHLOC=PlateLocation("Wash",1,2)  # defined in worklist.py
-EPPLOC=PlateLocation("EppLoc",13,1,zmax=1337)
+EPPLOC=PlateLocation("EppLoc",13,1,zmax=1339)
 TCPOS=PlateLocation("TC",25,1,vectorName="TROBOT")
 HOTELPOS = PlateLocation("Hotel",25, 0)
 WASTE = PlateLocation("Waste",20, 3)
@@ -57,8 +57,8 @@ EPPENDORFS=Plate(name="Eppendorfs",plateType=EPPRACK,plateLocation=EPPLOC)
 REAGENTPLATE=Plate(name="Reagents",plateType=RICBLOCK, plateLocation=RICLOC)
 QPCRPLATE=Plate(name="QPCR",plateType=WHITEQPCR, plateLocation=QPCRLOC)
 
-TIPOFFSETS=[390, 389, 394, 387]
-#TIPOFFSETS=[390, 390, 390, 390]
+#TIPOFFSETS=[390, 389, 394, 387]
+TIPOFFSETS=[390, 390, 390, 390]
 
 
 ############ Well-known samples  #############
