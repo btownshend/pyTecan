@@ -98,20 +98,10 @@ CREATE OR REPLACE VIEW v_tips AS
 SELECT * FROM v_ops ORDER BY tip,lineno;
 
 create or replace view v_history as
-select r.run,s.program,s.sample,s.plate,s.well,s.name,o.op,o.cmd,o.lineno,o.tip,o.volchange,o.elapsed,v.vol,v.volume,v.measured
+select r.run,s.program,s.sample,s.plate,s.well,s.name,o.op,o.cmd,o.lineno,o.tip,o.volchange,o.elapsed,v.vol,v.volume,v.measured,v.estvol
 from runs r
 JOIN samples s ON r.program=s.program
 JOIN ops o ON s.sample=o.sample
 left join vols v on v.op=o.op AND v.run=r.run
+where (v.measured is not null or o.cmd!='Detect_Liquid')
 order by r.run,s.plate, s.well, o.lineno;
-
-create or replace view v_sum as
-select h1.run,h1.program,h1.sample,h1.plate,h1.well,h1.name,h1.op,h1.cmd,h1.lineno,h1.tip,h1.volchange,h1.elapsed,h1.vol,h1.volume,h1.measured,ifnull(sum(h2.volchange),0) priorvol
-from v_history h1
-left join v_history h2
-on h1.run=h2.run
-and h1.sample=h2.sample
-and h1.lineno>h2.lineno
-and h2.volchange is not null
-where (h1.measured is not null or h1.cmd!='Detect_Liquid')
-group by h1.run,h1.program,h1.sample,h1.plate,h1.well,h1.name,h1.op,h1.cmd,h1.lineno,h1.tip,h1.volchange,h1.elapsed,h1.vol,h1.volume,h1.measured;
