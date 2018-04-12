@@ -284,7 +284,17 @@ class LogDB(DB):
 
         # Create a run
         with self.db.cursor() as cursor:
-            cursor.execute("insert into runs(starttime,program,logfile) values (%s,%s,%s)",(startTime, self.program, self.logfile))
+            if self.logfile is not None:
+                cursor.execute("select run,starttime,endtime from runs where logfile=%s",self.logfile)
+                res=cursor.fetchone()
+                if res is not None:
+                    if res['endtime'] is not None:
+                        logging.error("Already processed logfile %s: have run %d with starttime=%s, endtime=%s"%(self.logfile,res['run'],res['starttime'],res['endtime']))
+                    else:
+                        logging.warning("Deleting run %d previously processed from logfile %s with starttime=%s and no endtime"%(res['run'],self.logfile,res['starttime']))
+                        cursor.execute("delete from runs where run=%s",res['run'])
+
+            cursor.execute("insert into runs(starttime,program,logfile) values (%s,%s,%s)", (lasttime, self.program, self.logfile))
             self.run=cursor.lastrowid
             logging.notice("Inserted run %d"%self.run)
             self.db.commit()
