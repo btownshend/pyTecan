@@ -136,6 +136,10 @@ class DB(object):
 
 
 class BuildDB(DB):
+    def __init__(self):
+        super().__init__()
+        self.clean={}  # Map from tip # to clean state (T=clean, F=dirty, None=unknown)
+
     """Log actions during compile of program to .gem """
     def embed(self,cmd,params=None,lineno=None):
         """Embed a machine-readable comment in the .gem file"""
@@ -172,7 +176,7 @@ class BuildDB(DB):
             print("ops=",self.ops[:20],'...')
             print("Insert %d ops..."%len(self.ops),end='',flush=True)
             with self.db.cursor() as cursor:
-                cursor.executemany('insert into ops(sample, cmd, elapsed, tip,volchange,lineno, lc,program) values(%s,%s,%s,%s,%s,%s,%s,%s)',self.ops)
+                cursor.executemany('insert into ops(sample, cmd, elapsed, tip,volchange,lineno, lc,program,clean) values(%s,%s,%s,%s,%s,%s,%s,%s,%s)',self.ops)
             print("done")
             self.ops=[]
         self.db.commit()
@@ -199,9 +203,14 @@ class BuildDB(DB):
         if sampid is None:
             logging.warning("Unable to find sample %s"%sample.name)
             sampid = -1
+        if tip in self.clean:
+            clean=self.clean[tip]
+        else:
+            clean=None
         self.embed("log_op","'%s','%s','%s',%d,'%s',%d,%.2f,'%s',%d"%(sample.plate.name,sample.name,sample.plate.wellname(sample.well),sampid,cmd,tip,volume,liquidClass,self.getlc(liquidClass.name)),lineno=lineno)
         if self.program is not None:
-            self.ops.append([sampid, cmd, clock.elapsed(), tip, volume, lineno, self.getlc(liquidClass.name), self.program])
+            self.ops.append([sampid, cmd, clock.elapsed(), tip, volume, lineno, self.getlc(liquidClass.name), self.program, clean])
+        self.clean[tip]=False
 
     def wlistOp(self, cmd:str, lineno:int, tipMask:int, liquidClass, volume, plate, wellNums):
         if cmd== 'Mix':
@@ -228,7 +237,12 @@ class BuildDB(DB):
             tip += 1
 
     def wlistWash(self, cmd:str, tipMask:int):
-        pass
+        tip=1
+        while tipMask>0:
+            if tipMask & 1:
+                self.clean[tip]=True
+            tip+=1
+            tipMask>>=1
 
 
 class LogDB(DB):

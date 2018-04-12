@@ -84,11 +84,12 @@ create table ops (
        elapsed float not null,   -- elapsed time in program
        tip integer not null,   -- which tip was used (1..4)
        lc integer not null, foreign key(lc) references liquidclasses(lc),
-       volchange float not null  -- increase/decrease in volume  (+ for dispense, -ve for aspirate, 0 for LD)
+       volchange float not null,  -- increase/decrease in volume  (+ for dispense, -ve for aspirate, 0 for LD)
+       clean boolean
 );
 
 CREATE OR REPLACE VIEW v_ops AS
-SELECT p.program,p.name pgmname,o.lineno,o.elapsed,o.op,s.name,s.plate,s.well,o.cmd,o.tip,lc.name lc,o.volchange FROM ops o, samples s, liquidclasses lc, programs p WHERE o.sample=s.sample AND s.program=p.program AND o.lc=lc.lc order by o.lineno;
+SELECT p.program,p.name pgmname,o.lineno,o.elapsed,o.op,s.name,s.plate,s.well,o.cmd,o.tip,lc.name lc,o.volchange,o.clean FROM ops o, samples s, liquidclasses lc, programs p WHERE o.sample=s.sample AND s.program=p.program AND o.lc=lc.lc order by o.lineno;
 
 CREATE OR REPLACE VIEW v_vols AS
 SELECT v.run, p.program, p.name pgmname,o.lineno,o.elapsed,v.measured,o.op,s.name,s.plate,s.well,o.cmd,o.tip,lc.name lc,o.volchange, v.estvol, v.volume obsvol,v.gemvolume, v.height,v.submerge,v.zmax,v.zadd FROM vols v, ops o, samples s, liquidclasses lc, programs p WHERE v.op=o.op AND o.sample=s.sample AND s.program=p.program AND o.lc=lc.lc order by o.lineno;
