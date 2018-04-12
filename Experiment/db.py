@@ -15,7 +15,7 @@ class DB(object):
     def __init__(self):
         self.db = None
         self.program = None
-        self.sampids={}
+        self.sampids={}   # Dictionary from (plate,well) to sampid
         self.ops=[]
         self.liquidclasses={}
         self.programComplete=False  # True if db contains all ops needed for program
@@ -336,7 +336,7 @@ class LogDB(DB):
             if sampid==-1:
                 sampid=self.getSample(plateName,wellName)
                 if sampid is None:
-                    sampid=self.insertSample(plateName, wellName, sampleName)  # FIXME: This won't take initial volume into account
+                    sampid=self.insertSample(plateName, wellName, sampleName)
             op = self.insertOp(lineno, elapsed, sampid, cmd, tip, volchange, lc)
         if sampid not in self.sampvols:
             self.sampvols[sampid]=0.0
