@@ -128,9 +128,9 @@ class DB(object):
             logging.notice("Inserted sample %s as %d"%(sampleName,cursor.lastrowid))
             return cursor.lastrowid
 
-    def insertVol(self, run, op, gemvolume, volume, measured, height, submerge, zmax, zadd):
+    def insertVol(self, run, op, gemvolume, volume, measured, height, submerge, zmax, zadd, estVolume):
         with self.db.cursor() as cursor:
-            cursor.execute("insert into vols(run,op,gemvolume,volume,measured, height, submerge, zmax, zadd) VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s)", (run, op, gemvolume, volume, measured, height, submerge, zmax, zadd))
+            cursor.execute("insert into vols(run,op,gemvolume,volume,measured, height, submerge, zmax, zadd, estvol) VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)", (run, op, gemvolume, volume, measured, height, submerge, zmax, zadd, estVolume))
             logging.notice("Inserted vol as %d" % cursor.lastrowid)
             return cursor.lastrowid
 
@@ -239,6 +239,7 @@ class LogDB(DB):
         self.measurements={}
         self.tz = pytz.timezone('US/Pacific')
         self.logfile = logfile
+        self.sampvols={}  # Dictionary from sampid to best estimate of current volume
 
     def local2utc(self,dt):
         return self.tz.localize(dt).astimezone(pytz.utc)
@@ -306,6 +307,8 @@ class LogDB(DB):
                 if sampid is None:
                     sampid=self.insertSample(plateName, wellName, sampleName)  # FIXME: This won't take initial volume into account
             op = self.insertOp(lineno, elapsed, sampid, cmd, tip, volchange, lc)
+        if sampid not in self.sampvols:
+            self.sampvols[sampid]=0.0
         logging.notice("lc=%d, sampid=%d, op=%d"%(lc,sampid,op))
         logging.notice("measurements="+str(self.measurements))
         if (lineno,tip) in self.measurements:
@@ -326,7 +329,16 @@ class LogDB(DB):
                 gemvolume=plate.plateType.getgemliquidvolume((height+submerge-zmax)/10.0)
                 volume=plate.plateType.getliquidvolume((height+submerge-zmax)/10.0)
             logging.notice("meastime=%s,gemvolume=%s,volume=%s"%(str(meastime),gemvolume,volume))
-            self.insertVol(self.run, op, gemvolume, volume, meastime, height, submerge, zmax, zadd)
+            self.insertVol(self.run, op, gemvolume, volume, meastime, height, submerge, zmax, zadd, self.sampvols[sampid])
+            # Corrected volume
+            if volume is not None:
+                self.sampvols[sampid]=volume
+        else:
+            # Make an entry anyway to keep track of what has actually been done
+            self.insertVol(self.run, op, None, None, lasttime, None, None, None, None, self.sampvols[sampid])
+
+        # Update current sample volume based on op
+        self.sampvols[sampid]+=volchange
         self.db.commit()
 
 

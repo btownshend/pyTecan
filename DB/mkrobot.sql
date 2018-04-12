@@ -35,6 +35,7 @@ create table vols(
        vol integer primary key auto_increment,
        run integer not null,
        op integer not null, foreign key(op) references ops(op) on delete cascade, -- not null
+       estvol float not null,   -- estimated volume based on prior operations and measurements
        gemvolume float,	  -- Volume as reported by Gemini
        volume float,   -- gemvolume converted to true volume
        height integer,  -- tip height as reported by Gemini (in native units of 1/10 mm)
@@ -90,7 +91,7 @@ CREATE OR REPLACE VIEW v_ops AS
 SELECT p.program,p.name pgmname,o.lineno,o.elapsed,o.op,s.name,s.plate,s.well,o.cmd,o.tip,lc.name lc,o.volchange FROM ops o, samples s, liquidclasses lc, programs p WHERE o.sample=s.sample AND s.program=p.program AND o.lc=lc.lc order by o.lineno;
 
 CREATE OR REPLACE VIEW v_vols AS
-SELECT v.run, p.program, p.name pgmname,o.lineno,o.elapsed,v.measured,o.op,s.name,s.plate,s.well,o.cmd,o.tip,lc.name lc,o.volchange, v.volume obsvol,v.height,v.submerge,v.zmax,v.zadd FROM vols v, ops o, samples s, liquidclasses lc, programs p WHERE v.op=o.op AND o.sample=s.sample AND s.program=p.program AND o.lc=lc.lc order by o.lineno;
+SELECT v.run, p.program, p.name pgmname,o.lineno,o.elapsed,v.measured,o.op,s.name,s.plate,s.well,o.cmd,o.tip,lc.name lc,o.volchange, v.estvol, v.volume obsvol,v.gemvolume, v.height,v.submerge,v.zmax,v.zadd FROM vols v, ops o, samples s, liquidclasses lc, programs p WHERE v.op=o.op AND o.sample=s.sample AND s.program=p.program AND o.lc=lc.lc order by o.lineno;
 
 CREATE OR REPLACE VIEW v_tips AS
 SELECT * FROM v_ops ORDER BY tip,lineno;
