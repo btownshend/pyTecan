@@ -460,8 +460,9 @@ while True:
               if cmd.startswith('@log_endrun'):
                   # Done processing file
                   break
-          if cmd.find('closing log-file'):
+          if cmd.find('closing log-file') != -1:
               # End of log (in case we're in -f mode)
+              print("Found closing log-file message; exiting")
               break
 
 #print "log=",dl
