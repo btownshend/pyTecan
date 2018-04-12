@@ -34,7 +34,9 @@ def mixwarning(msg: str):
 def error(msg: str,fatal=True):
     print("ERROR: %s [%s]"%(msg,"->".join(callhistory(True))))
     if fatal:
-        assert False
+        if globals.verbose:
+            import pdb; pdb.set_trace()
+        sys.exit(1)
 
 
 
