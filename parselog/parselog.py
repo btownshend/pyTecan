@@ -283,18 +283,17 @@ def fwparse(dev,send,reply,error,lasttime):
             sml=[int(args[3]) for _ in [0,1,2,3]]
         zadd=[int(x) for x in args[4:8]]
         tipSelect=int(args[0])
-        if replyecode==0:
-            ldpending=True
-        else:
-            heights=[-1,-1,-1,-1]
-            for i in range(len(heights)):
-                if 1<<i & tipSelect != 0:
-                    print("TIPS %d %s "%(lnum,op),heights[i],sbl[i],sml[i],heights[i]+sbl[i]-sml[i])
-                    dl.logmeasure(i+1,heights[i],sbl[i],sml[i],zadd[i],lasttime)
-                    logdb.lastmeasure(i+1,lnum,heights[i],sbl[i],sml[i],zadd[i],lasttime)
-    elif op=='REE' or op=='RVZ':
-        pass
-    elif ldpending and op=='RPZ' and int(args[0])==0:
+        ldpending=True
+        # if replyecode==0:
+        #     ldpending=True
+        #else:
+            # heights=[-1,-1,-1,-1]
+            # for i in range(len(heights)):
+            #     if 1<<i & tipSelect != 0:
+            #         print("TIPS %d %s "%(lnum,op),heights[i],sbl[i],sml[i],heights[i]+sbl[i]-sml[i])
+            #         dl.logmeasure(i+1,heights[i],sbl[i],sml[i],zadd[i],lasttime)
+            #         logdb.lastmeasure(i+1,lnum,heights[i],sbl[i],sml[i],zadd[i],lasttime)
+    elif ldpending and (op=='RPZ' or op=='RVZ') and int(args[0])==0:
         heights=[int(r) for r in reply]
         assert(len(heights)==len(sbl))
         for i in range(len(heights)):
@@ -303,6 +302,8 @@ def fwparse(dev,send,reply,error,lasttime):
                 dl.logmeasure(i+1,heights[i],sbl[i],sml[i],zadd[i],lasttime)
                 logdb.lastmeasure(i+1,lnum,heights[i], sbl[i], sml[i], zadd[i], lasttime)
         ldpending=False
+    elif op == 'REE' or op=='RVZ':
+        pass
     elif ldpending:
         print("**** Parser error:  got op %s without a RPZ while ldpending"%op)
         #assert(False)
