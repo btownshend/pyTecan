@@ -342,7 +342,6 @@ prevtime='?'
 send={}
 error=False
 lastgeminicmd=None
-lastgeminitime=None
 geminicmdtimes={}
 geminicmdcnt={}
 tipcmd=""
