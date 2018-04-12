@@ -133,14 +133,14 @@ class TRP(object):
         clock.reset(totalTime)
         #print "After reset, elapsed=%d"%clock.elapsed()
         worklist.reset()
-        self.e=Experiment()
-        self.e.setreagenttemp(globals.dewpoint)
-        self.e.sanitize(3,50)    # Heavy sanitize
         reagents.reset()
         Sample.clearall()
         Plate.reset()
-        decklayout.initWellKnownSamples()
-        
+        self.e=Experiment()
+        self.e.setreagenttemp(globals.dewpoint)
+        Sample.printallsamples()
+        self.e.sanitize(3,50)    # Heavy sanitize
+
     @staticmethod
     def addTemplates(names, stockconc, finalconc=None, units="nM", plate=None, looplengths=None, extraVol=30, wellnames=None, initVol=0):
         """Add templates as "reagents", return the list of them"""

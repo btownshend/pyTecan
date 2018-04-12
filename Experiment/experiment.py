@@ -21,8 +21,6 @@ import sys
 import subprocess
 import os
 
-decklayout.initWellKnownSamples()
-
 # Annotation types
 SampleListType = List[Sample]
 mixType = Tuple[bool, bool]
@@ -72,6 +70,8 @@ class Experiment(object):
             worklist.userprompt("Verify that PTC thermocycler lid pressure is set to correct value.")
         self.idlePgms=[]
         self.timerStartTime=[0.0]*8
+        decklayout.initWellKnownSamples()
+
 
     def addIdleProgram(self,pgm: str):
         self.idlePgms.append(pgm)
