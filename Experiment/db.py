@@ -316,7 +316,7 @@ class LogDB(DB):
     def lastmeasure(self,tip,lineno,height,sbl,sml,zadd,lasttime):
         lasttime=self.local2utc(lasttime)
         logging.notice("lastmeasure(%d,%d,%d,%d,%d,%d,%s)"%(tip,lineno,height,sbl,sml,zadd,str(lasttime)))
-        self.measurements[(lineno,tip)]=[height,sbl,sml,zadd,lasttime]
+        self.measurements[(lineno,tip)]=[height if height>0 else -1,sbl,sml,zadd,lasttime]
 
     def log_op(self, program, lineno, elapsed, lasttime, plateName, sampleName, wellName, sampid, cmd, tip, volchange,liquidClassName, lc):
         lasttime=self.local2utc(lasttime)
