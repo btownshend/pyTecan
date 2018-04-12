@@ -108,7 +108,7 @@ class GUI(Ui_MainWindow):
 
     def refreshVolsTable(self):
         q=QtSql.QSqlQueryModel()
-        query="select lineno,round(elapsed/60.0,1) elapsed,cmd,tip,round(priorvol,1) priorvol,round(volume,1) observed,measured,round(volchange,1) volchange from v_sum where run='%s' and sample=%d order by lineno;"%(self.currentRun, self.currentSample)
+        query="select lineno,round(elapsed/60.0,1) elapsed,cmd,tip,round(estvol,1) estvol, round(volume,1) observed,measured,round(volchange,1) volchange from v_history where run='%s' and sample=%d order by lineno;"%(self.currentRun, self.currentSample)
         print(query)
         q.setQuery(query)
         self.sqlErrorCheck(q.lastError())
