@@ -6,11 +6,12 @@ import time
 
 from Experiment.config import Config
 from Experiment import logging
+from datalog import Datalog
+from Experiment.db import LogDB, DB   # Note: parselog is both the parent and current module name
+
 Config.usedb=False
 
 
-from datalog import Datalog
-from Experiment.db import LogDB   # Note: parselog is both the parent and current module name
 
 'Parse a GEMINI log file'
 debug=False
@@ -22,6 +23,7 @@ sml=[0,0,0,0]
 zadd=[0,0,0,0]
 tipSelect=0
 ldpending=False
+logdb=None
 
 syscmds={
       'ALO':['Activate door lock output',['locknum','setting'],[]],
@@ -315,156 +317,206 @@ import argparse
 from Experiment.config import Config
 from Experiment import globals
 
-parser = argparse.ArgumentParser(description="parselog")
-parser.add_argument('-v', '--verbose', help='Enable verbose output', default=False, action="store_true")
-parser.add_argument('-f', '--follow', help='Wait for more output', default=False, action="store_true")
-parser.add_argument('-p', '--password', type=str, help='DB Password')
-parser.add_argument('-N', '--nodb', help='No DB logging', default=False, action="store_true")
-parser.add_argument("logfile",default=None)
+def main():
+    parser = argparse.ArgumentParser(description="parselog")
+    parser.add_argument('-v', '--verbose', help='Enable verbose output', default=False, action="store_true")
+    parser.add_argument('-f', '--follow', help='Wait for more output', default=False, action="store_true")
+    parser.add_argument('-p', '--password', type=str, help='DB Password')
+    parser.add_argument('-N', '--nodb', help='No DB logging', default=False, action="store_true")
+    parser.add_argument('-d','--dirscan', type=str, help='Directory to continuously scan as daemon')
+    parser.add_argument("logfile",nargs='?',default=None)
 
-args = parser.parse_args()
-# Turn on DB access if needed
-Config.usedb = not args.nodb
-if args.password is not None:
-    Config.password = args.password
+    args = parser.parse_args()
+    globals.verbose=args.verbose
 
-if args.logfile is not None:
-      fd=open(args.logfile,'rb')
-else:
-      fd=sys.stdin
-globals.verbose=args.verbose
+    # Turn on DB access if needed
+    Config.usedb = not args.nodb
+    if args.password is not None:
+        Config.password = args.password
 
-csum=fd.readline()
-hdr=fd.readline()
-version=fd.readline()
-prevcode='?'
-prevtime='?'
-send={}
-error=False
-lastgeminicmd=None
-geminicmdtimes={}
-geminicmdcnt={}
-tipcmd=""
-lasttime=datetime.datetime.strptime(hdr[:15].decode('latin-1'),'%Y%m%d_%H%M%S')
-print("Header time: %s"%str(lasttime))
-shakePlate=None   # Plate on shaker
-logdb=LogDB(args.logfile)
-sys.stdout = codecs.getwriter("latin-1")(sys.stdout.detach())
-# Handle high-bit characters in stdout (since .log contains 0xb5 (\micro) charactures
-sleeping=False
+    sys.stdout = codecs.getwriter("latin-1")(sys.stdout.detach())
 
-while True:
-    bline=fd.readline()
-    if not bline:
-        if args.follow:
-            if not sleeping:
-                print("sleeping...",end='',flush=True)
-                sleeping=True
-            time.sleep(0.1)
-            continue
-        else:
-            break
-    if sleeping:
-        print("done")
-        sleeping=False
-    while len(bline)>0 and (bline[-1]==13 or bline[-1]==10):
-        bline=bline[:-1]
-    #line=line.rstrip('\r\n')
-    if len(bline)==0:
-        continue
-
-    line=bline.decode('latin-1')
-    code=line[0]
-    gtime=line[2:10]
-    cmd=line[11:]
-    if debug:
-        print("\tcode=%s(%d),time=%s,cmd=%s"%(code,ord(code[0]),gtime,cmd))
-    if code[0]==' ':
-          if prevcode[0]!='D':
-                # print "Copying previous code: %c"%prevcode
-                code=prevcode
-          else:
-                print("Blank code, previous=D, assuming new one is F")
-                code='F'
-    if len(gtime)<1 or gtime[0]==' ':
-        gtime=prevtime
-    prevcode=code
-    prevtime=gtime
-    if code[0]=='F':
-        spcmd=cmd[1:].split(',')
-        dev=spcmd[0][1:]
-        spcmd=spcmd[1:]
-        if len(cmd)<1:
-            print("Empty cmd")
-        elif cmd[0]=='>':
-            if dev in send:
-                print("Double cmd to %s: %s AND %s"%(dev,send[dev],str(spcmd)))
-            send[dev]=[spcmd[0][0:3],spcmd[0][3:]]+spcmd[1:]
-        elif cmd[0]=='-' or cmd[0]=='*':
-            if dev not in send:
-                print("Missing cmd when received reply from %s: %s"%(dev,str(spcmd)))
-                exit(1)
-            error=cmd[0]=='*'
-            fwparse(dev,send[dev],spcmd,error,lasttime)
-            send.pop(dev)
-        else:
-            print("Bad cmd: %s"%cmd)
+    if args.dirscan is not None:
+        dirscan(args.dirscan)
+    elif args.logfile is not None:
+        parselog(args.logfile,args.logfile.replace('.LOG','.TXT'))
     else:
-          if cmd.find('detected_volume_')==-1 or cmd.find('= -1')==-1:
-                print("Gemini %s %s"%(gtime,cmd))
-                if cmd[0:3]=='tip':
-                    tipcmd=cmd
-                else:
-                    if  len(tipcmd)>0 and cmd[0:3]=='   ':
-                        gemtip(tipcmd,cmd)
-                    tipcmd=""
+        parselog(None)   # stdin -> stdout
 
-          if cmd.find("setShakeTargetSpeed")!=-1:
-                pos=cmd.find("setShakeTargetSpeed")
-                speed=int(cmd[pos+19:])
-                print("SPEED %d"%speed)
-                dl.logspeed(shakePlate,speed)
+def dirscan(dirname: str):
+    import os
+    import datetime as dt
 
-          if cmd.startswith("moveplate") and cmd.find("Shaker")!=-1:
-                pos=cmd.find("Shaker")
-                shakePlate=cmd[10:pos-1]
-                print("SHAKEPLATE %s"%shakePlate)
+    print('dirscan of ', dirname)
 
-          if cmd.startswith('Line'):
-                colon=cmd.find(':')
-                cname=cmd[(colon+2):]
-                lnum=int(cmd[4:(colon-1)])
-                #print "cname=",cname
-                t=datetime.datetime.combine(lasttime.date(),datetime.datetime.strptime(gtime,'%H:%M:%S').time())
-                if (t-lasttime).total_seconds()<0:
-                    t=t+datetime.timedelta(1)   # Wrapped around
-                    logging.notice("Gemini time wrapped from %s to %s"%(lasttime,t))
+    now = dt.datetime.now()
+    ago = now - dt.timedelta(days=30)
+    db = DB()
+    db.connect()
 
-                if lastgeminicmd is not None:
-                    if (t-lasttime).total_seconds() > 30:
-                        print("Skipping long pause of %s for %s"%(str(t-lasttime),lastgeminicmd))
-                    elif t<lasttime:
-                        assert False # Shouldn't happen
-                        print("Skipping negative elapsed time of %d seconds for %s"%((t-lasttime).total_seconds(),lastgeminicmd))
-                    elif lastgeminicmd in list(geminicmdtimes.keys()):
-                        geminicmdtimes[lastgeminicmd]+=(t-lasttime).total_seconds()
-                        geminicmdcnt[lastgeminicmd]+=1
+    for root, dirs, files in os.walk(dirname):
+        for fname in files:
+            if re.match('LOG[0-9]*\.LOG',fname):
+                path = os.path.join(root, fname)
+                st = os.stat(path)
+                mtime = dt.datetime.fromtimestamp(st.st_mtime)
+                if mtime > ago:
+                    if b'@log_startrun' in open(path,'rb').read():
+                        print('%s Contains log_startrun, modified %s' % (path, mtime))
+                        runstatus=db.findlog(fname)
+                        print("runstatus=%d"%runstatus)
+                        if runstatus!=2:
+                            try:
+                                parselog(path,path.replace('.LOG','.TXT'))
+                            except Exception as exc:
+                                print("Failed parse of %s: "%path,exc)
+                                import traceback
+                                traceback.print_exc()
+            else:
+                pass # print("Ignoring %s"%fname)
+
+def parselog(filename: str, outfile:str=None):
+    global logdb, lnum
+
+    if filename is not None:
+          fd=open(filename,'rb')
+    else:
+          fd=sys.stdin
+
+    if outfile is not None:
+        outfd=open(outfile,'w')
+    else:
+        outfd=sys.stdout
+
+    csum=fd.readline()
+    hdr=fd.readline()
+    version=fd.readline()
+    prevcode='?'
+    prevtime='?'
+    send={}
+    error=False
+    lastgeminicmd=None
+    geminicmdtimes={}
+    geminicmdcnt={}
+    tipcmd=""
+    lasttime=datetime.datetime.strptime(hdr[:15].decode('latin-1'),'%Y%m%d_%H%M%S')
+    print("Header time: %s"%str(lasttime),file=outfd)
+    shakePlate=None   # Plate on shaker
+    logdb=LogDB(filename)
+    # Handle high-bit characters in stdout (since .log contains 0xb5 (\micro) charactures
+    sleeping=False
+
+    while True:
+        bline=fd.readline()
+        if not bline:
+            if args.follow:
+                if not sleeping:
+                    print("sleeping...",end='',flush=True)
+                    sleeping=True
+                time.sleep(0.1)
+                continue
+            else:
+                break
+        if sleeping:
+            print("done")
+            sleeping=False
+        while len(bline)>0 and (bline[-1]==13 or bline[-1]==10):
+            bline=bline[:-1]
+        #line=line.rstrip('\r\n')
+        if len(bline)==0:
+            continue
+
+        line=bline.decode('latin-1')
+        code=line[0]
+        gtime=line[2:10]
+        cmd=line[11:]
+        if debug:
+            print("\tcode=%s(%d),time=%s,cmd=%s"%(code,ord(code[0]),gtime,cmd),file=outfd)
+        if code[0]==' ':
+              if prevcode[0]!='D':
+                    # print "Copying previous code: %c"%prevcode
+                    code=prevcode
+              else:
+                    print("Blank code, previous=D, assuming new one is F",file=outfd)
+                    code='F'
+        if len(gtime)<1 or gtime[0]==' ':
+            gtime=prevtime
+        prevcode=code
+        prevtime=gtime
+        if code[0]=='F':
+            spcmd=cmd[1:].split(',')
+            dev=spcmd[0][1:]
+            spcmd=spcmd[1:]
+            if len(cmd)<1:
+                print("Empty cmd",file=outfd)
+            elif cmd[0]=='>':
+                if dev in send:
+                    print("Double cmd to %s: %s AND %s"%(dev,send[dev],str(spcmd)),file=outfd)
+                send[dev]=[spcmd[0][0:3],spcmd[0][3:]]+spcmd[1:]
+            elif cmd[0]=='-' or cmd[0]=='*':
+                if dev not in send:
+                    print("Missing cmd when received reply from %s: %s"%(dev,str(spcmd)),file=outfd)
+                    exit(1)
+                error=cmd[0]=='*'
+                fwparse(dev,send[dev],spcmd,error,lasttime,outfd)
+                send.pop(dev)
+            else:
+                print("Bad cmd: %s"%cmd)
+        else:
+              if cmd.find('detected_volume_')==-1 or cmd.find('= -1')==-1:
+                    print("Gemini %s %s"%(gtime,cmd),file=outfd)
+                    if cmd[0:3]=='tip':
+                        tipcmd=cmd
                     else:
-                        geminicmdtimes[lastgeminicmd]=(t-lasttime).total_seconds()
-                        geminicmdcnt[lastgeminicmd]=1
-                lastgeminicmd=cname
-                lasttime=t
-          if cmd.startswith('@'):
-              print("PYTHON: %s" % cmd[1:])
-              eval("logdb." + cmd[1:])
-              if cmd.startswith('@log_endrun'):
-                  # Done processing file
+                        if  len(tipcmd)>0 and cmd[0:3]=='   ':
+                            gemtip(tipcmd,cmd,outfd)
+                        tipcmd=""
+
+              if cmd.find("setShakeTargetSpeed")!=-1:
+                    pos=cmd.find("setShakeTargetSpeed")
+                    speed=int(cmd[pos+19:])
+                    print("SPEED %d"%speed,file=outfd)
+                    dl.logspeed(shakePlate,speed)
+
+              if cmd.startswith("moveplate") and cmd.find("Shaker")!=-1:
+                    pos=cmd.find("Shaker")
+                    shakePlate=cmd[10:pos-1]
+                    print("SHAKEPLATE %s"%shakePlate,file=outfd)
+
+              if cmd.startswith('Line'):
+                    colon=cmd.find(':')
+                    cname=cmd[(colon+2):]
+                    lnum=int(cmd[4:(colon-1)])
+                    #print "cname=",cname
+                    t=datetime.datetime.combine(lasttime.date(),datetime.datetime.strptime(gtime,'%H:%M:%S').time())
+                    if (t-lasttime).total_seconds()<0:
+                        t=t+datetime.timedelta(1)   # Wrapped around
+                        logging.notice("Gemini time wrapped from %s to %s"%(lasttime,t))
+
+                    if lastgeminicmd is not None:
+                        if (t-lasttime).total_seconds() > 30:
+                            print("Skipping long pause of %s for %s"%(str(t-lasttime),lastgeminicmd),file=outfd)
+                        elif t<lasttime:
+                            assert False # Shouldn't happen
+                            print("Skipping negative elapsed time of %d seconds for %s"%((t-lasttime).total_seconds(),lastgeminicmd),file=outfd)
+                        elif lastgeminicmd in list(geminicmdtimes.keys()):
+                            geminicmdtimes[lastgeminicmd]+=(t-lasttime).total_seconds()
+                            geminicmdcnt[lastgeminicmd]+=1
+                        else:
+                            geminicmdtimes[lastgeminicmd]=(t-lasttime).total_seconds()
+                            geminicmdcnt[lastgeminicmd]=1
+                    lastgeminicmd=cname
+                    lasttime=t
+              if cmd.startswith('@'):
+                  print("PYTHON: %s" % cmd[1:],file=outfd)
+                  eval("logdb." + cmd[1:])
                   if cmd.startswith('@log_endrun'):
+                      # Done processing file
+                      break
+              if cmd.find('closing log-file') != -1:
+                  # End of log (in case we're in -f mode)
+                  print("Found closing log-file message; exiting",file=outfd)
                   break
-          if cmd.find('closing log-file') != -1:
-              # End of log (in case we're in -f mode)
-              print("Found closing log-file message; exiting")
-              break
 
     #print "log=",dl
     dl.printallsamples(fd=outfd)  # This 'sys.stdout' (modified above) seems different from the default one that Samples.print* would use
@@ -473,3 +525,4 @@ while True:
           print("%s: %.0f seconds for %.0f occurrences:   %.2f second/call"%(cmd,geminicmdtimes[cmd],geminicmdcnt[cmd], geminicmdtimes[cmd]*1.0/geminicmdcnt[cmd]),file=outfd)
 
 
+main()

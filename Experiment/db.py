@@ -1,5 +1,5 @@
 import sys
-
+import os
 from . import worklist
 import pymysql.cursors
 from . import clock
@@ -35,6 +35,20 @@ class DB(object):
         else:
             logging.notice("Not connecting to mysql database -- no logging of run will occur")
 
+
+    def findlog(self,logname):
+        # Determine if a run exists for the given logfile and return 0 if not, 1 if incomplete, 2 if complete (has endtime)
+        if self.db is None:
+            return None
+        with self.db.cursor() as cursor:
+            cursor.execute("select run,starttime,endtime from runs where logfile=%s",logname)
+            res=cursor.fetchone()
+            if res is None:
+                return 0
+            elif res['endtime'] is None:
+                return 1
+            else:
+                return 2
 
     def getlc(self,lcname):
         # Convert a liquidclass name to a pk
@@ -198,7 +212,7 @@ class BuildDB(DB):
 
     def newsample(self, sample):
         # Add sample to database
-        print("newsample",sample,",program=",self.program)
+        logging.notice("newsample %s, program %s"%(sample,self.program))
         if self.program is None:
             return
         sampid=self.getSample(sample.plate.name,sample.plate.wellname(sample.well))
@@ -264,7 +278,7 @@ class LogDB(DB):
         self.run=None
         self.measurements={}
         self.tz = pytz.timezone('US/Pacific')
-        self.logfile = logfile
+        self.logfile = os.path.basename(logfile)
         self.sampvols={}  # Dictionary from sampid to best estimate of current volume
         self.volsqueue=[]   # Queue of vols insertions to be done with executemany
 
