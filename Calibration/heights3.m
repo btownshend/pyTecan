@@ -27,7 +27,7 @@ if nargin<2 || isempty(plate)
   end
   return;
 end
-[run,wellnames,tip,estvol,volchange,obsvol,heights,zmax,gemvolume]=mysql(sprintf('select run,well,tip,estvol,volchange,obsvol,height,zmax,gemvolume from robot.v_vols where run in (%s) and plate=''%s'' order by run,lineno,tip',runlist,plate));
+[run,wellnames,tip,estvol,volchange,obsvol,heights,zmax,gemvolume,cmd,submerge,op]=mysql(sprintf('select run,well,tip,estvol,volchange,obsvol,height,zmax,gemvolume,cmd,submerge,op from robot.v_vols where run in (%s) and plate=''%s'' order by run,lineno,tip',runlist,plate));
 vol=nan(size(obsvol));
 currun=-1;
 for i=1:length(vol)
@@ -45,7 +45,7 @@ end
 
 zmax=unique(zmax(isfinite(zmax)));
 assert(length(zmax)==1);
-heights=(heights-zmax)/10;	% Convert to height relative to zmax, -ve is up
+heights=(heights+submerge-zmax)/10;	% Convert to height relative to zmax, -ve is up
 wells=nan(length(wellnames),2);
 for i=1:length(wellnames)
   wells(i,1)=(wellnames{i}(1)-'A')-3.5;
@@ -91,6 +91,9 @@ wells=wells(sel,:);
 tip=tip(sel);
 obsvol=obsvol(sel);
 gemvolume=gemvolume(sel);
+cmd=cmd(sel);
+submerge=submerge(sel);
+op=op(sel);
 [fit,angle,expected]=fitheights2(vol,heights,wells,tip,angle,[],slopemodel);
 meanoffset=-[0,fit(6:8)];
 meanoffset=meanoffset-mean(meanoffset);
@@ -117,13 +120,20 @@ hold on;
 sel=vsteps<max(vol);
 plot(vsteps(sel),hsteps(sel),'k-');
 
+ucmds=unique(cmd);
 subplot(312);
+syms='ox+d';
 for i=1:4
-  plot(vol(tip==i),expected(tip==i)-obsvol(tip==i),'o');
-  hold on;
+  h=[];
+  for k=1:length(ucmds)
+    s1=strcmp(cmd,ucmds{k});
+    h(k)=plot(vol(s1&(tip==i)),vol(s1&(tip==i))-obsvol(s1&(tip==i)),syms(k));
+    hold on;
+  end
 end
 xlabel('Volume (ul)');
 ylabel('Error (ul)');
+legend(h,ucmds,'Interpreter','none');
 title('Measurement error using models in effect at run time');
 
 subplot(313);
