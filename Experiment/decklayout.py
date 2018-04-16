@@ -19,21 +19,21 @@ eppminspeeds={0:1900,20:1900,32:1800,64:1700,96:1400,150:1100}  # 1100@150ul unt
 
 TROUGH = PlateType("Trough",nx=1,ny=4,pierce=False,unusableVolume=100,maxVolume=100000,gemDepth=0,gemArea=1232,gemShape='flat')
 EPPLOWBIND=PlateType("EppLowBind",nx=12,ny=8,pierce=False,unusableVolume=15,maxVolume=200,
-                angle=17.5, r1=2.752, h1=9.79, v0=12.41,
-                gemDepth=2.42, gemArea=13.65,
+                angle=17.5, r1=2.716, h1=9.30, v0=12.045,
+                gemDepth=1.92, gemArea=13.51,
                 gemShape='v-shaped',maxspeeds=eppmaxspeeds,minspeeds=eppminspeeds,glycerolmaxspeeds=eppglycerolmaxspeeds,glycerol=1)  # EppLoBind
-RICBLOCK=PlateType("RICBlock",nx=6,ny=5,pierce=False,unusableVolume=20,maxVolume=1700,angle=17.5,r1=4.062,h1=17.75,v0=13.7,gemDepth=9.59,gemArea=43.03,gemShape='v-shaped')
+RICBLOCK=PlateType("RICBlock",nx=6,ny=5,pierce=False,unusableVolume=20,maxVolume=1700,angle=17.5,r1=4.043,h1=17.31,v0=12.03,gemDepth=1.02,gemArea=13.52,gemShape='v-shaped')
 WHITEQPCR=PlateType("qPCRPlate",nx=12,ny=8,pierce=False,unusableVolume=15,maxVolume=200,
                 angle=17.5,r1=2.704,h1=10.89,v0=0.44,gemDepth=3.17,gemArea=14.33,gemShape='v-shaped')
 EPPRACK = PlateType("EppRack", nx=1, ny=16, pierce=False, unusableVolume=30, maxVolume=1500, angle=17.5,
-                   h1=17.56, r1=4.42, v0=29.6, gemDepth=3.15, gemArea=31.4, gemShape='v-shaped')
+                   r1=4.377, h1=17.35, v0=34.2, gemDepth=1.29, gemArea=16.98, gemShape='v-shaped')
 
 ############ Plate locations  #############
 WATERLOC=PlateLocation("Water",3,2,zmax=1367)
 BLEACHLOC=PlateLocation("Bleach",3,3,zmax=1367)
 SSDDILLOC=PlateLocation("SSDDil",3,1,zmax=1367)
 
-RICLOC=PlateLocation("RIC",18,1,slopex=-0.022,slopey=-0.038,zmax=567)
+RICLOC=PlateLocation("RIC",18,1,slopex=0,slopey=0,zmax=567)
 MAGPLATELOC=PlateLocation("MagPlate",18,2,zmax=1459,vectorName="Magplate")
 SHAKERPLATELOC=PlateLocation("Shaker",9,0,vectorName="Shaker")
 SAMPLELOC=PlateLocation("Home",4,3,zmax=1031,vectorName="Microplate Landscape")
