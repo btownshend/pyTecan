@@ -1,4 +1,4 @@
-function [heights,meanoffset]=heights3(run,plate,offsets,vrange,angle,slopemodel)
+function [heights,meanoffset]=heights3(runs,plate,offsets,vrange,angle,slopemodel)
 if nargin<6 || isempty(slopemodel)
   slopemodel=false;
 end
@@ -15,19 +15,34 @@ db=struct('host','35.203.151.202','user','robot','password','cdsrobot','db','rob
 mysql('closeall');
 mysql('open',db.host,db.user,db.password);
 mysql('use',db.db);
-runlist=strjoin(arrayfun(@(z) sprintf('%d',z), run,'UniformOutput',false),',');
+runlist=strjoin(arrayfun(@(z) sprintf('%d',z), runs,'UniformOutput',false),',');
 if nargin<2 || isempty(plate)
   % Run on all plates that have enough data
   [plates,counts]=mysql(sprintf('select plate,count(distinct well) from robot.v_vols where run in (%s) and height is not null group by plate',runlist));
   for i=1:length(plates)
     if counts(i)>=10
       fprintf('Running on plate %s with %d wells of data\n', plates{i}, counts(i));
-      heights3(run,plates{i},offsets,vrange,angle,slopemodel);
+      heights3(runs,plates{i},offsets,vrange,angle,slopemodel);
     end
   end
   return;
 end
-[wellnames,tip,vol,obsvol,heights,zmax,gemvolume]=mysql(sprintf('select well,tip,estvol,obsvol,height,zmax,gemvolume from robot.v_vols where run in (%s) and plate=''%s'' and cmd=''Detect_Liquid''',runlist,plate));
+[run,wellnames,tip,estvol,volchange,obsvol,heights,zmax,gemvolume]=mysql(sprintf('select run,well,tip,estvol,volchange,obsvol,height,zmax,gemvolume from robot.v_vols where run in (%s) and plate=''%s'' order by run,lineno,tip',runlist,plate));
+vol=nan(size(obsvol));
+currun=-1;
+for i=1:length(vol)
+  if run(i)~=currun
+    curvols=containers.Map();
+    currun=run(i);
+  end
+  % Figure out expected volume
+  if ~curvols.isKey(wellnames{i})
+    curvols(wellnames{i})=0;
+  end
+  vol(i)=curvols(wellnames{i});
+  curvols(wellnames{i})=curvols(wellnames{i})+volchange(i);
+end
+
 zmax=unique(zmax(isfinite(zmax)));
 assert(length(zmax)==1);
 heights=(heights-zmax)/10;	% Convert to height relative to zmax, -ve is up
