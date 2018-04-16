@@ -258,7 +258,7 @@ def fwparse(dev,send,reply,error,lasttime):
             print("%s=%s, "%(cmd[2][i],reply[i]), end=' ')
         else:
             print("?=%s, "%reply[i], end=' ')
-    print() 
+    print(flush=True)
     if error or replyecode!=0:
         if replyecode in errors:
             emsg=errors[replyecode]
