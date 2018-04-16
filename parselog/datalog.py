@@ -8,6 +8,7 @@ from Experiment.liquidclass import SURFACEREMOVE
 from Experiment.plate import Plate
 from Experiment.sample import Sample
 from Experiment import sample
+from Experiment import logging
 
 def getSample(wellx,welly,rack,grid,pos):
         plate=Plate.lookup(grid,pos)
@@ -42,7 +43,7 @@ class LogEntry(object):
             elif op=='aspirate':
                 self.sample.addhistory(lc,-vol,tip)
             else:
-                print("LogEntry: bad op (%s) for LC %s"%(op,lc))
+                logging.notice("LogEntry: bad op (%s) for LC %s"%(op,lc))
                 assert False
             self.sample.lastadd=0
         elif op=='dispense':
@@ -58,7 +59,7 @@ class LogEntry(object):
             self.sample.addhistory(op,vol,tip)
             self.sample.lastadd=0
         else:
-            print("LogEntry: bad op: ",op)
+            logging.warning("LogEntry: bad op: %s"%op)
             assert False
         if self.sample.volume+self.sample.lastadd<0 and self.sample.volume!=0:
             self.sample.history=self.sample.history + ("{Emptied%.2f}"%(self.sample.volume+self.sample.lastadd))
@@ -104,7 +105,7 @@ class Datalog(object):
         if sample.plate.location.zmax is not None:
             curzmax=2100-sample.plate.location.zmax-390+TIPOFFSETS[tip-1]
             if zmax!=curzmax:
-                print("ZMax for plate %s, tip %d at time of run was %.0f, currently at %.0f"%(sample.plate.name, tip, zmax, curzmax))
+                logging.warning("ZMax for plate %s, tip %d at time of run was %.0f, currently at %.0f"%(sample.plate.name, tip, zmax, curzmax))
                 zmax=curzmax
         prevol=sample.volume-sample.lastadd		# Liquid height is measured before next op, whose volume effect has already been added to sample.volume
         if height==-1:
@@ -125,7 +126,7 @@ class Datalog(object):
                 h=" @[%.1fmm,%.1fmm#%d]"%((height-zmax)/10.0,submerge/10.0,tip)
             else:
                 if prevol==0:
-                    print("Got a liquid height measurement for a well that should be empty -- assuming it was prefilled")
+                    logging.notice("Got a liquid height measurement for a well that should be empty -- assuming it was prefilled")
                     sample.volume=vol+sample.lastadd
                     prevol=vol
                 expectHeight=sample.plate.getliquidheight(prevol)
@@ -146,12 +147,12 @@ class Datalog(object):
             sample.history=" ".join(hsplit[:-1]+[h]+hsplit[-1:])
 
     def logspeed(self,platename,speed):
-        print("logspeed(%s,%d)"%(platename,speed))
+        logging.notice("logspeed(%s,%d)"%(platename,speed))
         Sample.addallhistory("(S@%d)"%speed,onlyplate=platename)
             
     def __str__(self):
         s=""
-        print(self.logentries)
+        logging.notice(self.logentries)
         for e in self.logentries:
             le=self.logentries[e]
             s=s+str(le[0].sample)+":""\n"

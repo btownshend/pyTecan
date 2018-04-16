@@ -5,7 +5,7 @@ import datetime
 import time
 
 from Experiment.config import Config
-print("Config=",Config)
+from Experiment import logging
 Config.usedb=False
 
 
@@ -165,15 +165,15 @@ def displaymatch(match):
         return None
     return '<Match: %r, groups=%r>' % (match.group(), match.groups())
 
-def gemtip(tipcmd,line2):
+def gemtip(tipcmd,line2,outfd):
     """Handle Gemini command of form:  tip 2 : aspirate 9.00ul 10, 1 HSP96xx on carrier [4,2]                 8.00ul "Water-InLiquid" Standard <all volumes> Multi"""
     fullcmd=tipcmd[8:]+line2
     if debug:
-        print("XFR ",fullcmd)
+        print("XFR ",fullcmd,file=outfd)
     # Parse the line
     parser1=re.compile(r"tip (\d+) : (\S+) +(?:(\d+\.\d+)(.l) +)?(?:\((\d)+x\))? *(\d+), *(\d+) +(.+) +\[(\d+),(\d+)\]")
     if debug:
-        print(displaymatch(parser1.match(tipcmd)))
+        print(displaymatch(parser1.match(tipcmd)),file=outfd)
     match=parser1.match(tipcmd)
     g=match.groups()
     assert(len(g)==10)
@@ -197,7 +197,7 @@ def gemtip(tipcmd,line2):
     pos=int(g[9])
     parser2=re.compile(r" +(?:(\d+\.\d+)(.l) +)?\"(.+)\" (?:(.+) <(.+)> (\S+))?")
     if debug:
-        print(displaymatch(parser2.match(line2)))
+        print(displaymatch(parser2.match(line2)),file=outfd)
     match=parser2.match(line2)
     g=match.groups()
     assert(len(g)==6)
@@ -217,20 +217,20 @@ def gemtip(tipcmd,line2):
     msg1="tip=%d, op=%s, vol=%.2f/%.2f, wellx=%d, welly=%d, rack=%s, grid=%d, pos=%d, lc=%s, pytpe=%s"%(tip,op,vol,vol2,wellx,welly,rack,grid,pos,lc,ptype)
     #msg2="tip=%d, wellx=%d, welly=%d, rack=%s, grid=%d, pos=%d, lc=%s"%(tip,wellx,welly,rack,grid,pos,lc)
     if debug:
-        print("XFR",msg1)
+        print("XFR",msg1,file=outfd)
     dl.logop(op,tip,vol,wellx,welly,rack,grid,pos,lc,std,volset,ptype=='Multi')
     
-def fwparse(dev,send,reply,error,lasttime):
+def fwparse(dev,send,reply,error,lasttime,outfd):
     global lnum, sbl, sml, tipSelect, ldpending, zadd
     if debug:
         if error:
-            print("\tSEND:%s  ERROR:%s"%(str(send),str(reply)))
+            print("\tSEND:%s  ERROR:%s"%(str(send),str(reply)),file=outfd)
         else:
-            print("\tSEND:%s  REPLY:%s"%(str(send),str(reply)))
+            print("\tSEND:%s  REPLY:%s"%(str(send),str(reply)),file=outfd)
     if  reply[0].isdigit():
         replyecode=int(reply[0])
     else:
-        print("First reply argument is not an integer: %s"%reply[0])
+        print("First reply argument is not an integer: %s"%reply[0],file=outfd)
         replyecode=-1
     reply=reply[1:]
     op=send[0]
@@ -246,19 +246,19 @@ def fwparse(dev,send,reply,error,lasttime):
        devname='UNKNOWN(%s)'%dev
        cmd=['UNKNOWN',[],[]]
 
-    print("  %s %s (%s) "%(devname,op,cmd[0]), end=' ')
+    print("  %s %s (%s) "%(devname,op,cmd[0]), end=' ',file=outfd)
     for i in range(len(args)):
         if i<len(cmd[1]):
-            print("%s=%s, "%(cmd[1][i],args[i]), end=' ')
+            print("%s=%s, "%(cmd[1][i],args[i]), end=' ',file=outfd)
         else:
-            print("?=%s, "%args[i], end=' ')
-    print(" ->  ecode=%d, "%replyecode, end=' ')
+            print("?=%s, "%args[i], end=' ',file=outfd)
+    print(" ->  ecode=%d, "%replyecode, end=' ',file=outfd)
     for i in range(len(reply)):
         if i<len(cmd[2]):
-            print("%s=%s, "%(cmd[2][i],reply[i]), end=' ')
+            print("%s=%s, "%(cmd[2][i],reply[i]), end=' ',file=outfd)
         else:
-            print("?=%s, "%reply[i], end=' ')
-    print(flush=True)
+            print("?=%s, "%reply[i], end=' ',file=outfd)
+    print(flush=True,file=outfd)
     if error or replyecode!=0:
         if replyecode in errors:
             emsg=errors[replyecode]
@@ -270,7 +270,7 @@ def fwparse(dev,send,reply,error,lasttime):
             emsg=errorsM[replyecode]
         else:
             emsg='Unknown error: <%s>'%replyecode
-        print("**** Error message: %s"%emsg)
+        print("**** Error message: %s"%emsg,file=outfd)
     if op=='SBL':
         sbl=[int(r) if len(r)>0 else 0 for r in args]
         #print "TIPS SBL=",sbl
@@ -290,7 +290,7 @@ def fwparse(dev,send,reply,error,lasttime):
             # heights=[-1,-1,-1,-1]
             # for i in range(len(heights)):
             #     if 1<<i & tipSelect != 0:
-            #         print("TIPS %d %s "%(lnum,op),heights[i],sbl[i],sml[i],heights[i]+sbl[i]-sml[i])
+            #         print("TIPS %d %s "%(lnum,op),heights[i],sbl[i],sml[i],heights[i]+sbl[i]-sml[i],file=outfd)
             #         dl.logmeasure(i+1,heights[i],sbl[i],sml[i],zadd[i],lasttime)
             #         logdb.lastmeasure(i+1,lnum,heights[i],sbl[i],sml[i],zadd[i],lasttime)
     elif ldpending and (op=='RPZ' or op=='RVZ') and int(args[0])==0:
@@ -298,14 +298,14 @@ def fwparse(dev,send,reply,error,lasttime):
         assert(len(heights)==len(sbl))
         for i in range(len(heights)):
             if 1<<i & tipSelect != 0:
-                print("TIPS %d  " % lnum, heights[i], sbl[i], sml[i], heights[i] + sbl[i] - sml[i])
+                print("TIPS %d  " % lnum, heights[i], sbl[i], sml[i], heights[i] + sbl[i] - sml[i],file=outfd)
                 dl.logmeasure(i+1,heights[i],sbl[i],sml[i],zadd[i],lasttime)
                 logdb.lastmeasure(i+1,lnum,heights[i], sbl[i], sml[i], zadd[i], lasttime)
         ldpending=False
     elif op == 'REE' or op=='RVZ':
         pass
     elif ldpending:
-        print("**** Parser error:  got op %s without a RPZ while ldpending"%op)
+        print("**** Parser error:  got op %s without a RPZ while ldpending"%op,file=outfd)
         #assert(False)
         ldpending=False
 
@@ -459,14 +459,17 @@ while True:
               eval("logdb." + cmd[1:])
               if cmd.startswith('@log_endrun'):
                   # Done processing file
+                  if cmd.startswith('@log_endrun'):
                   break
           if cmd.find('closing log-file') != -1:
               # End of log (in case we're in -f mode)
               print("Found closing log-file message; exiting")
               break
 
-#print "log=",dl
-dl.printallsamples(fd=sys.stdout)  # This 'sys.stdout' (modified above) seems different from the default one that Samples.print* would use
+    #print "log=",dl
+    dl.printallsamples(fd=outfd)  # This 'sys.stdout' (modified above) seems different from the default one that Samples.print* would use
 
-for cmd in list(geminicmdtimes.keys()):
-      print("%s: %.0f seconds for %.0f occurrences:   %.2f second/call"%(cmd,geminicmdtimes[cmd],geminicmdcnt[cmd], geminicmdtimes[cmd]*1.0/geminicmdcnt[cmd]))
+    for cmd in list(geminicmdtimes.keys()):
+          print("%s: %.0f seconds for %.0f occurrences:   %.2f second/call"%(cmd,geminicmdtimes[cmd],geminicmdcnt[cmd], geminicmdtimes[cmd]*1.0/geminicmdcnt[cmd]),file=outfd)
+
+
