@@ -88,11 +88,11 @@ class DB(object):
             return
         with self.db.cursor() as cursor:
             if totalTime is None:
-                cursor.execute('update programs set complete=True where program=%s',(self.program,))
+                cursor.execute('update programs set complete=True where program=%s',self.program)
+                logging.notice('Marked program %d as complete'%self.program)
             else:
                 cursor.execute('update programs set complete=True,totaltime=%s where program=%s',(totalTime, self.program,))
-
-            logging.notice('Marked program %d as complete with totalTime=%f'%(self.program,totalTime))
+                logging.notice('Marked program %d as complete with totalTime=%f'%(self.program,totalTime))
 
     def getOp(self, lineno, tip):
         if self.program is None:
