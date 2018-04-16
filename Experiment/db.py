@@ -19,6 +19,7 @@ class DB(object):
         self.ops=[]
         self.liquidclasses={}
         self.programComplete=False  # True if db contains all ops needed for program
+        self.opdict={}
 
     def connect(self):
         if Config.usedb:
@@ -94,11 +95,22 @@ class DB(object):
             logging.notice('Marked program %d as complete with totalTime=%f'%(self.program,totalTime))
 
     def getOp(self, lineno, tip):
-        with self.db.cursor() as cursor:
-            cursor.execute("select op from ops where program=%s and lineno=%s and tip=%s",
-                           (self.program, lineno, tip))
-            res = cursor.fetchone()
-            return None if res is None else res['op']
+        if self.program is None:
+            return None
+        if len(self.opdict) is 0:
+            # Initial read of any samples already in DB
+            with self.db.cursor() as cursor:
+                # Check if it already exists
+                cursor.execute("SELECT op,lineno,tip FROM ops WHERE program=%s",(self.program,))
+                rows = cursor.fetchall()
+                logging.notice("Loaded %d op records for program %d"%(len(rows),self.program))
+                for row in rows:
+                    key=(row['lineno'],row['tip'])
+                    self.opdict[key]=row['op']
+        key=(lineno,tip)
+        if key in self.opdict:
+            return self.opdict[key]
+        return None
 
     def insertOp(self, lineno, elapsed, sampid, cmd, tip, volchange, lc):
         with self.db.cursor() as cursor:
@@ -132,11 +144,6 @@ class DB(object):
             logging.notice("Inserted sample %s as %d"%(sampleName,cursor.lastrowid))
             return cursor.lastrowid
 
-    def insertVol(self, run, op, gemvolume, volume, measured, height, submerge, zmax, zadd, estVolume):
-        with self.db.cursor() as cursor:
-            cursor.execute("insert into vols(run,op,gemvolume,volume,measured, height, submerge, zmax, zadd, estvol) VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)", (run, op, gemvolume, volume, measured, height, submerge, zmax, zadd, estVolume))
-            logging.notice("Inserted vol as %d" % cursor.lastrowid)
-            return cursor.lastrowid
 
 
 class BuildDB(DB):
@@ -259,9 +266,23 @@ class LogDB(DB):
         self.tz = pytz.timezone('US/Pacific')
         self.logfile = logfile
         self.sampvols={}  # Dictionary from sampid to best estimate of current volume
+        self.volsqueue=[]   # Queue of vols insertions to be done with executemany
 
     def local2utc(self,dt):
         return self.tz.localize(dt).astimezone(pytz.utc)
+
+    def insertQueuedVols(self):
+        print("Insert %d vols..." % len(self.volsqueue), end='', flush=True)
+        with self.db.cursor() as cursor:
+            cursor.executemany("insert into vols(run,op,gemvolume,volume,measured, height, submerge, zmax, zadd, estvol) VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)", self.volsqueue)
+            logging.notice("Inserted vol as %d" % cursor.lastrowid)
+            self.volsqueue=[]
+        print("done")
+
+    def insertVol(self, run, op, gemvolume, volume, measured, height, submerge, zmax, zadd, estVolume):
+        self.volsqueue.append((run, op, gemvolume, volume, measured, height, submerge, zmax, zadd, estVolume))
+        if len(self.volsqueue) >= 100:
+            self.insertQueuedVols()
 
     def log_startrun(self, program, lineno, elapsed, lasttime, name, genTime, checksum, gitlabel, totalTime):
         lasttime=self.local2utc(lasttime)  ## Naive datetimes read from log file
@@ -303,6 +324,7 @@ class LogDB(DB):
         lasttime=self.local2utc(lasttime)
         if self.db is None:
             return
+        self.insertQueuedVols()
         endTime=self.local2utc(endTime)
         self.setProgramComplete()
         self.setRunEndTime(endTime)
