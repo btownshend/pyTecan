@@ -287,6 +287,8 @@ class LogDB(DB):
         return self.tz.localize(dt).astimezone(pytz.utc)
 
     def insertQueuedVols(self):
+        if len(self.volsqueue)==0:
+            return
         print("Insert %d vols..." % len(self.volsqueue), end='', flush=True)
         with self.db.cursor() as cursor:
             cursor.executemany("insert into vols(run,op,gemvolume,volume,measured, height, submerge, zmax, zadd, estvol) VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)", self.volsqueue)
@@ -297,8 +299,10 @@ class LogDB(DB):
     def flush(self):
         if self.db is None:
             return
+        self.insertQueuedVols()
         self.updatecurline()
         self.db.commit()
+
     def insertVol(self, run, op, gemvolume, volume, measured, height, submerge, zmax, zadd, estVolume):
         self.volsqueue.append((run, op, gemvolume, volume, measured, height, submerge, zmax, zadd, estVolume))
         if len(self.volsqueue) >= 100:
