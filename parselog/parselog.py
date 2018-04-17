@@ -337,13 +337,13 @@ def main():
     sys.stdout = codecs.getwriter("latin-1")(sys.stdout.detach())
 
     if args.dirscan is not None:
-        dirscan(args.dirscan)
+        dirscan(args.dirscan,args.follow)
     elif args.logfile is not None:
-        parselog(args.logfile,args.logfile.replace('.LOG','.TXT'))
+        parselog(args.logfile,args.logfile.replace('.LOG','.TXT'),follow=args.follow)
     else:
         parselog(None)   # stdin -> stdout
 
-def dirscan(dirname: str):
+def dirscan(dirname: str, follow: bool=False):
     import os
     import datetime as dt
 
@@ -367,15 +367,23 @@ def dirscan(dirname: str):
                         print("runstatus=%d"%runstatus)
                         if runstatus!=2:
                             try:
-                                parselog(path,path.replace('.LOG','.TXT'))
+                                parselog(path,path.replace('.LOG','.TXT'),follow=follow)
                             except Exception as exc:
                                 print("Failed parse of %s: "%path,exc)
                                 import traceback
                                 traceback.print_exc()
             else:
                 pass # print("Ignoring %s"%fname)
+        print('Done processing files in %s'%dirname,flush=True)
+        if not follow:
+            break
+        ago=now
+        print('Sleeping...',end='',flush=True)
+        time.sleep(30)
+        print('done',flush=True)
+        now=dt.datetime.now()
 
-def parselog(filename: str, outfile:str=None):
+def parselog(filename: str, outfile:str=None, follow=False):
     global logdb, lnum
 
     if filename is not None:
@@ -409,11 +417,12 @@ def parselog(filename: str, outfile:str=None):
     while True:
         bline=fd.readline()
         if not bline:
-            if args.follow:
+            if follow:
                 if not sleeping:
-                    print("sleeping...",end='',flush=True)
+                    logdb.flush()
+                    print("sleeping at line %d of %s..."%(lnum,filename),end='',flush=True)
                     sleeping=True
-                time.sleep(0.1)
+                time.sleep(10)
                 continue
             else:
                 break
