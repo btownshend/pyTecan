@@ -374,8 +374,8 @@ class LogDB(DB):
 
     def lastmeasure(self,tip,lineno,height,sbl,sml,zadd,lasttime):
         lasttime=self.local2utc(lasttime)
-        logging.notice("lastmeasure(%d,%d,%d,%d,%d,%d,%s)"%(tip,lineno,height,sbl,sml,zadd,str(lasttime)))
-        self.measurements[(lineno,tip)]=[height if height>0 else -1,sbl,sml,zadd,lasttime]
+        logging.notice("lastmeasure(%d,%d,%s,%d,%d,%d,%s)"%(tip,lineno,str(height),sbl,sml,zadd,str(lasttime)))
+        self.measurements[(lineno,tip)]=[height if height!=0 else None,sbl,sml,zadd,lasttime]
 
     def log_op(self, program, lineno, elapsed, lasttime, plateName, sampleName, wellName, sampid, cmd, tip, volchange,liquidClassName, lc):
         lasttime=self.local2utc(lasttime)
@@ -411,8 +411,7 @@ class LogDB(DB):
             curzmax=2100-plate.location.zmax-390+decklayout.TIPOFFSETS[tip-1]
             if zmax!=curzmax:
                 logging.warning("ZMax for plate %s, tip %d at time of run was %.0f, currently at %.0f"%(plate.name, tip, zmax, curzmax))
-            if height==-1:
-                height=None
+            if height is None:
                 gemvolume=None
                 volume=None
             else:

@@ -302,7 +302,7 @@ def fwparse(dev,send,reply,error,lasttime,outfd):
             if 1<<i & tipSelect != 0:
                 print("TIPS %d  " % lnum, heights[i], sbl[i], sml[i], heights[i] + sbl[i] - sml[i],file=outfd)
                 dl.logmeasure(i+1,heights[i],sbl[i],sml[i],zadd[i],lasttime)
-                logdb.lastmeasure(i+1,lnum,heights[i], sbl[i], sml[i], zadd[i], lasttime)
+                logdb.lastmeasure(i+1,lnum,heights[i] if heights[i]!=sml[i] else None, sbl[i], sml[i], zadd[i], lasttime)
         ldpending=False
     elif op == 'REE' or op=='RVZ':
         pass
