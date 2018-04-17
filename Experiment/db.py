@@ -281,6 +281,7 @@ class LogDB(DB):
         self.logfile = os.path.basename(logfile)
         self.sampvols={}  # Dictionary from sampid to best estimate of current volume
         self.volsqueue=[]   # Queue of vols insertions to be done with executemany
+        self.curline=None
 
     def local2utc(self,dt):
         return self.tz.localize(dt).astimezone(pytz.utc)
@@ -293,6 +294,11 @@ class LogDB(DB):
             self.volsqueue=[]
         print("done")
 
+    def flush(self):
+        if self.db is None:
+            return
+        self.updatecurline()
+        self.db.commit()
     def insertVol(self, run, op, gemvolume, volume, measured, height, submerge, zmax, zadd, estVolume):
         self.volsqueue.append((run, op, gemvolume, volume, measured, height, submerge, zmax, zadd, estVolume))
         if len(self.volsqueue) >= 100:
@@ -334,6 +340,12 @@ class LogDB(DB):
             logging.notice("Inserted run %d"%self.run)
             self.db.commit()
 
+    def updatecurline(self):
+        if self.run is None or self.curline is None:
+            return
+        with self.db.cursor() as cursor:
+            cursor.execute("update runs set lineno=%s where run=%s", (self.curline, self.run) )
+
     def log_endrun(self,program,lineno,elapsed, lasttime, endTime):
         lasttime=self.local2utc(lasttime)
         if self.db is None:
@@ -348,6 +360,9 @@ class LogDB(DB):
         with self.db.cursor() as cursor:
             cursor.execute('update runs set endtime=%s where run=%s',(endTime, self.run))
             logging.notice('Added endtime to run %d'%self.run)
+
+    def setline(self,lineno):
+        self.curline=lineno
 
     def lastmeasure(self,tip,lineno,height,sbl,sml,zadd,lasttime):
         lasttime=self.local2utc(lasttime)

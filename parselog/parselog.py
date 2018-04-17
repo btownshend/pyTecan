@@ -487,6 +487,7 @@ def parselog(filename: str, outfile:str=None):
                     colon=cmd.find(':')
                     cname=cmd[(colon+2):]
                     lnum=int(cmd[4:(colon-1)])
+                    logdb.setline(lnum)
                     #print "cname=",cname
                     t=datetime.datetime.combine(lasttime.date(),datetime.datetime.strptime(gtime,'%H:%M:%S').time())
                     if (t-lasttime).total_seconds()<0:
@@ -518,6 +519,7 @@ def parselog(filename: str, outfile:str=None):
                   print("Found closing log-file message; exiting",file=outfd)
                   break
 
+    logdb.flush()
     #print "log=",dl
     dl.printallsamples(fd=outfd)  # This 'sys.stdout' (modified above) seems different from the default one that Samples.print* would use
 

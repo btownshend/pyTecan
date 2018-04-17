@@ -13,7 +13,8 @@ create table runs(
        program integer not null, foreign key(program) references programs(program),
        logfile varchar(50),
        starttime timestamp not null default current_timestamp,
-       endtime timestamp null
+       endtime timestamp null,
+       lineno integer default null
 );
 
 -- Flags for a run
