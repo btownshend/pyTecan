@@ -67,7 +67,9 @@ class GUI(Ui_MainWindow):
     def refreshRunsDetail(self):
         q=QtSql.QSqlQuery("SELECT p.name, date_format(gentime,'%%m/%%d/%%y %%H:%%i'), date_format(starttime,'%%m/%%d/%%y %%H:%%i'), date_format(endtime,'%%m/%%d/%%y %%H:%%i'),r.logfile from runs r, programs p where r.program=p.program and r.run='%s' group by r.run order by starttime desc"%self.currentRun)
         self.sqlErrorCheck(q.lastError())
-        q.next()
+        if not q.next():
+            self.currentRun=None
+            return
         self.programName.setText(q.value(0))
         print("q.value(1)=",q.value(1))
         self.generated.setText("Gen: "+q.value(1))
