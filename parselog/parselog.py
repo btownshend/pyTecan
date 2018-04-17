@@ -354,10 +354,10 @@ def dirscan(dirname: str, follow: bool=False):
     db = DB()
     db.connect()
 
-    for root, dirs, files in os.walk(dirname):
-        for fname in files:
+    while True:
+        for fname in os.listdir(dirname):
             if re.match('LOG[0-9]*\.LOG',fname):
-                path = os.path.join(root, fname)
+                path = os.path.join(dirname, fname)
                 st = os.stat(path)
                 mtime = dt.datetime.fromtimestamp(st.st_mtime)
                 if mtime > ago:
