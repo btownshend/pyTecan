@@ -397,7 +397,7 @@ def parselog(filename: str, outfile:str=None, follow=False):
           fd=sys.stdin
 
     if outfile is not None:
-        outfd=open(outfile,'w')
+        outfd=codecs.open(outfile,'w','latin-1')
     else:
         outfd=sys.stdout
 
