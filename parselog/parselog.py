@@ -3,6 +3,11 @@ import re
 import codecs
 import datetime
 import time
+import os
+import sys
+
+epath = os.path.join(os.path.dirname(__file__), '..')
+sys.path.append(epath)
 
 from Experiment.config import Config
 from Experiment import logging
