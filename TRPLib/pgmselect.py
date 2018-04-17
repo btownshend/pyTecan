@@ -25,6 +25,14 @@ class PGMSelect(TRP):
         super(PGMSelect, self).__init__()
         if refillable:
             reagents.lookup("MT7").refillable=True
+            reagents.lookup("MPosRT").refillable=True
+            reagents.lookup("MTaqU").refillable=True
+            reagents.lookup("MTaqC").refillable=True
+            reagents.lookup("MTaqBar").refillable=True
+            reagents.lookup("MLigase").refillable=True
+            reagents.lookup("P-T7ZX").refillable=True
+            reagents.lookup("P-T7WX").refillable=True
+            reagents.lookup("T1c").refillable=True
         if qpcrStages is None:
             qpcrStages = ["negative", "template", "ext", "finalpcr"]
         self.inputs=inputs
