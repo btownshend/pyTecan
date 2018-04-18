@@ -76,7 +76,25 @@ class Experiment(object):
         self.idlePgms=[]
         self.timerStartTime=[0.0]*8
         decklayout.initWellKnownSamples()
+        self.addIdleProgram(self.volumeChecker)
 
+    def volumeChecker(self,secondsAvail):
+        print("volumeChecker",secondsAvail)
+        e1=clock.elapsed()
+
+        for r in sorted(reagents.Reagent.allReagents.values(), key=lambda r: r.sample.well if r.sample is not None else -1):
+            if r.sample is None:
+                continue
+            if r.sample.plate!=decklayout.REAGENTPLATE:
+                continue
+            if r.lastLevelCheck is None or clock.elapsed() - r.lastLevelCheck >= 600:
+                # Not too frequently
+                print("Level check of", r.name)
+                r.sample.leveldetect(self.cleantip())
+                r.lastLevelCheck = clock.elapsed()
+            if secondsAvail-(clock.elapsed()-e1)<120:
+                break   # Don't infringe on time available
+        print("volumeChecker done after %.0f seconds"%(clock.elapsed()-e1))
 
     def addIdleProgram(self,pgm: str):
         self.idlePgms.append(pgm)
@@ -558,8 +576,7 @@ class Experiment(object):
         if not self.tcrunning:
             return
         #print "* Wait for TC to finish"
-        if sanitize:
-            self.sanitize()   # Sanitize tips before waiting for this to be done
+
         worklist.comment("Wait for TC")
         while self.pgmEndTime-clock.pipetting > 120:
             # Run any idle programs
@@ -572,6 +589,9 @@ class Experiment(object):
                 # Nothing was done
                 break
             worklist.flushQueue()		# Just in case
+
+        if sanitize:
+            self.sanitize()   # Sanitize tips before waiting for this to be done
 
         clock.pipandthermotime+=(clock.pipetting-self.pgmStartTime)
         clock.thermotime+=(self.pgmEndTime-clock.pipetting)

@@ -8,6 +8,7 @@ from . import logging
 from . import decklayout
 from .concentration import Concentration
 from .plate import Plate
+from . import clock
 
 class Reagent(object):
     allReagents={}
@@ -29,6 +30,7 @@ class Reagent(object):
         self.extrainfo=extrainfo
         self.ingredients=ingredients
         self.refillable=refillable
+        self.lastLevelCheck=None
 
     def __str__(self):
         s=self.name
@@ -53,6 +55,8 @@ class Reagent(object):
                 print("Adjusting initVol of %s to %.1f (adj=%.1f)"%(self.name,self.initVol+adj,adj))
                 self.initVol+=adj
             self.sample=None
+        self.lastLevelCheck = None
+
 
 def isReagent(name:str):
     return name in Reagent.allReagents

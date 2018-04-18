@@ -371,6 +371,9 @@ class Sample(object):
             nloop+=1
         return volume
 
+    def leveldetect(self,tipMask):
+        worklist.detectLiquid(tipMask,[self.well],self.inliquidLC,self.plate,allowDelay=True)
+
     def volcheck(self,tipMask,well,volToRemove):
         """Check if the well contains the expected volume"""
         # For refillable wells, this should not depend on self.volume, since that will only be an upper bound
