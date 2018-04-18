@@ -6,17 +6,20 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1066</width>
-    <height>880</height>
+    <width>1432</width>
+    <height>973</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Robot Explorer</string>
   </property>
+  <property name="layoutDirection">
+   <enum>Qt::LeftToRight</enum>
+  </property>
   <widget class="QWidget" name="central">
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
-     <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,0,0,1">
+     <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,0,1">
       <item>
        <widget class="QGroupBox" name="runsGroup">
         <property name="sizePolicy">
@@ -50,11 +53,17 @@
       </item>
       <item>
        <widget class="QGroupBox" name="runGroup">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
         <property name="title">
          <string>Run Details</string>
         </property>
         <layout class="QGridLayout" name="gridLayout_2">
-         <item row="0" column="1">
+         <item row="0" column="3">
           <widget class="QLabel" name="generated">
            <property name="text">
             <string>Generated</string>
@@ -78,7 +87,7 @@
            </property>
           </widget>
          </item>
-         <item row="1" column="1">
+         <item row="1" column="3">
           <widget class="QLabel" name="endtime">
            <property name="text">
             <string>EndTime</string>
@@ -88,7 +97,7 @@
            </property>
           </widget>
          </item>
-         <item row="3" column="0" colspan="2">
+         <item row="3" column="0" colspan="4">
           <widget class="QTableView" name="plateTable"/>
          </item>
          <item row="2" column="0">
@@ -98,36 +107,70 @@
            </property>
           </widget>
          </item>
-        </layout>
-       </widget>
-      </item>
-      <item>
-       <widget class="QGroupBox" name="plateGroup">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="title">
-         <string>Plate Details</string>
-        </property>
-        <layout class="QGridLayout" name="gridLayout_4">
-         <item row="0" column="0">
+         <item row="5" column="0" colspan="4">
+          <widget class="QTableWidget" name="sampleTable">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
+             <horstretch>0</horstretch>
+             <verstretch>1</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="horizontalScrollBarPolicy">
+            <enum>Qt::ScrollBarAlwaysOff</enum>
+           </property>
+           <property name="sizeAdjustPolicy">
+            <enum>QAbstractScrollArea::AdjustToContents</enum>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="0">
           <widget class="QLabel" name="plateName">
            <property name="text">
             <string>PlateName</string>
            </property>
           </widget>
          </item>
-         <item row="1" column="0" colspan="2">
-          <widget class="QTableView" name="sampleTable"/>
+         <item row="2" column="3">
+          <widget class="QLabel" name="lineno">
+           <property name="text">
+            <string>Line xx</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="3">
+          <widget class="QSpinBox" name="horizonHours">
+           <property name="minimum">
+            <number>1</number>
+           </property>
+           <property name="maximum">
+            <number>48</number>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="2">
+          <widget class="QLabel" name="label">
+           <property name="text">
+            <string>Hours:</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+           </property>
+          </widget>
          </item>
         </layout>
        </widget>
       </item>
       <item>
        <widget class="QGroupBox" name="sampleGroup">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
         <property name="title">
          <string>Sample Details</string>
         </property>
@@ -152,7 +195,7 @@
          <item row="2" column="0" colspan="3">
           <widget class="QTableView" name="volsTable">
            <property name="sizePolicy">
-            <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+            <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
              <horstretch>0</horstretch>
              <verstretch>0</verstretch>
             </sizepolicy>
@@ -160,17 +203,14 @@
           </widget>
          </item>
          <item row="0" column="1">
-          <spacer name="horizontalSpacer_2">
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
+          <widget class="QLabel" name="volume">
+           <property name="text">
+            <string>CurVolume</string>
            </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>40</width>
-             <height>20</height>
-            </size>
-           </property>
-          </spacer>
+          </widget>
+         </item>
+         <item row="3" column="0" colspan="3">
+          <widget class="QTableView" name="opsTable"/>
          </item>
         </layout>
        </widget>
@@ -215,7 +255,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1066</width>
+     <width>1432</width>
      <height>22</height>
     </rect>
    </property>
