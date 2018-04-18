@@ -50,8 +50,8 @@ class Experiment(object):
         except Exception as exc:
             self.gitlabel=None
 
-        worklist.comment("Generated %s (%s-%s pyTecan-%s)"%(datetime.now().ctime(),sys.argv[0],self.checksum,self.gitlabel))
         db.startrun(sys.argv[0],datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'),self.checksum,self.gitlabel)
+        worklist.comment("Generated %s (%s-%s pyTecan-%s) program ID %s"%(datetime.now().ctime(),sys.argv[0],self.checksum,self.gitlabel,str(db.program)))
         worklist.userprompt("The following reagent tubes should be present: %s"%Sample.getAllLocOnPlate(decklayout.REAGENTPLATE))
         epp=Sample.getAllLocOnPlate(decklayout.EPPENDORFS)
         if len(epp)>0:
