@@ -225,10 +225,13 @@ class BuildDB(DB):
             return sampid
 
     def addop(self, sample, cmd:str, volume:float, lineno: int, tip: int, liquidClass):
-        sampid = self.getSample(sample.plate.name,sample.plate.wellname(sample.well))
-        if sampid is None:
-            logging.warning("Unable to find sample %s"%sample.name)
-            sampid = -1
+        if self.program is None:
+            sampid=-1
+        else:
+            sampid = self.getSample(sample.plate.name,sample.plate.wellname(sample.well))
+            if sampid is None:
+                logging.warning("Unable to find sample %s"%sample.name)
+                sampid = -1
         if tip in self.clean:
             clean=self.clean[tip]
         else:
