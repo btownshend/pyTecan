@@ -1,21 +1,27 @@
 import sys
 
 from PyQt5 import QtSql
-from PyQt5.QtCore import QTimeZone, QModelIndex
-from PyQt5.QtWidgets import QApplication, QMainWindow
+from PyQt5.QtCore import QTimeZone, QModelIndex, QDateTime
+from PyQt5.QtWidgets import QApplication, QMainWindow, QTableWidgetItem
+from PyQt5.Qt import QColor
 
 from gui_auto import Ui_MainWindow
-
 
 class GUI(Ui_MainWindow):
     def __init__(self):
         super().__init__()
         self.currentRun = None
+        self.currentProgram = None
         self.currentPlate = None
         self.currentWell = None
         self.currentSample = None
         self.currentProgram = None
-        self.db = None
+        self.currentVolume = None
+        self.sampInfo = {}
+        self.lastMeasured=None
+        self.lastElapsed=None
+        self.endElapsed=None
+        self.endTime=None
 
     def dbopen(self):
         self.db = QtSql.QSqlDatabase.addDatabase('QMYSQL')
@@ -27,12 +33,19 @@ class GUI(Ui_MainWindow):
         self.db.open()
         settz=QtSql.QSqlQuery()
         settz.exec("set time_zone='US/Pacific'")
-        
+
+    def dbget(self,query):
+        print("dbget(",query,")")
+        q=QtSql.QSqlQuery(query)
+        self.sqlErrorCheck(q.lastError())
+        valid=q.next()
+        return q if valid else None
+
     def setupUi(self,mainWindow):
         super().setupUi(mainWindow)
         self.refresh.clicked.connect(ui.refreshAll)
         self.actionQuit.triggered.connect(ui.quit)
-        self.actionRuns.triggered.connect(ui.runs)
+        #self.actionRuns.triggered.connect(ui.runs)
         self.runsTable.clicked.connect(ui.selectRun)
         self.plateTable.clicked.connect(ui.selectPlate)
         self.sampleTable.clicked.connect(ui.selectSample)
@@ -44,6 +57,55 @@ class GUI(Ui_MainWindow):
         if lastError.isValid():
             print("SQL error: ",lastError.type(),lastError.text())
             sys.exit(1)
+
+    def getSampData(self,sampid,horizon):
+        """Get Sample info for given sampid for horizon hours"""
+        print("getSampData(%d,%f)"%(sampid,horizon))
+        if sampid not in self.sampInfo:
+            q=self.dbget("""
+                SELECT v.op,estvol,volume,volchange,elapsed+timestampdiff(second,measured,now()) elapsed
+                FROM vols v, ops o
+                WHERE sample=%d
+                AND v.op=o.op
+                AND run=%d
+                ORDER BY v.op DESC
+                LIMIT 1
+            """%(sampid,self.currentRun))
+            if q!=None:
+                print(q.value(0),q.value(1),"Null" if q.isNull(2) else q.value(2),q.value(3),q.value(4))
+                lastop=q.value(0)
+                if q.isNull(2):
+                    estvol=q.value(1)+q.value(3)
+                else:
+                    estvol=q.value(2)+q.value(3)
+                elapsed=q.value(4)
+            else:
+                lastop=0
+                estvol=0
+                elapsed=0
+            q2=self.dbget("""
+                SELECT sum(volchange) futurevols
+                FROM ops
+                WHERE op>%d
+                AND sample=%d
+                AND program=%d
+                """%(lastop,sampid,self.currentProgram))
+            finalvol=q2.value(0)+estvol
+            q3=self.dbget("""
+                SELECT sum(volchange) futurevols
+                FROM ops
+                WHERE op>%d
+                AND sample=%d
+                AND program=%d
+                AND elapsed<=%f
+                """%(lastop,sampid,self.currentProgram,elapsed+horizon*3600))
+            horizvol=q3.value(0)+estvol
+            self.sampInfo[sampid]=(estvol,horizvol,finalvol,lastop)
+        print("->",self.sampInfo[sampid])
+        return self.sampInfo[sampid]
+
+    def getTotalNeeded(self):
+        """Calculate amount of sampid needed through end of run"""
 
     def refreshRunsTable(self):
         q=QtSql.QSqlQueryModel()
@@ -65,9 +127,8 @@ class GUI(Ui_MainWindow):
         self.refreshPlateGroup()
 
     def refreshRunsDetail(self):
-        q=QtSql.QSqlQuery("SELECT p.name, date_format(gentime,'%%m/%%d/%%y %%H:%%i'), date_format(starttime,'%%m/%%d/%%y %%H:%%i'), date_format(endtime,'%%m/%%d/%%y %%H:%%i'),r.logfile from runs r, programs p where r.program=p.program and r.run='%s' group by r.run order by starttime desc"%self.currentRun)
-        self.sqlErrorCheck(q.lastError())
-        if not q.next():
+        q=self.dbget("SELECT p.name, date_format(gentime,'%%m/%%d/%%y %%H:%%i'), date_format(starttime,'%%m/%%d/%%y %%H:%%i'), date_format(endtime,'%%m/%%d/%%y %%H:%%i'),r.logfile, r.lineno from runs r, programs p where r.program=p.program and r.run='%s' group by r.run order by starttime desc"%self.currentRun)
+        if not q:
             self.currentRun=None
             return
         self.programName.setText(q.value(0))
@@ -76,8 +137,18 @@ class GUI(Ui_MainWindow):
         self.starttime.setText("Start: "+q.value(2))
         self.logFile.setText(q.value(4))
         print("q.value(3)=",q.value(3))
-        if q.value(3) is not None:
+        q2=self.dbget("SELECT measured,elapsed FROM v_vols WHERE run=%d ORDER BY measured DESC LIMIT 1"%self.currentRun)
+        self.lastMeasured=q2.value(0)
+        self.lastElapsed=q2.value(1)
+        q3=self.dbget("SELECT max(elapsed) FROM ops WHERE program=%d"%self.currentProgram)
+        self.endElapsed=q3.value(0)
+        self.endTime=self.lastMeasured.addSecs(self.endElapsed-self.lastElapsed)
+        if q.value(3) is not None and q.value(3)!="":
             self.endtime.setText("End: "+q.value(3))
+            self.lineno.setText("Done")
+        else:
+            self.endtime.setText("Last: %s, End: %s"%(self.lastMeasured.toString('MM/dd/yy HH:mm'),self.endTime.toString('MM/dd/yy HH:mm')))
+            self.lineno.setText("Elapsed: %.0f, Line: %s"%(self.lastElapsed/60.0,str(q.value(5))))
 
     def refreshPlatesTable(self):
         q=QtSql.QSqlQueryModel()
@@ -89,13 +160,44 @@ class GUI(Ui_MainWindow):
         self.plateTable.resizeColumnsToContents()
 
     def refreshSamplesTable(self):
-        q=QtSql.QSqlQueryModel()
-        query = "select s.sample,s.well,s.name  from samples s where s.plate='%s' and s.program=%d order by right(s.well,length(s.well)-1),s.well;" % (self.currentPlate, self.currentProgram)
+        query="""
+            select sample,well,name,min(elapsed),max(elapsed)
+            from v_ops
+            where plate='%s' and program=%d
+            group by sample,well,name
+            order by right(well,length(well)-1)+0,well
+            """%(self.currentPlate, self.currentProgram)
         print(query)
-        q.setQuery(query)
+        q=QtSql.QSqlQuery(query)
         self.sqlErrorCheck(q.lastError())
-        self.sampleTable.setModel(q)
+        self.sampleTable.setColumnCount(7)
+        data=[]
+        while q.next():
+            sampInfo = self.getSampData(q.value(0),self.horizonHours.value())
+            data.append([q.value(0),q.value(1),q.value(2),"%.0f-%.0f"%(q.value(3)/60,q.value(4)/60) if q.value(4)>self.lastElapsed else "Done",sampInfo[0],sampInfo[1],sampInfo[2]])
+        self.sampleTable.setRowCount(len(data))
+        for r in range(len(data)):
+            for c in range(len(data[r])):
+                if c==0:
+                    item = QTableWidgetItem("%d"%data[r][c])
+                elif c>=4:
+                    item = QTableWidgetItem("%.1f"%data[r][c])
+                    if data[r][c]<15:
+                        item.setBackground(QColor("red"))
+                    elif data[r][c] < 30:
+                        item.setBackground(QColor("yellow"))
+                else:
+                    item = QTableWidgetItem(data[r][c])
+                self.sampleTable.setItem(r,c,item)
+
+        #query = "select s.sample,s.well,s.name  from samples s where s.plate='%s' and s.program=%d order by right(s.well,length(s.well)-1),s.well;" % (self.currentPlate, self.currentProgram)
         self.sampleTable.setColumnHidden(0,True)
+        self.sampleTable.setHorizontalHeaderItem(1,QTableWidgetItem("Well"))
+        self.sampleTable.setHorizontalHeaderItem(2,QTableWidgetItem("Name"))
+        self.sampleTable.setHorizontalHeaderItem(3,QTableWidgetItem("Elapsed"))
+        self.sampleTable.setHorizontalHeaderItem(4,QTableWidgetItem("Cur Vol"))
+        self.sampleTable.setHorizontalHeaderItem(5,QTableWidgetItem("Vol in %.0f hrs"%self.horizonHours.value()))
+        self.sampleTable.setHorizontalHeaderItem(6,QTableWidgetItem("End Vol"))
         self.sampleTable.resizeColumnsToContents()
 
     def refreshSampleDetail(self):
@@ -107,23 +209,62 @@ class GUI(Ui_MainWindow):
         q.next()
         self.sampleName.setText(q.value(0))
         self.wellName.setText(q.value(1)+"."+q.value(2))
+        vquery="""
+            SELECT estvol+volchange
+            FROM v_vols
+            WHERE plate='%s' AND run=%d AND sample=%d
+            ORDER BY lineno DESC
+            LIMIT 1
+            """%(self.currentPlate,self.currentRun,self.currentSample)
+        print(vquery)
+        q = QtSql.QSqlQuery(vquery)
+        self.sqlErrorCheck(q.lastError())
+        q.next()
+        if q.value(0) is None:
+            self.volume.setText("?")
+        else:
+            self.volume.setText("%.1f"%q.value(0))
 
     def refreshVolsTable(self):
         q=QtSql.QSqlQueryModel()
-        query="select lineno,round(elapsed/60.0,1) elapsed,cmd,tip,round(estvol,1) estvol, round(volume,1) observed,measured,round(volchange,1) volchange from v_history where run='%s' and sample=%d order by lineno;"%(self.currentRun, self.currentSample)
+        query="""
+            select lineno,measured, round(elapsed/60.0,1) elapsed,cmd,tip,round(estvol,1) estvol, round(obsvol,1) observed,round(obsvol-estvol,1) diff,round(volchange,1) volchange 
+            from v_vols 
+            where run='%s' and sample=%d 
+            order by lineno
+            """%(self.currentRun, self.currentSample)
         print(query)
         q.setQuery(query)
         self.sqlErrorCheck(q.lastError())
         self.volsTable.setModel(q)
+        # ind=self.volsTable.model().createIndex(2,2)
+        # self.volsTable.model().setData(ind,"Hello")
         self.volsTable.resizeColumnsToContents()
+
+    def refreshOpsTable(self):
+        sdata=self.getSampData(self.currentSample,self.horizonHours.value())
+        print("sdata=",sdata)
+        q=QtSql.QSqlQueryModel()
+        query="""
+            select lineno,timestampadd(second,elapsed-%f,str_to_date('%s','%%m/%%d/%%y %%H:%%i')) projected,round(elapsed/60.0,1) elapsed,cmd,tip,round(volchange,1) volchange 
+            from v_ops o
+            where program=%d and sample=%d and op>%d
+            and volchange!=0
+            order by lineno
+            """%(self.lastElapsed,self.lastMeasured.toString('MM/dd/yy HH:mm'),self.currentProgram, self.currentSample, sdata[3])
+        print(query)
+        q.setQuery(query)
+        self.sqlErrorCheck(q.lastError())
+        self.opsTable.setModel(q)
+        self.opsTable.resizeColumnsToContents()
 
     def refreshPlateGroup(self):
         print("refreshPlateGroup: plate=",self.currentPlate)
         if self.currentPlate is None:
-            self.plateGroup.hide()
+            self.sampleTable.hide()
             self.currentWell=None
             return
-        self.plateGroup.show()
+        self.sampleTable.show()
         self.plateName.setText(self.currentPlate)
         self.refreshSamplesTable()
         self.refreshSampleGroup()
@@ -136,9 +277,11 @@ class GUI(Ui_MainWindow):
         self.sampleGroup.show()
         self.refreshSampleDetail()
         self.refreshVolsTable()
+        self.refreshOpsTable()
         self.sampleGroup.layout()
 
     def refreshAll(self):
+        self.sampInfo={}
         self.refreshRunsTable()
         self.refreshRunGroup()
         self.refreshPlateGroup()
@@ -174,11 +317,9 @@ class GUI(Ui_MainWindow):
 
     def selectSample(self,index: QModelIndex):
         print("select row",index.row(),"column",index.column(),"id",index.internalId())
-        rec=self.sampleTable.model().record(index.row())
-        for i in range(rec.count()):
-            print(rec.fieldName(i),"=",rec.field(i).value())
-        self.currentWell=rec.field(0).value()
-        self.currentSample=rec.field(0).value()
+        self.currentWell=self.sampleTable.item(index.row(),1).text()
+        print("sample item=",self.sampleTable.item(index.row(),0).text())
+        self.currentSample=int(self.sampleTable.item(index.row(),0).text())
         #self.plateTable.selectRow(index.row())
         self.refreshAll()
 
