@@ -138,7 +138,7 @@ class TRP(object):
         Sample.clearall()
         Plate.reset()
         self.e=Experiment()
-        self.e.setreagenttemp(globals.dewpoint)
+        Experiment.setreagenttemp(globals.dewpoint)
         Sample.printallsamples()
         self.e.sanitize(3,50)    # Heavy sanitize
 
