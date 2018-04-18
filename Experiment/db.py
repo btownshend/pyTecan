@@ -108,20 +108,20 @@ class DB(object):
                 cursor.execute('update programs set complete=True,totaltime=%s where program=%s',(totalTime, self.program,))
                 logging.notice('Marked program %d as complete with totalTime=%f'%(self.program,totalTime))
 
-    def getOp(self, lineno, tip):
+    def getOp(self, lineno, tip, sampid):
         if self.program is None:
             return None
         if len(self.opdict) is 0:
             # Initial read of any samples already in DB
             with self.db.cursor() as cursor:
                 # Check if it already exists
-                cursor.execute("SELECT op,lineno,tip FROM ops WHERE program=%s",(self.program,))
+                cursor.execute("SELECT op,lineno,tip,sample FROM ops WHERE program=%s",(self.program,))
                 rows = cursor.fetchall()
                 logging.notice("Loaded %d op records for program %d"%(len(rows),self.program))
                 for row in rows:
-                    key=(row['lineno'],row['tip'])
+                    key=(row['lineno'],row['tip'],row['sample'])
                     self.opdict[key]=row['op']
-        key=(lineno,tip)
+        key=(lineno,tip,sampid)
         if key in self.opdict:
             return self.opdict[key]
         return None
@@ -385,17 +385,18 @@ class LogDB(DB):
             return
         # Locate op in current program
         assert program == -1 or self.program == program  # Make sure we're still referring to correct program
-        op = self.getOp(lineno, tip)
+        if sampid == -1:
+            sampid = self.getSample(plateName, wellName)
+            if sampid is None:
+                sampid = self.insertSample(plateName, wellName, sampleName)
+
+        op = self.getOp(lineno, tip, sampid)
         if op is None:
             if self.programComplete:
-                logging.error('Database indicates program %d is complete, but op for line %d, tip %d is missing'%(self.program,lineno,tip))
+                logging.error('Database indicates program %d is complete, but op for line %d, tip %d, sample %d is missing'%(self.program,lineno,tip,sampid))
             logging.notice("Op not found, inserting")
             if lc == -1:
                 lc = self.getlc(liquidClassName)
-            if sampid==-1:
-                sampid=self.getSample(plateName,wellName)
-                if sampid is None:
-                    sampid=self.insertSample(plateName, wellName, sampleName)
             op = self.insertOp(lineno, elapsed, sampid, cmd, tip, volchange, lc)
         if sampid not in self.sampvols:
             self.sampvols[sampid]=0.0
