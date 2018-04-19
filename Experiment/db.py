@@ -82,6 +82,8 @@ class DB(object):
         with self.db.cursor() as cursor:
             # Delete any sample names entered
             cursor.execute("DELETE FROM samples WHERE program=%s", (self.program,))
+        self.sampids={}
+        print("db.clearSamples()")
 
     def getProgram(self,name,gentime):
         with self.db.cursor() as cursor:
