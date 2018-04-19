@@ -164,6 +164,7 @@ class BuildDB(DB):
     def __init__(self):
         super().__init__()
         self.clean={}  # Map from tip # to clean state (T=clean, F=dirty, None=unknown)
+        self.status=[] # List of status elements
 
     """Log actions during compile of program to .gem """
     def embed(self,cmd,params=None,lineno=None):
@@ -223,6 +224,19 @@ class BuildDB(DB):
             self.addop(sample,'Initial',sample.initVol, 0, 0, LCPrefilled )
         else:
             return sampid
+
+    def setStatus(self):
+        self.embed("log_status","'%s'"%".".join(self.status))
+
+    def pushStatus(self,msg):
+        self.status.append(msg)
+        print("pushStatus(%s) -> "%msg,self.status)
+        self.setStatus()
+
+    def popStatus(self):
+        self.status.pop()
+        print("popStatus() -> ",self.status)
+        self.setStatus()
 
     def addop(self, sample, cmd:str, volume:float, lineno: int, tip: int, liquidClass):
         if self.program is None:

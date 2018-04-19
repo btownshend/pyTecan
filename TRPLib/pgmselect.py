@@ -9,6 +9,7 @@ from Experiment.sample import Sample
 from TRPLib.QSetup import QSetup
 from TRPLib.TRP import TRP
 from .pcrgain import pcrgain
+from Experiment.db import db
 
 reagents.add("BT5310",well="B5",conc=Concentration(20,20,"pM"))
 
@@ -275,7 +276,9 @@ class PGMSelect(TRP):
             self.rndNum=self.rndNum+1
             self.finalRound=self.rndNum==len(self.rounds)
 
+            db.pushStatus("%s%d"%(roundType,self.rndNum))
             [r1,bc1]=self.oneround(q,r1,prefixOut=prefixOut,stop=stop,prefixIn=curPrefix,keepCleaved=(roundType!='U'),rtvol=self.rtvol[self.rndNum-1],t7vol=self.t7vol[self.rndNum-1],cycles=self.pcrcycles[self.rndNum-1],pcrdil=self.pcrdil[self.rndNum-1],pcrvol=self.pcrvol[self.rndNum-1],dolig=self.allLig or (roundType!='U'),pcrtgt=None if pcrprods is None else pcrprods[self.rndNum-1])
+            db.popStatus()
 
             # Add TRefs specified in rnddefs 
             if 'tref' in self.rnddef[self.rndNum-1]:
@@ -330,10 +333,12 @@ class PGMSelect(TRP):
                     reagents.add(name=trefname,conc=10,extraVol=30)
                 tref=reagents.getsample(trefname)
                 self.e.transfer(r1[i].volume/(tref.conc.dilutionneeded()-1),tref,r1[i],mix=(False,False))
-            
+
+        db.pushStatus('qPCR')
         print("######### qPCR ########### %.0f min"%(clock.elapsed()/60))
         self.allprimers=q.allprimers()
         q.run(confirm=self.qpcrWait)
+        db.popStatus()
         
     def oneround(self, q, inputs, prefixOut, stop, prefixIn, keepCleaved, t7vol, rtvol, pcrdil, cycles, pcrvol, dolig,pcrtgt=None):
         primerSet=[set(["REF","T7X",prefixIn[i]+"X",prefixOut[i]+"X"]+(["MX"] if self.useMX else [])) for i in range(len(prefixIn))]
@@ -357,6 +362,7 @@ class PGMSelect(TRP):
             stopDil=1
         else:
             print("######## T7 ########### %.0f min"%(clock.elapsed()/60))
+            db.pushStatus("T7")
             print("Inputs:  (t7vol=%.2f)"%t7vol)
             for inp in inputs:
                 if inp.conc.units=='nM':
@@ -421,8 +427,9 @@ class PGMSelect(TRP):
             print("Estimate usable RNA concentration in T7 reaction at %.0f nM"%self.rnaConc)
 
             self.e.waitpgm()   # So elapsed time will be updated
+            db.popStatus()
             print("######## Stop ########### %.0f min"%(clock.elapsed()/60))
-            
+            db.pushStatus("Stop")
             print("Have %.1f ul before stop"%rxs[0].volume)
             preStopVolume=rxs[0].volume
             self.addEDTA(tgt=rxs,finalconc=2)	# Stop to 2mM EDTA final
@@ -435,6 +442,7 @@ class PGMSelect(TRP):
             if self.saveRNA:
                 self.saveSamps(src=rxs,vol=5,dil=self.saveRNADilution,plate=decklayout.DILPLATE,dilutant=reagents.getsample("TE8"),mix=(False,False))   # Save to check [RNA] on Qubit, bioanalyzer
 
+            db.popStatus()
         needDil = self.rnaConc/self.qConc/stopDil
 
         if "stopped" in self.qpcrStages:
@@ -442,6 +450,7 @@ class PGMSelect(TRP):
                 q.addSamples(src=rxs[i:i+1],needDil=needDil,primers=primerSet[i],names=["%s.stopped"%names[i]])
         
         print("######## RT  Setup ########### %.0f min"%(clock.elapsed()/60))
+        db.pushStatus("RT")
         hiTemp=95
 
         stop=["%s-Stop"%n for n in stop]
@@ -482,9 +491,11 @@ class PGMSelect(TRP):
                 newsamp=Sample("%s.samp"%r.name,decklayout.SAMPLEPLATE)
                 self.e.transfer(rxs[0].volume,r,newsamp,(False,False))
                 rxs.append(newsamp)
-            
+        db.popStatus()
+
         if dolig:
             print("######## Ligation setup  ########### %.0f min"%(clock.elapsed()/60))
+            db.pushStatus("Ligation")
             extdil=5.0/4
             reagents.getsample("MLigase").conc=Concentration(5)
             if self.ligInPlace:
@@ -524,6 +535,7 @@ class PGMSelect(TRP):
                         if isave<len(rxs):
                             # samples restored
                             q.addSamples(src=[rxs[isave]],needDil=needDil/rtCarryForwardDil,primers=primerSet[isave])
+            db.popStatus()
         else:
             extdil=1
             self.extpostdil[self.rndNum-1]=1
@@ -549,6 +561,7 @@ class PGMSelect(TRP):
             
         if self.dopcr and not (keepCleaved and self.noPCRCleave):
             print("######### PCR ############# %.0f min"%(clock.elapsed()/60))
+            db.pushStatus("PCR")
             print("PCR Volume: %.1f, Dilution: %.1f, volumes available for PCR: [%s]"%(pcrvol, pcrdil,",".join(["%.1f"%r.volume for r in rxs])))
 
             initConc=needDil*self.qConc/pcrdil
@@ -640,6 +653,7 @@ class PGMSelect(TRP):
             print("Projected final concentration = %.0f nM"%(needDil*self.qConc))
             for i in range(len(pcr)):
                 pcr[i].conc=Concentration(stock=finalConc,final=None,units='nM')
+            db.popStatus()
 
             if self.pcrSave:
                 # Save samples at 1x (move all contents -- can ignore warnings)
@@ -676,7 +690,7 @@ class PGMSelect(TRP):
             else:
                 assert "pcr" not in self.qpcrStages   ## Not implemented
                 return pcr[:len(rxs)], bcout
-            
+
         elif self.noPCRCleave:
             print("Dilution instead of PCR: %.2f"%self.nopcrdil)
             # Need to add enough t7prefix to compensate for all of the Stop primer currently present, regardless of whether it is for cleaved or uncleaved
