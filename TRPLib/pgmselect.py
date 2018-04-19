@@ -305,12 +305,14 @@ class PGMSelect(TRP):
                 print("Used ID ", self.nextID," for ", r1[i].name,": ",r1[i])
                 self.nextID+=1
                 r1[i].conc.final=r1[i].conc.stock*self.templateDilution
-
             for i in range(len(bc1)):
-                print("Renaming",bc1[i].name)
-                pts=bc1[i].name.split("_")
-                bc1[i].name="BC_%d_%s"%(self.nextID,"_".join(pts[2:]))
-                print("Used ID ", self.nextID," for ", bc1[i].name)
+                #print("Renaming",bc1[i].name)
+                pts=bc1[i].name.split(".")
+                bc1[i].name="%d_BC_R%d%c"%(self.nextID,self.inputs[i//2]['round']+self.rndNum,roundType)
+                if self.inputs[i//2]['ligand'] is not None:
+                    bc1[i].name="%s_%s"%(bc1[i].name,self.inputs[i//2]['ligand'])
+                bc1[i].name+="_"+pts[-2]
+                print("Used ID ", self.nextID," for ", bc1[i].name,":",bc1[i])
                 self.nextID+=1
             curPrefix=prefixOut
 
