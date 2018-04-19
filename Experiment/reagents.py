@@ -55,6 +55,7 @@ class Reagent(object):
                 print("Adjusting initVol of %s to %.1f (adj=%.1f)"%(self.name,self.initVol+adj,adj))
                 self.initVol+=adj
             self.sample=None
+            self.getsample()   # Re-allocate sample
         self.lastLevelCheck = None
 
 
