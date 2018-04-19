@@ -79,7 +79,7 @@ class Experiment(object):
         self.addIdleProgram(self.volumeChecker)
 
     def volumeChecker(self,secondsAvail):
-        print("volumeChecker",secondsAvail)
+        #print("volumeChecker",secondsAvail)
         e1=clock.elapsed()
 
         for r in sorted(reagents.Reagent.allReagents.values(), key=lambda r: r.sample.well if r.sample is not None else -1):
@@ -87,14 +87,14 @@ class Experiment(object):
                 continue
             if r.sample.plate!=decklayout.REAGENTPLATE:
                 continue
-            if r.lastLevelCheck is None or clock.elapsed() - r.lastLevelCheck >= 600:
+            if r.lastLevelCheck is None or clock.elapsed() - r.lastLevelCheck >= 3600:
                 # Not too frequently
-                print("Level check of", r.name)
+                #print("Level check of", r.name)
                 r.sample.leveldetect(self.cleantip())
                 r.lastLevelCheck = clock.elapsed()
             if secondsAvail-(clock.elapsed()-e1)<120:
                 break   # Don't infringe on time available
-        print("volumeChecker done after %.0f seconds"%(clock.elapsed()-e1))
+        #print("volumeChecker done after %.0f seconds"%(clock.elapsed()-e1))
 
     def addIdleProgram(self,pgm: str):
         self.idlePgms.append(pgm)
