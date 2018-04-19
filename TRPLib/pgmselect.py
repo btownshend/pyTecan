@@ -299,9 +299,7 @@ class PGMSelect(TRP):
                         print("New conc=",r1[i].conc)
 
             for i in range(len(r1)):
-                r1[i].name="%s_%d"%(prefixOut[i],self.nextID)
-                if self.inputs[i]['round'] is not None:
-                    r1[i].name="%s_R%d%c"%(r1[i].name,self.inputs[i]['round']+self.rndNum,roundType)
+                r1[i].name="%d_%s_R%d%c"%(self.nextID,prefixOut[i],self.inputs[i]['round']+self.rndNum,roundType)
                 if self.inputs[i]['ligand'] is not None:
                     r1[i].name="%s_%s"%(r1[i].name,self.inputs[i]['ligand'])
                 print("Used ID ", self.nextID," for ", r1[i].name,": ",r1[i])
