@@ -1035,10 +1035,14 @@ class TRP(object):
         parser.add_argument('-N','--nodb',help='No DB logging',default=False,action="store_true")
 
         args=parser.parse_args()
-        
+
+        # Turn on DB access if needed
+        Config.usedb=not args.nodb
+        if args.password is not None:
+            Config.password = args.password
+
         print("Estimating evaporation for dew point of %.1f C"%args.dewpoint)
         globals.dewpoint=args.dewpoint
-        Config.usedb = False  # Can skip DB ops during prelimary setups
         self.reset()
 
         self.setup()
@@ -1056,10 +1060,8 @@ class TRP(object):
             print('------ Main run -----')
         else:
             sys.stdout=sys.__stdout__
-        # Turn on DB access if needed
-        Config.usedb=not args.nodb
-        if args.password is not None:
-            Config.password = args.password
+
+
         self.reset()
         self.pgm()
         self.finish()
