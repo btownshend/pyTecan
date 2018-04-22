@@ -116,6 +116,9 @@ class TRobot:
         logging.getLogger('').addHandler(console)
         
         logging.info("Running: %s"," ".join(sys.argv))
+        self.open(to)
+
+    def open(self,to=5):
         logging.debug( "About to open serial port %d"%self.PORT)
         try:
             self.ser = serial.Serial(self.PORT,baudrate=9600,timeout=to)
