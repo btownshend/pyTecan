@@ -19,7 +19,7 @@ class GUI(Ui_MainWindow):
         self.currentVolume = None
         self.sampInfo = {}
         self.lastMeasured=None
-        self.lastElapsed=None
+        self.lastElapsed=0
         self.endElapsed=None
         self.endTime=None
 
@@ -98,7 +98,7 @@ class GUI(Ui_MainWindow):
                 AND sample=%d
                 AND program=%d
                 AND elapsed<=%f
-                """%(lastop,sampid,self.currentProgram,elapsed+horizon*3600))
+                """%(lastop,sampid,self.currentProgram,elapsed+horizon*3600))   # TODO: Should use global elapsed in case there was a stall since the last time this samp was accessed
             horizvol=q3.value(0)+estvol
             self.sampInfo[sampid]=(estvol,horizvol,finalvol,lastop)
         print("->",self.sampInfo[sampid])
@@ -138,6 +138,9 @@ class GUI(Ui_MainWindow):
         self.logFile.setText(q.value(4))
         print("q.value(3)=",q.value(3))
         q2=self.dbget("SELECT measured,elapsed FROM v_vols WHERE run=%d ORDER BY measured DESC LIMIT 1"%self.currentRun)
+        if q2 is None:
+            print("No vol data")
+            return
         self.lastMeasured=q2.value(0)
         self.lastElapsed=q2.value(1)
         q3=self.dbget("SELECT max(elapsed) FROM ops WHERE program=%d"%self.currentProgram)
@@ -164,6 +167,8 @@ class GUI(Ui_MainWindow):
             select sample,well,name,min(elapsed),max(elapsed)
             from v_ops
             where plate='%s' and program=%d
+            and cmd!='Detect_Liquid'
+            and cmd!='Initial'
             group by sample,well,name
             order by right(well,length(well)-1)+0,well
             """%(self.currentPlate, self.currentProgram)
