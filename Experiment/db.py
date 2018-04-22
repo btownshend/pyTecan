@@ -367,6 +367,9 @@ class LogDB(DB):
             logging.notice("Inserted run %d"%self.run)
             self.db.commit()
 
+    def log_status(self, program, lineno, elapsed, lasttime, status):
+        print("Status:",status)
+
     def updatecurline(self):
         if self.run is None or self.curline is None:
             return
