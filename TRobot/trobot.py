@@ -185,6 +185,18 @@ class TRobot:
 
         return res
 
+    def initcommunications(self):
+        # Re-inistialization of communictions
+        logging.debug("initcommunications")
+        res=self.execute("\x1b\x1b")
+        return res
+    
+    def initcycler(self):
+        # Re-initialization of cycler-software
+        logging.debug("initcycler")
+        res=self.execute("^^")
+        return res
+    
     def gettemp(self):
         res=self.execute(":b;l") # TEMP
         temp=int(res,16)/100.0
@@ -223,6 +235,13 @@ class TRobot:
         
     def getlidstatus(self):
         response=self.execute(":b;d") # HSTT
+        #logging.debug("getlidstatus: got <%s>"%response)
+        return LidStatus(int(response,16))
+
+    def clearerrors(self):
+        response=self.execute(":b;d 0") # HSTT
+        response=self.execute(":a 0") # SSTT
+        response=self.execute(":b;a") # BSTT
         #logging.debug("getlidstatus: got <%s>"%response)
         return LidStatus(int(response,16))
 
