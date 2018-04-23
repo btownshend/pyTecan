@@ -147,7 +147,7 @@ class Experiment(object):
             pprint (settings,stream=fd)
         fd.close()
 
-    def sanitize(self,nmix:int=1,deepvol:float=20,force:bool=False):
+    def sanitize(self,nmix:int=1,deepvol:float=10,force:bool=False):
         """Deep wash including RNase-Away treatment"""
         fixedTips=(~self.DITIMASK)&15
         worklist.flushQueue()
