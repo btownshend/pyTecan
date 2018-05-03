@@ -27,6 +27,7 @@ sml=[0,0,0,0]
 zadd=[0,0,0,0]
 tipSelect=0
 ldpending=False
+extendedError=None
 logdb=None
 
 syscmds={
@@ -227,7 +228,7 @@ def gemtip(tipcmd,line2,outfd):
     dl.logop(op,tip,vol,wellx,welly,rack,grid,pos,lc,std,volset,ptype=='Multi')
     
 def fwparse(dev,send,reply,error,lasttime,outfd):
-    global lnum, sbl, sml, tipSelect, ldpending, zadd
+    global lnum, sbl, sml, tipSelect, ldpending, zadd, extendedError
     if debug:
         if error:
             print("\tSEND:%s  ERROR:%s"%(str(send),str(reply)),file=outfd)
@@ -289,9 +290,11 @@ def fwparse(dev,send,reply,error,lasttime,outfd):
             sml=[int(args[3]) for _ in [0,1,2,3]]
         zadd=[int(x) for x in args[4:8]]
         tipSelect=int(args[0])
-        ldpending=True
-        # if replyecode==0:
-        #     ldpending=True
+        ldpending=op
+        if replyecode==0:
+            extendedError=[0 for _ in range(11)]
+        else:
+            extendedError=None   # Will be set by REE
         #else:
             # heights=[-1,-1,-1,-1]
             # for i in range(len(heights)):
@@ -299,21 +302,30 @@ def fwparse(dev,send,reply,error,lasttime,outfd):
             #         print("TIPS %d %s "%(lnum,op),heights[i],sbl[i],sml[i],heights[i]+sbl[i]-sml[i],file=outfd)
             #         dl.logmeasure(i+1,heights[i],sbl[i],sml[i],zadd[i],lasttime)
             #         logdb.lastmeasure(i+1,lnum,heights[i],sbl[i],sml[i],zadd[i],lasttime)
-    elif ldpending and (op=='RPZ' or op=='RVZ') and int(args[0])==0:
+    elif (ldpending=='MET' and op=='RPZ' and int(args[0])==0) or (ldpending=='MDT' and op=='RPZ' and int(args[0])==0):
+        assert extendedError is not None
         heights=[int(r) for r in reply]
         assert(len(heights)==len(sbl))
         for i in range(len(heights)):
-            if 1<<i & tipSelect != 0:
-                print("TIPS %d  " % lnum, heights[i], sbl[i], sml[i], heights[i] + sbl[i] - sml[i],file=outfd)
-                dl.logmeasure(i+1,heights[i],sbl[i],sml[i],zadd[i],lasttime)
-                logdb.lastmeasure(i+1,lnum,heights[i] if heights[i]!=sml[i] else None, sbl[i], sml[i], zadd[i], lasttime)
-        ldpending=False
-    elif op == 'REE' or op=='RVZ':
+            if (1<<i & tipSelect) != 0:
+                if extendedError[3+i]==0:
+                    print("TIPS",ldpending, i+1, lnum, heights[i], sbl[i], sml[i], heights[i] + sbl[i] - sml[i],file=outfd)
+                    #print("TIPS", lnum, heights[i], sbl[i], sml[i], heights[i] + sbl[i] - sml[i],file=outfd)
+                    dl.logmeasure(i+1,heights[i],sbl[i],sml[i],zadd[i],lasttime)
+                    logdb.lastmeasure(i+1,lnum,heights[i], sbl[i], sml[i], zadd[i], lasttime)
+                else:
+                    print("TIPERROR",ldpending, extendedError[3+i], lnum, heights[i], sbl[i], sml[i], heights[i] + sbl[i] - sml[i],file=outfd)
+                    logdb.lastmeasure(i+1,lnum,None, sbl[i], sml[i], zadd[i], lasttime)
+        ldpending=None
+    elif op == 'REE':
+        extendedError=[ord(r)-ord('@') for r in reply[0]]   # X, Y, Ys, Z1..8
+        #print("REE=",extendedError)
+    elif op=='RVZ':
         pass
     elif ldpending:
-        print("**** Parser error:  got op %s without a RPZ while ldpending"%op,file=outfd)
+        print("**** Parser error:  got op %s without a RPZ while ldpending=%s"%(op,ldpending),file=outfd)
         #assert(False)
-        ldpending=False
+        ldpending=None
 
         
 import sys
