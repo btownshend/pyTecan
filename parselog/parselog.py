@@ -508,6 +508,9 @@ def parselog(filename: str, outfile:str=None, follow=False):
                     shakePlate=cmd[10:pos-1]
                     print("SHAKEPLATE %s"%shakePlate,file=outfd)
 
+              if cmd.startswith("Starting program"):
+                  logdb.logfileStart(cmd,lasttime)
+
               if cmd.startswith('Line'):
                     colon=cmd.find(':')
                     cname=cmd[(colon+2):]
@@ -536,12 +539,10 @@ def parselog(filename: str, outfile:str=None, follow=False):
               if cmd.startswith('@'):
                   print("PYTHON: %s" % cmd[1:],file=outfd)
                   eval("logdb." + cmd[1:])
-                  if cmd.startswith('@log_endrun'):
-                      # Done processing file
-                      break
               if cmd.find('closing log-file') != -1:
                   # End of log (in case we're in -f mode)
-                  print("Found closing log-file message; exiting",file=outfd)
+                  print("Found closing log-file message; exiting")
+                  logdb.logfileDone(lnum,lasttime)
                   break
 
     logdb.flush()
