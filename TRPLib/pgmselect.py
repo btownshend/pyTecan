@@ -86,6 +86,7 @@ class PGMSelect(TRP):
         self.rtHI=False				   # Heat inactive/refold after RT
         self.rtDil=4
         self.saveRNADilution=10
+        self.saveRNAVolume=5
         self.ligInPlace=True
         self.allprimers=["REF","T7X","WX"]    # Will get updated after first pass with all primers used
         if self.useMX:
@@ -153,7 +154,7 @@ class PGMSelect(TRP):
         self.rtvol=[max(v,8.0) for v in self.rtvol]   # Minimum volume
         self.rtvol=[min(v,self.maxSampVolume) for v in self.rtvol]  # Maximum volume
         
-        self.t7extravols=((4+1.4)*0.9 if 'stopped' in self.qpcrStages else 0)+ ((5+1.4)*0.9 if self.saveRNA else 0) + 3.3  # 3.3 in case pipette mixing used
+        self.t7extravols=((4+1.4)*0.9 if 'stopped' in self.qpcrStages else 0)+ ((self.saveRNAVolume+1.4)*0.9 if self.saveRNA else 0) + 3.3  # 3.3 in case pipette mixing used
         #print "self.t7extravols=%.1f ul\n"%self.t7extravols
         #print "self.rtvol=%s ul\n"%(",".join(["%.1f "%x for x in self.rtvol]))
 
@@ -440,7 +441,7 @@ class PGMSelect(TRP):
                 worklist.userprompt("Post EDTA pause")
                 
             if self.saveRNA:
-                self.saveSamps(src=rxs,vol=5,dil=self.saveRNADilution,plate=decklayout.DILPLATE,dilutant=reagents.getsample("TE8"),mix=(False,False))   # Save to check [RNA] on Qubit, bioanalyzer
+                self.saveSamps(src=rxs,vol=self.saveRNAVolume,dil=self.saveRNADilution,plate=decklayout.DILPLATE,dilutant=reagents.getsample("TE8"),mix=(False,False))   # Save to check [RNA] on Qubit, bioanalyzer
 
             db.popStatus()
         needDil = self.rnaConc/self.qConc/stopDil
