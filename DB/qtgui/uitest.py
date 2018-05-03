@@ -6,6 +6,7 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QTableWidgetItem
 from PyQt5.Qt import QColor
 
 from gui_auto import Ui_MainWindow
+from runsmodel import RunsModel
 
 class GUI(Ui_MainWindow):
     def __init__(self):
@@ -33,6 +34,11 @@ class GUI(Ui_MainWindow):
         self.db.open()
         settz=QtSql.QSqlQuery()
         settz.exec("set time_zone='US/Pacific'")
+
+    def dbcheck(self):
+        """Check if DB connection is OK"""
+        if not self.db.isValid():
+            self.dbopen()
 
     def dbget(self,query):
         print("dbget(",query,")")
@@ -108,9 +114,11 @@ class GUI(Ui_MainWindow):
         """Calculate amount of sampid needed through end of run"""
 
     def refreshRunsTable(self):
-        q=QtSql.QSqlQueryModel()
-        q.setQuery("SELECT r.run, right(r.run,4) runid, program, logfile, starttime, endtime from runs r order by starttime desc")
-        self.sqlErrorCheck(q.lastError())
+        # q=QtSql.QSqlQueryModel()
+        # q.setQuery("SELECT r.run, right(r.run,4) runid, program, logfile, starttime, endtime from runs r order by starttime desc")
+        # self.sqlErrorCheck(q.lastError())
+        q=RunsModel()
+        q.update()
         self.runsTable.setModel(q)
         self.runsTable.setColumnHidden(0,True)
         self.runsTable.resizeColumnsToContents()
@@ -127,15 +135,15 @@ class GUI(Ui_MainWindow):
         self.refreshPlateGroup()
 
     def refreshRunsDetail(self):
-        q=self.dbget("SELECT p.name, date_format(gentime,'%%m/%%d/%%y %%H:%%i'), date_format(starttime,'%%m/%%d/%%y %%H:%%i'), date_format(endtime,'%%m/%%d/%%y %%H:%%i'),r.logfile, r.lineno from runs r, programs p where r.program=p.program and r.run='%s' group by r.run order by starttime desc"%self.currentRun)
+        q=self.dbget("SELECT p.name, date_format(gentime,'%%m/%%d/%%y %%H:%%i'), date_format(starttime,'%%m/%%d/%%y %%H:%%i'), date_format(endtime,'%%m/%%d/%%y %%H:%%i'),r.logfile, r.lineno, r.status from runs r, programs p where r.program=p.program and r.run='%s' group by r.run order by starttime desc"%self.currentRun)
         if not q:
             self.currentRun=None
             return
-        self.programName.setText(q.value(0))
+        self.programName.setText(q.value(0)+" "+q.value(4))
         print("q.value(1)=",q.value(1))
         self.generated.setText("Gen: "+q.value(1))
         self.starttime.setText("Start: "+q.value(2))
-        self.logFile.setText(q.value(4))
+        self.status.setText(q.value(6))
         print("q.value(3)=",q.value(3))
         q2=self.dbget("SELECT measured,elapsed FROM v_vols WHERE run=%d ORDER BY measured DESC LIMIT 1"%self.currentRun)
         if q2 is None:
@@ -233,7 +241,7 @@ class GUI(Ui_MainWindow):
     def refreshVolsTable(self):
         q=QtSql.QSqlQueryModel()
         query="""
-            select lineno,measured, round(elapsed/60.0,1) elapsed,cmd,tip,round(estvol,1) estvol, round(obsvol,1) observed,round(obsvol-estvol,1) diff,round(volchange,1) volchange 
+            select lineno,measured, round(elapsed/60.0,1) elapsed,cmd,tip,round(estvol,1) estvol, ifnull(round(obsvol,1),if(zmax,'FAIL','NM'))  observed,round(obsvol-estvol,1) diff,round(volchange,1) volchange 
             from v_vols 
             where run='%s' and sample=%d 
             order by lineno
@@ -286,6 +294,7 @@ class GUI(Ui_MainWindow):
         self.sampleGroup.layout()
 
     def refreshAll(self):
+        self.dbcheck()
         self.sampInfo={}
         self.refreshRunsTable()
         self.refreshRunGroup()
@@ -298,11 +307,11 @@ class GUI(Ui_MainWindow):
 
     def selectRun(self,index: QModelIndex):
         print("select row",index.row(),"column",index.column(),"id",index.internalId())
-        rec=self.runsTable.model().record(index.row())
-        for i in range(rec.count()):
-            print(rec.fieldName(i),"=",rec.field(i).value())
-        self.currentRun=rec.field(0).value()
-        self.currentProgram=rec.field(2).value()
+        pkIndex=index.sibling(index.row(),0)
+
+        self.currentRun=self.runsTable.model().data(pkIndex).value()
+        pgmIndex=index.sibling(index.row(),3)
+        self.currentProgram=self.runsTable.model().data(pgmIndex).value()
         self.currentPlate=None
         self.currentSample=None
         self.currentWell=None

@@ -76,7 +76,7 @@
          <item row="0" column="0">
           <widget class="QLabel" name="programName">
            <property name="text">
-            <string>Program</string>
+            <string>Program/Log</string>
            </property>
           </widget>
          </item>
@@ -101,9 +101,9 @@
           <widget class="QTableView" name="plateTable"/>
          </item>
          <item row="2" column="0">
-          <widget class="QLabel" name="logFile">
+          <widget class="QLabel" name="status">
            <property name="text">
-            <string>LogFile</string>
+            <string>Status</string>
            </property>
           </widget>
          </item>
