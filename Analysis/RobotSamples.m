@@ -220,7 +220,7 @@ classdef RobotSamples < handle
       end
       for i=1:length(obj.samps)
         s=obj.samps(i);
-        if ~strcmp(s.plate,'qPCR')
+        if ~strcmp(upper(s.plate),'QPCR')
           continue;
         end
         if strcmp(s.well,'None')
