@@ -294,13 +294,89 @@ class LogDB(DB):
     """Log actions when accessed from log-file parsing"""
     def __init__(self,logfile):
         super().__init__()
-        self.run=None
         self.measurements={}
         self.tz = pytz.timezone('US/Pacific')
         self.logfile = os.path.basename(logfile)
         self.sampvols={}  # Dictionary from sampid to best estimate of current volume
         self.volsqueue=[]   # Queue of vols insertions to be done with executemany
         self.curline=None
+        self.db=None
+
+    def logfileStart(self,logheader,starttime):
+        # Create a run
+        print("logheader=",logheader)
+        # Parse header of form: 'Starting program "voltest.gem" (lines 1 to 352)'
+        firstline=None
+        p1=logheader.find('lines ')
+        if p1 is None:
+            logging.warning("Unable to parse logheader to fine 'lines ' in '%s'"%logheader)
+        else:
+            p2=logheader[p1+6:].find(' ')
+            if p2 is None:
+                logging.warning("Unable to parse logheader to fine ' ' in '%s'" % logheader)
+            else:
+                firstline=int(logheader[p1+6:p1+6+p2])
+
+        starttime=self.local2utc(starttime)
+        self.connect()
+        if self.db is None:
+            return
+        with self.db.cursor() as cursor:
+            if self.logfile is not None:
+                cursor.execute("select run,starttime,endtime,expt from runs where logfile=%s",self.logfile)
+                res=cursor.fetchone()
+                if res is not None:
+                    if res['endtime'] is not None:
+                        logging.error("Already processed logfile %s: have run %d with starttime=%s, endtime=%s"%(self.logfile,res['run'],res['starttime'],res['endtime']))
+                    else:
+                        logging.warning("Deleting vols for run %d previously processed from logfile %s with starttime=%s and no endtime"%(res['run'],self.logfile,res['starttime']))
+                        cursor.execute("delete from vols where run=%s",res['run'])
+                        self.run=res['run']
+                        self.expt=res['expt']
+                        logging.notice("Rebuilding run %d"%self.run)
+                        self.db.commit()
+                        return
+
+            cursor.execute("insert into runs(starttime,program,logfile,logheader,firstline) values (%s,%s,%s,%s,%s)", (starttime, self.program, self.logfile,logheader,firstline))
+            self.run=cursor.lastrowid
+            logging.notice("Inserted run %d"%self.run)
+            self.db.commit()
+        self.expt=None   # Don't have enough information yet to link this to an expt
+
+    def setProgram(self, program):
+        """Called if we hit an operation, but haven't seen a log_startrun.
+        Probably due to resume an experiment part way through
+        Link this run to an expt using heuristics """
+        assert self.program is None and program is not None
+
+        self.program = program
+
+        with self.db.cursor() as cursor:
+            # Add program to run
+            cursor.execute("update runs set program=%s where run=%s",(self.program, self.run))
+            if self.expt is None:
+                # Link to an experiment
+                cursor.execute("select e.expt from runs r, expts e where e.expt=r.expt and r.program=%s and e.complete is false order by r.starttime desc limit 1",(self.program,))
+                res=cursor.fetchone()
+                if res is not None:
+                    self.expt=res['expt']
+                    cursor.execute("update runs set expt=%s where run=%s",(self.expt, self.run))
+                    return
+                logging.warning("Unable to link logfile %s to an existing run with program %d, creating a new expt" % (self.logfile, self.program))
+                # Create an experiment for this run
+                with self.db.cursor() as cursor:
+                    cursor.execute("insert into expts(complete) values(false)")
+                    self.expt=cursor.lastrowid
+                    cursor.execute("update runs set expt=%s where run=%s",(self.expt,self.run))
+
+    def logfileDone(self,lineno, endtime):
+        """Completed parse of log file"""
+        if self.db is None:
+            return
+        self.insertQueuedVols()
+        endtime=self.local2utc(endtime)
+        with self.db.cursor() as cursor:
+            cursor.execute("update runs set endtime=%s, lineno=%s where run=%s",(endtime,lineno,self.run))
 
     def local2utc(self,dt):
         return self.tz.localize(dt).astimezone(pytz.utc)
@@ -323,52 +399,33 @@ class LogDB(DB):
         self.db.commit()
 
     def insertVol(self, run, op, gemvolume, volume, measured, height, submerge, zmax, zadd, estVolume):
+        if self.db is None:
+            return
+
         self.volsqueue.append((run, op, gemvolume, volume, measured, height, submerge, zmax, zadd, estVolume))
         if len(self.volsqueue) >= 100:
             self.insertQueuedVols()
 
     def log_startrun(self, program, lineno, elapsed, lasttime, name, genTime, checksum, gitlabel, totalTime):
+        """Process log_startrun embedded command (which is really a start to an expt, not a run) """
         lasttime=self.local2utc(lasttime)  ## Naive datetimes read from log file
-        if self.db is None:
-            self.connect()
+
         print(
             "startrun: program=%d,lineno=%d,elapsed=%f,name=%s,gentime=%s,checksum=%s,gitlabel=%s,totalTime=%f" % (
                 program, lineno, elapsed, name, genTime, checksum, gitlabel, totalTime))
         # Note: gentime is already UTC
         if not Config.usedb:
             return
-        if program > 0:
-            self.program = program
-        else:
-            # Check if we already have a matching program (name,gentime)
-            self.program = self.getProgram(name, genTime)
-            if self.program is None:
-                # Create a program for this run
-                self.insertProgram(name, genTime, checksum, gitlabel, totalTime, False)
-
-        # Create a run
-        with self.db.cursor() as cursor:
-            if self.logfile is not None:
-                cursor.execute("select run,starttime,endtime from runs where logfile=%s",self.logfile)
-                res=cursor.fetchone()
-                if res is not None:
-                    if res['endtime'] is not None:
-                        logging.error("Already processed logfile %s: have run %d with starttime=%s, endtime=%s"%(self.logfile,res['run'],res['starttime'],res['endtime']))
-                    else:
-                        logging.warning("Deleting vols for run %d previously processed from logfile %s with starttime=%s and no endtime"%(res['run'],self.logfile,res['starttime']))
-                        cursor.execute("delete from vols where run=%s",res['run'])
-                        self.run=res['run']
-                        logging.notice("Rebuilding run %d"%self.run)
-                        self.db.commit()
-                        return
-
-            cursor.execute("insert into runs(starttime,program,logfile) values (%s,%s,%s)", (lasttime, self.program, self.logfile))
-            self.run=cursor.lastrowid
-            logging.notice("Inserted run %d"%self.run)
-            self.db.commit()
+        if self.program is None:
+            self.setProgram(program)
+        assert self.program==program
 
     def log_status(self, program, lineno, elapsed, lasttime, status):
         print("Status:",status)
+        if self.db is None:
+            return
+        with self.db.cursor() as cursor:
+            cursor.execute("UPDATE runs SET status=%s WHERE run=%s",(status, self.run))
 
     def updatecurline(self):
         if self.run is None or self.curline is None:
@@ -377,19 +434,17 @@ class LogDB(DB):
             cursor.execute("update runs set lineno=%s where run=%s", (self.curline, self.run) )
 
     def log_endrun(self,program,lineno,elapsed, lasttime, endTime):
-        lasttime=self.local2utc(lasttime)
+        """Process log_endrun embedded command (which is really the end to an expt, not a run) """
+        # FIXME: endTime  and lasttime not both used
         if self.db is None:
             return
-        self.insertQueuedVols()
-        endTime=self.local2utc(endTime)
-        self.setProgramComplete()
-        self.setRunEndTime(endTime)
-        self.db.commit()
-
-    def setRunEndTime(self,endTime):
+        #self.insertQueuedVols()
+        self.logfileDone(lineno,endTime)  # Force marking log file done (since it may not be until next run that logfile is actually closed)
+        #self.setProgramComplete()   # FIXME: program not fully defined at build time is untested, probably non-working
         with self.db.cursor() as cursor:
-            cursor.execute('update runs set endtime=%s where run=%s',(endTime, self.run))
-            logging.notice('Added endtime to run %d'%self.run)
+            cursor.execute('update expts set complete=True where expt=%s',(self.expt))
+            logging.notice('Marked expt %d as complete.'%self.expt)
+        self.db.commit()
 
     def setline(self,lineno):
         self.curline=lineno
@@ -406,7 +461,10 @@ class LogDB(DB):
         if self.db is None:
             return
         # Locate op in current program
-        assert program == -1 or self.program == program  # Make sure we're still referring to correct program
+        if self.program is None:
+            self.setProgram(program)
+
+        assert self.program == program  # Make sure we're still referring to correct program
         if sampid == -1:
             sampid = self.getSample(plateName, wellName)
             if sampid is None:
