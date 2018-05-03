@@ -5,17 +5,28 @@
 create database robot;
 
 use robot;
+-- An experiment -- a pass through a particular program with a fixed set of plates
+-- May be made up of multiple runs
+create table expts (
+       expt integer primary key auto_increment,
+       complete boolean not null  -- True after run is complete (log_endrun processed)
+);
 
--- Header for a run
+-- Header for a run (which is actually a parse of one logfile -- multiple runs could make up a single experiment
 -- Inserted,updated on robot only, read-only on master
 create table runs(
        run integer primary key auto_increment,
        program integer not null, foreign key(program) references programs(program),
        logfile varchar(50),
        starttime timestamp not null default current_timestamp,
-       endtime timestamp null,
-       lineno integer default null
+       endtime timestamp null,         -- time of last log entry (or null if not completely parsed)
+       lineno integer default null,    -- last (or current) line processed in log
+       firstline integer default null,   -- first line processed in log
+       expt integer, foreign key(expt) references expts(expt),   -- which expt this run is part of
+       logheader varchar(100) not null  -- message from beginning of log (program names, lines planned to execute)
+       status varchar(50) default null  -- Message from last log_status
 );
+
 
 -- Flags for a run
 -- Inserted on either robot or master, never updated (just add a later record instead)
