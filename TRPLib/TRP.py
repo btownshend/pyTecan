@@ -663,7 +663,14 @@ class TRP(object):
             thermocycler.setpgm(pgm,incTemp+1,'TEMP@%d,%d TEMP@25,2'%(incTemp,dur*60))
             self.e.runpgm(pgm,dur,False,100)		# Volume doesn't matter since it's just an incubation, use 100ul
             print("Running RT at %dC for %d min without heat inactivation"%(incTemp,dur))
- 
+
+    def refold(self,hiTemp=95,coolTemp=25,rate=0.5):
+        pgm="Refold"
+        hidur=2
+        thermocycler.setpgm(pgm,hiTemp+1,'TEMP@%d,%d TEMP@%d,2 RATE@%.1f'%(hiTemp,hidur*60,coolTemp,rate))
+        self.e.runpgm(pgm,(hiTemp-coolTemp)/rate/60+hidur+2.5,False,100)		# Volume doesn't matter since it's just an incubation, use 100ul
+        print("Running refold at %dC for %d min, followed by cooling to %dC at %.1fC/sec"%(hiTemp,hidur,coolTemp,rate))
+             
     ########################
     # Incubation - run a single temp incubation followed by inactivation
     ########################
