@@ -613,7 +613,7 @@ class TRP(object):
         self.runRxInPlace(src,vol,reagents.getsample("MPosRT"),returnPlate=False)
         self.runRTPgm(dur,heatInactivate=heatInactivate,hiTemp=hiTemp,incTemp=incTemp)
         
-    def runRTSetup(self,src,vol,srcdil,tgt=None,rtmaster=None,stop=None,stopConc=1.0):
+    def runRTSetup(self,src,vol,srcdil,tgt=None,rtmaster=None,stop=None,stopConc=1.0,prerefold=False):
         if rtmaster is None:
             rtmaster=reagents.getsample("MPosRT")
         if tgt is None:
@@ -638,14 +638,23 @@ class TRP(object):
 
         stopvol=[ 0 if stop[i] is None else vol[i]*stopConc[i]/stop[i].conc.stock for i in range(len(vol))]
         #assert(min(stopvol)==max(stopvol))   # Assume all stop volumes are the same
-        self.e.stage('RTPos',[rtmaster],[src[i] for i in range(len(src)) ],[tgt[i] for i in range(len(tgt)) ],[vol[i]-stopvol[i] for i in range(len(vol))],destMix=False,finalx=vol[0]/(vol[0]-stopvol[0]))
+        #self.e.stage('RTPos',[rtmaster],[src[i] for i in range(len(src)) ],[tgt[i] for i in range(len(tgt)) ],[vol[i]-stopvol[i] for i in range(len(vol))],destMix=False,finalx=vol[0]/(vol[0]-stopvol[0]))
+        
+        
+        watervol=[vol[i]-stopvol[i]-vol[i]/srcdil[i]-vol[i]/rtmaster.conc.dilutionneeded() for i in range(len(tgt))]
+        self.e.multitransfer(watervol,decklayout.WATER,tgt,(False,False))
         for i in range(len(tgt)):
             if stopvol[i]>0.1:
                 self.e.transfer(stopvol[i],stop[i],tgt[i],(False,False))
+        for i in range(len(tgt)):
+            self.e.transfer(vol[i]/srcdil[i],src[i],tgt[i],(False,False))
+        self.e.shakeSamples(tgt,returnPlate=True)
+        if prerefold:
+            self.refold()
+        for i in range(len(tgt)):
+            self.e.transfer(vol[i]/rtmaster.conc.dilutionneeded(),rtmaster,tgt[i],(False,False))
+        self.e.shakeSamples(tgt,returnPlate=True)
 
-        # print "RT: Stop Conc=",stopConc,"stopVol=",stopvol
-
-        #self.e.shakeSamples(tgt,returnPlate=True)
         return tgt
 
     def runRTPgm(self,dur=20,heatInactivate=False,hiTemp=None,incTemp=37):
