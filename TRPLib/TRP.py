@@ -371,11 +371,14 @@ class TRP(object):
     def addEDTA(self,tgt,finalconc=4):
         edta=reagents.getsample("EDTA")
         edta.conc.final=finalconc
-        srcdil=edta.conc.stock*1.0/(edta.conc.stock-finalconc)
+        self.add(tgt,edta,finalconc)
+        
+    def add(self,tgt,samp):
+        srcdil=samp.conc.stock*1.0/(samp.conc.stock-samp.conc.final)
         for t in tgt:
             t.conc=Concentration(srcdil,1)
-            v=t.volume*finalconc/(edta.conc.stock-finalconc)
-            self.e.transfer(v,edta,t,mix=(False,False))
+            v=t.volume*samp.conc.final/(samp.conc.stock-samp.conc.final)
+            self.e.transfer(v,samp,t,mix=(False,False))
         self.e.shakeSamples(tgt,returnPlate=True)
         
     def runT7(self,theo,src,vol,srcdil,tgt=None,dur=15,stopmaster=None):
