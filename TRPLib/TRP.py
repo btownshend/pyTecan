@@ -622,7 +622,7 @@ class TRP(object):
         if tgt is None:
             tgt=[Sample(s.name+".RT+",decklayout.SAMPLEPLATE) for s in src]
 
-        [src,tgt,vol,srcdil,stop,stopConc]=listify([src,tgt,vol,srcdil,stop,stopConc])
+        [src,tgt,vol,srcdil,stop,stopConc,rtmaster]=listify([src,tgt,vol,srcdil,stop,stopConc,rtmaster])
 
         # Adjust source dilution
         for i in range(len(src)):
@@ -644,7 +644,7 @@ class TRP(object):
         #self.e.stage('RTPos',[rtmaster],[src[i] for i in range(len(src)) ],[tgt[i] for i in range(len(tgt)) ],[vol[i]-stopvol[i] for i in range(len(vol))],destMix=False,finalx=vol[0]/(vol[0]-stopvol[0]))
         
         
-        watervol=[vol[i]-stopvol[i]-vol[i]/srcdil[i]-vol[i]/rtmaster.conc.dilutionneeded() for i in range(len(tgt))]
+        watervol=[vol[i]-stopvol[i]-vol[i]/srcdil[i]-vol[i]/rtmaster[i].conc.dilutionneeded() for i in range(len(tgt))]
         self.e.multitransfer(watervol,decklayout.WATER,tgt,(False,False))
         for i in range(len(tgt)):
             if stopvol[i]>0.1:
@@ -655,7 +655,7 @@ class TRP(object):
         if prerefold:
             self.refold()
         for i in range(len(tgt)):
-            self.e.transfer(vol[i]/rtmaster.conc.dilutionneeded(),rtmaster,tgt[i],(False,False))
+            self.e.transfer(vol[i]/rtmaster[i].conc.dilutionneeded(),rtmaster[i],tgt[i],(False,False))
         self.e.shakeSamples(tgt,returnPlate=True)
 
         return tgt
