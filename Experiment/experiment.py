@@ -200,8 +200,10 @@ class Experiment(object):
             #         maxval=max([d.volume for d in dests if d.conc != None])
         #print "volumes=",[d.volume for d in dests],", conc=",[str(d.conc) for d in dests],", maxval=",maxval
         if not mix[1] and len(volumes)>1 and ( maxval<.01 or ignoreContents):
-            if len(dests)>=8:
+            if len(dests)>=24:
                 vmax=max([sum(volumes[i::4]) for i in range(4)])
+            elif len(dests)>=12:
+                vmax=max([sum(volumes[i::2]) for i in range(2)])
             else:
                 vmax=sum(volumes)
             if vmax*(1+extraFrac)>self.MAXVOLUME:
