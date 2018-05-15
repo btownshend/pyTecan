@@ -175,7 +175,12 @@ class QSetup(object):
 
         worklist.comment('Starting qPCR setup')
         self.trp.e.sanitize(force=True)
-        for p in self.allprimers():
-            # Build list of relevant entries
-            ind=[ i for i in range(len(self.dilProds)) if p in self.primers[i]]
-            self.trp.runQPCR(src=[self.dilProds[i] for i in ind],vol=self.volume,primers=[p],nreplicates=[self.nreplicates[i] for i in ind],enzName=enzName)
+        if all([allp in p for allp in self.allprimers() for p in self.primers]):
+            print("All samples use same qPCR primers")
+            # This allows the Eva to be distributed all at once
+            self.trp.runQPCR(src=self.dilProds,vol=self.volume,primers=self.allprimers(),nreplicates=self.nreplicates,enzName=enzName)
+        else:
+            for p in self.allprimers():
+                # Build list of relevant entries
+                ind=[ i for i in range(len(self.dilProds)) if p in self.primers[i]]
+                self.trp.runQPCR(src=[self.dilProds[i] for i in ind],vol=self.volume,primers=[p],nreplicates=[self.nreplicates[i] for i in ind],enzName=enzName)
