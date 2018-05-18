@@ -170,6 +170,9 @@ class QSetup(object):
             self.jobq.dump()
             assert False
 
+        if len(self.dilProds)==0:
+            return
+        
         if confirm:
             worklist.userprompt('Continue to setup qPCR')
 
