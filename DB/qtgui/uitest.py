@@ -40,9 +40,17 @@ class GUI(Ui_MainWindow):
         if not self.db.isValid():
             self.dbopen()
 
+    def dbreopen(self):
+        if self.db.isValid():
+            self.db.close()
+        self.dbopen()
+
     def dbget(self,query):
         print("dbget(",query,")")
         q=QtSql.QSqlQuery(query)
+        if q.lastError().isValid():
+            self.dbreopen()
+            q = QtSql.QSqlQuery(query)
         self.sqlErrorCheck(q.lastError())
         valid=q.next()
         return q if valid else None
@@ -166,6 +174,9 @@ class GUI(Ui_MainWindow):
         query="SELECT plate,count(*) numsamps from samples s where s.program=(select program from runs where run='%s') group by plate order by plate"%self.currentRun
         print(query)
         q.setQuery(query)
+        if q.lastError().isValid():
+            self.dbreopen()
+            q.setQuery(query)
         self.sqlErrorCheck(q.lastError())
         self.plateTable.setModel(q)
         self.plateTable.resizeColumnsToContents()
@@ -182,6 +193,9 @@ class GUI(Ui_MainWindow):
             """%(self.currentPlate, self.currentProgram)
         print(query)
         q=QtSql.QSqlQuery(query)
+        if q.lastError().isValid():
+            self.dbreopen()
+            q = QtSql.QSqlQuery(query)
         self.sqlErrorCheck(q.lastError())
         self.sampleTable.setColumnCount(7)
         data=[]
@@ -218,6 +232,9 @@ class GUI(Ui_MainWindow):
         query = "SELECT name,plate,well FROM samples WHERE sample=%d" % self.currentSample
         print(query)
         q=QtSql.QSqlQuery(query)
+        if q.lastError().isValid():
+            self.dbreopen()
+            q = QtSql.QSqlQuery(query)
         self.sqlErrorCheck(q.lastError())
         q.next()
         self.sampleName.setText(q.value(0))
@@ -231,6 +248,9 @@ class GUI(Ui_MainWindow):
             """%(self.currentPlate,self.currentRun,self.currentSample)
         print(vquery)
         q = QtSql.QSqlQuery(vquery)
+        if q.lastError().isValid():
+            self.dbreopen()
+            q = QtSql.QSqlQuery(vquery)
         self.sqlErrorCheck(q.lastError())
         q.next()
         if q.value(0) is None:
@@ -248,6 +268,9 @@ class GUI(Ui_MainWindow):
             """%(self.currentRun, self.currentSample)
         print(query)
         q.setQuery(query)
+        if q.lastError().isValid():
+            self.dbreopen()
+            q.setQuery(query)
         self.sqlErrorCheck(q.lastError())
         self.volsTable.setModel(q)
         # ind=self.volsTable.model().createIndex(2,2)
@@ -267,6 +290,9 @@ class GUI(Ui_MainWindow):
             """%(self.lastElapsed,self.lastMeasured.toString('MM/dd/yy HH:mm'),self.currentProgram, self.currentSample, sdata[3])
         print(query)
         q.setQuery(query)
+        if q.lastError().isValid():
+            self.dbreopen()
+            q.setQuery(query)
         self.sqlErrorCheck(q.lastError())
         self.opsTable.setModel(q)
         self.opsTable.resizeColumnsToContents()
