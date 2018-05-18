@@ -85,6 +85,7 @@ class PGMSelect(TRP):
         self.pcrcopies=1				# Number of copies maintained in PCR stage (propagates back to RT stage)
         self.rtHI=False				   # Heat inactive/refold after RT
         self.rtDil=4
+        self.edtastop=False
         self.saveRNADilution=10
         self.saveRNAVolume=5
         self.ligInPlace=True
@@ -432,13 +433,17 @@ class PGMSelect(TRP):
 
             self.e.waitpgm()   # So elapsed time will be updated
             db.popStatus()
-            print("######## Stop ########### %.0f min"%(clock.elapsed()/60))
-            db.pushStatus("Stop")
-            print("Have %.1f ul before stop"%rxs[0].volume)
-            preStopVolume=rxs[0].volume
-            self.addEDTA(tgt=rxs,finalconc=2)	# Stop to 2mM EDTA final
+            if self.edtastop:
+                print("######## Stop ########### %.0f min"%(clock.elapsed()/60))
+                db.pushStatus("Stop")
+                print("Have %.1f ul before stop"%rxs[0].volume)
+                preStopVolume=rxs[0].volume
+                self.addEDTA(tgt=rxs,finalconc=2)	# Stop to 2mM EDTA final
+                db.popStatus("Stop")
 
-            stopDil=rxs[0].volume/preStopVolume
+                stopDil=rxs[0].volume/preStopVolume
+            else:
+                stopDil=1
 
             if self.pauseAfterStop:
                 worklist.userprompt("Post EDTA pause")
@@ -446,7 +451,6 @@ class PGMSelect(TRP):
             if self.saveRNA:
                 self.saveSamps(src=rxs,vol=self.saveRNAVolume,dil=self.saveRNADilution,plate=decklayout.DILPLATE,dilutant=reagents.getsample("TE8"),mix=(False,False))   # Save to check [RNA] on Qubit, bioanalyzer
 
-            db.popStatus()
         needDil = self.rnaConc/self.qConc/stopDil
 
         if "stopped" in self.qpcrStages:
