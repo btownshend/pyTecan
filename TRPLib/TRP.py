@@ -371,7 +371,7 @@ class TRP(object):
     def addEDTA(self,tgt,finalconc=4):
         edta=reagents.getsample("EDTA")
         edta.conc.final=finalconc
-        self.add(tgt,edta,finalconc)
+        self.add(tgt,edta)
         
     def add(self,tgt,samp):
         srcdil=samp.conc.stock*1.0/(samp.conc.stock-samp.conc.final)
