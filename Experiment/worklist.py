@@ -277,15 +277,15 @@ def aspirateDispense(op,tipMask,wells, liquidClass, volume, plate, cycles=None,a
         return
 
     if op=='Mix':
-        clock.pipetting+=12.53
+        clock.pipetting+=13.22
     elif op=='Dispense':
-        clock.pipetting+=3.70
+        clock.pipetting+=3.97
     elif op=='Aspirate':
-        clock.pipetting+=5.14
+        clock.pipetting+=4.90
     elif op=='AspirateNC':
-        clock.pipetting+=5.14
+        clock.pipetting+=4.90
     elif op=='Detect_Liquid':
-        clock.pipetting+=2.90
+        clock.pipetting+=3.45
 
     comment("*%s tip=%d well=%s.%s vol=%s lc=%s"%(op,tipMask,str(plate),str(wells),str(volume),str(liquidClass)))
     # Update volumes
@@ -392,7 +392,7 @@ def aspirateDispense(op,tipMask,wells, liquidClass, volume, plate, cycles=None,a
         wlist.append( '%s(%d,"%s",%s,%d,%d,%d,"%s",0)'%(op,tipMask,liquidClass,volstr,loc.grid,loc.pos-1,spacing,ws))
         db.wlistOp(op,getline()-1,tipMask,liquidClass,[-(v+2) for v in volume],plate,pos)
         # Return conditioning volume
-        clock.pipetting+=3.70  # Extra for conditioning volume
+        clock.pipetting+=3.97  # Extra for conditioning volume
         wlist.append( '%s(%d,"%s",%s,%d,%d,%d,"%s",0)'%("Dispense",tipMask,liquidClass,condvol,loc.grid,loc.pos-1,spacing,ws))
         db.wlistOp("Dispense",getline()-1,tipMask,liquidClass,[2 for _ in volume],plate,pos)
     else:
@@ -401,7 +401,7 @@ def aspirateDispense(op,tipMask,wells, liquidClass, volume, plate, cycles=None,a
 
     if op!="Detect_Liquid" and op!="Aspirate" and (loc.grid!=QPCRLOC.grid or loc.pos!=QPCRLOC.pos) and loc.grid>3 and liquidClass.name!='Air' and liquidClass.name[0:3]!='Mix' and liquidClass.name[0:7]!='Blowout':
         # Do final liquid detect (but not on qPCR plate, since that doesn't work anyway)
-        clock.pipetting+=2.90    # Unsure of this one
+        clock.pipetting+=3.45    # Unsure of this one
         wlist.append( 'Detect_Liquid(%d,"%s",%d,%d,%d,"%s",0)'%(tipMask,LCWaterInLiquid.name,loc.grid,loc.pos-1,spacing,ws))
         db.wlistOp("Detect_Liquid",getline()-1,tipMask,LCWaterInLiquid,[0 for _ in volume],plate,pos)
 
@@ -505,7 +505,7 @@ def wash( tipMask,wasteVol=1,cleanerVol=2,deepClean=False):
     atFreq=1000  # Hz, For Active tip
     wlist.append('Wash(%d,%d,%d,%d,%d,%.1f,%d,%.1f,%d,%.1f,%d,%d,%d,%d,%d)'%(tipMask,wasteLoc[0],wasteLoc[1],cleanerLoc[0],cleanerLoc[1],wasteVol,wasteDelay,cleanerVol,cleanerDelay,airgap, airgapSpeed, retractSpeed, fastWash, lowVolume, atFreq))
     #print "Wash %d,%.1fml,%.1fml,deep="%(tipMask,wasteVol,cleanerVol),deepClean
-    clock.pipetting+=19.00
+    clock.pipetting+=15.87
     tip=0
     ntips=0
     tipTmp=tipMask
@@ -549,12 +549,12 @@ def vector(vectorName, loc, direction, andBack, initialAction, finalAction, slow
     if vectorName is None:
         vectorName=loc.vectorName
     wlist.append('Vector("%s",%d,%d,%d,%d,%d,%d,%d,0)' % (vectorName, loc.grid, loc.pos, direction, andBack, initialAction, finalAction, speed))
-    clock.pipetting+=5.16
+    clock.pipetting+=5.10
 
 def romahome():
     #comment("*ROMA Home")
     wlist.append('ROMA(2,0,0,0,0,0,60,0,0)')
-    clock.pipetting+=2.79
+    clock.pipetting+=2.43
 
 def email(dest,subject,body='',profile='cdsrobot',onerror=0,attachscreen=1):
     wlist.append('Notification(%d,"%s","%s","%s","%s",%d)'%(attachscreen,profile,dest,subject,body,onerror))
@@ -667,7 +667,7 @@ def execute( command, wait=True, resultvar=None, flush=True):
     else:
         resultvar=""
     wlist.append('Execute("%s",%d,"%s")'%(command,flags,resultvar))
-    clock.pipetting+=2.15   # Just overhead time, not actually time that command itself takes
+    clock.pipetting+=3.17   # Just overhead time, not actually time that command itself takes
 
 def pyrun( cmd, version=3, flush=True):
     label=getlabel()
