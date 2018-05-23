@@ -70,6 +70,8 @@ class GUI(Ui_MainWindow):
     def sqlErrorCheck(self,lastError):
         if lastError.isValid():
             print("SQL error: ",lastError.type(),lastError.text())
+            import pdb
+            pdb.set_trace()
             sys.exit(1)
 
     def getSampData(self,sampid,horizon):
