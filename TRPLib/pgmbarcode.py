@@ -193,7 +193,7 @@ class Barcoding(TRP):
 
     def barcoding(self, names, left, right):
         """Perform barcoding of the given inputs;  rsrsc,left,right should all be equal length"""
-        pcrcycles = [8, 18]
+        pcrcycles = [4, 12]
         pcr1inputdil = 10
         pcr1vol = 30
         pcr1postdil = 100.0 / pcr1vol
@@ -235,7 +235,7 @@ class Barcoding(TRP):
         pcr1 = self.runPCR(src=samps, srcdil=[s.conc.stock / self.pcr1inputconc for s in samps], ncycles=pcrcycles[0],
                            vol=pcr1vol,
                            primers=[[left[i], right[i]] for i in range(len(left))], usertime=30, fastCycling=False,
-                           inPlace=False, master="MPCR1", kapa=True, annealTemp=57)
+                           inPlace=False, master="MPCR1", kapa=False, annealTemp=57)
 
         pcr1finalconc = self.pcr1inputconc * 2 ** pcrcycles[0]
         print("PCR1 output concentration = %.1f nM" % pcr1finalconc)
