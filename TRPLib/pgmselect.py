@@ -29,7 +29,7 @@ class PGMSelect(TRP):
             reagents.lookup("MPosRT").refillable=True
             reagents.lookup("MTaqU").refillable=True
             reagents.lookup("MTaqC").refillable=True
-            reagents.lookup("MKapaBar").refillable=True
+            reagents.lookup("MTaqBar").refillable=True
             reagents.lookup("MLigase").refillable=True
             reagents.lookup("P-T7ZX").refillable=True
             reagents.lookup("P-T7WX").refillable=True
@@ -633,7 +633,7 @@ class PGMSelect(TRP):
                             if not reagents.isReagent("P-%s"%b):
                                 reagents.add(name="P-%s"%b,conc=Concentration(2.67,0.4,'uM'),extraVol=30)
                         print("PCR-%s"%bc)
-                        self.e.stage("PCR-%s"%bc,reagents=[reagents.getsample("MKapaBar"),reagents.getsample("P-%s"%bparts[0]),reagents.getsample("P-%s"%bparts[1])],samples=[tgt],sources=[dil[i] ],volume=50,destMix=False)
+                        self.e.stage("PCR-%s"%bc,reagents=[reagents.getsample("MTaqBar"),reagents.getsample("P-%s"%bparts[0]),reagents.getsample("P-%s"%bparts[1])],samples=[tgt],sources=[dil[i] ],volume=50,destMix=False)
                         bcout.append(tgt)
                         print(tgt.name,"wellMixed=",tgt.wellMixed)
                         
