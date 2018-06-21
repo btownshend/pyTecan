@@ -292,11 +292,11 @@ class PGMSelect(TRP):
                         print("Adding %s to %s"%(trefname,r1[i].name))
                         if not reagents.isReagent(trefname):
                             reagents.add(name=trefname,conc=10,extraVol=30,well="E4")
-                        tref=reagents.getsample(trefname)
+                        trefSamp=reagents.getsample(trefname)
                         oldConc=r1[i].conc.stock
                         oldUnits=r1[i].conc.units
                         oldVol=r1[i].volume
-                        self.e.transfer(r1[i].volume/(tref.conc.dilutionneeded()-1),tref,r1[i],mix=(False,False))    # TODO: Check that these end up mixed
+                        self.e.transfer(r1[i].volume/(trefSamp.conc.dilutionneeded()-1),trefSamp,r1[i],mix=(False,False))    # TODO: Check that these end up mixed
                         r1[i].conc=Concentration(stock=oldConc*oldVol/r1[i].volume, units=oldUnits)   # Treat TRef as straight dilution
                         print("New conc=",r1[i].conc)
 
