@@ -33,7 +33,7 @@ class PGMSelect(TRP):
             reagents.lookup("MLigase").refillable=True
             reagents.lookup("P-T7ZX").refillable=True
             reagents.lookup("P-T7WX").refillable=True
-            reagents.lookup("T1c").refillable=True
+            reagents.lookup("T1d").refillable=True
         if qpcrStages is None:
             qpcrStages = ["negative", "template", "ext", "finalpcr"]
         self.inputs=inputs
