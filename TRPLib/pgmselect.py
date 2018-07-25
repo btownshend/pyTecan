@@ -330,6 +330,15 @@ class PGMSelect(TRP):
                     # noinspection PyUnboundLocalVariable
                     q.addSamples(src=r1[i],needDil=r1[i].conc.stock/self.qConc,primers=["T7X",prefixOut[i]+"X"]+(["MX"] if self.useMX else []))
 
+        if "bc" in self.qpcrStages:
+            for i in range(len(bc1)):
+                needDil=r1[0].conc.stock/self.qConc/(25*50/20)
+                if self.singlePrefix:
+                    q.addSamples(src=bc1[i],needDil=needDil,primers=["T7X","MX"] if self.useMX else ["T7X"])
+                else:
+                    # noinspection PyUnboundLocalVariable
+                    q.addSamples(src=bc1[i],needDil=needDil,primers=["T7X",prefixOut[0]+"X"]+(["MX"] if self.useMX else []))
+
         # Add TRefs if needed
         for i in range(len(r1)):
             if 'tref' in self.inputs[i]:

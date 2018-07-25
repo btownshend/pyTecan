@@ -59,3 +59,4 @@ DB/robot.dbs
 *.bak
 
 DB/qtgui/gui_auto.py
+TRobot/lidcycle.log.1
