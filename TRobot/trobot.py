@@ -3,6 +3,7 @@ import serial
 import logging
 import sys
 import time
+from sendemail import sendemail
 
 class BlockStatus:
     def __init__(self,x):
@@ -317,6 +318,10 @@ class TRobot:
         print "steps=",steps
         return [hdr,steps]
     
+    @staticmethod
+    def email(msg):
+        sendemail('cdsrobot@gmail.com','cdsrobot@gmail.com','TRobot Msg',msg)
+        
     @staticmethod
     def errorstr(ecode):
         """Parse 3 hex digits in ecode string"""

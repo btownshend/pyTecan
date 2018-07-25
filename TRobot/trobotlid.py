@@ -14,6 +14,7 @@ logging.info("Status: %s"%str(p.getstatus()))
 for attempt in range(numAttempts):
     try:
         lidstatus=p.getlidstatus()
+        #p.email("cmd=%s, lidstatus=%s"%(cmd,lidstatus))
         if cmd=="OPEN":
             if lidstatus.isopen():
                 print "Already open"
@@ -38,6 +39,7 @@ for attempt in range(numAttempts):
             time.sleep(2)
     except ValueError as exc:
         logging.warning("LID operation failed %d times: Exception: %s"%(attempt+1,str(exc)))
+        p.email("LID operation failed %d times: Exception: %s"%(attempt+1,str(exc)))
         # Flush buffer
         while p.readline()!="":
             print("Flushed line")
