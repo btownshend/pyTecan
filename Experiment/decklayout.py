@@ -41,7 +41,8 @@ DILUTIONLOC=PlateLocation("DilutionLoc",4,2,zmax=1031,vectorName="Microplate Lan
 QPCRLOC=PlateLocation("QPCRLoc",4,1,zmax=996)  # defined in worklist.py
 WASHLOC=PlateLocation("Wash",1,2)  # defined in worklist.py
 EPPLOC=PlateLocation("EppLoc",13,1,zmax=1339)
-TCPOS=PlateLocation("TC",25,1,vectorName="TROBOT")
+#TCPOS=PlateLocation("TC",25,1,vectorName="TROBOT")
+TCPOS=PlateLocation("TC",25,1,vectorName="PTC200")
 HOTELPOS = PlateLocation("Hotel",25, 0)
 WASTE = PlateLocation("Waste",20, 3)
 

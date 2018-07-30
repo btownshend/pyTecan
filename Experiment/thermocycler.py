@@ -1,8 +1,8 @@
 from . import worklist
 from . import logging
 
-#cycler="PTC200"
-cycler="TROBOT"
+cycler="PTC200"
+#cycler="TROBOT"
 hotlidtemp=100
 
 if cycler=='PTC200':
