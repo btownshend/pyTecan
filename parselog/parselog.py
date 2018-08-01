@@ -377,8 +377,8 @@ def dirscan(dirname: str, follow: bool=False):
                 st = os.stat(path)
                 mtime = dt.datetime.fromtimestamp(st.st_mtime)
                 if mtime > ago:
-                    if b'@log_startrun' in open(path,'rb').read():
-                        print('%s Contains log_startrun, modified %s' % (path, mtime))
+                    if b'@log' in open(path,'rb').read():
+                        print('%s Contains @log, modified %s' % (path, mtime))
                         runstatus=db.findlog(fname)
                         print("runstatus=%d"%runstatus)
                         if runstatus!=2:
