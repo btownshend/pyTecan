@@ -78,6 +78,16 @@ class GUI(Ui_MainWindow):
         """Get Sample info for given sampid for horizon hours"""
         print("getSampData(%d,%f)"%(sampid,horizon))
         if sampid not in self.sampInfo:
+            q1=self.dbget("""
+                SELECT COUNT(*)
+                FROM vols v, ops o
+                WHERE sample=%d
+                AND v.op=o.op
+                AND run=%d
+                AND volume IS NOT NULL
+            """%(sampid,self.currentRun))
+            print("Have %d with measured volume"%q1.value(0))
+
             q=self.dbget("""
                 SELECT v.op,estvol,volume,volchange,elapsed+timestampdiff(second,measured,now()) elapsed
                 FROM vols v, ops o
@@ -90,7 +100,9 @@ class GUI(Ui_MainWindow):
             if q!=None:
                 print(q.value(0),q.value(1),"Null" if q.isNull(2) else q.value(2),q.value(3),q.value(4))
                 lastop=q.value(0)
-                if q.isNull(2):
+                if q1.value(0)==0:
+                    estvol=0   # No successful measurements
+                elif q.isNull(2):
                     estvol=q.value(1)+q.value(3)
                 else:
                     estvol=q.value(2)+q.value(3)
