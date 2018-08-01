@@ -330,15 +330,6 @@ class PGMSelect(TRP):
                     # noinspection PyUnboundLocalVariable
                     q.addSamples(src=r1[i],needDil=r1[i].conc.stock/self.qConc,primers=["T7X",prefixOut[i]+"X"]+(["MX"] if self.useMX else []))
 
-        if "bc" in self.qpcrStages:
-            for i in range(len(bc1)):
-                needDil=r1[0].conc.stock/self.qConc/(25*50/20)
-                if self.singlePrefix:
-                    q.addSamples(src=bc1[i],needDil=needDil,primers=["T7X","MX"] if self.useMX else ["T7X"])
-                else:
-                    # noinspection PyUnboundLocalVariable
-                    q.addSamples(src=bc1[i],needDil=needDil,primers=["T7X",prefixOut[0]+"X"]+(["MX"] if self.useMX else []))
-
         # Add TRefs if needed
         for i in range(len(r1)):
             if 'tref' in self.inputs[i]:
@@ -700,6 +691,11 @@ class PGMSelect(TRP):
                     print("bcout=",",".join(str(b) for b in bcout))
                     print("mixed=",bcout[0].isMixed(),", wellMixed=",bcout[0].wellMixed)
                     bcsave=self.saveSamps(src=bcout,vol=[b.volume for b in bcout],dil=1,plate=decklayout.DILPLATE,mix=(False,False))
+                    if "bc" in self.qpcrStages:
+                        print("Doing qPCR of barcoding: ",bcsave)
+                        for i in range(len(bcsave)):
+                            needDil=640
+                            q.addSamples(src=bcsave[i],needDil=needDil,primers=["T7X","WX","ZX"]+(["MX"] if self.useMX else []),save=False)
                 else:
                     bcsave=[]
                     
