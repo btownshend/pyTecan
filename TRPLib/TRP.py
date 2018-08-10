@@ -837,10 +837,7 @@ class TRP(object):
 
         pgm="PCR%d"%ncycles
 
-        if usertime is None:
-            runTime=0
-        else:
-            runTime=usertime
+        runTime=0
 
         if annealTemp is None:
             annealTemp=60 if kapa else 55
@@ -862,7 +859,6 @@ class TRP(object):
             runTime+=hotTime/60+2.8+3.0*ncycles
 
         if usertime is not None and usertime>0:
-            cycling="TEMP@37,%d %s"%(usertime*60,cycling)
             runTime+=usertime
 
         print("PCR volume=[",",".join(["%.1f"%t.volume for t in tgt]), "], srcdil=[",",".join(["%.1fx"%s for s in srcdil]),"], program: %s"%cycling)
