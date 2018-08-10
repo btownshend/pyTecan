@@ -837,8 +837,11 @@ class TRP(object):
 
         pgm="PCR%d"%ncycles
 
-        runTime=0
-            
+        if usertime is None:
+            runTime=0
+        else:
+            runTime=usertime
+
         if annealTemp is None:
             annealTemp=60 if kapa else 55
 
@@ -849,13 +852,13 @@ class TRP(object):
         if lowhi:
             # First cycle at normal anneal, others at 66
             hotAnnealTemp=66
-            cycling='TEMP@95,%d TEMP@%.1f,30 TEMP@%.1f,30 TEMP@%.1f,30 TEMP@%.1f,30 TEMP@%.1f,30 TEMP@%.1f,30 GOTO@6,%d TEMP@%.1f,60 TEMP@25,2'%(hotTime,meltTemp,annealTemp,extTemp,meltTemp,hotAnnealTemp,extTemp,ncycles-2,extTemp)
+            cycling='TEMP@37,%d TEMP@95,%d TEMP@%.1f,30 TEMP@%.1f,30 TEMP@%.1f,30 TEMP@%.1f,30 TEMP@%.1f,30 TEMP@%.1f,30 GOTO@6,%d TEMP@%.1f,60 TEMP@25,2'%(1 if usertime is None else usertime*60,hotTime,meltTemp,annealTemp,extTemp,meltTemp,hotAnnealTemp,extTemp,ncycles-2,extTemp)
             runTime+=hotTime/60+2.8+3.0*ncycles
         elif fastCycling:
-            cycling='TEMP@95,%d TEMP@%.1f,10 TEMP@%.1f,10 TEMP @%.1f,1 GOTO@3,%d TEMP@%.1f,60 TEMP@25,2'%(hotTime,meltTemp,annealTemp,extTemp,ncycles-1,extTemp)
+            cycling='TEMP@37,%d TEMP@95,%d TEMP@%.1f,10 TEMP@%.1f,10 TEMP @%.1f,1 GOTO@3,%d TEMP@%.1f,60 TEMP@25,2'%(1 if usertime is None else usertime*60,hotTime,meltTemp,annealTemp,extTemp,ncycles-1,extTemp)
             runTime+=hotTime/60+2.8+1.65*ncycles
         else:
-            cycling='TEMP@95,%d TEMP@%.1f,30 TEMP@%.1f,30 TEMP@%.1f,30 GOTO@3,%d TEMP@%.1f,60 TEMP@25,2'%(hotTime,meltTemp,annealTemp,extTemp,ncycles-1,extTemp)
+            cycling='TEMP@37,%d TEMP@95,%d TEMP@%.1f,30 TEMP@%.1f,30 TEMP@%.1f,30 GOTO@3,%d TEMP@%.1f,60 TEMP@25,2'%(1 if usertime is None else usertime*60,hotTime,meltTemp,annealTemp,extTemp,ncycles-1,extTemp)
             runTime+=hotTime/60+2.8+3.0*ncycles
 
         if usertime is not None and usertime>0:
