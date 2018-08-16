@@ -481,7 +481,7 @@ def parselog(filename: str, outfile:str=None, follow=False):
             elif cmd[0]=='-' or cmd[0]=='*':
                 if dev not in send:
                     print("Missing cmd when received reply from %s: %s"%(dev,str(spcmd)),file=outfd)
-                    exit(1)
+                    continue
                 error=cmd[0]=='*'
                 fwparse(dev,send[dev],spcmd,error,lasttime,outfd)
                 send.pop(dev)
