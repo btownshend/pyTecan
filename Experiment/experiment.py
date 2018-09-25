@@ -630,9 +630,10 @@ class Experiment(object):
         self.moveplate(decklayout.SAMPLEPLATE)  # Move HOME
         # Mark all samples on plate as unmixed (due to condensation)
         Sample.notMixed(decklayout.SAMPLEPLATE.name)
-        # Verify plate is in place
-        worklist.vector(None,decklayout.SAMPLELOC,worklist.SAFETOEND,False,worklist.DONOTMOVE,worklist.CLOSE)
-        worklist.vector(None,decklayout.SAMPLELOC,worklist.ENDTOSAFE,False,worklist.OPEN,worklist.DONOTMOVE)
+        if thermocycler.cycler=='PTC200':
+            # Verify plate is in place
+            worklist.vector(None,decklayout.SAMPLELOC,worklist.SAFETOEND,False,worklist.DONOTMOVE,worklist.CLOSE)
+            worklist.vector(None,decklayout.SAMPLELOC,worklist.ENDTOSAFE,False,worklist.OPEN,worklist.DONOTMOVE)
         worklist.romahome()
         #worklist.userprompt("Plate should be back on deck. Press return to continue")
         # Wash tips again to remove any drips that may have formed while waiting for TC
