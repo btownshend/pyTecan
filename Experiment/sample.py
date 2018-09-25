@@ -67,6 +67,10 @@ class Sample(object):
     __historyOptions = ["normal", "shake", "detect", "tc", "evap"]
 
     @staticmethod
+    def allsamples():
+        return Sample.__allsamples
+
+    @staticmethod
     def printallsamples(txt="",fd=sys.stdout,w=None):
         print("\n%s by plate:"%txt, file=fd)
         plates=set([s.plate for s in Sample.__allsamples])
@@ -235,6 +239,7 @@ class Sample(object):
         self.emptied=False
         self.refillable=refillable   # When using refillable, self.volume still refers to the total volume throughout the entire run; could be higher than tube capacity
         # But the actual volume in the tube will always be <=self.volume
+        self.lastLevelCheck = None
         db.newsample(self)
         
     def isMixed(self):

@@ -81,17 +81,22 @@ class Experiment(object):
     def volumeChecker(self,secondsAvail):
         #print("volumeChecker",secondsAvail)
         e1=clock.elapsed()
+##        for r in sorted(reagents..allReagents.values(), key=lambda r: r.sample.well if r.sample is not None else -1):
 
-        for r in sorted(reagents.Reagent.allReagents.values(), key=lambda r: r.sample.well if r.sample is not None else -1):
-            if r.sample is None:
+        for s in sorted(Sample.allsamples(),key=lambda s: "%s.%02d"%(s.plate,s.well) if s.well is not None else ""):
+            if s is None:
                 continue
-            if r.sample.plate!=decklayout.REAGENTPLATE:
+            if s.plate!=decklayout.REAGENTPLATE and (s.plate!=decklayout.DILPLATE or s.volume==0):
                 continue
-            if r.lastLevelCheck is None or clock.elapsed() - r.lastLevelCheck >= 3600:
+            if s.plate==decklayout.REAGENTPLATE:
+                freq=3600
+            else:
+                freq=3600*4
+            if s.lastLevelCheck is None or clock.elapsed() - s.lastLevelCheck >= freq:
                 # Not too frequently
-                #print("Level check of", r.name)
-                r.sample.leveldetect(self.cleantip())
-                r.lastLevelCheck = clock.elapsed()
+                print("Level check of", s.name)
+                s.leveldetect(self.cleantip())
+                s.lastLevelCheck = clock.elapsed()
             if secondsAvail-(clock.elapsed()-e1)<120:
                 break   # Don't infringe on time available
         #print("volumeChecker done after %.0f seconds"%(clock.elapsed()-e1))

@@ -30,7 +30,6 @@ class Reagent(object):
         self.extrainfo=extrainfo
         self.ingredients=ingredients
         self.refillable=refillable
-        self.lastLevelCheck=None
 
     def __str__(self):
         s=self.name
@@ -56,7 +55,6 @@ class Reagent(object):
                 self.initVol+=adj
             self.sample=None
             self.getsample()   # Re-allocate sample
-        self.lastLevelCheck = None
 
 
 def isReagent(name:str):
