@@ -1,8 +1,9 @@
 from . import worklist
 from . import logging
 
-cycler="PTC200"
-#cycler="TROBOT"
+#cycler="PTC200"
+cycler="TROBOT"
+### Also need to change TCPOS in decklayout.py
 hotlidtemp=100
 
 if cycler=='PTC200':
