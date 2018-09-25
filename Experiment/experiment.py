@@ -441,6 +441,8 @@ class Experiment(object):
             logging.error("TC program name (%s) too long (max is 8 char)"%pgm)
         # move to thermocycler
         worklist.flushQueue()
+        # Make sure email on error is set (in case program restarted in the middle)
+        worklist.email(dest='cdsrobot@gmail.com',subject='Tecan error',onerror=1)
         self.lihahome()
         cmt="run %s"%pgm
         worklist.comment(cmt)
