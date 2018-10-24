@@ -200,7 +200,7 @@ class TRP(object):
         if hasError:
             logging.error("NO OUTPUT DUE TO ERRORS")
             
-        print("Wells used:  samples: %d, dilutions: %d, qPCR: %d"%(Sample.numSamplesOnPlate(decklayout.SAMPLEPLATE),Sample.numSamplesOnPlate(decklayout.DILPLATE),Sample.numSamplesOnPlate(decklayout.QPCRPLATE)))
+        print("Wells used:  samples: %d, dilutions: %d, products: %d, qPCR: %d"%(Sample.numSamplesOnPlate(decklayout.SAMPLEPLATE),Sample.numSamplesOnPlate(decklayout.DILPLATE),Sample.numSamplesOnPlate(decklayout.PRODUCTPLATE),Sample.numSamplesOnPlate(decklayout.QPCRPLATE)))
         # Save worklist to a file
         #e.saveworklist("trp1.gwl")
         (scriptname,ext)=os.path.splitext(sys.argv[0])

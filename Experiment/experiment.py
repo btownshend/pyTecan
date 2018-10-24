@@ -86,7 +86,7 @@ class Experiment(object):
         for s in sorted(Sample.allsamples(),key=lambda s: "%s.%02d"%(s.plate,s.well) if s.well is not None else ""):
             if s is None:
                 continue
-            if s.plate!=decklayout.REAGENTPLATE and (s.plate!=decklayout.DILPLATE or s.volume==0):
+            if s.plate!=decklayout.REAGENTPLATE and (s.plate!=decklayout.DILPLATE or s.volume==0) and (s.plate!=decklayout.PRODUCTPLATE or s.volume==0):
                 continue
             if s.plate==decklayout.REAGENTPLATE:
                 freq=3600
@@ -226,7 +226,7 @@ class Experiment(object):
                         self.multitransfer(volumes[i:],src,dests[i:],(False,mix[1]),not reuseTip,dropDITI,extraFrac=extraFrac)
                         return
 
-            if mix[0] and not src.isMixed() and (src.plate==decklayout.SAMPLEPLATE or src.plate==decklayout.DILPLATE):
+            if mix[0] and not src.isMixed() and (src.plate==decklayout.SAMPLEPLATE or src.plate==decklayout.DILPLATE or src.plate==decklayout.PRODUCTPLATE):
                 worklist.comment("shaking for src mix of "+src.name)
                 self.shakeSamples([src])  # Need to do this before allocating a tip since washing during this will modify the tip clean states
 
@@ -243,7 +243,7 @@ class Experiment(object):
             worklist.comment(cmt)
 
             if mix[0] and (not src.isMixed() or not src.wellMixed):
-                if src.plate==decklayout.SAMPLEPLATE or src.plate==decklayout.DILPLATE:
+                if src.plate==decklayout.SAMPLEPLATE or src.plate==decklayout.DILPLATE or src.plate==decklayout.PRODUCTPLATE:
                     logging.notice("Forcing pipette mix of "+src.name)
                 worklist.comment("pipette mix for src mix of "+src.name)
                 src.mix(tipMask)	# Manual mix (after allocating a tip for this)
@@ -301,7 +301,7 @@ class Experiment(object):
             cmt=cmt+" with dest mix"
             ditivolume=max(ditivolume,volume+dest.volume)
             #            print "Mix volume=%.1f ul"%(ditivolume)
-        if mix[0] and not src.isMixed() and (src.plate==decklayout.SAMPLEPLATE or src.plate==decklayout.DILPLATE):
+        if mix[0] and not src.isMixed() and (src.plate==decklayout.SAMPLEPLATE or src.plate==decklayout.DILPLATE or src.plate==decklayout.PRODUCTPLATE):
             worklist.comment("shaking for src mix of "+src.name)
             self.shakeSamples([src])  # Need to do this before allocating a tip since washing during this will modify the tip clean states
 
@@ -315,7 +315,7 @@ class Experiment(object):
         worklist.comment(cmt)
 
         if mix[0] and (not src.isMixed() or not src.wellMixed):
-            if src.plate==decklayout.SAMPLEPLATE or src.plate==decklayout.DILPLATE:
+            if src.plate==decklayout.SAMPLEPLATE or src.plate==decklayout.DILPLATE or src.plate==decklayout.PRODUCTPLATE:
                 logging.notice("Forcing pipette mix of "+src.name)
             worklist.comment("pipette mix for src mix of "+src.name)
             src.mix(tipMask)	# Manual mix (after allocating a tip for this)
