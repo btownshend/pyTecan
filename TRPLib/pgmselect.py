@@ -175,12 +175,12 @@ class PGMSelect(TRP):
                     trefs = reagents.getsample(trefname)
                     trefdil[i+1]=(trefs.conc.dilutionneeded())/(trefs.conc.dilutionneeded()-1)
         print("Extra dilution due to tref additions: ",trefdil)
-        self.t7vol=[max((15.1+self.rtvol[i]/4.0+1.4)+self.t7extravols,self.pmolesIn*1000.0/self.tmplFinalConc*trefdil[i]/math.pow(self.enrich,i*1.0)) for i in range(len(self.rounds))]
-        #print "self.t7vol=%s ul\n"%(",".join(["%.1f "%x for x in self.t7vol]))
+        self.t7vol=[max((15.1+self.rtvol[i]/4.0+1.4)+self.t7extravols,self.pmolesIn*1000.0/(self.tmplFinalConc if i==0 else 200*self.templateDilution)*trefdil[i]/math.pow(self.enrich,i*1.0)) for i in range(len(self.rounds))]
+        print("self.t7vol=%s ul\n"%(",".join(["%.1f "%x for x in self.t7vol])))
         #self.t7vol=[max(18.0,v) for v in self.t7vol]   # Make sure that there's enough to add at least 2ul of stop
-        self.t7vol=[min(self.maxSampVolume,v) for v in self.t7vol]   # Make sure no tubes overflow
         if 'template' in self.qpcrStages:
             self.t7vol[0]+=5.4
+        self.t7vol=[min(self.maxSampVolume,v) for v in self.t7vol]   # Make sure no tubes overflow
         
     def setup(self):
         TRP.setup(self)
