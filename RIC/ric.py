@@ -4,10 +4,10 @@ import string
 
 class RIC:
 	debug=False
-	PORT=2
+	PORT=[2,4]
 
-	def open(self):
-		self.ser = serial.Serial(self.PORT,baudrate=9600,timeout=1)
+	def open(self,unit=0):
+		self.ser = serial.Serial(self.PORT[unit],baudrate=9600,timeout=1)
 		if self.debug:
 			print self.ser.portstr
 
