@@ -320,7 +320,7 @@ class TRobot:
     
     @staticmethod
     def email(msg):
-        sendemail('cdsrobot@gmail.com','cdsrobot@gmail.com','TRobot Msg',msg)
+        sendemail('cdsrobot@gmail.com','townshend@gmail.com','TRobot Error',msg)
         
     @staticmethod
     def errorstr(ecode):
