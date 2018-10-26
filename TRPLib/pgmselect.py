@@ -111,6 +111,7 @@ class PGMSelect(TRP):
         self.regenPCRVolume=100
         self.regenPCRDilution=10
         self.setVolumes()
+        self.savePlate=decklayout.DILPLATE  # or decklayout.PRODUCTPLATE
         
     def setVolumes(self):
         # Computed parameters
@@ -222,7 +223,7 @@ class PGMSelect(TRP):
 
         if self.dopcr:
             # Reserve space for  PCR products
-            pcrprods=[ [Sample("R%d-T%s"%(r,inp['ligand']),decklayout.DILPLATE) for inp in self.inputs] for r in range(len(self.rounds))]
+            pcrprods=[ [Sample("R%d-T%s"%(r,inp['ligand']),self.savePlate) for inp in self.inputs] for r in range(len(self.rounds))]
         else:
             pcrprods=None
 
@@ -452,7 +453,7 @@ class PGMSelect(TRP):
                 worklist.userprompt("Post EDTA pause")
                 
             if self.saveRNA:
-                self.saveSamps(src=rxs,vol=self.saveRNAVolume,dil=self.saveRNADilution,plate=decklayout.DILPLATE,dilutant=reagents.getsample("TE8"),mix=(False,False))   # Save to check [RNA] on Qubit, bioanalyzer
+                self.saveSamps(src=rxs,vol=self.saveRNAVolume,dil=self.saveRNADilution,plate=self.savePlate,dilutant=reagents.getsample("TE8"),mix=(False,False))   # Save to check [RNA] on Qubit, bioanalyzer
 
         needDil = self.rnaConc/self.qConc/stopDil
 
@@ -483,7 +484,7 @@ class PGMSelect(TRP):
             needDil=needDil/self.rtpostdil[self.rndNum-1]
 
         if self.rtSave:
-            rtsv=self.saveSamps(src=rxs,vol=self.rtSaveVol,dil=self.rtSaveDil,plate=decklayout.DILPLATE,dilutant=reagents.getsample("TE8"),mix=(False,False))   # Save to check RT product on gel (2x dil)
+            rtsv=self.saveSamps(src=rxs,vol=self.rtSaveVol,dil=self.rtSaveDil,plate=self.savePlate,dilutant=reagents.getsample("TE8"),mix=(False,False))   # Save to check RT product on gel (2x dil)
 
             if "rt" in self.qpcrStages:
                 for i in range(len(rxs)):
@@ -523,7 +524,7 @@ class PGMSelect(TRP):
                 pcrdil=pcrdil*1.0/self.extpostdil[self.rndNum-1]
                 
             if self.saveDil is not None:
-                ext=self.saveSamps(src=rxs,vol=3,dil=self.saveDil,dilutant=reagents.getsample("TE8"),tgt=[Sample("%s.ext"%n,decklayout.DILPLATE) for n in names],mix=(False,True))   # Save cDNA product for subsequent NGS
+                ext=self.saveSamps(src=rxs,vol=3,dil=self.saveDil,dilutant=reagents.getsample("TE8"),tgt=[Sample("%s.ext"%n,self.savePlate) for n in names],mix=(False,True))   # Save cDNA product for subsequent NGS
                 if "ext" in self.qpcrStages:
                     for i in range(len(ext)):
                         # Make sure we don't take more than 2 more steps
@@ -591,7 +592,7 @@ class PGMSelect(TRP):
                 sampNeeded+=rtCarryForwardVol
             if keepCleaved and self.rtCarryForward:
                 print("Saving %.1f ul of each pre-PCR sample" % rtCarryForwardVol)
-                self.lastSaved=[Sample("%s.sv"%x.name,decklayout.DILPLATE) for x in rxs]
+                self.lastSaved=[Sample("%s.sv"%x.name,self.savePlate) for x in rxs]
                 for i in range(len(rxs)):
                     # Save with rtCarryForwardDil dilution to reduce amount of RT consumed (will have Ct's 2-3 lower than others)
                     self.e.transfer(rtCarryForwardVol,rxs[i],self.lastSaved[i],(False,False))
@@ -674,7 +675,7 @@ class PGMSelect(TRP):
                     print("Skipping save of final PCR")
                     sv=pcr
                 else:
-                    sv=self.saveSamps(src=pcr[:len(rxs)],vol=[min([maxSaveVol,x.volume-2.4]) for x in pcr[:len(rxs)]],dil=1,plate=(decklayout.DILPLATE if self.savedilplate else decklayout.EPPENDORFS),tgt=pcrtgt)
+                    sv=self.saveSamps(src=pcr[:len(rxs)],vol=[min([maxSaveVol,x.volume-2.4]) for x in pcr[:len(rxs)]],dil=1,plate=(self.savePlate if self.savedilplate else decklayout.EPPENDORFS),tgt=pcrtgt)
                     if nsplit>1:
                         # Combine split
                         for i in range(len(rxs),len(rxs)*nsplit):
@@ -693,7 +694,7 @@ class PGMSelect(TRP):
                 if len(bcout)>0:
                     print("bcout=",",".join(str(b) for b in bcout))
                     print("mixed=",bcout[0].isMixed(),", wellMixed=",bcout[0].wellMixed)
-                    bcsave=self.saveSamps(src=bcout,vol=[b.volume for b in bcout],dil=1,plate=decklayout.DILPLATE,mix=(False,False))
+                    bcsave=self.saveSamps(src=bcout,vol=[b.volume for b in bcout],dil=1,plate=self.savePlate,mix=(False,False))
                     if "bc" in self.qpcrStages:
                         print("Doing qPCR of barcoding: ",bcsave)
                         for i in range(len(bcsave)):
