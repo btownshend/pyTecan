@@ -701,6 +701,8 @@ class Sample(object):
 
         if self.isMixed():
             minspeed=0
+        elif self.wellMixed:
+            minspeed=1000   # Was already mixed, but may have settled or have condensation
         else:
             minspeed=interpolate(ptype.minspeeds,self.volume)
             if minspeed is None:
