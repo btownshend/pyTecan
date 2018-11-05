@@ -474,7 +474,7 @@ class Sample(object):
         if not self.isMixed() and self.plate.location!=MAGPLATELOC:
             if self.hasBeads and self.lastMixed is not None:
                 logging.mixwarning("Aspirate %.1f ul from sample %s that has beads and has not been mixed for %.0f sec. "%(volume,self.name,clock.elapsed()-self.lastMixed))
-            else:
+            elif not self.wellMixed:
                 logging.mixwarning("Aspirate %.1f ul from unmixed sample %s. "%(volume,self.name))
         if not self.wellMixed and self.plate.location!=MAGPLATELOC:
             logging.mixwarning("Aspirate %.1f ul from poorly mixed sample %s (shake speed was too low). "%(volume,self.name))
