@@ -677,10 +677,10 @@ class TRP(object):
             print("Running RT at %dC for %d min, followed by heat inactivation/refold at %dC for %d minutes"%(incTemp,dur,hiTemp,hidur))
             assert(src!=None)
             # Mark samples as mixed (by thermal convection)
-            print("Marking samples as mixed (by thermal convection) after RT with inactivation at %.0f"%hiTemp)
+            print("Marking all samples on plate %s as mixed (by thermal convection) after RT with inactivation at %.0f"%(src[0].plate.name,hiTemp))
             for t in Sample.getAllOnPlate(src[0].plate):
                 t.wellMixed=True
-                t.lastMixed=clock.elapsed()
+                t.lastMixed=clock.elapsed() # Will be cleared due to call to notMixed() later (due to condensation), but wellMixed=True will allow any shake to make it mixed
         else:
             thermocycler.setpgm(pgm,incTemp+1,'TEMP@%d,%d TEMP@25,2'%(incTemp,dur*60))
             self.e.runpgm(pgm,dur,False,100)		# Volume doesn't matter since it's just an incubation, use 100ul
@@ -743,7 +743,7 @@ class TRP(object):
             print("Marking samples as mixed (by thermal convection) following ligation with HI at %.0f"%hiTemp)
             for t in Sample.getAllOnPlate(src[0].plate):
                 t.wellMixed=True
-                t.lastMixed=clock.elapsed()
+                t.lastMixed=clock.elapsed() # Will be cleared due to call to notMixed() later (due to condensation), but wellMixed=True will allow any shake to make it mixed
 
         return tgt
 
@@ -882,7 +882,7 @@ class TRP(object):
         thermocycler.setpgm(pgm,99,cycling)
         self.e.runpgm(pgm,runTime,False,max(vol))
         # Mark samples as mixed (by thermal convection)
-        print("Marking samples as mixed (by thermal convection) after PCR")
+        print("Marking samples on plate %s as mixed (by thermal convection) after PCR"%tgt[0].plate.name)
         for t in Sample.getAllOnPlate(tgt[0].plate):
             t.wellMixed=True
             t.lastMixed=clock.elapsed()
