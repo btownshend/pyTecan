@@ -155,9 +155,9 @@ class PGMSelect(TRP):
             self.rtvol=[max(15.0/self.rtpostdil[i],self.rtvol[i])+(self.rtSaveVol+1.4)/self.rtpostdil[i] for i in range(len(self.rtvol))]  # Extra for saves
         elif "rt" in self.qpcrStages:		# Take from save if rtSave is set
             self.rtvol=[max(15.0/self.rtpostdil[i],self.rtvol[i])+5.4/self.rtpostdil[i] for i in range(len(self.rtvol))]  # Extra for qPCR
-        #print  "self.rtvol=",self.rtvol
         self.rtvol=[max(v,8.0) for v in self.rtvol]   # Minimum volume
         self.rtvol=[min(v,self.maxSampVolume) for v in self.rtvol]  # Maximum volume
+        # print ("self.rtvol=",self.rtvol)
         
         self.t7extravols=((4+1.4) if 'stopped' in self.qpcrStages else 0)+ ((self.saveRNAVolume+1.4) if self.saveRNA else 0) # + 3.3  # 3.3 in case pipette mixing used
         #print "self.t7extravols=%.1f ul\n"%self.t7extravols
@@ -675,11 +675,12 @@ class PGMSelect(TRP):
                     print("Skipping save of final PCR")
                     sv=pcr
                 else:
-                    sv=self.saveSamps(src=pcr[:len(rxs)],vol=[min([maxSaveVol,x.volume-2.4]) for x in pcr[:len(rxs)]],dil=1,plate=(self.savePlate if self.savedilplate else decklayout.EPPENDORFS),tgt=pcrtgt)
+                    residual=2.4   # Amount to leave behind to avoid aspirating air
+                    sv=self.saveSamps(src=pcr[:len(rxs)],vol=[min([maxSaveVol,x.volume-residual]) for x in pcr[:len(rxs)]],dil=1,plate=(self.savePlate if self.savedilplate else decklayout.EPPENDORFS),tgt=pcrtgt)
                     if nsplit>1:
                         # Combine split
                         for i in range(len(rxs),len(rxs)*nsplit):
-                            self.e.transfer(min([maxSaveVol,pcr[i].volume-2.4]),pcr[i],sv[i%len(sv)],mix=(False,i>=len(rxs)*(nsplit-1)))
+                            self.e.transfer(min([maxSaveVol,pcr[i].volume-residual]),pcr[i],sv[i%len(sv)],mix=(False,False))
                         # Correct concentration (above would've assumed it was diluted)
                         for i in range(len(sv)):
                             sv[i].conc=pcr[i].conc
