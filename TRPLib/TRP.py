@@ -675,6 +675,12 @@ class TRP(object):
             thermocycler.setpgm(pgm,hiTemp+1,'TEMP@%d,%d TEMP@%d,%d TEMP@25,2 RATE@0.5'%(incTemp,dur*60,hiTemp,hidur*60))
             self.e.runpgm(pgm,dur+hidur+2.5,False,100)		# Volume doesn't matter since it's just an incubation, use 100ul
             print("Running RT at %dC for %d min, followed by heat inactivation/refold at %dC for %d minutes"%(incTemp,dur,hiTemp,hidur))
+            assert(src!=None)
+            # Mark samples as mixed (by thermal convection)
+            print("Marking samples as mixed (by thermal convection) after RT with inactivation at %.0f"%hiTemp)
+            for t in Sample.getAllOnPlate(src[0].plate):
+                t.wellMixed=True
+                t.lastMixed=clock.elapsed()
         else:
             thermocycler.setpgm(pgm,incTemp+1,'TEMP@%d,%d TEMP@25,2'%(incTemp,dur*60))
             self.e.runpgm(pgm,dur,False,100)		# Volume doesn't matter since it's just an incubation, use 100ul
@@ -731,6 +737,13 @@ class TRP(object):
                 thermocycler.setpgm('INC',hiTemp+1,'TEMP@%.0f,%.0f TEMP@%.0f,%.0f TEMP@25,30'%(incTemp,incTime*60,hiTemp,hiTime*60))
                 print("Incubating at %dC for %d minutes followed by heat inactivate at %dC for %d minutes"%(incTemp,incTime,hiTemp,hiTime))
             self.e.runpgm("INC",incTime+hiTime+2,False,max(vol))
+
+        if hiTemp is not None:
+            # Mark samples as mixed (by thermal convection)
+            print("Marking samples as mixed (by thermal convection) following ligation with HI at %.0f"%hiTemp)
+            for t in Sample.getAllOnPlate(src[0].plate):
+                t.wellMixed=True
+                t.lastMixed=clock.elapsed()
 
         return tgt
 
@@ -869,7 +882,7 @@ class TRP(object):
         thermocycler.setpgm(pgm,99,cycling)
         self.e.runpgm(pgm,runTime,False,max(vol))
         # Mark samples as mixed (by thermal convection)
-        print("Marking samples as mixed (by thermal convection)")
+        print("Marking samples as mixed (by thermal convection) after PCR")
         for t in Sample.getAllOnPlate(tgt[0].plate):
             t.wellMixed=True
             t.lastMixed=clock.elapsed()
