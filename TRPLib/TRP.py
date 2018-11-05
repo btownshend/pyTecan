@@ -603,7 +603,7 @@ class TRP(object):
     ########################
     def runRT(self,src,vol,srcdil,tgt=None,dur=20,heatInactivate=False,hiTemp=None,incTemp=37,stop=None,stopConc=1.0):
         result=self.runRTSetup(src,vol,srcdil,tgt,stop=stop,stopConc=stopConc)
-        self.runRTPgm(dur,heatInactivate=heatInactivate,hiTemp=hiTemp,incTemp=incTemp)
+        self.runRTPgm(dur,heatInactivate=heatInactivate,hiTemp=hiTemp,incTemp=incTemp,src=src)
         return result
     
     def runRTInPlace(self,src,vol,dur=20,heatInactivate=False,hiTemp=None,incTemp=37,stop=None):
@@ -618,7 +618,7 @@ class TRP(object):
             assert False
             
         self.runRxInPlace(src,vol,reagents.getsample("MPosRT"),returnPlate=False)
-        self.runRTPgm(dur,heatInactivate=heatInactivate,hiTemp=hiTemp,incTemp=incTemp)
+        self.runRTPgm(dur,heatInactivate=heatInactivate,hiTemp=hiTemp,incTemp=incTemp,src=src)
         
     def runRTSetup(self,src,vol,srcdil,tgt=None,rtmaster=None,stop=None,stopConc=1.0,prerefold=False):
         if rtmaster is None:
@@ -664,7 +664,7 @@ class TRP(object):
 
         return tgt
 
-    def runRTPgm(self,dur=20,heatInactivate=False,hiTemp=None,incTemp=37):
+    def runRTPgm(self,dur=20,heatInactivate=False,hiTemp=None,incTemp=37,src=None):
         pgm="RT-%d"%dur
         if heatInactivate:
             if hiTemp is None:
