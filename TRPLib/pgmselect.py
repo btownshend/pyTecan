@@ -684,6 +684,8 @@ class PGMSelect(TRP):
                         # Correct concentration (above would've assumed it was diluted)
                         for i in range(len(sv)):
                             sv[i].conc=pcr[i].conc
+                        # Shake
+                        self.e.shakeSamples(sv)
 
                 if "pcr" in self.qpcrStages:
                     for i in range(len(sv)):
