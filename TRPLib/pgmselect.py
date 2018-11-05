@@ -483,6 +483,19 @@ class PGMSelect(TRP):
             self.diluteInPlace(tgt=rxs,dil=self.rtpostdil[self.rndNum-1])
             needDil=needDil/self.rtpostdil[self.rndNum-1]
 
+        # Discard extra volume of any sample that has more than current rt volume so that we can shake at high speed
+        for r in Sample.getAllOnPlate(rxs[0].plate):
+            if r not in rxs and r.volume>max(15+1.4,rxs[0].volume)+4:
+                remove=r.volume-(15+1.4)
+                oldvol=r.volume
+                if r.lastMixed is None:
+                    r.lastMixed=clock.elapsed  # Override since we don't care about mixing for disposal
+                self.e.dispose(remove,r)
+                print("Discarding some of %s to reduce volume from %.1f to %.1f to allow faster shaking"%(r.name,oldvol,r.volume))
+
+        print("RT volume= ",[x.volume for x in rxs])
+        self.e.shakeSamples(rxs)
+        
         if self.rtSave:
             rtsv=self.saveSamps(src=rxs,vol=self.rtSaveVol,dil=self.rtSaveDil,plate=self.savePlate,dilutant=reagents.getsample("TE8"),mix=(False,False))   # Save to check RT product on gel (2x dil)
 
