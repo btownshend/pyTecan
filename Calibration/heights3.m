@@ -19,10 +19,15 @@ runlist=strjoin(arrayfun(@(z) sprintf('%d',z), runs,'UniformOutput',false),',');
 if nargin<2 || isempty(plate)
   % Run on all plates that have enough data
   [plates,counts]=mysql(sprintf('select plate,count(distinct well) from robot.v_vols where run in (%s) and height is not null group by plate',runlist));
+  if isempty(plates)
+      fprintf('No plates with data\n');
+  end
   for i=1:length(plates)
     if counts(i)>=10
       fprintf('Running on plate %s with %d wells of data\n', plates{i}, counts(i));
       heights3(runs,plates{i},offsets,vrange,angle,slopemodel);
+    else
+      fprintf('Not enough data for plate %s with %d wells of data\n', plates{i}, counts(i));
     end
   end
   return;
