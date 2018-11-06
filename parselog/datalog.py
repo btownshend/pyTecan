@@ -80,9 +80,9 @@ class Datalog(object):
         sample.SHOWTIPS = True
         
     def logop(self,op,tip,vol,wellx,welly,rack,grid,pos,lc,std,volset,isMulti):
-        if grid==18 and pos==2:   # Make magplate refer to samples
-            grid=4
-            pos=3
+        # if grid==18 and pos==2:   # Make magplate refer to samples
+        #     grid=4
+        #     pos=3
             
         entry=LogEntry(op,tip,vol,wellx,welly,rack,grid,pos,lc,std,volset,isMulti)
         sname=entry.sample.name
