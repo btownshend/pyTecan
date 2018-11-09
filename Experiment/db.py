@@ -491,7 +491,8 @@ class LogDB(DB):
             height,submerge,zmax,zadd,meastime=measurement
             curzmax=2100-plate.location.zmax-390+decklayout.TIPOFFSETS[tip-1]
             if zmax!=curzmax:
-                logging.warning("ZMax for plate %s, tip %d at time of run was %.0f, currently at %.0f"%(plate.name, tip, zmax, curzmax))
+                logging.warning("ZMax for plate %s, tip %d at time of run was %.0f, currently at %.0f (using latter)"%(plate.name, tip, zmax, curzmax))
+                zmax=curzmax
             if height is None:
                 gemvolume=None
                 volume=None
