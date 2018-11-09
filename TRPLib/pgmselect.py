@@ -111,7 +111,8 @@ class PGMSelect(TRP):
         self.regenPCRVolume=100
         self.regenPCRDilution=10
         self.setVolumes()
-        self.savePlate=decklayout.DILPLATE  # or decklayout.PRODUCTPLATE
+        #self.savePlate=decklayout.DILPLATE
+        self.savePlate=decklayout.PRODUCTPLATE
         
     def setVolumes(self):
         # Computed parameters
