@@ -73,6 +73,8 @@ reagents.add("T1d",well='B4',conc=Concentration(10.0/3,1.0,'x'),extraVol=30)  # 
 reagents.add("T1e",well='B4',conc=Concentration(10.0/3,1.0,'x'),extraVol=30)  # New targets (10/5/18)
 reagents.add("T1f",well='B4',conc=Concentration(10.0/3,1.0,'x'),extraVol=30)  # New targets (10/9/18)
 reagents.add("T1g",well='B4',conc=Concentration(10.0/3,1.0,'x'),extraVol=30)  # New targets (10/20/18)
+reagents.add("T1h",well='B4',conc=Concentration(10.0/3,1.0,'x'),extraVol=30)  # New targets (11/?/18)
+reagents.add("T1i",well='B4',conc=Concentration(10.0/3,1.0,'x'),extraVol=30)  # New targets (11/30/18)
 reagents.add("T2",well='C4',conc=Concentration(10.0,1.0,'mM'),extraVol=30) # Acetyl CoA
 reagents.add("T2b",well='C4',conc=Concentration(10.0/3,1.0,'x'),extraVol=30) # Acetyl CoA + Trans-Zeatin + Redox
 reagents.add("T3",well=None,conc=Concentration(10.0/3,1.0,'x'),extraVol=30) # BIAs
