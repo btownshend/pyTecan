@@ -536,7 +536,7 @@ def parselog(filename: str, outfile:str=None, follow=False):
                             geminicmdcnt[lastgeminicmd]=1
                     lastgeminicmd=cname
                     lasttime=t
-              if cmd.startswith('@'):
+              if cmd.startswith('@log_'):
                   print("PYTHON: %s" % cmd[1:],file=outfd)
                   eval("logdb." + cmd[1:])
               if cmd.find('closing log-file') != -1:
