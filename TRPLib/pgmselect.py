@@ -68,6 +68,7 @@ class PGMSelect(TRP):
         self.extraQPCRPrimers=None
         self.useMX=useMX
         self.pauseAfterStop=False
+        self.roundCallback=None   # Callback at the beginning of each round;  called as callback(self,rndNum,roundType)
         
         # General parameters
         self.qConc = 0.050			# Target qPCR concentration in nM (corresponds to Ct ~ 10)
@@ -246,6 +247,9 @@ class PGMSelect(TRP):
             # roundType is either "U" for uncleaved, or a new prefix for a cleaved round (with "T" being a T7 prepend)
             # Set r1 to new output at end
 
+            if self.roundCallback is not None:
+                self.roundCallback(self,self.rndNum,roundType)
+                
             # Computed output prefix
             if roundType=='U':
                 prefixOut=curPrefix
