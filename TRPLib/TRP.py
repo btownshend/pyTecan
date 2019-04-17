@@ -639,7 +639,7 @@ class TRP(object):
                 stop[i].conc.final=stopConc[i]   # FIXME: these usually all refer to the same underlying sample, so changing the same value multiple times
                 if stop[i].conc.stock<4*stopConc[i]:
                     #stop[i].conc.stock=10   # Use 10uM stock (or higher)
-                    logging.warning("Increase %s stock concentration to %.1f uM to accomodate stop at %.0f uM final"%(stop[i].name,4*stopConc[i],stop[i].conc.stock),stderr=True)  # Need to write to stderr since this will only happen during first pass, for which stdout is supressed
+                    logging.warning("Increase %s stock concentration to %.1f uM to accomodate stop at %.0f uM final"%(stop[i].name,4*stopConc[i],stopConc[i]),stderr=True)  # Need to write to stderr since this will only happen during first pass, for which stdout is supressed
                     stop[i].conc.stock=stopConc[i]*4
                 
         if any([s is not None for s in stop]):
