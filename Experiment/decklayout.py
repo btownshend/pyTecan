@@ -25,7 +25,7 @@ EPPLOWBIND=PlateType("EppLowBind",nx=12,ny=8,pierce=False,unusableVolume=15,maxV
 RICBLOCK=PlateType("RICBlock",nx=6,ny=5,pierce=False,unusableVolume=20,maxVolume=1700,angle=17.5,r1=4.088,h1=16.91,v0=10.23,gemDepth=1.02,gemArea=13.52,gemShape='v-shaped')
 WHITEQPCR=PlateType("qPCRPlate",nx=12,ny=8,pierce=False,unusableVolume=15,maxVolume=200,
                 angle=17.5,r1=2.704,h1=10.89,v0=0.44,gemDepth=3.17,gemArea=14.33,gemShape='v-shaped')
-EPPRACK = PlateType("EppRack", nx=1, ny=16, pierce=False, unusableVolume=30, maxVolume=1500,angle=17.5,
+EPPRACK = PlateType("EppRack", nx=1, ny=16, pierce=False, unusableVolume=27, maxVolume=1500,angle=17.5,
                 r1=4.419,h1=17.40,v0=19.41, gemDepth=1.29, gemArea=16.98, gemShape='v-shaped')
 
 ############ Plate locations  #############
