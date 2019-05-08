@@ -409,6 +409,7 @@ class PGMSelect(TRP):
                         self.e.transfer(watervol, decklayout.WATER, inputs[i], mix=(False, False))
                     self.e.transfer(t7vol / mconc, reagents.getsample("MT7"), inputs[i], mix=(False, False))
                     assert(abs(inputs[i].volume - t7vol) < 0.1)
+                # Add ligands last in case they crash out when they hit aqueous;  this way, they'll be as dilute as possible
                 if keepCleaved:
                     for i in range(len(inputs)):
                         if self.inputs[i]['negligand'] is not None:
