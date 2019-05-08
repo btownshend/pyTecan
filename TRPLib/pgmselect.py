@@ -211,6 +211,8 @@ class PGMSelect(TRP):
         for i in range(len(self.inputs)):
             if 'ligand' not in self.inputs[i]:
                 self.inputs[i]['ligand']=None
+            if 'negligand' not in self.inputs[i]:
+                self.inputs[i]['negligand']=None
             if 'round' not in self.inputs[i]:
                 self.inputs[i]['round']=None
             if 'name' not in self.inputs[i]:
@@ -408,6 +410,11 @@ class PGMSelect(TRP):
                     self.e.transfer(t7vol / mconc, reagents.getsample("MT7"), inputs[i], mix=(False, False))
                     assert(abs(inputs[i].volume - t7vol) < 0.1)
                 if keepCleaved:
+                    for i in range(len(inputs)):
+                        if self.inputs[i]['negligand'] is not None:
+                            negligand=reagents.getsample(self.inputs[i]['negligand'])
+                            self.e.transfer(t7vol / negligand.conc.dilutionneeded(), negligand, inputs[i], mix=(False, False))
+                            names[i]+="+"
                 else:
                     for i in range(len(inputs)):
                         if self.inputs[i]['ligand'] is not None:
@@ -416,7 +423,7 @@ class PGMSelect(TRP):
                             names[i]+="+"
                 rxs=inputs
             elif self.rndNum==len(self.rounds) and self.finalPlus and keepCleaved:
-                rxs = self.runT7Setup(src=inputs, vol=t7vol, srcdil=[inp.conc.dilutionneeded() for inp in inputs])
+                rxs = self.runT7Setup(ligands=[reagents.getsample(inp['ligand']) for inp in self.inputs],src=inputs, vol=t7vol, srcdil=[inp.conc.dilutionneeded() for inp in inputs])
                 for i in range(len(inputs)):
                     inp=inputs[i]
                     if self.inputs[i]['ligand'] is not None:
@@ -427,7 +434,7 @@ class PGMSelect(TRP):
                         primerSet+=[primerSet[i]]
                         names+=["%s+"%names[i]]
             elif keepCleaved:
-                rxs = self.runT7Setup(src=inputs, vol=t7vol, srcdil=[inp.conc.dilutionneeded() for inp in inputs])
+                rxs = self.runT7Setup(ligands=[reagents.getsample(inp['negligand']) for inp in self.inputs], src=inputs, vol=t7vol, srcdil=[inp.conc.dilutionneeded() for inp in inputs])
             else:
                 rxs = self.runT7Setup(ligands=[reagents.getsample(inp['ligand']) for inp in self.inputs], src=inputs, vol=t7vol, srcdil=[inp.conc.dilutionneeded() for inp in inputs])
 
