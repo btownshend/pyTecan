@@ -397,12 +397,6 @@ class PGMSelect(TRP):
 
             if self.directT7 and  self.rndNum==1:
                 # Just add ligands and MT7 to each well
-                if not keepCleaved:
-                    for i in range(len(inputs)):
-                        if self.inputs[i]['ligand'] is not None:
-                            ligand=reagents.getsample(self.inputs[i]['ligand'])
-                            self.e.transfer(t7vol / ligand.conc.dilutionneeded(), ligand, inputs[i], mix=(False, False))
-                            names[i]+="+"
                 mconc=reagents.getsample("MT7").conc.dilutionneeded()
                 for i in range(len(inputs)):
                     watervol=t7vol*(1-1/mconc) - inputs[i].volume
@@ -413,6 +407,13 @@ class PGMSelect(TRP):
                         self.e.transfer(watervol, decklayout.WATER, inputs[i], mix=(False, False))
                     self.e.transfer(t7vol / mconc, reagents.getsample("MT7"), inputs[i], mix=(False, False))
                     assert(abs(inputs[i].volume - t7vol) < 0.1)
+                if keepCleaved:
+                else:
+                    for i in range(len(inputs)):
+                        if self.inputs[i]['ligand'] is not None:
+                            ligand=reagents.getsample(self.inputs[i]['ligand'])
+                            self.e.transfer(t7vol / ligand.conc.dilutionneeded(), ligand, inputs[i], mix=(False, False))
+                            names[i]+="+"
                 rxs=inputs
             elif self.rndNum==len(self.rounds) and self.finalPlus and keepCleaved:
                 rxs = self.runT7Setup(src=inputs, vol=t7vol, srcdil=[inp.conc.dilutionneeded() for inp in inputs])

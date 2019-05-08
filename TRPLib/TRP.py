@@ -340,11 +340,11 @@ class TRP(object):
             self.e.multitransfer(watervols,decklayout.WATER,tgt)
         for ir in range(len(rlist)):
             self.e.multitransfer([rvols[ir] for _ in tgt],reagents.getsample(rlist[ir]),tgt)
+        for i in range(len(src)):
+            self.e.transfer(sourcevols[i],src[i],tgt[i])
         for i in range(len(ligands)):
             if ligandvols[i] > 0.01:
                 self.e.transfer(ligandvols[i],ligands[i],tgt[i])
-        for i in range(len(src)):
-            self.e.transfer(sourcevols[i],src[i],tgt[i])
         self.e.shakeSamples(tgt,returnPlate=True)
         for t in tgt:
             t.ingredients['BIND']=1e-20*sum(t.ingredients.values())
