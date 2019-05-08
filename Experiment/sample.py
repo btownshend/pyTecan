@@ -108,7 +108,7 @@ class Sample(object):
         Sample.__historyOptions=opts
         
     def __init__(self, name, plate, well=None, conc=None, volume=0, hasBeads=False, extraVol=50, mixLC=liquidclass.LCMixBottom, firstWell=None,
-                 extrainfo=None, ingredients=None, atEnd=False, refillable=False):
+                 extrainfo=None, ingredients=None, atEnd=False, refillable=False,noEvap=False,precious=False):
         if extrainfo is None:
             extrainfo = []
         while True:
@@ -204,6 +204,7 @@ class Sample(object):
             self.ingredients={}
             self.lastvolcheck=0   # Assume that it has already been checked for 0 (since it can't be any less...)
 
+        self.precious=precious
         self.checkingredients()
 
         if plate.plateType.pierce:
@@ -211,9 +212,13 @@ class Sample(object):
             self.bottomSideLC=self.bottomLC  # Can't use side with piercing
             self.inliquidLC=self.bottomLC  # Can't use liquid detection when piercing
         else:
-            self.bottomLC=liquidclass.LCWaterBottom
             self.bottomSideLC=liquidclass.LCWaterBottomSide
-            self.inliquidLC=liquidclass.LCWaterInLiquid
+            if self.precious:
+                self.bottomLC=liquidclass.LCPreciousBottom
+                self.inliquidLC=liquidclass.LCPreciousInLiquid
+            else:
+                self.bottomLC=liquidclass.LCWaterBottom
+                self.inliquidLC=liquidclass.LCWaterInLiquid
 
         self.beadsLC=liquidclass.LCWaterBottomBeads
         self.mixLC=mixLC
@@ -240,6 +245,7 @@ class Sample(object):
         self.refillable=refillable   # When using refillable, self.volume still refers to the total volume throughout the entire run; could be higher than tube capacity
         # But the actual volume in the tube will always be <=self.volume
         self.lastLevelCheck = None
+        self.noEvap=noEvap   # True to disable evaporation (such as for DMSO)
         db.newsample(self)
         
     def isMixed(self):
@@ -332,6 +338,8 @@ class Sample(object):
 
     def evapcheck(self,op,thresh=0.20):
         """Update amount of evaporation and check for issues"""
+        if self.noEvap:  # Override
+            return
         if self.plate.name=="Samples":
             dt=clock.pipetting-self.lastevapupdate	# Assume no evaporation while in TC
             if dt<-0.1:

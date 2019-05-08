@@ -13,7 +13,7 @@ from . import clock
 class Reagent(object):
     allReagents={}
 
-    def __init__(self, name:str , plate:Plate=None, well:str=None, conc:Concentration=None, hasBeads:bool=False, extraVol:float=50, initVol:float=0, extrainfo=None, ingredients=None, refillable=False):
+    def __init__(self, name:str , plate:Plate=None, well:str=None, conc:Concentration=None, hasBeads:bool=False, extraVol:float=50, initVol:float=0, extrainfo=None, ingredients=None, refillable=False, noEvap=False,precious=False):
         if extrainfo is None:
             extrainfo = []
         self.sample=None
@@ -30,7 +30,9 @@ class Reagent(object):
         self.extrainfo=extrainfo
         self.ingredients=ingredients
         self.refillable=refillable
-
+        self.noEvap=noEvap
+        self.precious=precious
+        
     def __str__(self):
         s=self.name
         return s
@@ -40,7 +42,7 @@ class Reagent(object):
     def getsample(self):
         if self.sample is None:
             #print "Creating sample for reagent %s with %.1f ul"%(self.name,self.initVol)
-            self.sample=Sample(self.name,self.plate,self.preferredWell,self.conc,hasBeads=self.hasBeads,volume=self.initVol,extrainfo=self.extrainfo,ingredients=self.ingredients,refillable=self.refillable)
+            self.sample=Sample(self.name,self.plate,self.preferredWell,self.conc,hasBeads=self.hasBeads,volume=self.initVol,extrainfo=self.extrainfo,ingredients=self.ingredients,refillable=self.refillable,noEvap=self.noEvap,precious=self.precious)
             wellname=self.sample.plate.wellname(self.sample.well)
             if self.preferredWell is not None and self.preferredWell != wellname:
                 logging.warning("%s moved from preferred well %s to %s\n"%(self.name,self.preferredWell,wellname))
@@ -66,14 +68,14 @@ def getsample(name:str):
 def lookup(name:str):
     return Reagent.allReagents[name]
 
-def add(name, plate:Plate=None, well=None, conc:Concentration=None, hasBeads:bool=False, extraVol:float=50, initVol:float=0, extrainfo=None, ingredients=None, refillable=False):
+def add(name, plate:Plate=None, well=None, conc:Concentration=None, hasBeads:bool=False, extraVol:float=50, initVol:float=0, extrainfo=None, ingredients=None, refillable=False, noEvap=False, precious=False):
     if extrainfo is None:
         extrainfo = []
     if plate is None:
         plate=decklayout.REAGENTPLATE
     if name in Reagent.allReagents:
         logging.error("Attempt to add duplicate reagent, "+name)
-    Reagent.allReagents[name]=Reagent(name,plate,well,conc,hasBeads,extraVol,initVol=initVol,extrainfo=extrainfo,ingredients=ingredients,refillable=refillable)
+    Reagent.allReagents[name]=Reagent(name,plate,well,conc,hasBeads,extraVol,initVol=initVol,extrainfo=extrainfo,ingredients=ingredients,refillable=refillable,noEvap=noEvap,precious=precious)
     return Reagent.allReagents[name]
 
 def reset():
