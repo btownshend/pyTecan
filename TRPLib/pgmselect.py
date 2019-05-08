@@ -442,6 +442,8 @@ class PGMSelect(TRP):
             self.e.lihahome()
             print("Estimate usable RNA concentration in T7 reaction at %.0f nM"%self.rnaConc)
 
+            worklist.userprompt("T7 Incubation Started",120)
+            
             self.e.waitpgm()   # So elapsed time will be updated
             db.popStatus()
             if self.edtastop:
