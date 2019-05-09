@@ -426,6 +426,7 @@ class PGMSelect(TRP):
                             self.e.transfer(t7vol / ligand.conc.dilutionneeded(), ligand, inputs[i], mix=(False, False))
                             names[i]+="+"
                 rxs=inputs
+                self.e.shakeSamples(inputs,returnPlate=True)
             elif self.rndNum==len(self.rounds) and self.finalPlus and keepCleaved:
                 rxs = self.runT7Setup(ligands=[reagents.getsample(inp['ligand']) for inp in self.inputs],src=inputs, vol=t7vol, srcdil=[inp.conc.dilutionneeded() for inp in inputs])
                 for i in range(len(inputs)):
