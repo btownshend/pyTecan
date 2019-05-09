@@ -136,10 +136,12 @@ for i=1:4
     hold on;
   end
 end
+set(gca,'XScale','log');
+logticks(1,0);
 xlabel('Volume (ul)');
-ylabel('Error (ul)');
+ylabel('Error (actual-obs) (ul)');
 legend(h,ucmds,'Interpreter','none');
-title('Measurement error using models in effect at run time');
+title(sprintf('Error using models in effect at parse time (Mean=%.2f (%.1f%%), RMSE=%.2f)',mean(vol-obsvol), mean((vol-obsvol)./vol)*100, sqrt(mean((vol-obsvol).^2))));
 
 subplot(313);
 % Match gemini to above model over 15-150ul range
