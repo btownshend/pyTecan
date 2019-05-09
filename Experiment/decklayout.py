@@ -16,17 +16,18 @@ eppmaxspeeds={170:1200,119:1225,112:1300,91:1450,67:1600,58: 1700,40:1900,20:200
 eppglycerolmaxspeeds=eppmaxspeeds
 eppminspeeds={0:1900,20:1900,32:1800,64:1700,96:1400,150:1100}  # 1100@150ul untested
 
-
+# Unusable volume is based on volume remaining at ZMax-1.5 (which is what Water-Bottom LC aspirates at)
 TROUGH = PlateType("Trough",nx=1,ny=4,pierce=False,unusableVolume=100,maxVolume=100000,gemDepth=0,gemArea=1232,gemShape='flat')
-EPPLOWBIND=PlateType("EppLowBind",nx=12,ny=8,pierce=False,unusableVolume=15,maxVolume=200,
-                angle=17.5,r1=2.717,h1=8.22,v0=14.22,
+EPPLOWBIND=PlateType("EppLowBind",nx=12,ny=8,pierce=False,unusableVolume=17,maxVolume=200,
+                angle=17.5,r1=2.724,h1=8.49,v0=13.48,
                 gemDepth=1.92, gemArea=13.51,
                 gemShape='v-shaped',maxspeeds=eppmaxspeeds,minspeeds=eppminspeeds,glycerolmaxspeeds=eppglycerolmaxspeeds,glycerol=1)  # EppLoBind
 RICBLOCK=PlateType("RICBlock",nx=6,ny=5,pierce=False,unusableVolume=20,maxVolume=1700,angle=17.5,r1=4.088,h1=16.91,v0=10.23,gemDepth=1.02,gemArea=13.52,gemShape='v-shaped')
 WHITEQPCR=PlateType("qPCRPlate",nx=12,ny=8,pierce=False,unusableVolume=15,maxVolume=200,
                 angle=17.5,r1=2.704,h1=10.89,v0=0.44,gemDepth=3.17,gemArea=14.33,gemShape='v-shaped')
-EPPRACK = PlateType("EppRack", nx=1, ny=16, pierce=False, unusableVolume=27, maxVolume=1500,angle=17.5,
-                r1=4.419,h1=17.40,v0=19.41, gemDepth=1.29, gemArea=16.98, gemShape='v-shaped')
+EPPRACK = PlateType("EppRack", nx=1, ny=16, pierce=False, unusableVolume=30, maxVolume=1500,angle=17.5,
+                r1=4.407,h1=17.34,v0=22.11
+                gemDepth=1.29, gemArea=16.98, gemShape='v-shaped')
 
 ############ Plate locations  #############
 WATERLOC=PlateLocation("Water",3,2,zmax=1367)
