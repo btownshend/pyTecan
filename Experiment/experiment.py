@@ -86,7 +86,8 @@ class Experiment(object):
         for s in sorted(Sample.allsamples(),key=lambda s: "%s.%02d"%(s.plate,s.well) if s.well is not None else ""):
             if s is None:
                 continue
-            if s.plate!=decklayout.REAGENTPLATE and (s.plate!=decklayout.DILPLATE or s.volume==0) and (s.plate!=decklayout.PRODUCTPLATE or s.volume==0) and (s.plate!=decklayout.EPPENDORFS or s.volume==0):
+            if s.plate!=decklayout.REAGENTPLATE and (s.plate!=decklayout.EPPENDORFS or s.volume==0):
+                # Was getting arm collided errors with PRODUCTS plate after contents removed -- zmax may be off, but just skip vol checks for now
                 continue
             if s.plate==decklayout.REAGENTPLATE or s.plate==decklayout.EPPENDORFS:
                 freq=3600
