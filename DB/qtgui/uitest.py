@@ -173,7 +173,7 @@ class GUI(Ui_MainWindow):
             return
         self.lastMeasured=q2.value(0)
         self.lastElapsed=q2.value(1)
-        q3=self.dbget("SELECT max(elapsed) FROM ops WHERE program=%d"%self.currentProgram)
+        q3=self.dbget("SELECT totaltime FROM programs WHERE program=%d"%self.currentProgram)
         self.endElapsed=q3.value(0)
         self.endTime=self.lastMeasured.addSecs(self.endElapsed-self.lastElapsed)
         if q.value(3) is not None and q.value(3)!="":
