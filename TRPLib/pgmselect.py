@@ -218,6 +218,8 @@ class PGMSelect(TRP):
                 self.inputs[i]['negligand']=None
             if 'round' not in self.inputs[i]:
                 self.inputs[i]['round']=None
+            if 'looplength' not in self.inputs[i]:
+                self.inputs[i]['looplength']=[18,18]
             if 'name' not in self.inputs[i]:
                 if self.inputs[i]['ligand'] is None:
                     self.inputs[i]['name']='%s_%d_R%d'%(self.inputs[i]['prefix'],self.inputs[i]['ID'],self.inputs[i]['round'])
