@@ -22,7 +22,7 @@ class PGMSelect(TRP):
                  saveDil=24, qpcrWait=False, allLig=False, qpcrStages=None, finalPlus=True, t7dur=30, usertime=10,
                  singlePrefix=False, noPCRCleave=False, saveRNA=False, useMX=True, refillable=False,enrich=1.4):
         # Initialize field values which will never change during multiple calls to pgm()
-        # Can use rounds="UZUWUZ" (e.g.) OR rnddef which is a list of specs for each round with rtype (U,W,Z), tref, barcode
+        # Can use rounds="UZUWUZ" (e.g.) OR rnddef which is a list of specs for each round with rtype (U,W,Z), tref
         super(PGMSelect, self).__init__()
         if refillable:
             reagents.lookup("MT7").refillable=True
@@ -108,7 +108,7 @@ class PGMSelect(TRP):
         self.pcrcycles=[10 for _ in self.rounds]
         self.rnaInput=False
         self.stopConc=1	   # Concentration of stop in uM
-        self.barcoding=False   # True to use unique barcode primers in cleaved rounds
+        self.barcoding=False   # True to use do a barcoding PCR
         self.enrich=enrich   # Estimate of enrichment/round -- scales number of pmoles needed to carry
         self.lowhi=True
         self.regenPCRCycles=None
@@ -199,18 +199,6 @@ class PGMSelect(TRP):
     def pgm(self):
         q = QSetup(self,maxdil=self.maxdilstep,debug=False,mindilvol=60)
         self.e.addIdleProgram(q.idler)
-
-        if self.barcoding:
-            # Setup barcode primers for cleaved rounds only
-            self.bcprimers=[["BC-%s-R%d_T7"%(inp['ligand'],r+1) for inp in self.inputs] if self.rounds[r]=='C' else None for r in range(len(self.rounds))]
-            for bcp in self.bcprimers:
-                if bcp is not None:
-                    for p in ["P-%s"%pp for pp in bcp]:
-                        if not reagents.isReagent(p):
-                            reagents.add(name=p,conc=4,extraVol=30,plate=decklayout.REAGENTPLATE,well="B2")
-                        s=reagents.getsample(p)   # Force allocation of a well
-                        print("Adding %s to reagents at well %s"%(p,s.plate.wellname(s.well)))
-            print("BC primers=", self.bcprimers)
             
         # Add any missing fields to inputs
         for i in range(len(self.inputs)):
@@ -299,7 +287,7 @@ class PGMSelect(TRP):
             self.finalRound=self.rndNum==len(self.rounds)
 
             db.pushStatus("%s%d"%(roundType,self.rndNum))
-            [r1,bc1]=self.oneround(q,r1,prefixOut=prefixOut,stop=stop,prefixIn=curPrefix,keepCleaved=(roundType!='U'),rtvol=self.rtvol[self.rndNum-1],t7vol=self.t7vol[self.rndNum-1],cycles=self.pcrcycles[self.rndNum-1],pcrdil=self.pcrdil[self.rndNum-1],pcrvol=self.pcrvol[self.rndNum-1],dolig=self.allLig or (roundType!='U'),pcrtgt=None if pcrprods is None else pcrprods[self.rndNum-1])
+            r1=self.oneround(q,r1,prefixOut=prefixOut,stop=stop,prefixIn=curPrefix,keepCleaved=(roundType!='U'),rtvol=self.rtvol[self.rndNum-1],t7vol=self.t7vol[self.rndNum-1],cycles=self.pcrcycles[self.rndNum-1],pcrdil=self.pcrdil[self.rndNum-1],pcrvol=self.pcrvol[self.rndNum-1],dolig=self.allLig or (roundType!='U'),pcrtgt=None if pcrprods is None else pcrprods[self.rndNum-1])
             db.popStatus()
 
             # Add TRefs specified in rnddefs 
@@ -330,15 +318,7 @@ class PGMSelect(TRP):
                 print("Used ID ", self.nextID," for ", r1[i].name,": ",r1[i])
                 self.nextID+=1
                 r1[i].conc.final=r1[i].conc.stock*self.templateDilution
-            for i in range(len(bc1)):
-                #print("Renaming",bc1[i].name)
-                pts=bc1[i].name.split(".")
-                bc1[i].name="%d_BC_R%d%c"%(self.nextID,self.inputs[i//2]['round']+self.rndNum,roundType)
-                if self.inputs[i//2]['ligand'] is not None:
-                    bc1[i].name="%s_%s"%(bc1[i].name,self.inputs[i//2]['ligand'])
-                bc1[i].name+="_"+pts[-2]
-                print("Used ID ", self.nextID," for ", bc1[i].name,":",bc1[i])
-                self.nextID+=1
+
             curPrefix=prefixOut
 
 
@@ -645,7 +625,9 @@ class PGMSelect(TRP):
                 print("Reducing PCR volume from %.1ful to %.1ful due to limited input"%(pcrvol, maxpcrvol))
                 pcrvol=maxpcrvol
 
-            if keepCleaved:
+            if self.barcoding:
+                master="MTaqBar"
+            elif keepCleaved:
                 master="MTaqC"
             else:
                 master="MTaqU"
@@ -653,34 +635,12 @@ class PGMSelect(TRP):
             reagents.getsample(master)    # Allocate for this before primers
             
             if self.barcoding:
-                primers=self.bcprimers[self.rndNum-1]
-                if primers is not None and nsplit>1:
-                    primers=primers*nsplit
+                primers=["BCFwd" if x%2==0 else "BCRev" for x in range(len(prefixOut))]
             else:
-                primers=None
-
-            if primers is None:
                 primers=[("T7%sX"%x).replace("T7T7","T7") for x in prefixOut]*nsplit
 
             rnddef = self.rnddef[self.rndNum-1]
-            bcout=[]
-            if 'barcode' in rnddef:
-                # Add barcoding primers 
-                assert len(rnddef['barcode'])==len(rxs)
-                dil=self.saveSamps(rxs,dil=50,vol=2,plate=decklayout.SAMPLEPLATE)
-                for i in range(len(rxs)):
-                    dil[i].conc=Concentration(25,1)
-                    for bc in rnddef['barcode'][i]:
-                        tgt=Sample("%s.%s"%(rxs[i].name,bc),decklayout.SAMPLEPLATE)
-                        bparts=bc.split("/")
-                        for b in bparts:
-                            if not reagents.isReagent("P-%s"%b):
-                                reagents.add(name="P-%s"%b,conc=Concentration(2.67,0.4,'uM'),extraVol=30)
-                        print("PCR-%s"%bc)
-                        self.e.stage("PCR-%s"%bc,reagents=[reagents.getsample("MTaqBar"),reagents.getsample("P-%s"%bparts[0]),reagents.getsample("P-%s"%bparts[1])],samples=[tgt],sources=[dil[i] ],volume=50,destMix=False)
-                        bcout.append(tgt)
-                        print(tgt.name,"wellMixed=",tgt.wellMixed)
-                        
+
             print("Running PCR with master=",master,", primers=",primers)
             pcr=self.runPCR(src=rxs*nsplit,vol=pcrvol/nsplit,srcdil=pcrdil,ncycles=cycles,primers=primers,usertime=self.usertime if keepCleaved else None,fastCycling=False,inPlace=False,master=master,lowhi=self.lowhi,annealTemp=57)
             if keepCleaved and self.regenPCRCycles is not None:
@@ -732,24 +692,10 @@ class PGMSelect(TRP):
                         q.addSamples(sv[i],needDil,primers=primerSet[i],names=["%s.pcr"%names[i]])
 
                 print("Have %.2f pmoles of product (%.0f ul @ %.1f nM)"%(sv[0].volume*sv[0].conc.stock/1000,sv[0].volume,sv[0].conc.stock))
-
-                # Save barcoded products too
-                if len(bcout)>0:
-                    print("bcout=",",".join(str(b) for b in bcout))
-                    print("mixed=",bcout[0].isMixed(),", wellMixed=",bcout[0].wellMixed)
-                    bcsave=self.saveSamps(src=bcout,vol=[b.volume for b in bcout],dil=1,plate=self.savePlate,mix=(False,False))
-                    if "bc" in self.qpcrStages:
-                        print("Doing qPCR of barcoding: ",bcsave)
-                        for i in range(len(bcsave)):
-                            needDil=640
-                            q.addSamples(src=bcsave[i],needDil=needDil,primers=["T7X","WX","ZX"]+(["MX"] if self.useMX else []),save=False)
-                else:
-                    bcsave=[]
-                    
-                return sv, bcsave
+                return sv
             else:
                 assert "pcr" not in self.qpcrStages   ## Not implemented
-                return pcr[:len(rxs)], bcout
+                return pcr[:len(rxs)]
 
         elif self.noPCRCleave:
             print("Dilution instead of PCR: %.2f"%self.nopcrdil)
