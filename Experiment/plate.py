@@ -89,3 +89,7 @@ class Plate(object):
         return self.name
         #return "%s(%s,%s)"%(self.name,self.grid,self.pos)
 
+    @classmethod
+    def isOccupied(cls, dest:PlateLocation):
+        return cls.lookup(dest.grid,dest.pos) is not None
+

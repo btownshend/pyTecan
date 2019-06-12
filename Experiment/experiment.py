@@ -481,6 +481,9 @@ class Experiment(object):
         if dest.vectorName is None:
             logging.error("moveplate: Attempt to move plate %s to %s, which doesn't have a vector"%(plate.name,dest))
 
+        if Plate.isOccupied(dest):
+            logging.error("moveplate: Attempt to move plate %s to %s, which is already occupied"%(plate.name,dest))
+
         # print("Move plate %s from %s to %s"%(plate.name,plate.location,destLoc))
         worklist.flushQueue()
         self.lihahome()
@@ -545,6 +548,7 @@ class Experiment(object):
             
         oldloc=plate.location
         self.moveplate(plate,decklayout.SHAKERPLATELOC,returnHome=False)
+
         Experiment.__shakerActive=True
         worklist.pyrun("BioShake\\bioexec.py setElmLockPos",version=2)
         worklist.pyrun("BioShake\\bioexec.py setShakeTargetSpeed%.0f"%speed,version=2)
