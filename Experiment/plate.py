@@ -12,7 +12,6 @@ class Plate(object):
         assert(isinstance(plateType, PlateType))
         self.name=name
         self.plateType=plateType
-        self.homeLocation=plateLocation
         self.location=plateLocation
         self.wells=[i*plateType.ny+j for i in range(plateType.nx) for j in range(plateType.ny) ]		# List of wells, can be modified to skip particular wells
         self.liquidTemp=liquidTemp
@@ -45,8 +44,7 @@ class Plate(object):
 
     @classmethod
     def reset(cls):
-        for p in Plate.__allplates:
-            p.movetoloc(p.homeLocation)
+        pass
 
     def unusableVolume(self):
         return self.plateType.unusableVolume

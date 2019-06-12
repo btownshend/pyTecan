@@ -468,13 +468,14 @@ class Experiment(object):
         if waitForCompletion:
             self.waitpgm()
 
-    def moveplate(self,plate:Plate,dest:PlateLocation=None,returnHome:bool=True):
+    def moveplate(self,plate:Plate,dest:PlateLocation,returnHome:bool=True):
         if self.tcrunning and plate==decklayout.SAMPLEPLATE:
             self.waitpgm()
 
         # move to given destination (one of "Home","Magnet","Shaker","TC" )
         if dest is None:
-            dest=plate.homeLocation
+            logging.error("Home location for plates no longer supported")
+            #dest=plate.homeLocation
         if plate.location.vectorName is None:
             logging.error("moveplate: Attempt to move plate %s from %s, which doesn't have a vector"%(plate.name,plate.location))
         if dest.vectorName is None:
@@ -633,7 +634,7 @@ class Experiment(object):
             worklist.vector("PTC200WigglePos",decklayout.TCPOS,worklist.ENDTOSAFE,False,worklist.DONOTMOVE,worklist.DONOTMOVE)
 
         self.tcrunning=False
-        self.moveplate(decklayout.SAMPLEPLATE)  # Move HOME
+        self.moveplate(decklayout.SAMPLEPLATE,decklayout.SAMPLELOC)  # Move HOME
         # Mark all samples on plate as unmixed (due to condensation)
         Sample.notMixed(decklayout.SAMPLEPLATE.name)
         if thermocycler.cycler=='PTC200':
