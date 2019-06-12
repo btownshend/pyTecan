@@ -539,7 +539,7 @@ class PGMSelect(TRP):
             needDil=needDil/extdil
             if self.extpostdil[self.rndNum-1]>1:
                 print("Dilution after extension: %.2f"%self.extpostdil[self.rndNum-1])
-                self.diluteInPlace(tgt=rxs,dil=self.extpostdil[self.rndNum-1])
+                self.diluteInPlace(tgt=rxs,dil=self.extpostdil[self.rndNum-1],finalvol=100)
                 needDil=needDil/self.extpostdil[self.rndNum-1]
                 pcrdil=pcrdil*1.0/self.extpostdil[self.rndNum-1]
                 
