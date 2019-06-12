@@ -255,13 +255,29 @@ class TRP(object):
         # e.g.: trp.diluteInPlace(tgt=rt1,dil=2)
         [tgt,dil,finalvol]=listify([tgt,dil,finalvol])
         dilutant=decklayout.WATER
+        dil2=[1 for _ in tgt]
         for i in range(len(tgt)):
             if finalvol[i] is not None and dil[i] is None:
                 self.e.transfer(finalvol[i]-tgt[i].volume,dilutant,tgt[i],mix=(False,False))
             elif finalvol[i] is None and dil[i] is not None:
                 self.e.transfer(tgt[i].volume*(dil[i]-1),dilutant,tgt[i],mix=(False,False))
-            else:
-                logging.error("diluteInPlace: cannot specify both dil and finalvol")
+            elif dil[i] is None:
+                logging.error("diluteInPlace: neither dil nor finalvol were specified")
+            else: # Both dil and finalvol specified
+                dil1 = max(1,min(dil[i],finalvol[i]/tgt[i].volume))
+                dil2[i] = dil[i]/dil1
+                if dil1>1:
+                    self.e.transfer(tgt[i].volume*(dil1-1),dilutant,tgt[i],mix=(False,False))
+
+
+        if any([d2>1 for d2 in dil2]):
+            self.e.shakeSamples(tgt)
+            for i in range(len(tgt)):
+                if dil2[i]>1:
+                    disposeVol=tgt[i].volume - finalvol[i] / dil2[i]-1.4
+                    if disposeVol>0:
+                        self.e.dispose(disposeVol, tgt[i])
+                    self.e.transfer(tgt[i].volume * (dil2[i] - 1), dilutant, tgt[i], mix=(False, False))
 
         #print "after dilute, tgt[0]=",str(tgt[0]),",mixed=",tgt[0].isMixed()
         return tgt   #  The name of the samples are unchanged -- the predilution names
