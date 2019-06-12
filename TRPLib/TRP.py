@@ -49,7 +49,6 @@ reagents.add("TE8",well="E4",conc=None)
 
 reagents.add("EvaGreen",well="A5",conc=2)
 reagents.add("EvaUSER",well="A5",conc=2,extraVol=100)
-reagents.add("P-TR",well="B5",conc=4)
 reagents.add("P-T7BX",well="C5",conc=4)
 reagents.add("P-T7ZX",well="C5",conc=4)
 reagents.add("P-T7WX",well="D5",conc=4)
@@ -58,10 +57,8 @@ reagents.add("P-AX",well="E5",conc=4)
 
 reagents.add("P-T7X",well="A6",conc=4)
 reagents.add("P-WX",well="B6",conc=4)
-reagents.add("P-T7WXlong",well="B6",conc=4)
 reagents.add("P-BX",well="C6",conc=4)
 reagents.add("P-ZX",well="C6",conc=4)
-reagents.add("P-T7ZXlong",well="C6",conc=4)
 reagents.add("P-MX",well="D6",conc=4)
 reagents.add("P-REF",well="E6",conc=4)
 
