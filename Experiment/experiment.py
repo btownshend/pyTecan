@@ -246,8 +246,8 @@ class Experiment(object):
             if mix[0] and (not src.isMixed() or not src.wellMixed):
                 if src.plate.location.lihaAccess:
                     logging.notice("Forcing pipette mix of "+src.name)
-                worklist.comment("pipette mix for src mix of "+src.name)
-                src.mix(tipMask)	# Manual mix (after allocating a tip for this)
+                    worklist.comment("pipette mix for src mix of "+src.name)
+                    src.mix(tipMask)	# Manual mix (after allocating a tip for this)
 
             if len(dests)>=8:
                 print("Running multi-tip transfer")
@@ -318,8 +318,8 @@ class Experiment(object):
         if mix[0] and (not src.isMixed() or not src.wellMixed):
             if src.plate.location.lihaAccess:
                 logging.notice("Forcing pipette mix of "+src.name)
-            worklist.comment("pipette mix for src mix of "+src.name)
-            src.mix(tipMask)	# Manual mix (after allocating a tip for this)
+                worklist.comment("pipette mix for src mix of "+src.name)
+                src.mix(tipMask)	# Manual mix (after allocating a tip for this)
             
         src.aspirate(tipMask,volume)
         dest.dispense(tipMask,volume,src)
