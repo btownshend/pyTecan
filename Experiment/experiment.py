@@ -191,7 +191,7 @@ class Experiment(object):
     def multitransfer(self, volumes, src: Sample, dests: SampleListType,mix: mixType=(True,False),getDITI:bool=True,dropDITI:bool=True,ignoreContents:bool=False,extraFrac:float=0.05):
         """Multi pipette from src to multiple dest.  mix is (src,dest) mixing -- only mix src if needed though"""
         #print "multitransfer(",volumes,",",src,",",dests,",",mix,",",getDITI,",",dropDITI,")"
-        if self.tcrunning and (src.plate==decklayout.SAMPLEPLATE or len([1 for d in dests if d.plate==decklayout.SAMPLEPLATE])>0):
+        if self.tcrunning and (src.plate.location==decklayout.TCPOS or len([1 for d in dests if d.plate.location==decklayout.TCPOS])>0):
             self.waitpgm()
 
         if isinstance(volumes,(int,float)):
@@ -227,7 +227,7 @@ class Experiment(object):
                         self.multitransfer(volumes[i:],src,dests[i:],(False,mix[1]),not reuseTip,dropDITI,extraFrac=extraFrac)
                         return
 
-            if mix[0] and not src.isMixed() and (src.plate==decklayout.SAMPLEPLATE or src.plate==decklayout.DILPLATE or src.plate==decklayout.PRODUCTPLATE):
+            if mix[0] and not src.isMixed() and (src.plate.vectorName is not None):
                 worklist.comment("shaking for src mix of "+src.name)
                 self.shakeSamples([src])  # Need to do this before allocating a tip since washing during this will modify the tip clean states
 
@@ -244,7 +244,7 @@ class Experiment(object):
             worklist.comment(cmt)
 
             if mix[0] and (not src.isMixed() or not src.wellMixed):
-                if src.plate==decklayout.SAMPLEPLATE or src.plate==decklayout.DILPLATE or src.plate==decklayout.PRODUCTPLATE:
+                if src.plate.location.lihaAccess:
                     logging.notice("Forcing pipette mix of "+src.name)
                 worklist.comment("pipette mix for src mix of "+src.name)
                 src.mix(tipMask)	# Manual mix (after allocating a tip for this)
@@ -277,7 +277,7 @@ class Experiment(object):
                     self.transfer(volumes[i],src,dests[i],(mix[0] and i==0,mix[1]),getDITI,dropDITI)
 
     def transfer(self, volume: float, src: Sample, dest: Sample, mix: mixType=(True,False), getDITI:bool=True, dropDITI:bool=True):
-        if self.tcrunning and (src.plate==decklayout.SAMPLEPLATE or dest.plate==decklayout.SAMPLEPLATE)>0:
+        if self.tcrunning and (src.plate.location==decklayout.TCPOS or dest.plate.location==decklayout.TCPOS)>0:
             self.waitpgm()
 
         if volume>self.MAXVOLUME:
@@ -302,7 +302,7 @@ class Experiment(object):
             cmt=cmt+" with dest mix"
             ditivolume=max(ditivolume,volume+dest.volume)
             #            print "Mix volume=%.1f ul"%(ditivolume)
-        if mix[0] and not src.isMixed() and (src.plate==decklayout.SAMPLEPLATE or src.plate==decklayout.DILPLATE or src.plate==decklayout.PRODUCTPLATE):
+        if mix[0] and not src.isMixed() and (src.plate.location.vectorName is not None):
             worklist.comment("shaking for src mix of "+src.name)
             self.shakeSamples([src])  # Need to do this before allocating a tip since washing during this will modify the tip clean states
 
@@ -316,7 +316,7 @@ class Experiment(object):
         worklist.comment(cmt)
 
         if mix[0] and (not src.isMixed() or not src.wellMixed):
-            if src.plate==decklayout.SAMPLEPLATE or src.plate==decklayout.DILPLATE or src.plate==decklayout.PRODUCTPLATE:
+            if src.plate.location.lihaAccess:
                 logging.notice("Forcing pipette mix of "+src.name)
             worklist.comment("pipette mix for src mix of "+src.name)
             src.mix(tipMask)	# Manual mix (after allocating a tip for this)
@@ -331,7 +331,7 @@ class Experiment(object):
 
     # Mix
     def mix(self, src:Sample, nmix:int=4):
-        if self.tcrunning and src.plate==decklayout.SAMPLEPLATE:
+        if self.tcrunning and src.plate.location==decklayout.TCPOS:
             self.waitpgm()
 
         cmt="Mix %s" % src.name
@@ -342,7 +342,7 @@ class Experiment(object):
 
     def dispose(self, volume:float, src:Sample,  mix:bool=False, getDITI:bool=True, dropDITI:bool=True):
         """Dispose of a given volume by aspirating and not dispensing (will go to waste during next wash)"""
-        if self.tcrunning and src.plate==decklayout.SAMPLEPLATE:
+        if self.tcrunning and src.plate.location==decklayout.TCPOS:
             self.waitpgm()
         if volume>self.MAXVOLUME:
             reuseTip=False   # Since we need to wash to get rid of it
@@ -469,7 +469,7 @@ class Experiment(object):
             self.waitpgm()
 
     def moveplate(self,plate:Plate,dest:PlateLocation,returnHome:bool=True):
-        if self.tcrunning and plate==decklayout.SAMPLEPLATE:
+        if self.tcrunning and plate.location==decklayout.TCPOS:
             self.waitpgm()
 
         # move to given destination (one of "Home","Magnet","Shaker","TC" )
@@ -499,7 +499,7 @@ class Experiment(object):
 
     def shakeSamples(self,samples:SampleListType,dur:float=60,speed:float=None,accel:float=10,returnPlate:bool=True):
         """Shake plates if any of the given samples are on that plate and  needs mixing"""
-        if self.tcrunning and any([s.plate==decklayout.SAMPLEPLATE for s in samples]):
+        if self.tcrunning and any([s.plate.location==decklayout.TCPOS for s in samples]):
             self.waitpgm()
 
         for p in set([s.plate for s in samples if not s.isMixed()  ]):
@@ -507,7 +507,7 @@ class Experiment(object):
                 self.shake(p,returnPlate=returnPlate,speed=speed,samps=[s for s in samples if s.plate==p],dur=dur,accel=accel)
 
     def shake(self,plate:Plate, dur:float=60,speed:float=None,accel:float=10,returnPlate:bool=True,samps: SampleListType=None,force: bool=False):
-        if self.tcrunning and plate==decklayout.SAMPLEPLATE:
+        if self.tcrunning and plate.location==decklayout.TCPOS:
             self.waitpgm()
 
         # Move the plate to the shaker, run for the given time, and bring plate back

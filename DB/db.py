@@ -10,6 +10,7 @@ import pymysql.cursors
 epath = os.path.join(os.path.dirname(__file__), '..')
 sys.path.append(epath)
 from Experiment import decklayout
+from .plate import Plate
 
 
 class TecanDB(object):
@@ -228,20 +229,9 @@ class TecanDB(object):
             return -1
         cursor = self.con.cursor()
         gemvolume = float(gemvolume)
-        if platename == 'Reagents':
-            plate = decklayout.REAGENTPLATE
-        elif platename == 'Samples':
-            plate = decklayout.SAMPLEPLATE
-        elif platename == 'Dilutions':
-            plate = decklayout.DILPLATE
-        elif platename == 'Water':
-            plate = decklayout.WATERLOC
-        elif platename == 'SSDDil':
-            plate = decklayout.SSDDILLOC
-        else:
+        plate=Plate.lookupByName(platename)
+        if plate is None:
             logging.error("setvol: Unknown plate: %s ", platename)
-            plate = None
-
         volume = None
         if plate is not None:
             try:

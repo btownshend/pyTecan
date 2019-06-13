@@ -238,7 +238,7 @@ class TRP(object):
     
     def distribute(self,src,dil,vol,wells,tgt=None,dilutant=None,plate=None):
         if plate is None:
-            plate=decklayout.SAMPLEPLATE
+            plate=src.plate
         if tgt is None:
             tgt=[Sample("%s.dist%d"%(src[0].name,j),plate) for j in range(wells)]
         
@@ -329,9 +329,9 @@ class TRP(object):
         for i in range(len(src)):
             if tgt[i] is None:
                 if ligands[i] is not None:
-                    tgt[i]=Sample("%s.T+%s"%(src[i].name,ligands[i].name),decklayout.SAMPLEPLATE)
+                    tgt[i]=Sample("%s.T+%s"%(src[i].name,ligands[i].name),src[i].plate)
                 else:
-                    tgt[i]=Sample("%s.T-"%src[i].name,decklayout.SAMPLEPLATE)
+                    tgt[i]=Sample("%s.T-"%src[i].name,src[i].plate)
 
 
         worklist.comment("runT7: source=%s"%[str(s) for s in src])
@@ -423,8 +423,8 @@ class TRP(object):
         [src,beads,bbuffer,beadConc,beadDil]=listify([src,beads,bbuffer,beadConc,beadDil])
 
         for s in src:
-            if s.plate!=decklayout.SAMPLEPLATE:
-                logging.error( "runBeadCleanup: src "+s.name+" is not in sample plate.")
+            if s.plate.plateLocation.vectorName is None:
+                logging.error( "runBeadCleanup: src "+s.name+" is on plate "+s.plate.name+", which cannot be moved to magnet.")
 
             s.conc=None		# Can't track concentration of beads
             
@@ -563,12 +563,10 @@ class TRP(object):
                 self.e.moveplate(src[0].plate,"Home")
 
     def beadSupernatant(self,src,tgt=None,sepTime=None,residualVolume=0.1,plate=None):
-        if plate is None:
-            plate=decklayout.SAMPLEPLATE
         if tgt is None:
             tgt=[]
             for i in range(len(src)):
-                tgt.append(Sample("%s.SN"%src[i].name,plate))
+                tgt.append(Sample("%s.SN"%src[i].name,src[i].plate if plate is None else plate))
         [src,tgt]=listify([src,tgt])
 
         if any([s.plate!=src[0].plate for s in src]):
@@ -613,7 +611,7 @@ class TRP(object):
         self.e.pause(evapTime)	# Wait for evaporation
         self.beadAddElutant(src=src,elutant=reagents.getsample("TE8"),elutionVol=elutionVol)
         if tgt is None:
-            tgt=[Sample("%s.ampure"%r.name,decklayout.SAMPLEPLATE) for r in src]
+            tgt=[Sample("%s.ampure"%r.name,r.plate) for r in src]
         res=self.beadSupernatant(src=src,sepTime=120,tgt=tgt)
         return res
     
@@ -643,7 +641,7 @@ class TRP(object):
         if rtmaster is None:
             rtmaster=reagents.getsample("MPosRT")
         if tgt is None:
-            tgt=[Sample(s.name+".RT+",decklayout.SAMPLEPLATE) for s in src]
+            tgt=[Sample(s.name+".RT+",s.plate) for s in src]
 
         [src,tgt,vol,srcdil,stop,stopConc,rtmaster]=listify([src,tgt,vol,srcdil,stop,stopConc,rtmaster])
 
@@ -722,7 +720,7 @@ class TRP(object):
             if tgt is not None:
                 logging.error("tgt specified for in-place incubation")
         elif tgt is None:
-            tgt=[Sample("%s.%s"%(src[i].name,enzymes[0].name),decklayout.SAMPLEPLATE) for i in range(len(src))]
+            tgt=[Sample("%s.%s"%(src[i].name,enzymes[0].name),src[i].plate) for i in range(len(src))]
 
         if srcdil is None:
             # Minimum dilution (no water)
@@ -822,11 +820,11 @@ class TRP(object):
             for i in range(len(tgt)):
                 if tgt[i] is None:
                     if primers is None:
-                        tgt[i]=Sample("%s.%s"%(src[i].name,master),decklayout.SAMPLEPLATE)
+                        tgt[i]=Sample("%s.%s"%(src[i].name,master),src[i].plate)
                     elif isinstance(primers[i],list):
-                        tgt[i]=Sample("%s.P%s"%(src[i].name,"+".join(primers[i])),decklayout.SAMPLEPLATE)
+                        tgt[i]=Sample("%s.P%s"%(src[i].name,"+".join(primers[i])),src[i].plate)
                     else:
-                        tgt[i]=Sample("%s.P%s"%(src[i].name,primers[i]),decklayout.SAMPLEPLATE)
+                        tgt[i]=Sample("%s.P%s"%(src[i].name,primers[i]),src[i].plate)
 
         # Adjust source dilution
         for i in range(len(src)):
@@ -922,9 +920,9 @@ class TRP(object):
         for i in range(len(src)):
             if tgt[i] is None:
                 if BC1[i] is not None:
-                    tgt[i]=Sample("%s.%s-%s"%(src[i].name,BC1[i].name,BC2[i].name),decklayout.SAMPLEPLATE)
+                    tgt[i]=Sample("%s.%s-%s"%(src[i].name,BC1[i].name,BC2[i].name),src[i].plate)
                 else:
-                    tgt[i]=Sample("%s.T-"%src[i].name,decklayout.SAMPLEPLATE)
+                    tgt[i]=Sample("%s.T-"%src[i].name,src[i].plate)
 
         worklist.comment("runBC: source=%s"%[str(s) for s in src])
 
@@ -999,7 +997,7 @@ class TRP(object):
             if dilPlate:
                 tgt=[Sample(diluteName(src[i].name,srcdil[i]),decklayout.DILPLATE) for i in range(len(src))]
             else:
-                tgt=[Sample(diluteName(src[i].name,srcdil[i]),decklayout.SAMPLEPLATE) for i in range(len(src))]
+                tgt=[Sample(diluteName(src[i].name,srcdil[i]),src[i].plate) for i in range(len(src))]
 
         srcvol=[vol[i]/srcdil[i] for i in range(len(vol))]
         watervol=[vol[i]-srcvol[i] for i in range(len(vol))]

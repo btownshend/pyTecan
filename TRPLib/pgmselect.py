@@ -520,7 +520,7 @@ class PGMSelect(TRP):
         if self.rtCarryForward and not keepCleaved:
             # Also include RT from a prior round from here on
             for r in self.lastSaved:
-                newsamp=Sample("%s.samp"%r.name,decklayout.SAMPLEPLATE)
+                newsamp=Sample("%s.samp"%r.name,rxs[0].plate)
                 self.e.transfer(rxs[0].volume,r,newsamp,(False,False))
                 rxs.append(newsamp)
         db.popStatus()

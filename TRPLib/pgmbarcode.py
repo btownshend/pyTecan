@@ -104,7 +104,7 @@ class Barcoding(TRP):
         print("Mix: tgtdil=%.2f, inp=" % tgtdil, ",".join(
             ["%s@%.2f" % (inp[i].name, weights[i]) for i in range(len(inp))]))
         relvol = [weights[i] * 1.0 / inp[i].conc.stock for i in range(len(inp))]
-        stages=mixsplit(vols=relvol,samps=inp,avail=[(i.volume-15.0)*maxusefrac-1.4 for i in inp],minvol=4.0,minmix=100.0,maxmix=100.0,plate=decklayout.SAMPLEPLATE,debug=False,prefix=prefix)
+        stages=mixsplit(vols=relvol,samps=inp,avail=[(i.volume-15.0)*maxusefrac-1.4 for i in inp],minvol=4.0,minmix=100.0,maxmix=100.0,plate=inp.plate,debug=False,prefix=prefix)
         for s in stages:
             dest=s[0]
             moles=0
