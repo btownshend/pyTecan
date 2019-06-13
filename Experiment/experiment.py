@@ -481,7 +481,7 @@ class Experiment(object):
         if dest.vectorName is None:
             logging.error("moveplate: Attempt to move plate %s to %s, which doesn't have a vector"%(plate.name,dest))
 
-        if Plate.isOccupied(dest):
+        if Plate.lookupLocation(dest) is not None:
             logging.error("moveplate: Attempt to move plate %s to %s, which is already occupied"%(plate.name,dest))
 
         # print("Move plate %s from %s to %s"%(plate.name,plate.location,destLoc))

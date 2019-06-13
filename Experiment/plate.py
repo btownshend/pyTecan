@@ -29,6 +29,10 @@ class Plate(object):
 
 
     @classmethod
+    def allPlates(cls):
+        return Plate.__allplates
+
+    @classmethod
     def lookup(cls,grid,pos):
         for p in Plate.__allplates:
             if p.location.grid==grid and p.location.pos==pos:
@@ -90,6 +94,6 @@ class Plate(object):
         #return "%s(%s,%s)"%(self.name,self.grid,self.pos)
 
     @classmethod
-    def isOccupied(cls, dest:PlateLocation):
-        return cls.lookup(dest.grid,dest.pos) is not None
+    def lookupLocation(cls, dest:PlateLocation):
+        return cls.lookup(dest.grid,dest.pos)
 
