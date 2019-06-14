@@ -50,14 +50,14 @@ class BioShake:
 			logging.debug("Sending command: %s",cmd)
 		self.ser.write(cmd+"\r")
 		for i in range(5):
-		logging.debug("Read attempt %d",i)
-		line=self.ser.readline()
-		line=string.strip(line)
-		if len(line)==0:
-		logging.warning("No response...waiting")
-		time.sleep(1)
-		else:
-		break
+			logging.debug("Read attempt %d",i)
+			line=self.ser.readline()
+			line=string.strip(line)
+			if len(line)==0:
+				logging.warning("No response...waiting")
+				time.sleep(1)
+			else:
+				break
 		if line=="e":
 			logging.error( "Error from BioShake while executing '%s'",cmd)
 			if cmd!="getErrorList":
