@@ -553,7 +553,7 @@ class PGMSelect(TRP):
                             logging.notice( "Diluting ext by %.0fx instead of needed %.0f to save steps"%(maxdil,needDil/self.saveDil))
                         pset=primerSet[i]
                         if "extraQPCR" in self.inputs[i]:
-                            pset.udpate(self.inputs[i]["extraQPCR"])
+                            pset.update(self.inputs[i]["extraQPCR"])
                         q.addSamples(src=[ext[i]],needDil=min(maxdil,needDil/self.saveDil),primers=pset,names=["%s.ext"%names[i]],save=False)
             else:
                 if "ext" in self.qpcrStages:
