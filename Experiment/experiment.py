@@ -47,7 +47,7 @@ class Experiment(object):
         pyTecan=os.path.dirname(os.path.realpath(__file__))
         try:
             self.gitlabel=subprocess.check_output(["git", "describe","--always"],cwd=pyTecan).decode('latin-1').strip()
-        except Exception as exc:
+        except Exception:
             self.gitlabel=None
 
         db.startrun(sys.argv[0],datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'),self.checksum,self.gitlabel)
