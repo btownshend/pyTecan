@@ -527,7 +527,7 @@ def parselog(filename: str, outfile:str=None, follow=False):
                             print("Skipping long pause of %s for %s"%(str(t-lasttime),lastgeminicmd),file=outfd)
                         elif t<lasttime:
                             assert False # Shouldn't happen
-                            print("Skipping negative elapsed time of %d seconds for %s"%((t-lasttime).total_seconds(),lastgeminicmd),file=outfd)
+                            #print("Skipping negative elapsed time of %d seconds for %s"%((t-lasttime).total_seconds(),lastgeminicmd),file=outfd)
                         elif lastgeminicmd in list(geminicmdtimes.keys()):
                             geminicmdtimes[lastgeminicmd]+=(t-lasttime).total_seconds()
                             geminicmdcnt[lastgeminicmd]+=1

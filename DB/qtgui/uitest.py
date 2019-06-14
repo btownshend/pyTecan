@@ -97,7 +97,7 @@ class GUI(Ui_MainWindow):
                 ORDER BY v.op DESC
                 LIMIT 1
             """%(sampid,self.currentRun))
-            if q!=None:
+            if q is not None:
                 print(q.value(0),q.value(1),"Null" if q.isNull(2) else q.value(2),q.value(3),q.value(4))
                 lastop=q.value(0)
                 if q1.value(0)==0:

@@ -1,4 +1,4 @@
-__all__=["datalog","parselog","embedded"]
+__all__=["datalog","parselog"]
 
 from sys import version_info, exit
 if version_info < (3,5):

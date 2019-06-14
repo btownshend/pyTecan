@@ -105,10 +105,10 @@ class DB(object):
         with self.db.cursor() as cursor:
             if totalTime is None:
                 cursor.execute('update programs set complete=True where program=%s',self.program)
-                logging.notice('Marked program %d as complete'%self.program)
+                logging.notice('Marked program %s as complete'%self.program)
             else:
                 cursor.execute('update programs set complete=True,totaltime=%s where program=%s',(totalTime, self.program,))
-                logging.notice('Marked program %d as complete with totalTime=%f'%(self.program,totalTime))
+                logging.notice('Marked program %s as complete with totalTime=%f'%(self.program,totalTime))
 
     def getOp(self, lineno, tip, sampid):
         if self.program is None:
@@ -364,10 +364,9 @@ class LogDB(DB):
                     return
                 logging.warning("Unable to link logfile %s to an existing run with program %d, creating a new expt" % (self.logfile, self.program))
                 # Create an experiment for this run
-                with self.db.cursor() as cursor:
-                    cursor.execute("insert into expts(complete) values(false)")
-                    self.expt=cursor.lastrowid
-                    cursor.execute("update runs set expt=%s where run=%s",(self.expt,self.run))
+                cursor.execute("insert into expts(complete) values(false)")
+                self.expt=cursor.lastrowid
+                cursor.execute("update runs set expt=%s where run=%s",(self.expt,self.run))
 
     def logfileDone(self,lineno, endtime):
         """Completed parse of log file"""
