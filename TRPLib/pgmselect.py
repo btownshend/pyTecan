@@ -432,7 +432,7 @@ class PGMSelect(TRP):
                 for i in range(len(rxs)):
                     q.addSamples(src=rxs[i],needDil=needDil,primers=primerSet[i],names=["%s.T"%names[i]])
 
-            self.runT7Pgm(dur=self.t7dur,vol=t7vol)
+            self.runT7Pgm(rxs[0].plate, dur=self.t7dur,vol=t7vol)
             for i in range(len(rxs)):
                 rxs[i].name="%s.t7"%names[i]
 
@@ -652,7 +652,7 @@ class PGMSelect(TRP):
                 # One more cycle
                 cycling=' TEMP@95,30 TEMP@55,30 TEMP@68,30 TEMP@25,2'
                 thermocycler.setpgm('rfin',100,cycling)
-                self.e.runpgm("rfin",5.0,False,max([p.volume for p in pcr2]))
+                self.e.runpgm(pcr2[0].plate,"rfin",5.0,False,max([p.volume for p in pcr2]))
                 pcr=pcr2	# Use 2nd PCR as actual output
 
             if len(pcr)<=len(names):

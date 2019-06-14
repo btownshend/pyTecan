@@ -440,7 +440,7 @@ class Experiment(object):
         """Move LiHa to left of deck"""
         worklist.moveliha(decklayout.WASHLOC)
 
-    def runpgm(self,pgm: str,duration:float,waitForCompletion:bool=True,volume:float=10):
+    def runpgm(self,plate:Plate, pgm: str,duration:float,waitForCompletion:bool=True,volume:float=10):
         if self.tcrunning:
             logging.error("Attempt to start a progam on TC when it is already running")
         if len(pgm)>8:
@@ -454,7 +454,7 @@ class Experiment(object):
         worklist.comment(cmt)
         #print "*",cmt
         thermocycler.lid(1)
-        self.moveplate(decklayout.SAMPLEPLATE,decklayout.TCPOS)
+        self.moveplate(plate,decklayout.TCPOS)
         worklist.vector("Hotel 1 Lid",decklayout.HOTELPOS,worklist.SAFETOEND,True,worklist.DONOTMOVE,worklist.CLOSE)
         worklist.vector("%slid"%thermocycler.cycler,decklayout.TCPOS,worklist.SAFETOEND,True,worklist.DONOTMOVE,worklist.OPEN)
         worklist.romahome()

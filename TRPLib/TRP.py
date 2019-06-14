@@ -371,14 +371,14 @@ class TRP(object):
             t.ingredients['BIND']=1e-20*sum(t.ingredients.values())
         return tgt
     
-    def runT7Pgm(self,vol,dur):
+    def runT7Pgm(self,plate:Plate, vol,dur):
         if dur<100:
             pgm="TRP37-%d"%dur
         else:
             pgm="T37-%d"%dur
         thermocycler.setpgm(pgm,38,'TEMP@37,%d TEMP@25,2'%(dur*60))
         print("Running T7 at 37C for %d minutes"%dur)
-        self.e.runpgm(pgm,dur, False,vol)
+        self.e.runpgm(plate, pgm,dur, False,vol)
 
     def runT7Stop(self,theo,tgt,stopmaster=None):
         del theo # Unused
@@ -413,7 +413,7 @@ class TRP(object):
     def runT7(self,theo,src,vol,srcdil,tgt=None,dur=15,stopmaster=None):
         [theo,src,tgt,srcdil,stopmaster]=listify([theo,src,tgt,srcdil,stopmaster])
         tgt=self.runT7Setup(theo,src,vol,srcdil,tgt)
-        self.runT7Pgm(vol,dur)
+        self.runT7Pgm(tgt[0].plate, vol,dur)
         tgt=self.runT7Stop(theo,tgt,stopmaster)
         return tgt
 
@@ -564,7 +564,7 @@ class TRP(object):
         else:
             self.e.shakeSamples(src,dur=30,returnPlate=False)
             thermocycler.setpgm('elute',temp+1,'TEMP@%d,%d TEMP@25,2'%(temp,eluteTime))
-            self.e.runpgm("elute",eluteTime/60,False,elutionVol[0])
+            self.e.runpgm(src[0].plate,"elute",eluteTime/60,False,elutionVol[0])
             if returnPlate:
                 self.e.moveplate(src[0].plate,"Home")
 
@@ -626,7 +626,7 @@ class TRP(object):
     ########################
     def runRT(self,src,vol,srcdil,tgt=None,dur=20,heatInactivate=False,hiTemp=None,incTemp=37,stop=None,stopConc=1.0):
         result=self.runRTSetup(src,vol,srcdil,tgt,stop=stop,stopConc=stopConc)
-        self.runRTPgm(dur,heatInactivate=heatInactivate,hiTemp=hiTemp,incTemp=incTemp,src=src)
+        self.runRTPgm(result[0].plate, dur,heatInactivate=heatInactivate,hiTemp=hiTemp,incTemp=incTemp,src=src)
         return result
     
     def runRTInPlace(self,src,vol,dur=20,heatInactivate=False,hiTemp=None,incTemp=37,stop=None):
@@ -641,7 +641,7 @@ class TRP(object):
             assert False
             
         self.runRxInPlace(src,vol,reagents.getsample("MPosRT"),returnPlate=False)
-        self.runRTPgm(dur,heatInactivate=heatInactivate,hiTemp=hiTemp,incTemp=incTemp,src=src)
+        self.runRTPgm(src[0].plate, dur,heatInactivate=heatInactivate,hiTemp=hiTemp,incTemp=incTemp,src=src)
         
     def runRTSetup(self,src,vol,srcdil,tgt=None,rtmaster=None,stop=None,stopConc=1.0,prerefold=False):
         if rtmaster is None:
@@ -680,14 +680,14 @@ class TRP(object):
             self.e.transfer(vol[i]/srcdil[i],src[i],tgt[i],(False,False))
         self.e.shakeSamples(tgt,returnPlate=True)
         if prerefold:
-            self.refold()
+            self.refold(tgt[0].plate)
         for i in range(len(tgt)):
             self.e.transfer(vol[i]/rtmaster[i].conc.dilutionneeded(),rtmaster[i],tgt[i],(False,False))
         self.e.shakeSamples(tgt,returnPlate=True)
 
         return tgt
 
-    def runRTPgm(self,dur=20,heatInactivate=False,hiTemp=None,incTemp=37,src=None):
+    def runRTPgm(self,plate:Plate, dur=20,heatInactivate=False,hiTemp=None,incTemp=37,src=None):
         pgm="RT-%d"%dur
         if heatInactivate:
             if hiTemp is None:
@@ -696,7 +696,7 @@ class TRP(object):
             hidur=2
 
             thermocycler.setpgm(pgm,hiTemp+1,'TEMP@%d,%d TEMP@%d,%d TEMP@25,2 RATE@0.5'%(incTemp,dur*60,hiTemp,hidur*60))
-            self.e.runpgm(pgm,dur+hidur+2.5,False,100)		# Volume doesn't matter since it's just an incubation, use 100ul
+            self.e.runpgm(plate,pgm,dur+hidur+2.5,False,100)		# Volume doesn't matter since it's just an incubation, use 100ul
             print("Running RT at %dC for %d min, followed by heat inactivation/refold at %dC for %d minutes"%(incTemp,dur,hiTemp,hidur))
             assert(src!=None)
             # Mark samples as mixed (by thermal convection)
@@ -706,14 +706,14 @@ class TRP(object):
                 t.lastMixed=clock.elapsed() # Will be cleared due to call to notMixed() later (due to condensation), but wellMixed=True will allow any shake to make it mixed
         else:
             thermocycler.setpgm(pgm,incTemp+1,'TEMP@%d,%d TEMP@25,2'%(incTemp,dur*60))
-            self.e.runpgm(pgm,dur,False,100)		# Volume doesn't matter since it's just an incubation, use 100ul
+            self.e.runpgm(plate, pgm,dur,False,100)		# Volume doesn't matter since it's just an incubation, use 100ul
             print("Running RT at %dC for %d min without heat inactivation"%(incTemp,dur))
 
-    def refold(self,hiTemp=95,coolTemp=25,rate=0.5):
+    def refold(self,plate:Plate, hiTemp=95,coolTemp=25,rate=0.5):
         pgm="Refold"
         hidur=2
         thermocycler.setpgm(pgm,hiTemp+1,'TEMP@%d,%d TEMP@%d,2 RATE@%.1f'%(hiTemp,hidur*60,coolTemp,rate))
-        self.e.runpgm(pgm,(hiTemp-coolTemp)/rate/60+hidur+2.5,False,100)		# Volume doesn't matter since it's just an incubation, use 100ul
+        self.e.runpgm(plate,pgm,(hiTemp-coolTemp)/rate/60+hidur+2.5,False,100)		# Volume doesn't matter since it's just an incubation, use 100ul
         print("Running refold at %dC for %d min, followed by cooling to %dC at %.1fC/sec"%(hiTemp,hidur,coolTemp,rate))
              
     ########################
@@ -759,7 +759,7 @@ class TRP(object):
                 assert(hiTime>0)
                 thermocycler.setpgm('INC',hiTemp+1,'TEMP@%.0f,%.0f TEMP@%.0f,%.0f TEMP@25,30'%(incTemp,incTime*60,hiTemp,hiTime*60))
                 print("Incubating at %dC for %d minutes followed by heat inactivate at %dC for %d minutes"%(incTemp,incTime,hiTemp,hiTime))
-            self.e.runpgm("INC",incTime+hiTime+2,False,max(vol))
+            self.e.runpgm(tgt[0].plate, "INC",incTime+hiTime+2,False,max(vol))
 
         if hiTemp is not None:
             # Mark samples as mixed (by thermal convection)
@@ -903,7 +903,7 @@ class TRP(object):
         print("PCR volume=[",",".join(["%.1f"%t.volume for t in tgt]), "], srcdil=[",",".join(["%.1fx"%s for s in srcdil]),"], program: %s"%cycling)
 
         thermocycler.setpgm(pgm,99,cycling)
-        self.e.runpgm(pgm,runTime,False,max(vol))
+        self.e.runpgm(tgt[0].plate, pgm,runTime,False,max(vol))
         # Mark samples as mixed (by thermal convection)
         print("Marking samples on plate %s as mixed (by thermal convection) after PCR"%tgt[0].plate.name)
         for t in Sample.getAllOnPlate(tgt[0].plate):
@@ -965,7 +965,7 @@ class TRP(object):
             t.ingredients['BIND']=1e-20*sum(t.ingredients.values())
         return tgt
     
-    def runBCPCR(self,ncycles,vol,usertime=None,kapa=True,annealTemp=None,fastCycling=False):
+    def runBCPCR(self,plate: Plate,ncycles,vol,usertime=None,kapa=True,annealTemp=None,fastCycling=False):
         pgm="PCR%d"%ncycles
 
         if usertime is None:
@@ -988,7 +988,7 @@ class TRP(object):
             runTime+=hotTime/60+2.8+3.0*ncycles
             
         thermocycler.setpgm(pgm,99,cycling)
-        self.e.runpgm(pgm,runTime,False,max(vol))
+        self.e.runpgm(plate, pgm,runTime,False,max(vol))
     
 
     ########################
