@@ -8,7 +8,6 @@ from . import logging
 from . import decklayout
 from .concentration import Concentration
 from .plate import Plate
-from . import clock
 
 class Reagent(object):
     allReagents={}

@@ -83,7 +83,7 @@ class Experiment(object):
         e1=clock.elapsed()
 ##        for r in sorted(reagents..allReagents.values(), key=lambda r: r.sample.well if r.sample is not None else -1):
 
-        for s in sorted(Sample.allsamples(),key=lambda s: "%s.%02d"%(s.plate,s.well) if s.well is not None else ""):
+        for s in sorted(Sample.allsamples(),key=lambda z: "%s.%02d"%(z.plate,z.well) if z.well is not None else ""):
             if s is None:
                 continue
             if s.plate!=decklayout.REAGENTPLATE and (s.plate!=decklayout.EPPENDORFS or s.volume==0):
@@ -102,7 +102,7 @@ class Experiment(object):
                 break   # Don't infringe on time available
         #print("volumeChecker done after %.0f seconds"%(clock.elapsed()-e1))
 
-    def addIdleProgram(self,pgm: str):
+    def addIdleProgram(self,pgm):
         self.idlePgms.append(pgm)
 
     @staticmethod

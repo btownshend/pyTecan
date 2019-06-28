@@ -301,6 +301,8 @@ class LogDB(DB):
         self.volsqueue=[]   # Queue of vols insertions to be done with executemany
         self.curline=None
         self.db=None
+        self.run=None
+        self.expt=None
 
     def logfileStart(self,logheader,starttime):
         # Create a run
@@ -405,6 +407,7 @@ class LogDB(DB):
         if len(self.volsqueue) >= 100:
             self.insertQueuedVols()
 
+    # noinspection PyUnusedLocal
     def log_startrun(self, program, lineno, elapsed, lasttime, name, genTime, checksum, gitlabel, totalTime):
         """Process log_startrun embedded command (which is really a start to an expt, not a run) """
         lasttime=self.local2utc(lasttime)  ## Naive datetimes read from log file
@@ -419,6 +422,7 @@ class LogDB(DB):
             self.setProgram(program)
         assert self.program==program
 
+    # noinspection PyUnusedLocal
     def log_status(self, program, lineno, elapsed, lasttime, status):
         print("Status:",status)
         if self.db is None:
@@ -432,6 +436,7 @@ class LogDB(DB):
         with self.db.cursor() as cursor:
             cursor.execute("update runs set lineno=%s where run=%s", (self.curline, self.run) )
 
+    # noinspection PyUnusedLocal
     def log_endrun(self,program,lineno,elapsed, lasttime, endTime):
         """Process log_endrun embedded command (which is really the end to an expt, not a run) """
         # FIXME: endTime  and lasttime not both used
@@ -441,8 +446,8 @@ class LogDB(DB):
         self.logfileDone(lineno,endTime)  # Force marking log file done (since it may not be until next run that logfile is actually closed)
         #self.setProgramComplete()   # FIXME: program not fully defined at build time is untested, probably non-working
         with self.db.cursor() as cursor:
-            cursor.execute('update expts set complete=True where expt=%s',(self.expt))
-            logging.notice('Marked expt %d as complete.'%self.expt)
+            cursor.execute('update expts set complete=True where expt=%s', self.expt)
+            logging.notice('Marked expt %s as complete.'%self.expt)
         self.db.commit()
 
     def setline(self,lineno):
