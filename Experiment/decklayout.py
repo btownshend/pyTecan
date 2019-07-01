@@ -37,7 +37,7 @@ SSDDILLOC=PlateLocation("SSDDil",3,1,zmax=1367)
 RICLOC=PlateLocation("RIC",18,1,slopex=0,slopey=0,zmax=567)
 MAGPLATELOC=PlateLocation("MagPlate",18,2,zmax=1459,vectorName="Magplate")
 SHAKERPLATELOC=PlateLocation("Shaker",9,0,vectorName="Shaker",lihaAccess=False)
-SAMPLELOC=PlateLocation("Home",4,3,zmax=1031,vectorName="Microplate Landscape")
+SAMPLELOC=PlateLocation("SampleLoc",4,3,zmax=1031,vectorName="Microplate Landscape")
 DILUTIONLOC=PlateLocation("DilutionLoc",4,2,zmax=1031,vectorName="Microplate Landscape")
 PRODUCTLOC=PlateLocation("ProductLoc",18,2,zmax=459,vectorName="Microplate Product")
 QPCRLOC=PlateLocation("QPCRLoc",4,1,zmax=996)  # defined in worklist.py
