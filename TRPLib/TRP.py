@@ -336,9 +336,13 @@ class TRP(object):
         for i in range(len(src)):
             if tgt[i] is None:
                 if ligands[i] is not None:
-                    tgt[i]=Sample("%s.T+%s"%(src[i].name,ligands[i].name),src[i].plate)
+                    # src could be on Products or other plate, so don't have information as to what plate to use for this
+                    # For now, just revert to using sample plate
+                    #tgt[i]=Sample("%s.T+%s"%(src[i].name,ligands[i].name),src[i].plate)
+                    tgt[i]=Sample("%s.T+%s"%(src[i].name,ligands[i].name),decklayout.SAMPLEPLATE)
                 else:
-                    tgt[i]=Sample("%s.T-"%src[i].name,src[i].plate)
+                    #tgt[i]=Sample("%s.T-"%src[i].name,src[i].plate)
+                    tgt[i]=Sample("%s.T-"%src[i].name,decklayout.SAMPLEPLATE)
 
 
         worklist.comment("runT7: source=%s"%[str(s) for s in src])
