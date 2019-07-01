@@ -86,6 +86,7 @@ reagents.add("T25",well='C4',conc=Concentration(10.0/3,1.0,'x'),extraVol=30) # A
 #reagents.add("T25T6",well='E2',conc=Concentration(2.222,1.0,'x'),extraVol=30) # Acetyl CoA + Trans-Zeatin +Redox
 reagents.add("8600",well='A1',conc=Concentration(10.0,1.0,'x'),extraVol=30,plate=decklayout.EPPENDORFS,noEvap=True,precious=True)  # HTS library at 10x in DMSO
 reagents.add("DMSO",well='B1',conc=Concentration(10.0,1.0,'x'),extraVol=30,plate=decklayout.EPPENDORFS,noEvap=True,precious=True)  # DMSO 
+reagents.add("8607",well='B1',conc=Concentration(10.0,1.0,'x'),extraVol=30,plate=decklayout.EPPENDORFS,noEvap=True,precious=True)  # DMSO 
     
 def listify(x):
     """Convert a list of (lists or scalars) into a list of equal length lists"""
