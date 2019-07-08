@@ -595,6 +595,8 @@ class PGMSelect(TRP):
             print("######### PCR ############# %.0f min"%(clock.elapsed()/60))
             db.pushStatus("PCR")
             print("PCR Volume: %.1f, Dilution: %.1f, volumes available for PCR: [%s]"%(pcrvol, pcrdil,",".join(["%.1f"%r.volume for r in rxs])))
+            if pcrdil>20:
+                logging.error( "PCR dilution too high: %.1f"%pcrdil)
 
             initConc=needDil*self.qConc/pcrdil
             if keepCleaved:
