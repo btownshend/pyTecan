@@ -739,7 +739,7 @@ class PGMAnalytic(PGMSelect):
         self.ligInPlace=True
         self.rtpostdil=[2]
         self.saveDil=None
-        self.pcrdil=[375]
+        self.pcrdil=[200]
         self.extpostdil=[p/8.0 for p in self.pcrdil] # Make sure to predilute enough so that we have >= 2µl going into PCR
         self.pcrcycles=[5]
         self.setVolumes()
