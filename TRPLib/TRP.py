@@ -286,6 +286,10 @@ class TRP(object):
                     disposeVol=tgt[i].volume - finalvol[i] / dil2[i]-1.4
                     if disposeVol>0:
                         self.e.dispose(disposeVol, tgt[i])
+                        if tgt[i].volume<4:
+                            logging.error('diluteInPlace: only %.0f ul left in well after disposing of unneeded sample'%tgt[i].volume)
+                        elif tgt[i].volume<20:
+                            logging.warning('diluteInPlace: only %.0f ul left in well after disposing of unneeded sample'%tgt[i].volume)
                     self.e.transfer(tgt[i].volume * (dil2[i] - 1), dilutant, tgt[i], mix=(False, False))
 
         #print "after dilute, tgt[0]=",str(tgt[0]),",mixed=",tgt[0].isMixed()
