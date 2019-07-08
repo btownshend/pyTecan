@@ -18,7 +18,7 @@ eppminspeeds={0:1900,20:1900,32:1800,64:1700,96:1400,150:1100}  # 1100@150ul unt
 
 # Unusable volume is based on volume remaining at ZMax-1.5 (which is what Water-Bottom LC aspirates at)
 TROUGH = PlateType("Trough",nx=1,ny=4,pierce=False,unusableVolume=100,maxVolume=100000,gemDepth=0,gemArea=1232,gemShape='flat')
-EPPLOWBIND=PlateType("EppLowBind",nx=12,ny=8,pierce=False,unusableVolume=17,maxVolume=200,
+EPPLOWBIND=PlateType("EppLowBind",nx=12,ny=8,pierce=False,unusableVolume=15,maxVolume=200,
                 angle=17.5,r1=2.724,h1=8.49,v0=13.48,
                 gemDepth=1.92, gemArea=13.51,
                 gemShape='v-shaped',maxspeeds=eppmaxspeeds,minspeeds=eppminspeeds,glycerolmaxspeeds=eppglycerolmaxspeeds,glycerol=1)  # EppLoBind
