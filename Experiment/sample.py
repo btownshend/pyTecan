@@ -885,11 +885,11 @@ class Sample(object):
                 elif wds[i][0]=='{':
                     bcnt+=1
                 else:
-                    hist=' '.join(wds[:i+1])
-                    if bcnt>0:
-                        hist+=' {}*%d'%bcnt
-                    if pcnt > 0:
-                        hist += ' ()*%d' % pcnt
+                    if bcnt+pcnt>1:
+                        hist=' '.join(wds[:i+1])
+                        hist+=' ...%d incubations,%d shakes'%(bcnt,pcnt)
+                    else:
+                        hist=self.history # If only 1 element, don't bother truncating
                     break
 
         s+=" %s"%hist
