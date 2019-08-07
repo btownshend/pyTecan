@@ -734,12 +734,13 @@ class PGMAnalytic(PGMSelect):
         super(PGMAnalytic, self).__init__(inputs=inputs,rounds='C',firstID=1,pmolesIn=0,saveRNA=saveRNA,qpcrStages=qpcrStages,templateDilution=templateDilution,tmplFinalConc=tmplFinalConc,useMX=useMX)
         self.dopcr=True
         self.barcoding=True
+        self.lowhi=False   # Don't increase PCR annealing temp after first round
         self.pcrSave=False
         self.saveRNADilution=2
         self.ligInPlace=True
         self.rtpostdil=[2]
         self.saveDil=None
         self.pcrdil=[200]
-        self.extpostdil=[p/8.0 for p in self.pcrdil] # Make sure to predilute enough so that we have >= 2µl going into PCR
+        self.extpostdil=[p/8.0 for p in self.pcrdil] # Make sure to predilute enough so that we have >= 2ul going into PCR
         self.pcrcycles=[5]
         self.setVolumes()
