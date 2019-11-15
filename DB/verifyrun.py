@@ -31,7 +31,7 @@ class VerifyRun(object):
         parser.add_argument("-v", "--verbose", help="increase output verbosity", action="store_true")
         parser.add_argument("-r", "--run", help="run ID")
         args = parser.parse_args()
-        retval = -1
+
         if args.verbose:
             print("verbosity turned on")
             self.console.setLevel(logging.DEBUG)
@@ -53,10 +53,28 @@ class VerifyRun(object):
             return run
         return None
 
+    def volerror(self, msg, vol):
+        print("Volume error: %s"%msg)
+        print(" ",vol.op.sample)
+        print(" ",vol.op)
+        print(" ",vol)
+        print("")
+
     def verifyrun(self, run):
-        '''Run a verification of run and return 0 if ok'''
+        """Run a verification of run and return 0 if ok"""
         for vol in run.vols:
-            print("vol=",vol)
+            if vol.volume is None:
+                if vol.op.cmd!="Detect_Liquid" and vol.estvol>30 and vol.zmax is not None:
+                    # Undetected,but should have
+                    self.volerror("LD failure (ZMax=%s)"%(vol.zmax),vol)
+            elif vol.estvol is not None and vol.estvol>=20:
+                if vol.op.sample.plate!="Water" and vol.op.sample.plate!="Bleach":  # Skip troughs
+                    # Check if this was the first access
+                    nprior=len([ v for v in run.vols if v.op.sample_id==vol.op.sample_id and v.vol<vol.vol])
+
+                    diff=vol.volume-vol.estvol
+                    if abs(diff)>10 and nprior>1:  # Ignore first measurement since initial estimate may have been off
+                        self.volerror("Volume diff of %.0f"%(diff),vol)
         return 0
 
 # Execute the application
