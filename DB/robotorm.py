@@ -1,11 +1,11 @@
 # Quick test of using SQL Alchemy to access database (11/14/2019)
 # Not integrated with any other parts
 
-from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, String, Date, Float, Boolean
 from sqlalchemy import ForeignKey
-from sqlalchemy.orm import sessionmaker, relationship, selectinload
+from sqlalchemy import create_engine
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker, relationship
 
 Base = declarative_base()
 
@@ -61,7 +61,7 @@ class LiquidClasses(Base):
     name = Column(String)
 
     def __repr__(self):
-        return "<LC(%s)>"%(self.name)
+        return "<LC(%s)>" % self.name
 
 class Ops(Base):
     __tablename__='ops'
@@ -99,19 +99,21 @@ class Vols(Base):
     def __repr__(self):
         return "<Vol(%d,%d,%s)>"%(self.run_id,self.op_id, self.volume)
 
-engine = create_engine("mysql+pymysql://ngsreadonly:@35.203.151.202/robot", echo=True)
-Session = sessionmaker(bind=engine)
-session = Session()
+# Test program
+if __name__ == "__main__":
+    engine = create_engine("mysql+pymysql://ngsreadonly:@35.203.151.202/robot", echo=True)
+    Session = sessionmaker(bind=engine)
+    session = Session()
 
-runs=session.query(Runs)
-for run in runs[0:10]:
-    print(run, run.program)
-    if run.program is not None:
-        for op in run.program.ops[0:3]:
-            print(" ",op,op.lc)
-    for vol in run.vols[10:13]:
-        print(" ",vol.op,vol.op.lc,vol)
+    runs=session.query(Runs)
+    for run in runs[0:10]:
+        print(run, run.program)
+        if run.program is not None:
+            for op in run.program.ops[0:3]:
+                print(" ",op,op.lc)
+        for vol in run.vols[10:13]:
+            print(" ",vol.op,vol.op.lc,vol)
 
 
-for program  in session.query(Programs):
-     print(program)
+    for program  in session.query(Programs):
+         print(program)
