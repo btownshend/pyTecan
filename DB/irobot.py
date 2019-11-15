@@ -30,7 +30,7 @@ class IRobot(object):
         args = parser.parse_args()
         retval = -1
         if args.verbose:
-            print "verbosity turned on"
+            print("verbosity turned on")
             self.console.setLevel(logging.DEBUG)
         try:
             # Open database connection
@@ -56,7 +56,7 @@ class IRobot(object):
             if len(res) != 1:
                 logging.error('getrun: Unable to retrieve current run, have %d entries with null endtime', len(res))
                 return None
-            print "res=", res
+            print("res=", res)
             run = res[0]['run']
             logging.info('run=%s', run)
         return run
@@ -64,7 +64,7 @@ class IRobot(object):
     def showrun(self, run):
         df = pandas.read_sql_query("select * from runs where run like '%%%s%%' order by starttime" % (run,),
                                    self.con)
-        print df
+        print(df)
         return 0
 
 
