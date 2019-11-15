@@ -36,18 +36,16 @@ class VerifyRun(object):
             print("verbosity turned on")
             self.console.setLevel(logging.DEBUG)
         run=self.getrun(args.run)
-        print("Got run: ",run)
+        print(run)
         if run is not None:
             return self.verifyrun(run)
         return 0
 
     def getrun(self,runid):
-        print("runid=",runid)
         if runid is None:
-            currentrun = self.session.query(Runs).filter(Runs.endtime is None).first()
-            if currentrun is not None:
-                print("Current run: ",currentrun)
-                return currentrun
+            lastrun = self.session.query(Runs).order_by(Runs.run.desc()).first()
+            if lastrun is not None:
+                return lastrun
         else:
             run = self.session.query(Runs).filter(Runs.run == runid).one()
             return run
@@ -73,7 +71,7 @@ class VerifyRun(object):
                     nprior=len([ v for v in run.vols if v.op.sample_id==vol.op.sample_id and v.vol<vol.vol])
 
                     diff=vol.volume-vol.estvol
-                    if abs(diff)>10 and nprior>1:  # Ignore first measurement since initial estimate may have been off
+                    if abs(diff)>10 and diff/vol.volume>0.1 and nprior>1:  # Ignore first measurement since initial estimate may have been off
                         self.volerror("Volume diff of %.0f"%(diff),vol)
         return 0
 
