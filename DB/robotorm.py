@@ -38,7 +38,7 @@ class Runs(Base):
     expt = Column(Integer)
     logheader = Column(String)
     status = Column(String)
-    vols = relationship("Vols", back_populates="run")
+    vols = relationship("Vols", back_populates="run", order_by="Vols.vol")
 
     def __repr__(self):
         return "<Run(run='%s', program='%s', logfile='%s', start='%s')>" % \
@@ -53,7 +53,7 @@ class Samples(Base):
     well = Column(String)
     name = Column(String)
     def __repr__(self):
-        return "<Sample(%s@%s.%s)>" % (self.name, self.plate, self.well)
+        return "<Sample(%s, %s.%s)>" % (self.name, self.plate, self.well)
 
 class LiquidClasses(Base):
     __tablename__='liquidclasses'
@@ -69,6 +69,7 @@ class Ops(Base):
     program_id=Column(Integer, ForeignKey('programs.program'), name="program")
     program=relationship("Programs",back_populates='ops')
     sample_id=Column(Integer, ForeignKey('samples.sample'), name="sample")
+    sample=relationship("Samples")
     cmd=Column(String)
     lineno=Column(Integer)
     elapsed=Column(Float)
@@ -78,7 +79,7 @@ class Ops(Base):
     volchange=Column(Float)
     clean=Column(Boolean)
     def __repr__(self):
-        return "<Op(%s@%d)>"%(self.cmd,self.lineno)
+        return "<Op(%s, line %d)>"%(self.cmd,self.lineno)
 
 class Vols(Base):
     __tablename__='vols'
@@ -97,7 +98,7 @@ class Vols(Base):
     zadd=Column(Integer)
     measured=Column(Date)
     def __repr__(self):
-        return "<Vol(%d,%d,%s)>"%(self.run_id,self.op_id, self.volume)
+        return "<Vol(%d,%d,meas=%s,est=%s)>"%(self.run_id,self.op_id, self.volume,self.estvol)
 
 # Test program
 if __name__ == "__main__":
