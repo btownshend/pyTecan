@@ -3,10 +3,11 @@ import serial
 import string
 import sys
 import time
+import struct
 
 class LiquidLevel:
-    debug=False
-    PORT="/dev/cu.usbmodem144101"
+    debug=True
+    PORT=7 # "/dev/cu.usbmodem144101"
 
     def open(self):
         self.ser = serial.Serial(self.PORT,baudrate=9600,timeout=1)
@@ -17,6 +18,8 @@ class LiquidLevel:
         if line != "LiquidLevel":
             print("Unexpected response from serial port while looking for 'LiquidLevel': ",line)
             sys.exit(-1)
+	if self.debug:
+	    print("Connected to arduino.")
 
     def setdebug(self):
         self.debug=True
@@ -26,14 +29,17 @@ class LiquidLevel:
 
     def execute(self,cmd):
         if self.debug:
-            print("Sending command: ",cmd,end="")
+            print("Sending command: ",cmd,)
         self.ser.write(cmd)
         res=self.ser.read(2)
         if self.debug:
             print(", response:",res)
-        return int.from_bytes(res,byteorder="big")
+	val=struct.unpack('>H',res)
+	if self.debug:
+	    print("val:",val)
+	return val[0]
 
     def getlevel(self):
-        res=self.execute(b"L:")
+        res=self.execute(b"L")
         temp=float(res)
         return temp

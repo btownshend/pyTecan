@@ -4,7 +4,7 @@ import string
 
 class RIC:
 	debug=False
-	PORT=[2,4]
+	PORT=[2,3]
 
 	def open(self,unit=0):
 		self.ser = serial.Serial(self.PORT[unit],baudrate=9600,timeout=1)
@@ -19,7 +19,7 @@ class RIC:
 
 	def execute(self,cmd):
 		if self.debug:
-			print("Sending command: ",cmd,end="")
+			print("Sending command: ",cmd,)
 		self.ser.write(cmd+"\r")
 		line=self.ser.readline()
 		if self.debug:

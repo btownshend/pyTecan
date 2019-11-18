@@ -9,7 +9,7 @@ import time
 
 debug=False
 interval=datetime.time(0, 5,00)   # Keep the interval long enough to run for a long time on the 16000 point memory (to avoid having to press play too often)
-port = "/dev/tty.SLAB_USBtoUART"
+port = 6 #"/dev/tty.SLAB_USBtoUART"
 device = elitech.Device(port)
 device.debug = debug
 device.init()
