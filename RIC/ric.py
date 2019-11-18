@@ -9,7 +9,7 @@ class RIC:
 	def open(self,unit=0):
 		self.ser = serial.Serial(self.PORT[unit],baudrate=9600,timeout=1)
 		if self.debug:
-			print self.ser.portstr
+			print(self.ser.portstr)
 
 	def setdebug(self):
 		self.debug=True
@@ -19,11 +19,11 @@ class RIC:
 
 	def execute(self,cmd):
 		if self.debug:
-			print "Sending command: ",cmd,
+			print("Sending command: ",cmd,end="")
 		self.ser.write(cmd+"\r")
 		line=self.ser.readline()
 		if self.debug:
-			print ", response:",line
+			print(", response:",line)
 		return string.strip(line)
 
 	def gettemp(self):
@@ -34,12 +34,12 @@ class RIC:
 	def settemp(self,temp):
 		res=self.execute("n%.1f"%temp)
 		if res!="ok":
-			print "RIC: Failed to set temperature to %.1f: %s" % (temp, res)
+			print("RIC: Failed to set temperature to %.1f: %s" % (temp, res))
 
 	def idle(self):
 		res=self.execute("i")
 		if res!="ok":
-			print "RIC: Failed to go to idle: %s" % (res)
+			print("RIC: Failed to go to idle: %s" % (res))
 
 	def version(self):
 		res=self.execute("v")
