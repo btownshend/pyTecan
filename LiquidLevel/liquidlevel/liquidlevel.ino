@@ -2,6 +2,7 @@ int sensorPin = A0;    // select the input pin for the potentiometer
 
 void setup() {
   Serial.begin(9600);
+  Serial.println("LiquidLevel");
 }
 
 void loop() {
