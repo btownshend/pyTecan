@@ -6,9 +6,9 @@ class VolsModel(QtCore.QAbstractTableModel):
         self.datatable = None
 
     def update(self, db, run, plate, sample):
-        print 'Updating Model'
+        print('Updating Model')
         self.datatable = dataIn
-        print 'Datatable : {0}'.format(self.datatable)
+        print('Datatable : {0}'.format(self.datatable))
 
     def rowCount(self, **kwargs):
         return len(self.datatable.index)

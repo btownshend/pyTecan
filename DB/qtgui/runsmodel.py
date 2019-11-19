@@ -15,7 +15,7 @@ class RunsModel(QtCore.QAbstractTableModel):
             print("SQL error: ",q.lastError().text())
             sys.exit(1)
         self.datatable=[]
-        while (q.next()):
+        while q.next():
             self.datatable.append([q.value(0),q.value(1),q.value(2),q.value(3),q.value(4),q.value(5),q.value(6)])
         print("Retrieved %d runs"%len(self.datatable))
         self.header=['run','expt','runid','program','logfile','starttime','endtime']

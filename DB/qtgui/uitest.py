@@ -1,12 +1,12 @@
 import sys
 
 from PyQt5 import QtSql
-from PyQt5.QtCore import QTimeZone, QModelIndex, QDateTime
-from PyQt5.QtWidgets import QApplication, QMainWindow, QTableWidgetItem
 from PyQt5.Qt import QColor
-
+from PyQt5.QtCore import QTimeZone, QModelIndex
+from PyQt5.QtWidgets import QApplication, QMainWindow, QTableWidgetItem
 from gui_auto import Ui_MainWindow
 from runsmodel import RunsModel
+
 
 class GUI(Ui_MainWindow):
     def __init__(self):
@@ -23,6 +23,7 @@ class GUI(Ui_MainWindow):
         self.lastElapsed=0
         self.endElapsed=None
         self.endTime=None
+        self.db=None
 
     def dbopen(self):
         self.db = QtSql.QSqlDatabase.addDatabase('QMYSQL')
@@ -67,7 +68,8 @@ class GUI(Ui_MainWindow):
         self.refreshAll()
         print("timezone=",QTimeZone.systemTimeZone().comment())
 
-    def sqlErrorCheck(self,lastError):
+    @staticmethod
+    def sqlErrorCheck(lastError):
         if lastError.isValid():
             print("SQL error: ",lastError.type(),lastError.text())
             import pdb
@@ -342,7 +344,8 @@ class GUI(Ui_MainWindow):
         self.refreshSampleGroup()
         self.central.layout()
 
-    def runs(self,arg):
+    @staticmethod
+    def runs(arg):
         print("runs",arg)
 
     def selectRun(self,index: QModelIndex):
@@ -377,7 +380,8 @@ class GUI(Ui_MainWindow):
         #self.plateTable.selectRow(index.row())
         self.refreshAll()
 
-    def quit(self):
+    @staticmethod
+    def quit():
         print("quit")
         sys.exit(0)
 
