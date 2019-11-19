@@ -3,10 +3,11 @@
   <component name="NewModuleRootManager">
     <content url="file://$MODULE_DIR$">
       <excludeFolder url="file://$MODULE_DIR$/Gemini" />
+      <excludeFolder url="file://$MODULE_DIR$/RobotMonitor/venv" />
       <excludeFolder url="file://$MODULE_DIR$/SELEX" />
       <excludeFolder url="file://$MODULE_DIR$/Scale" />
     </content>
-    <orderEntry type="jdk" jdkName="Python 3.7" jdkType="Python SDK" />
+    <orderEntry type="jdk" jdkName="Python 3.7 (RobotMonitor)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
   <component name="TestRunnerService">

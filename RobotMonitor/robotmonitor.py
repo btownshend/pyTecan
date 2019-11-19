@@ -37,7 +37,7 @@ class GUI(Ui_MainWindow):
         settz.exec("set time_zone='US/Pacific'")
 
     def dbcheck(self):
-        """Check if DB connection is OK"""
+        """Check if RobotDB connection is OK"""
         if not self.db.isValid():
             self.dbopen()
 
@@ -343,10 +343,6 @@ class GUI(Ui_MainWindow):
         self.refreshPlateGroup()
         self.refreshSampleGroup()
         self.central.layout()
-
-    @staticmethod
-    def runs(arg):
-        print("runs",arg)
 
     def selectRun(self,index: QModelIndex):
         print("select row",index.row(),"column",index.column(),"id",index.internalId())
