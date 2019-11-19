@@ -3,6 +3,7 @@
   <component name="NewModuleRootManager">
     <content url="file://$MODULE_DIR$">
       <excludeFolder url="file://$MODULE_DIR$/Gemini" />
+      <excludeFolder url="file://$MODULE_DIR$/RobotDB/venv" />
       <excludeFolder url="file://$MODULE_DIR$/RobotMonitor/venv" />
       <excludeFolder url="file://$MODULE_DIR$/SELEX" />
       <excludeFolder url="file://$MODULE_DIR$/Scale" />
