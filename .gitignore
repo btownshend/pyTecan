@@ -52,9 +52,6 @@ TRobot/trtest.sh
 .idea
 TRobot/HOLD
 Analysis/.idea
-DB/test.dbs
-
-DB/robot.dbs
 
 *.bak
 
