@@ -730,8 +730,8 @@ class PGMSelect(TRP):
 class PGMAnalytic(PGMSelect):
     """Analytic experiment"""
 
-    def __init__(self, inputs, saveRNA=False, tmplFinalConc=5, qpcrStages=None, templateDilution=0.6,useMX=False):
-        super(PGMAnalytic, self).__init__(inputs=inputs,rounds='C',firstID=1,pmolesIn=0,saveRNA=saveRNA,qpcrStages=qpcrStages,templateDilution=templateDilution,tmplFinalConc=tmplFinalConc,useMX=useMX)
+    def __init__(self, inputs, saveRNA=False, tmplFinalConc=5, qpcrStages=None, templateDilution=0.6,useMX=False,directT7=True):
+        super(PGMAnalytic, self).__init__(inputs=inputs,rounds='C',firstID=1,pmolesIn=0,saveRNA=saveRNA,qpcrStages=qpcrStages,templateDilution=templateDilution,tmplFinalConc=tmplFinalConc,useMX=useMX,directT7=directT7)
         self.dopcr=True
         self.barcoding=True
         self.lowhi=False   # Don't increase PCR annealing temp after first round
