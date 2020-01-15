@@ -112,6 +112,7 @@ class Experiment(object):
             if temp is not None:
                 print("Using RIC dewpoint tracking for PRODUCT and REAGENT plates, assuming dewpoint=%.1f for evaporation calculations"%globals.dewpoint)
                 decklayout.REAGENTPLATE.liquidTemp=globals.dewpoint+1
+                decklayout.PRODUCTPLATE.liquidTemp=globals.dewpoint+1
             else:
                 pass   # Nothing to do at end
         elif temp is None:
