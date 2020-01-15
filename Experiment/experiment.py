@@ -107,7 +107,14 @@ class Experiment(object):
 
     @staticmethod
     def setreagenttemp(temp: float=None):
-        if temp is None:
+        tracking=True
+        if tracking:
+            if temp is not None:
+                print("Using RIC dewpoint tracking for PRODUCT and REAGENT plates, assuming dewpoint=%.1f for evaporation calculations"%globals.dewpoint)
+                decklayout.REAGENTPLATE.liquidTemp=globals.dewpoint+1
+            else:
+                pass   # Nothing to do at end
+        elif temp is None:
             worklist.pyrun("RIC\\ricset.py IDLE",version=2)
             decklayout.REAGENTPLATE.liquidTemp=22.7
         else:
