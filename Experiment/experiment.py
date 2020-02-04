@@ -5,6 +5,7 @@ from hashlib import md5
 from pprint import pprint
 from typing import Dict, Tuple, List
 
+from . import globals
 from . import worklist
 from . import thermocycler
 from .db import db
@@ -196,7 +197,7 @@ class Experiment(object):
         return tipMask
 
 
-    def multitransfer(self, volumes, src: Sample, dests: SampleListType,mix: mixType=(True,False),getDITI:bool=True,dropDITI:bool=True,ignoreContents:bool=False,extraFrac:float=0.05):
+    def multitransfer(self, volumes, src: Sample, dests: SampleListType,mix: mixType=(True,False),getDITI:bool=True,dropDITI:bool=True,ignoreContents:bool=False,extraFrac:float=0.05,allowSplit=True):
         """Multi pipette from src to multiple dest.  mix is (src,dest) mixing -- only mix src if needed though"""
         #print "multitransfer(",volumes,",",src,",",dests,",",mix,",",getDITI,",",dropDITI,")"
         if self.tcrunning and (src.plate.location==decklayout.TCPOS or len([1 for d in dests if d.plate.location==decklayout.TCPOS])>0):
@@ -214,7 +215,9 @@ class Experiment(object):
             #         maxval=max([d.volume for d in dests if d.conc != None])
         #print "volumes=",[d.volume for d in dests],", conc=",[str(d.conc) for d in dests],", maxval=",maxval
         if not mix[1] and len(volumes)>1 and ( maxval<.01 or ignoreContents):
-            if len(dests)>=24:
+            if not allowSplit:
+                vmax=sum(volumes)
+            elif len(dests)>=24:
                 vmax=max([sum(volumes[i::4]) for i in range(4)])
             elif len(dests)>=12:
                 vmax=max([sum(volumes[i::2]) for i in range(2)])
@@ -257,7 +260,7 @@ class Experiment(object):
                     worklist.comment("pipette mix for src mix of "+src.name)
                     src.mix(tipMask)	# Manual mix (after allocating a tip for this)
 
-            if len(dests)>=8:
+            if len(dests)>=8 and allowSplit:
                 print("Running multi-tip transfer")
                 worklist.flushQueue()
                 worklist.comment("Multi-tip transfer of "+src.name)
