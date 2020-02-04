@@ -85,7 +85,7 @@ class PGMSelect(TRP):
         self.rtSaveDil=2			    # Amount to dilute RT saved volume in TE8
         self.dopcr=True			    # Run PCR of samples
         self.cleavage=0.40			# Estimated cleavage (for computing dilutions of qPCRs)
-        self.extpostdil=[2.0 if r=='C' else 1.0 for r in self.rounds]
+        self.extpostdil=[2.0 if r[0]!='U' else 1.0 for r in self.rounds]
         self.nopcrdil=4
         self.userMelt=False
         self.maxSampVolume=125.0
@@ -99,11 +99,11 @@ class PGMSelect(TRP):
         self.allprimers=["REF","T7X","WX"]    # Will get updated after first pass with all primers used
         if self.useMX:
             self.allprimers.append("MX")
-        self.rtpostdil=[3.0 if r=='U' else 1.0 for r in self.rounds]
+        self.rtpostdil=[3.0 if r[0]=='U' else 1.0 for r in self.rounds]
         self.rtdur=20
         self.ligdur=15
         self.maxdilstep=16   # Maximum dilute per qPCR dilution step
-        self.pcrdil=[(80 if r=='U' else 40) for r in self.rounds]
+        self.pcrdil=[(80 if r[0]=='U' else 40) for r in self.rounds]
         self.maxPCRVolume=100  # Maximum sample volume of each PCR reaction (thermocycler limit, and mixing limit)
         self.pcrcycles=[10 for _ in self.rounds]
         self.rnaInput=False
@@ -136,9 +136,9 @@ class PGMSelect(TRP):
         stopConc=self.rnaConc*0.9
         rtConc=stopConc/self.rtDil
         rtdilConc=[rtConc/self.rtpostdil[i] for i in range(len(self.rounds))]
-        ligConc=[None if self.rounds[i]=='U' else rtdilConc[i]/1.25 for i in range(len(self.rounds))]
-        ligdilConc=[None if self.rounds[i]=='U' else ligConc[i]/self.extpostdil[i] for i in range(len(self.rounds))]
-        pcrConc=[rtConc/self.pcrdil[i] if self.rounds[i]=='U' else ligConc[i]/self.pcrdil[i] for i in range(len(self.rounds))]
+        ligConc=[None if self.rounds[i][0]=='U' else rtdilConc[i]/1.25 for i in range(len(self.rounds))]
+        ligdilConc=[None if self.rounds[i][0]=='U' else ligConc[i]/self.extpostdil[i] for i in range(len(self.rounds))]
+        pcrConc=[rtConc/self.pcrdil[i] if self.rounds[i][0]=='U' else ligConc[i]/self.pcrdil[i] for i in range(len(self.rounds))]
         
         for i in range(len(self.rounds)):
             if ligConc[i] is None:
@@ -158,7 +158,7 @@ class PGMSelect(TRP):
         print("minligvol=[%s]"%(",".join(["%.1f"%v for v in self.minligvol])))
 
         # Compute RT volume 
-        self.rtvol=[ ((self.minligvol[i]/1.25+3.3)/self.rtpostdil[i]) if self.rounds[i]!='U' else (self.pcrvol[i]*1.0/self.pcrdil[i]+(pcrExtra[i]+15.1+3.3)/self.rtpostdil[i]) for i in range(len(self.rounds))]
+        self.rtvol=[ ((self.minligvol[i]/1.25+3.3)/self.rtpostdil[i]) if self.rounds[i][0]!='U' else (self.pcrvol[i]*1.0/self.pcrdil[i]+(pcrExtra[i]+15.1+3.3)/self.rtpostdil[i]) for i in range(len(self.rounds))]
         print("self.rtvol=",self.rtvol,", rtSave=",self.rtSave)
         if self.rtSave:
             self.rtvol=[max(15.0/self.rtpostdil[i],self.rtvol[i])+(self.rtSaveVol+1.4)/self.rtpostdil[i] for i in range(len(self.rtvol))]  # Extra for saves
@@ -250,9 +250,12 @@ class PGMSelect(TRP):
                 self.roundCallback(self,self.rndNum,roundType)
                 
             # Computed output prefix
-            if roundType=='U':
+            if roundType[0]=='U':
                 prefixOut=curPrefix
-                stop=["Unclvd" for _ in curPrefix]
+                if len(roundType)!=2:
+                    logging.error("Uncleaved rounds must specify a stop to use")
+                    assert False
+                stop=roundType[1]
             else:
                 if roundType=='T':
                     stop=['T7%s'%p for p in curPrefix]
@@ -272,10 +275,10 @@ class PGMSelect(TRP):
                         t=self.inputs[i]['stop'][self.rndNum]
                     else:
                         t=self.inputs[i]['stop']
-                    if (roundType=='U') != (t=='U'):
+                    if (roundType[0]=='U') != (t=='U'):
                         print("Attempt to override round %d (type %s) with a input-specific round type of %s"%(self.rndNum, roundType, t))
                         assert False
-                    if roundType!='U':
+                    if roundType[0]!='U':
                         if t=='T':
                             stop[i]='T7%s'%curPrefix[i]
                             prefixOut[i]=curPrefix[i]
@@ -287,7 +290,7 @@ class PGMSelect(TRP):
             self.finalRound=self.rndNum==len(self.rounds)
 
             db.pushStatus("%s%d"%(roundType,self.rndNum))
-            r1=self.oneround(q,r1,prefixOut=prefixOut,stop=stop,prefixIn=curPrefix,keepCleaved=(roundType!='U'),rtvol=self.rtvol[self.rndNum-1],t7vol=self.t7vol[self.rndNum-1],cycles=self.pcrcycles[self.rndNum-1],pcrdil=self.pcrdil[self.rndNum-1],pcrvol=self.pcrvol[self.rndNum-1],dolig=self.allLig or (roundType!='U'),pcrtgt=None if pcrprods is None else pcrprods[self.rndNum-1])
+            r1=self.oneround(q,r1,prefixOut=prefixOut,stop=stop,prefixIn=curPrefix,keepCleaved=(roundType[0]!='U'),rtvol=self.rtvol[self.rndNum-1],t7vol=self.t7vol[self.rndNum-1],cycles=self.pcrcycles[self.rndNum-1],pcrdil=self.pcrdil[self.rndNum-1],pcrvol=self.pcrvol[self.rndNum-1],dolig=self.allLig or (roundType[0]!='U'),pcrtgt=None if pcrprods is None else pcrprods[self.rndNum-1])
             db.popStatus()
 
             # Add TRefs specified in rnddefs 
@@ -312,7 +315,7 @@ class PGMSelect(TRP):
                 if self.inputs[i]['round'] is None:
                     r1[i].name="%s_%d"%(prefixOut[i],self.nextID)
                 else:
-                    r1[i].name="%d_%s_R%d%c"%(self.nextID,prefixOut[i],self.inputs[i]['round']+self.rndNum,roundType)
+                    r1[i].name="%d_%s_R%d%s"%(self.nextID,prefixOut[i],self.inputs[i]['round']+self.rndNum,roundType)
                 if self.inputs[i]['ligand'] is not None:
                     r1[i].name="%s_%s"%(r1[i].name,self.inputs[i]['ligand'])
                 print("Used ID ", self.nextID," for ", r1[i].name,": ",r1[i])
