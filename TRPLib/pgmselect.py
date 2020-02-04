@@ -224,7 +224,7 @@ class PGMSelect(TRP):
 
         if self.dopcr:
             # Reserve space for  PCR products
-            pcrprods=[ [Sample("R%d-T%s"%(r,inp['ligand']),self.savePlate) for inp in self.inputs] for r in range(len(self.rounds))]
+            pcrprods=[ [Sample("R%d-T%s"%(r,inp['ligand']),self.savePlate if self.savedilplate else decklayout.EPPENDORFS) for inp in self.inputs] for r in range(len(self.rounds))]
         else:
             pcrprods=None
 
