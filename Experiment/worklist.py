@@ -23,6 +23,7 @@ DONOTMOVE=2
 SAFETOEND=0
 ENDTOSAFE=1
 
+postldetect=True   # True to enable automatic liquid detect after each dispense
 lnum=0
 debug=False
 wlist=[]
@@ -399,7 +400,7 @@ def aspirateDispense(op,tipMask,wells, liquidClass, volume, plate, cycles=None,a
         logging.error("Bad operation: %s"%op)
 
 
-    if op!="Detect_Liquid" and op!="Aspirate" and (loc.grid!=QPCRLOC.grid or loc.pos!=QPCRLOC.pos) and loc.grid>3 and liquidClass.name!='Air' and liquidClass.name[0:3]!='Mix' and liquidClass.name[0:7]!='Blowout':
+    if postldetect and op!="Detect_Liquid" and op!="Aspirate" and (loc.grid!=QPCRLOC.grid or loc.pos!=QPCRLOC.pos) and loc.grid>3 and liquidClass.name!='Air' and liquidClass.name[0:3]!='Mix' and liquidClass.name[0:7]!='Blowout':
         # Do final liquid detect (but not on qPCR plate, since that doesn't work anyway)
         clock.pipetting+=3.45    # Unsure of this one
         wlist.append( 'Detect_Liquid(%d,"%s",%d,%d,%d,"%s",0)'%(tipMask,LCWaterInLiquid.name,loc.grid,loc.pos-1,spacing,ws))
