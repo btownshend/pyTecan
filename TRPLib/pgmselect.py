@@ -392,15 +392,23 @@ class PGMSelect(TRP):
                 # Just add ligands and MT7 to each well
                 mconc=reagents.getsample("MT7").conc.dilutionneeded()
                 for i in range(len(inputs)):
-                    watervol=t7vol*(1-1/mconc) - inputs[i].volume
+                    if keepCleaved and self.inputs[i]['ligand'] is not None:
+                        ligand=reagents.getsample(self.inputs[i]['ligand'])
+                        ligvol=t7vol / ligand.conc.dilutionneeded()
+                    elif not keepCleaved and self.inputs[i]['negligand'] is not None:
+                        ligand=reagents.getsample(self.inputs[i]['negligand'])
+                        ligvol=t7vol / ligand.conc.dilutionneeded()
+                    else:
+                        ligvol=0
+                    watervol=t7vol*(1-1/mconc) - inputs[i].volume - ligvol
                     if watervol<-0.1:
                         print("Negative amount of water (%.1f ul) needed for T7 setup"%watervol)
                         assert False
                     elif watervol>0.1:
                         self.e.transfer(watervol, decklayout.WATER, inputs[i], mix=(False, False))
                     self.e.transfer(t7vol / mconc, reagents.getsample("MT7"), inputs[i], mix=(False, False))
-                    assert(abs(inputs[i].volume - t7vol) < 0.1)
                 # Add ligands last in case they crash out when they hit aqueous;  this way, they'll be as dilute as possible
+                # However, this also means that the reaction may begin without the ligands present!
                 if keepCleaved:
                     for i in range(len(inputs)):
                         if self.inputs[i]['negligand'] is not None:
@@ -413,6 +421,8 @@ class PGMSelect(TRP):
                             ligand=reagents.getsample(self.inputs[i]['ligand'])
                             self.e.transfer(t7vol / ligand.conc.dilutionneeded(), ligand, inputs[i], mix=(False, False))
                             names[i]+="+"
+                for i in range(len(inputs)):
+                    assert(abs(inputs[i].volume - t7vol) < 0.1)
                 rxs=inputs
                 self.e.shakeSamples(inputs,returnPlate=True)
             elif self.rndNum==len(self.rounds) and self.finalPlus and keepCleaved:
