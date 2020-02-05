@@ -39,6 +39,7 @@ class PGMSelect(TRP):
             reagents.lookup("W-Stop").refillable=True
             reagents.lookup("Z-Stop").refillable=True
             reagents.lookup("8600").refillable=True
+            reagents.lookup("8630").refillable=True
             reagents.lookup("DMSO").refillable=True
         if qpcrStages is None:
             qpcrStages = ["negative", "template", "ext", "finalpcr"]
