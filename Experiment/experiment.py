@@ -25,6 +25,7 @@ import os
 # Annotation types
 SampleListType = List[Sample]
 mixType = Tuple[bool, bool]
+brokenTips= 1
 
 def md5sum(filename: str) -> int:
     hashval = md5()
@@ -164,7 +165,7 @@ class Experiment(object):
 
     def sanitize(self,nmix:int=1,deepvol:float=10,force:bool=False):
         """Deep wash including RNase-Away treatment"""
-        fixedTips=(~self.DITIMASK)&15
+        fixedTips=(~self.DITIMASK)&15&~brokenTips
         worklist.flushQueue()
         if not force and fixedTips==self.cleanTips:
             # print no sanitize needed
@@ -172,7 +173,7 @@ class Experiment(object):
             return
         worklist.comment("Sanitize (cleanTips=%d)"%self.cleanTips)
         if not self.overrideWash:
-            worklist.wash(15,1,2)
+            worklist.wash(fixedTips,1,2)
         fixedWells=[]
         if not self.overrideSanitize and not self.overrideWash:
             for i in range(4):
@@ -182,6 +183,7 @@ class Experiment(object):
             worklist.mix(fixedTips,fixedWells,decklayout.BLEACH.mixLC,200,decklayout.BLEACH.plate,nmix,False)
             worklist.wash(fixedTips,1,deepvol,True)
         self.cleanTips|=fixedTips
+        
         # print "* Sanitize"
         worklist.comment(clock.statusString())
 
@@ -662,7 +664,7 @@ class Experiment(object):
         worklist.romahome()
         #worklist.userprompt("Plate should be back on deck. Press return to continue")
         # Wash tips again to remove any drips that may have formed while waiting for TC
-        worklist.wash(15,1,5,True)
+        worklist.wash(15&~brokenTips,1,5,True)
 
 
     @staticmethod
