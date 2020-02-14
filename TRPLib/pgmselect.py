@@ -454,7 +454,7 @@ class PGMSelect(TRP):
             print("Estimate usable RNA concentration in T7 reaction at %.0f nM"%self.rnaConc)
 
             if self.rndNum==1:
-                worklist.userprompt("T7 Incubation Started",120)
+                worklist.userprompt("T7 Incubation Started",(self.t7dur-8)*60)
             
             self.e.waitpgm()   # So elapsed time will be updated
             db.popStatus()
