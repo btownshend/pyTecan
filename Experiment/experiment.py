@@ -52,7 +52,7 @@ class Experiment(object):
             self.gitlabel=None
 
         db.startrun(sys.argv[0],datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'),self.checksum,self.gitlabel)
-        worklist.comment("Generated %s (%s-%s pyTecan-%s) program ID %s"%(datetime.now().ctime(),sys.argv[0],self.checksum,self.gitlabel,str(db.program)))
+        worklist.userprompt("Generated %s (%s-%s pyTecan-%s) program ID %s"%(datetime.now().ctime(),sys.argv[0],self.checksum,self.gitlabel,str(db.program)),timeout=10)
         #worklist.userprompt("The following reagent tubes should be present: %s"%Sample.getAllLocOnPlate(decklayout.REAGENTPLATE))
         epp=Sample.getAllLocOnPlate(decklayout.EPPENDORFS)
         if len(epp)>0:
