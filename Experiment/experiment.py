@@ -25,7 +25,7 @@ import os
 # Annotation types
 SampleListType = List[Sample]
 mixType = Tuple[bool, bool]
-brokenTips= 1
+brokenTips= 0
 
 def md5sum(filename: str) -> int:
     hashval = md5()
