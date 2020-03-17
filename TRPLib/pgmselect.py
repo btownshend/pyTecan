@@ -455,6 +455,8 @@ class PGMSelect(TRP):
 
             if self.rndNum==1:
                 worklist.userprompt("T7 Incubation Started",(self.t7dur-8)*60)
+                # Wash tips again to remove any drips that may have formed while waiting 
+                worklist.wash(15,1,5,True)
             
             self.e.waitpgm()   # So elapsed time will be updated
             db.popStatus()
