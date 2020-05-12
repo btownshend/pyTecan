@@ -183,6 +183,8 @@ class PlateType(object):
 
     def wellnumber(self,wellname:str):
         """Convert a wellname, such as "A3" to a well index -- inverse of wellname()"""
+        if wellname[1]=='0':
+            wellname=wellname[0]+wellname[2:]
         for i in range(self.nx*self.ny):
             if self.wellname(i)==wellname:
                 return i
