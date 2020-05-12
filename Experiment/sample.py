@@ -24,6 +24,8 @@ MINSIDEDISPENSEVOLUME=10.0  # minimum final volume in well to use side-dispensin
 MIXLOSS=3.26		# Amount of sample lost during mixes  (in addition to any prefill volume)
 BEADSETTLINGTIME=10*60 	# Time (in seconds) after which beads should be remixed before use
 
+enablevolchecks=True  # True to enable volume checks before aspiration
+
 tiphistory={}
 
 #Updated LC's:
@@ -389,6 +391,9 @@ class Sample(object):
 
     def volcheck(self,tipMask,well,volToRemove):
         """Check if the well contains the expected volume"""
+        if not enablevolchecks:
+            return
+        
         # For refillable wells, this should not depend on self.volume, since that will only be an upper bound
         if self.lastvolcheck is not None:
             # Decide if a volume check is needed
