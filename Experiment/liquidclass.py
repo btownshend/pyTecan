@@ -55,6 +55,7 @@ class LC(object):
         else:
             return vol+self.wetvolume
 
+LCWaterAboveLiquid=LC("Water-Above",singlelag=1,multiexcess=1)
 LCWaterBottom=LC("Water-Bottom",singlelag=1,multiexcess=1)
 LCPreciousBottom=LC("Water-Bottom",singlelag=1,multiexcess=0)
 LCWaterPierce=LC("Water-Pierce",singlelag=1,multiexcess=1)
