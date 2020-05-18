@@ -215,7 +215,7 @@ class BuildDB(DB):
 
     def newsample(self, sample):
         # Add sample to database
-        logging.notice("newsample %s, program %s"%(sample,self.program))
+        #logging.notice("newsample %s, program %s"%(sample,self.program))
         if self.program is None:
             return
         sampid=self.getSample(sample.plate.name,sample.plate.wellname(sample.well))
