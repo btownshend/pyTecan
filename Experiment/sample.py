@@ -318,10 +318,10 @@ class Sample(object):
         return None
 
     @classmethod
-    def getAllOnPlate(cls,plate=None):
+    def getAllOnPlate(cls,plate=None,onlyUsed=True):
         result=[]
         for s in Sample.__allsamples:
-            if (plate is None or s.plate==plate) and len(s.history)>0:
+            if (plate is None or s.plate==plate) and (not onlyUsed or len(s.history)>0):
                 result.append(s)
         return result
 
