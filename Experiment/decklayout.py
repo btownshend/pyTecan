@@ -73,9 +73,9 @@ def initWellKnownSamples():
     global WATER, SSDDIL, BLEACH
     from .sample import Sample
 
-    WATER=Sample("Water",WATERTROUGH,-1,None,50000)
-    SSDDIL=Sample("SSDDil",SSDTROUGH,-1,None,50000)
-    BLEACH=Sample("RNase-Away",BLEACHTROUGH,-1,None,50000,mixLC=LCBleachMix)
+    WATER=Sample("Water",WATERTROUGH,-1,None,100000)
+    SSDDIL=Sample("SSDDil",SSDTROUGH,-1,None,100000)
+    BLEACH=Sample("RNase-Away",BLEACHTROUGH,-1,None,100000,mixLC=LCBleachMix)
 
 
 ############ Header file containing matching deck layout  #############
