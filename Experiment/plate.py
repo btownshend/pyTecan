@@ -35,7 +35,7 @@ class Plate(object):
     @classmethod
     def lookup(cls,grid,pos):
         for p in Plate.__allplates:
-            if p.location.grid==grid and p.location.pos==pos:
+            if p.location is not None and (p.location.grid==grid and p.location.pos==pos):
                 return p
         return None
 
