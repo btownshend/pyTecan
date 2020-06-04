@@ -417,6 +417,7 @@ class Sample(object):
         else:
             # Warn when getting low
             volwarn=max(volcrit,self.volume*0.80,self.volume+50)
+            volwarn=min(volwarn,2000)  # Dont issue warnings for large volume containers
 
         heightwarn=min(self.plate.getliquidheight(volwarn),height-1.0)	# threshold is lower of 1mm or 80%
         gemvolwarn=self.plate.getgemliquidvolume(heightwarn)	# Volume that would be reported by Gemini for this height
