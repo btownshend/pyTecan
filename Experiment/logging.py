@@ -4,6 +4,8 @@ import inspect
 from . import globals
 import sys
 
+showmixwarnings=True
+
 def callhistory(includeLibs=False):
     h=[]
     frames=inspect.stack()
@@ -29,7 +31,8 @@ def warning(msg: str,stderr=False):
         print("WARNING: %s [%s]"%(msg,"->".join(callhistory(globals.verbose))))
 
 def mixwarning(msg: str):
-    print("MIXING: %s [%s]"%(msg,"->".join(callhistory(globals.verbose))))
+    if showmixwarnings:
+        print("MIXING: %s [%s]"%(msg,"->".join(callhistory(globals.verbose))))
 
 def error(msg: str,fatal=True):
     print("ERROR: %s [%s]"%(msg,"->".join(callhistory(True))))
