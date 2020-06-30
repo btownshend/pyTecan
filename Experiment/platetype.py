@@ -29,11 +29,12 @@ def interpolate(dictionary: InterpDict, x0: float):
 class PlateType(object):
     """An object representing a type of microplate or other container ; includes a name, and physical parameters"""
 
-    def __init__(self,name: str, nx:int =12, ny:int=8,pierce:bool=False,unusableVolume:float=5,maxVolume:float=200,angle:float=None,r1:float=None,h1:float=None,v0:float=None,gemDepth:float=None,gemArea:float=None,gemShape:str=None,maxspeeds=None,glycerolmaxspeeds=None,glycerol:float=None,minspeeds=None):
+    def __init__(self,name: str, nx:int =12, ny:int=8,pierce:bool=False,unusableVolume:float=5,maxVolume:float=200,angle:float=None,r1:float=None,h1:float=None,v0:float=None,gemDepth:float=None,gemArea:float=None,gemShape:str=None,maxspeeds=None,glycerolmaxspeeds=None,glycerol:float=None,minspeeds=None,yspacing=9):
         self.name=name
         self.unusableVolume=unusableVolume   # FIXME: unusableVolume did depend on where the plate was (was that for the magnet?)
         self.nx=nx
         self.ny=ny
+        self.yspacing=yspacing
         self.pierce=pierce
         self.maxVolume=maxVolume
         self.warned=False
