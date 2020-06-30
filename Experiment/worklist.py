@@ -201,7 +201,7 @@ def optimizeQueue():
                 mergeable[i] &= mergeable[j]
                 #comment("Merged operations")
                 if optimizeDebug:
-                    assert isinstance(merge[5], PlateLocation)
+                    assert isinstance(merge[5], Plate)
                     # noinspection PyUnresolvedReferences,PyStringFormat
                     print("MERGED %s %s:\tTip %d, Loc %s Wells %s depends on %s, merges with %s, vol=%s "%(merge[7],merge[0],merge[1],merge[5].location,str(merge[2]),dependencies[i],mergeable[i],merge[4]))
 
