@@ -328,28 +328,37 @@ def aspirateDispense(op,tipMask,wells, liquidClass, volume, plate, cycles=None,a
             assert col==prevcol
         prevcol=col
 
-    span=pos[len(pos)-1]-pos[0]
-    if span<4:
-        spacing=1
-    else:
-        spacing=2
-    assert spacing==1   # Not supporting higher spacing yet
-    allvols=[0]*12
-    tip=0
+    # Build list of tip numbers used
+    tips=[]
     tipTmp=tipMask
-    for i in range(len(wells)):
+    tip=0
+    while tipTmp != 0:
         while tipTmp&1 == 0:
             tipTmp=tipTmp>>1
             tip=tip+1
+        tips.append(tip)
+        tipTmp=tipTmp>>1
+        tip+=1
+        
+    if len(tips) != len(wells):
+        logging.error("Number of tips (mask=%d) != number of wells (%d)"%(tipMask, len(wells)))
+
+    # Calculate spacing between tips (in # of wells)
+    if len(pos)>1:
+        spacing=(pos[-1]-pos[0])/(tips[-1]-tips[0])
+        # Make sure spacing is uniform
+        for i in range(1,len(pos)):
+            assert(pos[i]-pos[0]==spacing*(tips[i]-tips[0]))
+    else:
+        spacing=1
+        
+    allvols=[0]*12
+    for i in range(len(wells)):
+        tip=tips[i]
         allvols[tip]=volume[i]
         if op!="Detect_Liquid":
             hashUpdate(op,tip,loc.grid,loc.pos-1,pos[i],allvols[tip])
         #comment("Hash(%d,%d,%d)=%06x"%(loc.grid,loc.pos,pos[i],getHashCode(loc.grid,loc.pos-1,pos[i])&0xffffff))
-        tipTmp = tipTmp>>1
-        tip+=1
-
-    if tipTmp!=0:
-        logging.error("Number of tips (mask=%d) != number of wells (%d)"%(tipMask, len(wells)))
 
     if debug:
         print("allvols=",allvols)
