@@ -30,7 +30,7 @@ class PlateType(object):
     """An object representing a type of microplate or other container ; includes a name, and physical parameters"""
     __allplatetypes = []
 
-    def __init__(self,name: str, nx:int =12, ny:int=8,pierce:bool=False,unusableVolume:float=5,maxVolume:float=200,angle:float=None,r1:float=None,h1:float=None,v0:float=None,gemDepth:float=None,gemArea:float=None,gemShape:str=None,maxspeeds=None,glycerolmaxspeeds=None,glycerol:float=None,minspeeds=None,yspacing=9):
+    def __init__(self,name: str, nx:int =12, ny:int=8,pierce:bool=False,unusableVolume:float=5,maxVolume:float=200,angle:float=None,r1:float=None,h1:float=0,v0:float=None,gemDepth:float=None,gemArea:float=None,gemShape:str=None,maxspeeds=None,glycerolmaxspeeds=None,glycerol:float=None,minspeeds=None,yspacing=9):
         self.name=name
         self.unusableVolume=unusableVolume   # FIXME: unusableVolume did depend on where the plate was (was that for the magnet?)
         self.nx=nx
@@ -66,7 +66,7 @@ class PlateType(object):
         """Get liquid height in mm above ZMax"""
         if self.angle is None:
             if self.gemShape=='flat':
-                return volume*1.0/self.gemArea
+                return volume*1.0/self.gemArea + self.h1   # h1 is the distance of the well bottom above the zmax point
             if not self.warned:
                 logging.warning("No liquid height equation for plate %s"%self.name)
                 self.warned=True
@@ -136,7 +136,7 @@ class PlateType(object):
         """Compute liquid volume given height above zmax in mm"""
         if self.angle is None:
             if self.gemShape=='flat':
-                return self.gemArea*height
+                return self.gemArea*(height-self.h1)   # h1 is the distance of the well bottom above the zmax point
             return None
 
         h0=self.h1-self.r1/math.tan(self.angle/2)
@@ -153,7 +153,7 @@ class PlateType(object):
         if height is None:
             volume=None
         elif self.gemShape=='flat':
-            volume=self.gemArea*height
+            volume=self.gemArea*height  # Gemini has no offset -- assumes that zmax is bottom of well
         elif self.gemShape=='v-shaped':
             r0=math.sqrt(self.gemArea/math.pi)
             if height<self.gemDepth:
@@ -171,7 +171,7 @@ class PlateType(object):
         if volume is None:
             height=None
         elif self.gemShape=='flat':
-            height=volume/self.gemArea
+            height=volume/self.gemArea   # Gemini has no offset -- assumes that zmax is bottom of well
         elif self.gemShape=='v-shaped':
             r0=math.sqrt(self.gemArea/math.pi)
             conevolume=1.0/3*math.pi*r0*r0*self.gemDepth

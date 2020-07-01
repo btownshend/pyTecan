@@ -1,4 +1,7 @@
-function [heights,meanoffset]=heights3(runs,plate,offsets,vrange,angle,slopemodel)
+function [heights,meanoffset]=heights3(runs,plate,offsets,vrange,angle,slopemodel,flatbottom)
+if nargin<7 || isempty(flatbottom)
+  flatbottom=false;
+end
 if nargin<6 || isempty(slopemodel)
   slopemodel=false;
 end
@@ -25,7 +28,7 @@ if nargin<2 || isempty(plate)
   for i=1:length(plates)
     if counts(i)>=10
       fprintf('Running on plate %s with %d wells of data\n', plates{i}, counts(i));
-      heights3(runs,plates{i},offsets,vrange,angle,slopemodel);
+      heights3(runs,plates{i},offsets,vrange,angle,slopemodel,flatbottom);
     else
       fprintf('Not enough data for plate %s with %d wells of data\n', plates{i}, counts(i));
     end
@@ -99,7 +102,7 @@ gemvolume=gemvolume(sel);
 cmd=cmd(sel);
 submerge=submerge(sel);
 op=op(sel);
-[fit,angle,expected]=fitheights2(vol,heights,wells,tip,angle,[],slopemodel);
+[fit,angle,expected]=fitheights2(vol,heights,wells,tip,angle,[],slopemodel,flatbottom);
 meanoffset=-[0,fit(6:8)];
 meanoffset=meanoffset-mean(meanoffset);
 fprintf('Tip offset (distance higher than mean): %s mm\n', sprintf('%.2f ',meanoffset));
