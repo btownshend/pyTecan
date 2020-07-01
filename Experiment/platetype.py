@@ -28,6 +28,7 @@ def interpolate(dictionary: InterpDict, x0: float):
 
 class PlateType(object):
     """An object representing a type of microplate or other container ; includes a name, and physical parameters"""
+    __allplatetypes = []
 
     def __init__(self,name: str, nx:int =12, ny:int=8,pierce:bool=False,unusableVolume:float=5,maxVolume:float=200,angle:float=None,r1:float=None,h1:float=None,v0:float=None,gemDepth:float=None,gemArea:float=None,gemShape:str=None,maxspeeds=None,glycerolmaxspeeds=None,glycerol:float=None,minspeeds=None,yspacing=9):
         self.name=name
@@ -52,6 +53,14 @@ class PlateType(object):
         self.glycerolmaxspeeds=glycerolmaxspeeds
         self.glycerol=glycerol			# Glycerol fraction for above speeds
         self.minspeeds=minspeeds
+        PlateType.__allplatetypes.append(self)
+
+    @classmethod
+    def lookupByName(cls,name):
+        for p in PlateType.__allplatetypes:
+            if p.name==name:
+                return p
+        return None
 
     def getliquidheight(self,volume):
         """Get liquid height in mm above ZMax"""
