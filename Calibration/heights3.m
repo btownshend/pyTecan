@@ -135,7 +135,9 @@ for i=1:4
   h=[];
   for k=1:length(ucmds)
     s1=strcmp(cmd,ucmds{k});
-    h(k)=plot(vol(s1&(tip==i)),vol(s1&(tip==i))-obsvol(s1&(tip==i)),syms(k));
+    if any(tip==i)
+      h(k)=plot(vol(s1&(tip==i)),vol(s1&(tip==i))-obsvol(s1&(tip==i)),syms(k));
+    end
     hold on;
   end
 end
