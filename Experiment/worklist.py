@@ -145,9 +145,11 @@ def optimizeQueue():
                     print("   WITH %s %s:\tTip %d, Loc %s Wells %s"%(d2[7],d2[0],d2[1],d2[5].location,str(d2[2])), end=' ')
                 tipdiff=math.log(d2[1],2)-math.floor(math.log(d1[1],2))
                 welldiff=d2[2][0]-max(d1[2])
-                if tipdiff!=welldiff:
+                wellspacing=welldiff*d2[5].plateType.yspacing   # Spacing between wells in mm
+                tipspacing=wellspacing/tipdiff
+                if tipspacing!=9:   # Although we could have spacing up to 38, it has to be uniform if more than 2 tips are used -- hard to enforce here
                     if optimizeDebug:
-                        print("  tipdiff (%d) != welldiff(%d)"%(tipdiff,welldiff))
+                        print("  out-of-range spacing: %.1f; wellspacing=%f, ny=%d, tipdiff=%f, welldiff=%f"%(tipspacing,wellspacing,d2[5].plateType.ny,tipdiff,welldiff))
                 elif d1[2][0]//d1[5].plateType.ny != d2[2][0]//d2[5].plateType.ny:
                     if optimizeDebug:
                         print("  wells in different columns of %d-row plate"%d1[5].plateType.ny)
