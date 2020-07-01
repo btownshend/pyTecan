@@ -303,7 +303,7 @@ class GUI(Ui_MainWindow):
             where program=%d and sample=%d and op>%d
             and volchange!=0
             order by lineno
-            """%(self.lastElapsed,self.lastMeasured.toString('MM/dd/yy HH:mm'),self.currentProgram, self.currentSample, sdata[3])
+            """%(self.lastElapsed,"01/01/01 00:00" if self.lastMeasured is None else self.lastMeasured.toString('MM/dd/yy HH:mm'),self.currentProgram, self.currentSample, sdata[3])
         print(query)
         q.setQuery(query)
         if q.lastError().isValid():
