@@ -41,24 +41,27 @@ GRENIER384=PlateType("Grenier384",nx=24,ny=16,yspacing=4.5,pierce=False,unusable
                 gemShape='v-shaped',maxspeeds=eppmaxspeeds,minspeeds=eppminspeeds,glycerolmaxspeeds=eppglycerolmaxspeeds,glycerol=1)  # TODO
 
 ############ Plate locations  #############
+# Plate locations are roughly equivalent to Gemini carriers
 # Note: We currently tie the zmax to the location, since the same plate can be moved to different locations resulting in different heights
 #   However, this creates a problem if a different plate type is moved to the same location
 #   TODO: Make locations more like racks (with a base height) and then plates have a zmax that is relative to that
 # Or, maybe, we don't really need the zmax here -- the parselog can retrieve the zmax that was being used at runtime
 # A particular volume formula goes along with a particular zmax though...
-WATERLOC=PlateLocation("Water",3,2,zmax=1367)
-BLEACHLOC=PlateLocation("Bleach",3,3,zmax=1367)
-SSDDILLOC=PlateLocation("SSDDil",3,1,zmax=1367)
+WATERLOC=PlateLocation("Water",3,2,zmax=1367,carrierName="Trough 100ml, 3 Pos.",zoffset=10.0)
+BLEACHLOC=PlateLocation("Bleach",3,3,zmax=1367,carrierName="Trough 100ml, 3 Pos.",zoffset=10.0)
+SSDDILLOC=PlateLocation("SSDDil",3,1,zmax=1367,carrierName="Trough 100ml, 3 Pos.",zoffset=10.0)
 
-RICLOC=PlateLocation("RIC",18,1,slopex=0,slopey=0,zmax=567)
+RICLOC=PlateLocation("RIC",18,1,slopex=0,slopey=0,zmax=567,carrierName="RIC, Microplate",zoffset=6.2+108.7)
 MAGPLATELOC=PlateLocation("MagPlate",18,2,zmax=1459,vectorName="Magplate")
 SHAKERPLATELOC=PlateLocation("Shaker",9,0,vectorName="Shaker",lihaAccess=False)
-SAMPLELOC=PlateLocation("SampleLoc",4,3,zmax=1031,vectorName="Microplate Landscape")
-DILUTIONLOC=PlateLocation("DilutionLoc",4,2,zmax=1031,vectorName="Microplate Landscape")
-PRODUCTLOC=PlateLocation("ProductLoc",18,2,zmax=459,vectorName="Microplate Product")
-QPCRLOC=PlateLocation("QPCRLoc",4,1,zmax=996)  # defined in worklist.py
-WASHLOC=PlateLocation("Wash",1,2,lihaAccess=False)  # defined in worklist.py
-EPPLOC=PlateLocation("EppLoc",13,1,zmax=1339)
+SAMPLELOC=PlateLocation("SampleLoc",4,3,zmax=1031,vectorName="Microplate Landscape",carrierName="MP, 3 Pos., landscape, RoMa",
+                        zoffset=62.5)
+DILUTIONLOC=PlateLocation("DilutionLoc",4,2,zmax=1031,vectorName="Microplate Landscape",carrierName="MP, 3 Pos., landscape, RoMa",
+                          zoffset=62.5)
+PRODUCTLOC=PlateLocation("ProductLoc",18,2,zmax=459,vectorName="Microplate Product",carrierName="RIC, Microplate", zoffset=6.2)
+QPCRLOC=PlateLocation("QPCRLoc",4,1,zmax=996,carrierName="MP, 3 Pos., landscape, RoMa",zoffset=62.5)  # defined in worklist.py
+WASHLOC=PlateLocation("Wash",1,2,lihaAccess=False,carrierName="Wash Station")  # defined in worklist.py
+EPPLOC=PlateLocation("EppLoc",13,1,zmax=1339,carrierName="Eppendorf Tube, 16 Pos.",zoffset=0.0)
 TCPOS=PlateLocation("TC",25,1,vectorName="TROBOT",lihaAccess=False)
 HOTELPOS = PlateLocation("Hotel",25, 0, lihaAccess=False)
 WASTE = PlateLocation("Waste",20, 3, lihaAccess=False)
