@@ -6,6 +6,7 @@ from Experiment.decklayout import TIPOFFSETS
 from Experiment.experiment import Experiment
 from Experiment.liquidclass import SURFACEREMOVE
 from Experiment.plate import Plate
+from Experiment.platetype import PlateType
 from Experiment.sample import Sample
 from Experiment import sample
 from Experiment import logging
@@ -13,7 +14,14 @@ from Experiment import logging
 def getSample(wellx,welly,rack,grid,pos):
         plate=Plate.lookup(grid,pos)
         if plate is None:
-            plate=Plate(rack,grid,pos)
+            plate = Plate(rack, grid, pos)
+        elif plate.plateType.name != rack:
+            print(f"Expected plate type {plate.plateType.name} at {grid},{pos}, but found {rack} - overriding")
+            plate.plateType = PlateType.lookupByName(rack)
+            if plate.plateType is None:
+                print("No such plateType: ", rack)
+                assert(False)
+
         wellname="%c%d"%(ord('A')+welly-1,wellx)
         well=plate.wellnumber(wellname)
         s=Sample.lookupByWell(plate, well)
