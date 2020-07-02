@@ -66,7 +66,7 @@ clf;
 subplot(311);
 leg={};
 for i=1:4
-  sel=tip==i;
+  sel=tip==i & vol>0;
   plot(vol(sel),heights(sel),'o');
   hold on;
   leg{i}=sprintf('Tip %d N=%d',i,sum(isfinite(heights(sel))));

@@ -4,7 +4,7 @@
 % slopemodel  - 1 to model slope of plate
 % flatbottom  - true to assume flat-bottom wells
 function [fit,angle,expected]=fitheights2(vol,heights,wells,tips,angle,x0,slopemodel,flatbottom)
-sel=isfinite(vol)&isfinite(heights);
+sel=isfinite(vol)&isfinite(heights)&vol>0;
 vol=vol(sel);
 heights=heights(sel);
 wells=wells(sel,:);
