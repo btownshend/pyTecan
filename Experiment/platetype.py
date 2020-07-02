@@ -30,7 +30,7 @@ class PlateType(object):
     """An object representing a type of microplate or other container ; includes a name, and physical parameters"""
     __allplatetypes = []
 
-    def __init__(self,name: str, nx:int =12, ny:int=8,pierce:bool=False,unusableVolume:float=5,maxVolume:float=200,angle:float=None,r1:float=None,h1:float=0,v0:float=None,gemDepth:float=None,gemArea:float=None,gemShape:str=None,maxspeeds=None,glycerolmaxspeeds=None,glycerol:float=None,minspeeds=None,yspacing=9):
+    def __init__(self,name: str, nx:int =12, ny:int=8,pierce:bool=False,unusableVolume:float=5,maxVolume:float=200,angle:float=None,r1:float=None,h1:float=0,v0:float=None,gemDepth:float=None,gemArea:float=None,gemShape:str=None,maxspeeds=None,glycerolmaxspeeds=None,glycerol:float=None,minspeeds=None,yspacing=9,zmax=None):
         self.name=name
         self.unusableVolume=unusableVolume   # FIXME: unusableVolume did depend on where the plate was (was that for the magnet?)
         self.nx=nx
@@ -53,6 +53,8 @@ class PlateType(object):
         self.glycerolmaxspeeds=glycerolmaxspeeds
         self.glycerol=glycerol			# Glycerol fraction for above speeds
         self.minspeeds=minspeeds
+        self.zmax=zmax  # Position of bottom of well relative to bottom of plate in mm
+        # zmax in robot is in tenths, adds the carrier offset, and is measured from 2100 above deck
         PlateType.__allplatetypes.append(self)
 
     @classmethod

@@ -17,19 +17,21 @@ eppglycerolmaxspeeds=eppmaxspeeds
 eppminspeeds={0:1900,20:1900,32:1800,64:1700,96:1400,150:1100}  # 1100@150ul untested
 
 # Unusable volume is based on volume remaining at ZMax-1.5 (which is what Water-Bottom LC aspirates at)
-TROUGH = PlateType("Trough",nx=1,ny=4,pierce=False,unusableVolume=100,maxVolume=100000,gemDepth=0,gemArea=1232,gemShape='flat')
-EPPLOWBIND=PlateType("EppLowBind",nx=12,ny=8,pierce=False,unusableVolume=15,maxVolume=200,
+# ZMax is from Carrier.cfg for the rack (zcoords.max)
+TROUGH = PlateType("Trough 100ml",nx=1,ny=4,pierce=False,unusableVolume=100,maxVolume=100000,gemDepth=0,gemArea=1232,gemShape='flat',zmax=24.3)
+EPPLOWBIND=PlateType("EppLoBind on carrier",nx=12,ny=8,pierce=False,unusableVolume=15,maxVolume=200,zmax=5.4,
                 angle=17.5,r1=2.724,h1=8.49,v0=13.48,
                 gemDepth=1.92, gemArea=13.51,
                 gemShape='v-shaped',maxspeeds=eppmaxspeeds,minspeeds=eppminspeeds,glycerolmaxspeeds=eppglycerolmaxspeeds,glycerol=1)  # EppLoBind
-RICBLOCK=PlateType("RICBlock",nx=6,ny=5,pierce=False,unusableVolume=20,maxVolume=1700,angle=17.5,r1=4.088,h1=16.91,v0=10.23,gemDepth=1.02,gemArea=13.52,gemShape='v-shaped')
-WHITEQPCR=PlateType("qPCRPlate",nx=12,ny=8,pierce=False,unusableVolume=15,maxVolume=200,
+RICBLOCK=PlateType("RIC Eppendorfs",nx=6,ny=5,pierce=False,unusableVolume=20,maxVolume=1700,angle=17.5,r1=4.088,h1=16.91,v0=10.23,gemDepth=1.02,gemArea=13.52,gemShape='v-shaped',
+                   zmax=-0.6)
+WHITEQPCR=PlateType("QPCR on HSP96xx",nx=12,ny=8,pierce=False,unusableVolume=15,maxVolume=200,zmax=9.9,
                 angle=17.5,r1=2.704,h1=10.89,v0=0.44,gemDepth=3.17,gemArea=14.33,gemShape='v-shaped')
-EPPRACK = PlateType("EppRack", nx=1, ny=16, pierce=False, unusableVolume=30, maxVolume=1500,angle=17.5,
+EPPRACK = PlateType("Eppendorf Tube, 16 Pos.", nx=1, ny=16, pierce=False, unusableVolume=30, maxVolume=1500,angle=17.5,zmax=37.1,
                 r1=4.407,h1=17.34,v0=22.11,
                 gemDepth=1.29, gemArea=16.98, gemShape='v-shaped')
-CLEAR384=PlateType("384 Well, clear on carrier",nx=24,ny=16,yspacing=4.5,pierce=False,unusableVolume=15,maxVolume=130,
                 gemArea=12.11, h1=-1.56,   # TODO
+CLEAR384=PlateType("384 Well, clear on carrier",nx=24,ny=16,yspacing=4.5,pierce=False,unusableVolume=15,maxVolume=130,zmax=5.1,
                 gemShape='flat',maxspeeds=eppmaxspeeds,minspeeds=eppminspeeds,glycerolmaxspeeds=eppglycerolmaxspeeds,glycerol=1)  # TODO
 GRENIER384=PlateType("Grenier384",nx=24,ny=16,yspacing=4.5,pierce=False,unusableVolume=15,maxVolume=130,
                 angle=17.5,r1=2.724,h1=8.49,v0=13.48,   # TODO - adjust
