@@ -98,3 +98,4 @@ def initWellKnownSamples():
 
 ############ Header file containing matching deck layout  #############
 headerfile=os.path.join(os.path.dirname(__file__),"../header.gem")
+headerfile384samp=os.path.join(os.path.dirname(__file__),"../header384samp.gem")

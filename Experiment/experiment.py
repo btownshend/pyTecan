@@ -131,12 +131,12 @@ class Experiment(object):
     def saveworklist(filename: str):
         worklist.saveworklist(filename)
 
-    def savegem(self,filename: str):
+    def savegem(self,filename: str, header=decklayout.headerfile):
         worklist.flushQueue()
         db.endrun()   # May have already been ended before waiting to turn off reagent chiller; idempotent
         worklist.comment("Completed (%s-%s)"%(sys.argv[0],self.checksum))
         worklist.flushQueue()
-        worklist.savegem(decklayout.headerfile,filename)
+        worklist.savegem(header,filename)
 
     def savesummary(self,filename:str ,settings: Dict =None):
         # Print amount of samples needed
