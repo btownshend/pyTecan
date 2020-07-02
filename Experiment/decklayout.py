@@ -30,8 +30,8 @@ WHITEQPCR=PlateType("QPCR on HSP96xx",nx=12,ny=8,pierce=False,unusableVolume=15,
 EPPRACK = PlateType("Eppendorf Tube, 16 Pos.", nx=1, ny=16, pierce=False, unusableVolume=30, maxVolume=1500,angle=17.5,zmax=37.1,
                 r1=4.407,h1=17.34,v0=22.11,
                 gemDepth=1.29, gemArea=16.98, gemShape='v-shaped')
-                gemArea=12.11, h1=-1.56,   # TODO
 CLEAR384=PlateType("384 Well, clear on carrier",nx=24,ny=16,yspacing=4.5,pierce=False,unusableVolume=15,maxVolume=130,zmax=5.1,
+                gemArea=12.15, h1=-1.27,   # TODO
                 gemShape='flat',maxspeeds=eppmaxspeeds,minspeeds=eppminspeeds,glycerolmaxspeeds=eppglycerolmaxspeeds,glycerol=1)  # TODO
 GRENIER384=PlateType("Grenier384",nx=24,ny=16,yspacing=4.5,pierce=False,unusableVolume=15,maxVolume=130,
                 angle=17.5,r1=2.724,h1=8.49,v0=13.48,   # TODO - adjust
