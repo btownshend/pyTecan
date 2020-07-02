@@ -22,10 +22,6 @@ EPPLOWBIND=PlateType("EppLowBind",nx=12,ny=8,pierce=False,unusableVolume=15,maxV
                 angle=17.5,r1=2.724,h1=8.49,v0=13.48,
                 gemDepth=1.92, gemArea=13.51,
                 gemShape='v-shaped',maxspeeds=eppmaxspeeds,minspeeds=eppminspeeds,glycerolmaxspeeds=eppglycerolmaxspeeds,glycerol=1)  # EppLoBind
-DEEPPLATE=PlateType("DeepPlate",nx=12,ny=8,pierce=False,unusableVolume=15,maxVolume=2000,
-                angle=17.5,r1=2.724,h1=8.49,v0=13.48,
-                gemDepth=1.92, gemArea=13.51,
-                gemShape='v-shaped',maxspeeds=eppmaxspeeds,minspeeds=eppminspeeds,glycerolmaxspeeds=eppglycerolmaxspeeds,glycerol=1)  # Deep plate (TODO: Update parameters; above are placeholders based on EPPLOWBIND)
 RICBLOCK=PlateType("RICBlock",nx=6,ny=5,pierce=False,unusableVolume=20,maxVolume=1700,angle=17.5,r1=4.088,h1=16.91,v0=10.23,gemDepth=1.02,gemArea=13.52,gemShape='v-shaped')
 WHITEQPCR=PlateType("qPCRPlate",nx=12,ny=8,pierce=False,unusableVolume=15,maxVolume=200,
                 angle=17.5,r1=2.704,h1=10.89,v0=0.44,gemDepth=3.17,gemArea=14.33,gemShape='v-shaped')
