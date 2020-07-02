@@ -22,9 +22,6 @@ class Plate(object):
         if self.plateType.zmax is None or self.location.zoffset is None:
             return None
         zmax = 2100-(self.plateType.zmax + self.location.zoffset)*10-390
-        # Check old way
-        if zmax!=self.location.oldzmax:
-            print(f"**** New zmax is {zmax}, but old way is {self.location.oldzmax}")
         return zmax
 
     def markUsed(self,firstWell,lastWell=None):

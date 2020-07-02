@@ -33,7 +33,7 @@ EPPRACK = PlateType("Eppendorf Tube, 16 Pos.", nx=1, ny=16, pierce=False, unusab
 CLEAR384=PlateType("384 Well, clear on carrier",nx=24,ny=16,yspacing=4.5,pierce=False,unusableVolume=15,maxVolume=130,zmax=5.1,
                 gemArea=12.15, h1=-1.27,   # TODO
                 gemShape='flat',maxspeeds=eppmaxspeeds,minspeeds=eppminspeeds,glycerolmaxspeeds=eppglycerolmaxspeeds,glycerol=1)  # TODO
-GRENIER384=PlateType("Grenier384",nx=24,ny=16,yspacing=4.5,pierce=False,unusableVolume=15,maxVolume=130,
+GRENIER384=PlateType("Grenier384",nx=24,ny=16,yspacing=4.5,pierce=False,unusableVolume=15,maxVolume=130,zmax=5.1,
                 angle=17.5,r1=2.724,h1=8.49,v0=13.48,   # TODO - adjust
                 gemDepth=1.92, gemArea=13.51,   # TODO
                 gemShape='v-shaped',maxspeeds=eppmaxspeeds,minspeeds=eppminspeeds,glycerolmaxspeeds=eppglycerolmaxspeeds,glycerol=1)  # TODO
@@ -45,21 +45,21 @@ GRENIER384=PlateType("Grenier384",nx=24,ny=16,yspacing=4.5,pierce=False,unusable
 #   TODO: Make locations more like racks (with a base height) and then plates have a zmax that is relative to that
 # Or, maybe, we don't really need the zmax here -- the parselog can retrieve the zmax that was being used at runtime
 # A particular volume formula goes along with a particular zmax though...
-WATERLOC=PlateLocation("Water",3,2,zmax=1367,carrierName="Trough 100ml, 3 Pos.",zoffset=10.0)
-BLEACHLOC=PlateLocation("Bleach",3,3,zmax=1367,carrierName="Trough 100ml, 3 Pos.",zoffset=10.0)
-SSDDILLOC=PlateLocation("SSDDil",3,1,zmax=1367,carrierName="Trough 100ml, 3 Pos.",zoffset=10.0)
+WATERLOC=PlateLocation("Water",3,2,carrierName="Trough 100ml, 3 Pos.",zoffset=10.0)
+BLEACHLOC=PlateLocation("Bleach",3,3,carrierName="Trough 100ml, 3 Pos.",zoffset=10.0)
+SSDDILLOC=PlateLocation("SSDDil",3,1,carrierName="Trough 100ml, 3 Pos.",zoffset=10.0)
 
-RICLOC=PlateLocation("RIC",18,1,slopex=0,slopey=0,zmax=567,carrierName="RIC, Microplate",zoffset=6.2+108.7)
-MAGPLATELOC=PlateLocation("MagPlate",18,2,zmax=1459,vectorName="Magplate")
+RICLOC=PlateLocation("RIC",18,1,slopex=0,slopey=0,carrierName="RIC, Microplate",zoffset=6.2+108.7)
+MAGPLATELOC=PlateLocation("MagPlate",18,2,vectorName="Magplate")
 SHAKERPLATELOC=PlateLocation("Shaker",9,0,vectorName="Shaker",lihaAccess=False)
-SAMPLELOC=PlateLocation("SampleLoc",4,3,zmax=1031,vectorName="Microplate Landscape",carrierName="MP, 3 Pos., landscape, RoMa",
+SAMPLELOC=PlateLocation("SampleLoc",4,3,vectorName="Microplate Landscape",carrierName="MP, 3 Pos., landscape, RoMa",
                         zoffset=62.5)
-DILUTIONLOC=PlateLocation("DilutionLoc",4,2,zmax=1031,vectorName="Microplate Landscape",carrierName="MP, 3 Pos., landscape, RoMa",
+DILUTIONLOC=PlateLocation("DilutionLoc",4,2,vectorName="Microplate Landscape",carrierName="MP, 3 Pos., landscape, RoMa",
                           zoffset=62.5)
-PRODUCTLOC=PlateLocation("ProductLoc",18,2,zmax=459,vectorName="Microplate Product",carrierName="RIC, Microplate", zoffset=6.2)
-QPCRLOC=PlateLocation("QPCRLoc",4,1,zmax=996,carrierName="MP, 3 Pos., landscape, RoMa",zoffset=62.5)  # defined in worklist.py
+PRODUCTLOC=PlateLocation("ProductLoc",18,2,vectorName="Microplate Product",carrierName="RIC, Microplate", zoffset=6.2)
+QPCRLOC=PlateLocation("QPCRLoc",4,1,carrierName="MP, 3 Pos., landscape, RoMa",zoffset=62.5)  # defined in worklist.py
 WASHLOC=PlateLocation("Wash",1,2,lihaAccess=False,carrierName="Wash Station")  # defined in worklist.py
-EPPLOC=PlateLocation("EppLoc",13,1,zmax=1339,carrierName="Eppendorf Tube, 16 Pos.",zoffset=0.0)
+EPPLOC=PlateLocation("EppLoc",13,1,carrierName="Eppendorf Tube, 16 Pos.",zoffset=0.0)
 TCPOS=PlateLocation("TC",25,1,vectorName="TROBOT",lihaAccess=False)
 HOTELPOS = PlateLocation("Hotel",25, 0, lihaAccess=False)
 WASTE = PlateLocation("Waste",20, 3, lihaAccess=False)
