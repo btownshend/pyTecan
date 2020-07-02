@@ -8,7 +8,7 @@ class PlateLocation(object):
         self.pos=pos
         self.slopex=slopex  # Slope of plate in mm/well; +ve indicates right edge is higher than left edge
         self.slopey=slopey  # Slope of plate in mm/well; +ve indicates bottom edge is higher than top edge
-        self.zmax=zmax
+        self.oldzmax=zmax   # (deprecated) Zmax of a plate here in 1/10mm from top of z-axis (dist to deck (2100-zmax)/10)
         self.zoffset=zoffset   # Offset of underlying carrier at this pos, in mm from surface of deck
         self.vectorName=vectorName		# Name of vector used for RoMa to pickup plate
         self.lihaAccess=lihaAccess

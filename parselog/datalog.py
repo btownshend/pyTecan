@@ -102,11 +102,10 @@ class Datalog(object):
 
         #print "%s: %f"%(sample.name,elapsed)
         sample.extrainfo=[time]    # Keep track of last measurement time of this sample in the extrainfo list
-        if sample.plate.location.zmax is not None:
-            curzmax=2100-sample.plate.location.zmax-390+TIPOFFSETS[tip-1]
-            if zmax!=curzmax:
-                logging.warning("ZMax for plate %s, tip %d at time of run was %.0f, currently at %.0f"%(sample.plate.name, tip, zmax, curzmax))
-                zmax=curzmax
+        curzmax=2100-sample.plate.getzmax()-390+TIPOFFSETS[tip-1]
+        if zmax!=curzmax:
+            logging.warning("ZMax for plate %s, tip %d at time of run was %.0f, currently at %.0f"%(sample.plate.name, tip, zmax, curzmax))
+            zmax=curzmax
         prevol=sample.volume-sample.lastadd		# Liquid height is measured before next op, whose volume effect has already been added to sample.volume
         if height==-1:
             vol=sample.plate.getliquidvolume((zadd+submerge)/10.0)

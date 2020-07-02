@@ -18,6 +18,15 @@ class Plate(object):
         self.backupPlate=backupPlate	   # Backup plate to use when this one is full
         Plate.__allplates.append(self)
 
+    def getzmax(self):
+        if self.plateType.zmax is None or self.location.zoffset is None:
+            return None
+        zmax = 2100-(self.plateType.zmax + self.location.zoffset)*10-390
+        # Check old way
+        if zmax!=self.location.oldzmax:
+            print(f"**** New zmax is {zmax}, but old way is {self.location.oldzmax}")
+        return zmax
+
     def markUsed(self,firstWell,lastWell=None):
         first=self.wellnumber(firstWell)
         if lastWell is None:

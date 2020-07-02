@@ -472,7 +472,7 @@ class Sample(object):
 
     def aspirate(self,tipMask,volume,multi=False):
         self.evapcheck('aspirate')
-        if self.plate.location.zmax is None:
+        if self.plate.getzmax() is None:
             logging.error( "Aspirate from illegal location: %s" % self.plate.location)
         removeAll=volume==self.volume
         if removeAll:
@@ -549,7 +549,7 @@ class Sample(object):
     def dispense(self,tipMask,volume,src):
         assert not self.refillable    # Dispensing into a refillable well not supported
         self.evapcheck('dispense')
-        if self.plate.location.zmax is None:
+        if self.plate.getzmax() is None:
             logging.error( "Dispense to illegal location: %s"%self.plate.location)
 
         if volume<0.1:
