@@ -497,7 +497,7 @@ class Experiment(object):
         occ=Plate.lookupLocation(dest)
         if occ==plate:
             logging.warning("moveplate: Attempt to move plate %s to %s, which is already there"%(plate.name,dest))
-        elif occ is not None:
+        elif occ is not None and occ.location.name==dest.name:
             logging.error("moveplate: Attempt to move plate %s to %s, which is already occupied by %s"%(plate.name,dest,occ))
 
         # print("Move plate %s from %s to %s"%(plate.name,plate.location,destLoc))
