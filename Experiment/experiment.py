@@ -199,7 +199,7 @@ class Experiment(object):
         return tipMask
 
 
-    def multitransfer(self, volumes, src: Sample, dests: SampleListType,mix: mixType=(True,False),getDITI:bool=True,dropDITI:bool=True,ignoreContents:bool=False,extraFrac:float=0.05,allowSplit=True):
+    def multitransfer(self, volumes, src: Sample, dests: SampleListType,mix: mixType=(True,False),getDITI:bool=True,dropDITI:bool=True,ignoreContents:bool=False,extraFrac:float=0.05,allowSplit=True,lc=(None,None)):
         """Multi pipette from src to multiple dest.  mix is (src,dest) mixing -- only mix src if needed though"""
         #print "multitransfer(",volumes,",",src,",",dests,",",mix,",",getDITI,",",dropDITI,")"
         if self.tcrunning and (src.plate.location==decklayout.TCPOS or len([1 for d in dests if d.plate.location==decklayout.TCPOS])>0):
@@ -236,8 +236,8 @@ class Experiment(object):
                         #     print "with tip reuse"
                         # else:
                         #     print "without tip reuse"
-                        self.multitransfer(volumes[0:i],src,dests[0:i],mix,getDITI,not reuseTip,extraFrac=extraFrac)
-                        self.multitransfer(volumes[i:],src,dests[i:],(False,mix[1]),not reuseTip,dropDITI,extraFrac=extraFrac)
+                        self.multitransfer(volumes[0:i],src,dests[0:i],mix,getDITI,not reuseTip,extraFrac=extraFrac,lc=lc)
+                        self.multitransfer(volumes[i:],src,dests[i:],(False,mix[1]),not reuseTip,dropDITI,extraFrac=extraFrac,lc=lc)
                         return
 
             if mix[0] and not src.isMixed() and (src.plate.vectorName is not None):
@@ -269,27 +269,27 @@ class Experiment(object):
                 self.sanitize()   # Make sure all tips are clean
                 for i in range(4):
                     tipMask=1<<i
-                    src.aspirate(tipMask,sum(volumes[i::4])*(1+extraFrac),True)	# Aspirate extra
+                    src.aspirate(tipMask,sum(volumes[i::4])*(1+extraFrac),multi=True,lc=lc[0])	# Aspirate extra
                 for i in range(len(dests)):
                     tipMask=1<<(i%4)
                     if volumes[i]>0.01:
-                        dests[i].dispense(tipMask,volumes[i],src)
+                        dests[i].dispense(tipMask,volumes[i],src,lc=lc[1])
                 self.cleanTips=0  # All are dirty now
                 worklist.flushQueue()
                 worklist.comment("Done multi-tip transfer of "+src.name)
             else:
-                src.aspirate(tipMask,sum(volumes)*(1+extraFrac),True)	# Aspirate extra
+                src.aspirate(tipMask,sum(volumes)*(1+extraFrac),multi=True,lc=lc[0])	# Aspirate extra
                 for i in range(len(dests)):
                     if volumes[i]>0.01:
-                        dests[i].dispense(tipMask,volumes[i],src)
+                        dests[i].dispense(tipMask,volumes[i],src,lc=lc[1])
                 if self.useDiTis and dropDITI:
                     worklist.dropDITI(tipMask&self.DITIMASK,decklayout.WASTE)
         else:
             for i in range(len(dests)):
                 if volumes[i]>0.01:
-                    self.transfer(volumes[i],src,dests[i],(mix[0] and i==0,mix[1]),getDITI,dropDITI)
+                    self.transfer(volumes[i],src,dests[i],(mix[0] and i==0,mix[1]),getDITI,dropDITI,lc=lc)
 
-    def transfer(self, volume: float, src: Sample, dest: Sample, mix: mixType=(True,False), getDITI:bool=True, dropDITI:bool=True):
+    def transfer(self, volume: float, src: Sample, dest: Sample, mix: mixType=(True,False), getDITI:bool=True, dropDITI:bool=True,lc=(None,None)):
         if self.tcrunning and (src.plate.location==decklayout.TCPOS or dest.plate.location==decklayout.TCPOS)>0:
             self.waitpgm()
 
@@ -302,8 +302,8 @@ class Experiment(object):
             else:
                 msg+= "without tip reuse"
             logging.notice(msg)
-            self.transfer(self.MAXVOLUME,src,dest,mix,getDITI,False)
-            self.transfer(volume-self.MAXVOLUME,src,dest,(mix[0] and not reuseTip,mix[1]),False,dropDITI)
+            self.transfer(self.MAXVOLUME,src,dest,mix,getDITI,multi=False,lc=lc)   # Don't use multitransfer mode since this would reduce volume
+            self.transfer(volume-self.MAXVOLUME,src,dest,(mix[0] and not reuseTip,mix[1]),multi=False,dropDITI,lc=lc)
             return
 
         cmt="Add %.1f ul of %s to %s"%(volume, src.name, dest.name)
@@ -334,8 +334,8 @@ class Experiment(object):
                 worklist.comment("pipette mix for src mix of "+src.name)
                 src.mix(tipMask)	# Manual mix (after allocating a tip for this)
             
-        src.aspirate(tipMask,volume)
-        dest.dispense(tipMask,volume,src)
+        src.aspirate(tipMask,volume,lc=lc[0])
+        dest.dispense(tipMask,volume,src,lc=lc[1])
         if mix[1]:
             dest.mix(tipMask,True)
 

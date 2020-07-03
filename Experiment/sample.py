@@ -470,7 +470,7 @@ class Sample(object):
         clock.pipetting=ptmp   # All the retries don't usually happen, so don't count in total time
         self.addhistory("LD",0,tipMask,"detect")
 
-    def aspirate(self,tipMask,volume,multi=False):
+    def aspirate(self,tipMask,volume,multi=False,lc=None):
         self.evapcheck('aspirate')
         if self.plate.getzmax() is None:
             logging.error( "Aspirate from illegal location: %s" % self.plate.location)
@@ -501,7 +501,8 @@ class Sample(object):
         else:
             well=[self.well]
 
-        lc=self.chooseLC(volume)
+        if lc is None:
+            lc=self.chooseLC(volume)
             
         self.volcheck(tipMask,well,volume)
 
@@ -549,7 +550,7 @@ class Sample(object):
         """Aspirate air over a well"""
         worklist.aspirateNC(tipMask,[self.well],self.airLC,volume,self.plate)
 
-    def dispense(self,tipMask,volume,src):
+    def dispense(self,tipMask,volume,src,lc=None):
         assert not self.refillable    # Dispensing into a refillable well not supported
         self.evapcheck('dispense')
         if self.plate.getzmax() is None:
@@ -570,16 +571,18 @@ class Sample(object):
         if self.volume+volume > self.plate.plateType.maxVolume and not self.refillable:
             logging.error("Dispense of %.1ful into %s results in total of %.1ful which is more than the maximum volume of %.1f ul"%(volume,self.name,self.volume+volume,self.plate.plateType.maxVolume))
 
-        if self.hasBeads and self.plate.location==MAGPLATELOC:
-            assert not self.refillable
-            worklist.dispense(tipMask,well,self.beadsLC,volume,self.plate)
-        elif self.volume>=MINLIQUIDDETECTVOLUME:
-            worklist.dispense(tipMask,well,self.inliquidLC,volume,self.plate)
-        elif self.volume+volume>=MINSIDEDISPENSEVOLUME:
-            worklist.dispense(tipMask,well,self.bottomSideLC,volume,self.plate)
-        else:
-            worklist.dispense(tipMask,well,self.bottomLC,volume,self.plate)
-
+        if lc is None:
+            if self.hasBeads and self.plate.location==MAGPLATELOC:
+                assert not self.refillable
+                lc=self.beadsLC
+            elif self.volume>=MINLIQUIDDETECTVOLUME:
+                lc=self.inliquidLC
+            elif self.volume+volume>=MINSIDEDISPENSEVOLUME:
+                lc=self.bottomSideLC
+            else:
+                lc=self.bottomLC
+        worklist.dispense(tipMask,well,lc,volume,self.plate)
+        
         # Assume we're diluting the contents
         if self.conc is None and src.conc is None:
             pass
