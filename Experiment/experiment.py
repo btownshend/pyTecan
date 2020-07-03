@@ -385,7 +385,7 @@ class Experiment(object):
 
         if mix and not src.isMixed():
             src.mix(tipMask)
-        src.aspirate(tipMask,volume)
+        src.aspirate(tipMask,volume,multi=False)
 
         if self.useDiTis and dropDITI:
             worklist.dropDITI(tipMask&self.DITIMASK,decklayout.WASTE)
