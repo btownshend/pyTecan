@@ -14,7 +14,7 @@ if nargin<5
   angle=17.5;
 end
 if nargin<6 || isempty(x0)
-  x0=[2.5,10,10,0,0,0,0,0];
+  x0=[1,10,10,0,0,0,0,0];
 end
 if nargin<8
   flatbottom=false;
