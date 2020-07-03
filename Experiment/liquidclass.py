@@ -71,4 +71,4 @@ LCAir=LC("Air")
 LCBleachMix=LC("RNaseAway-Mix",  singletag=10,multiexcess=2,multitag=10)
 LCDip=LC("Dip",multiexcess=1)
 LCPrefilled=LC("Prefilled")
-
+LCTrough=LC("Trough-LD",singlelag=1,multiexcess=1,ldetect=True,submerge=1)   # Use faster liquid detect for troughs

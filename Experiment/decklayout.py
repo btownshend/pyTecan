@@ -3,7 +3,7 @@ from .plate import Plate
 from .platetype import PlateType
 from .platelocation import PlateLocation
 
-from .liquidclass import LCBleachMix
+from .liquidclass import LCBleachMix,LCTrough
 
 ############ Plate types  #############
 hspmaxspeeds={200:1400,150:1600,100:1850,50:2000,20:2200}	# From shaketest experiment
@@ -92,7 +92,9 @@ def initWellKnownSamples():
     from .sample import Sample
 
     WATER=Sample("Water",WATERTROUGH,-1,None,100000)
+    WATER.inliquidLC=LCTrough    # Faster liquid detect
     SSDDIL=Sample("SSDDil",SSDTROUGH,-1,None,100000)
+    SSDDIL.inliquidLC=LCTrough  # Faster liquid detect
     BLEACH=Sample("RNase-Away",BLEACHTROUGH,-1,None,100000,mixLC=LCBleachMix)
 
 
