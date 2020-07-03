@@ -508,7 +508,7 @@ class Sample(object):
         if (self.hasBeads and self.plate.location==MAGPLATELOC) or removeAll:
             # With beads don't do any manual conditioning and don't remove extra (since we usually want to control exact amounts left behind, if any)
             worklist.aspirateNC(tipMask,well,lc,volume,self.plate)
-            remove=lc.volRemoved(volume,multi=False)
+            remove=lc.volRemoved(volume,multi=multi)
             if self.volume==volume:
                 # Removing all, ignore excess remove
                 remove=self.volume-0.1   # Leave behind enough to be able to keep track of ingredients
@@ -516,7 +516,7 @@ class Sample(object):
         else:
             worklist.aspirate(tipMask,well,lc,volume,self.plate)
             # Manual conditioning handled in worklist
-            remove=lc.volRemoved(volume,multi=True)
+            remove=lc.volRemoved(volume,multi=multi)
 
             if remove+0.1 > self.volume > 0:
                 logging.warning("Removing all contents (%.1f from %.1ful) from %s"%(remove,self.volume,self.name))
