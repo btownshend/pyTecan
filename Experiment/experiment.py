@@ -289,7 +289,7 @@ class Experiment(object):
                 if volumes[i]>0.01:
                     self.transfer(volumes[i],src,dests[i],(mix[0] and i==0,mix[1]),getDITI,dropDITI,lc=lc)
 
-    def transfer(self, volume: float, src: Sample, dest: Sample, mix: mixType=(True,False), getDITI:bool=True, dropDITI:bool=True,lc=(None,None)):
+    def transfer(self, volume: float, src: Sample, dest: Sample, mix: mixType=(True,False), getDITI:bool=True, dropDITI:bool=True,multi=True,lc=(None,None)):
         if self.tcrunning and (src.plate.location==decklayout.TCPOS or dest.plate.location==decklayout.TCPOS)>0:
             self.waitpgm()
 
@@ -334,7 +334,7 @@ class Experiment(object):
                 worklist.comment("pipette mix for src mix of "+src.name)
                 src.mix(tipMask)	# Manual mix (after allocating a tip for this)
             
-        src.aspirate(tipMask,volume,lc=lc[0])
+        src.aspirate(tipMask,volume,lc=lc[0],multi=multi)
         dest.dispense(tipMask,volume,src,lc=lc[1])
         if mix[1]:
             dest.mix(tipMask,True)
