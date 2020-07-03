@@ -63,7 +63,7 @@ EPPLOC=PlateLocation("EppLoc",13,1,carrierName="Eppendorf Tube, 16 Pos.",zoffset
 TCPOS=PlateLocation("TC",25,1,vectorName="TROBOT",lihaAccess=False)
 HOTELPOS = PlateLocation("Hotel",25, 0, lihaAccess=False)
 WASTE = PlateLocation("Waste",20, 3, lihaAccess=False)
-HOTEL = [ PlateLocation(f"Hotel{i+1}",25, i+2, lihaAccess=False,vectorName=f"Hotel{i+1}") for i in range(6) ]
+HOTEL = [ PlateLocation(f"Hotel{i+1}",25,0, lihaAccess=False,vectorName=f"Hotel{i+1}") for i in range(6) ]
 
 ############ Physical Plates #############
 WATERTROUGH=Plate(name="Water",plateType=TROUGH, plateLocation=WATERLOC)
