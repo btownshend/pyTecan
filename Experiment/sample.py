@@ -514,7 +514,10 @@ class Sample(object):
                 remove=self.volume-0.1   # Leave behind enough to be able to keep track of ingredients
                 self.emptied=True
         else:
-            worklist.aspirate(tipMask,well,lc,volume,self.plate)
+            if multi:
+                worklist.aspirate(tipMask,well,lc,volume,self.plate)
+            else:
+                worklist.aspirateNC(tipMask,well,lc,volume,self.plate)
             # Manual conditioning handled in worklist
             remove=lc.volRemoved(volume,multi=multi)
 
