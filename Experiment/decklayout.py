@@ -33,9 +33,9 @@ EPPRACK = PlateType("Eppendorf Tube, 16 Pos.", nx=1, ny=16, pierce=False, unusab
 CLEAR384=PlateType("384 Well, clear on carrier",nx=24,ny=16,yspacing=4.5,pierce=False,unusableVolume=15,maxVolume=130,zmax=5.1,
                 gemArea=12.15, h1=-1.27,   # TODO
                 gemShape='flat',maxspeeds=eppmaxspeeds,minspeeds=eppminspeeds,glycerolmaxspeeds=eppglycerolmaxspeeds,glycerol=1)  # TODO
-GRENIER384=PlateType("Grenier384",nx=24,ny=16,yspacing=4.5,pierce=False,unusableVolume=15,maxVolume=130,zmax=5.1,
-                angle=17.5,r1=2.724,h1=8.49,v0=13.48,   # TODO - adjust
-                gemDepth=1.92, gemArea=13.51,   # TODO
+GRENIER384=PlateType("Grenier384",nx=24,ny=16,yspacing=4.5,pierce=False,unusableVolume=15,maxVolume=130,zmax=5.2,
+                angle=17.5,r1=2.070,h1=2.31,v0=26.2, 
+                gemDepth=-0.44, gemArea=13.30,
                 gemShape='v-shaped',maxspeeds=eppmaxspeeds,minspeeds=eppminspeeds,glycerolmaxspeeds=eppglycerolmaxspeeds,glycerol=1)  # TODO
 
 ############ Plate locations  #############
