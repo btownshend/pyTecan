@@ -69,6 +69,7 @@ HOTEL = [ PlateLocation(f"Hotel{i+1}",25,0, lihaAccess=False,vectorName=f"Hotel{
 WATERTROUGH=Plate(name="Water",plateType=TROUGH, plateLocation=WATERLOC)
 BLEACHTROUGH=Plate(name="Bleach",plateType=TROUGH, plateLocation=BLEACHLOC)
 SSDTROUGH=Plate(name="SSDDil",plateType=TROUGH, plateLocation=SSDDILLOC)
+METHTROUGH=Plate(name="MeOH",plateType=TROUGH, plateLocation=SSDDILLOC)
 
 SAMPLEPLATE=Plate(name="Samples",plateType=EPPLOWBIND,plateLocation=SAMPLELOC)
 DILPLATE=Plate(name="Dilutions",plateType=EPPLOWBIND,plateLocation=DILUTIONLOC,backupPlate=SAMPLEPLATE)
