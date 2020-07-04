@@ -303,7 +303,7 @@ class Experiment(object):
                 msg+= "without tip reuse"
             logging.notice(msg)
             self.transfer(self.MAXVOLUME,src,dest,mix,getDITI,multi=False,lc=lc)   # Don't use multitransfer mode since this would reduce volume
-            self.transfer(volume-self.MAXVOLUME,src,dest,(mix[0] and not reuseTip,mix[1]),multi=False,dropDITI,lc=lc)
+            self.transfer(volume-self.MAXVOLUME,src,dest,(mix[0] and not reuseTip,mix[1]),dropDITI=dropDITI,multi=False,lc=lc)
             return
 
         cmt="Add %.1f ul of %s to %s"%(volume, src.name, dest.name)
