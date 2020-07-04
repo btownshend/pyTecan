@@ -492,8 +492,10 @@ class LogDB(DB):
             logging.notice("measurement: %s"%str(measurement))
             plate=Plate.lookupByName(plateName)
             if plate is None:
-                print(f"Plate {plateName} not found!")
-                assert(False)
+                logging.warning(f"Plate {plateName} not found! ")
+                # Create a dummy plate
+                plate=Plate(plateName,plateType=decklayout.GRENIER384,plateLocation=decklayout.SAMPLELOC)
+                logging.warning(f"Created a plate for {plate} with type {plate.plateType}, location {plate.location}")
             logging.notice("plate=%s"%str(plate))
             height,submerge,zmax,zadd,meastime=measurement
             curzmax=2100-plate.getzmax()-390+decklayout.TIPOFFSETS[tip-1]
