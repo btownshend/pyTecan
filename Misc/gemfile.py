@@ -96,6 +96,7 @@ class GemFile(object):
                     print(f"Unknown field code {fields[0]} at line {lineno}")
 
     def deckcompare(self, carrier: Carrier):
+        print("Compare decklayout with Carrier/GemFile")
         for plate in Plate.allPlates():
             print('\n-------------')
             print(f"Plate: {plate}, Type: {plate.plateType}, Loc: {plate.location.carrierName}")
@@ -114,7 +115,9 @@ class GemFile(object):
             print(f" + tip:{tipoffset}", end='')
             print(f" -> {coffsets[0] + coffsets[1] + roffset + tipoffset}")
             if coffsets[0]+coffsets[1]+roffset+tipoffset != zoffset1:
-                print("**** Z-Offset mismatch!")
+                print(f"**** Z-Offset mismatch: carrier: {2100-10*(coffsets[0]+coffsets[1]+roffset+tipoffset)}, decklayout: {2100-10*zoffset1}")
+            if r['area'] != plate.plateType.gemArea:
+                print(f"**** GEM Area mismatch: carrier: {r['area']}, decklayout: {plate.plateType.gemArea}")
             print(f"Location:")
             print(f"\tdecklayout.py: {plate.location.grid},{plate.location.pos}")
             for l in self.layout:
