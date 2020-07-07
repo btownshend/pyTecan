@@ -199,8 +199,9 @@ class Experiment(object):
         return tipMask
 
 
-    def multitransfer(self, volumes, src: Sample, dests: SampleListType,mix: mixType=(True,False),getDITI:bool=True,dropDITI:bool=True,ignoreContents:bool=False,extraFrac:float=0.05,allowSplit=True,lc=(None,None)):
+    def multitransfer(self, volumes, src: Sample, dests: SampleListType,mix: mixType=(True,False),getDITI:bool=True,dropDITI:bool=True,ignoreContents:bool=False,extraFrac:float=0.05,allowSplit=True,lc=(None,None),precondition=True):
         """Multi pipette from src to multiple dest.  mix is (src,dest) mixing -- only mix src if needed though"""
+        # Precondition enables returning 2ul from source immediately after aspirate
         #print "multitransfer(",volumes,",",src,",",dests,",",mix,",",getDITI,",",dropDITI,")"
         if self.tcrunning and (src.plate.location==decklayout.TCPOS or len([1 for d in dests if d.plate.location==decklayout.TCPOS])>0):
             self.waitpgm()
@@ -236,8 +237,8 @@ class Experiment(object):
                         #     print "with tip reuse"
                         # else:
                         #     print "without tip reuse"
-                        self.multitransfer(volumes[0:i],src,dests[0:i],mix,getDITI,not reuseTip,extraFrac=extraFrac,lc=lc)
-                        self.multitransfer(volumes[i:],src,dests[i:],(False,mix[1]),not reuseTip,dropDITI,extraFrac=extraFrac,lc=lc)
+                        self.multitransfer(volumes[0:i],src,dests[0:i],mix,getDITI,not reuseTip,extraFrac=extraFrac,lc=lc,precondition=precondition)
+                        self.multitransfer(volumes[i:],src,dests[i:],(False,mix[1]),not reuseTip,dropDITI,extraFrac=extraFrac,lc=lc,precondition=precondition)
                         return
 
             if mix[0] and not src.isMixed() and (src.plate.vectorName is not None):
@@ -269,7 +270,7 @@ class Experiment(object):
                 self.sanitize()   # Make sure all tips are clean
                 for i in range(4):
                     tipMask=1<<i
-                    src.aspirate(tipMask,sum(volumes[i::4])*(1+extraFrac),multi=True,lc=lc[0])	# Aspirate extra
+                    src.aspirate(tipMask,sum(volumes[i::4])*(1+extraFrac),multi=precondition,lc=lc[0])	# Aspirate extra
                 for i in range(len(dests)):
                     tipMask=1<<(i%4)
                     if volumes[i]>0.01:
@@ -278,7 +279,7 @@ class Experiment(object):
                 worklist.flushQueue()
                 worklist.comment("Done multi-tip transfer of "+src.name)
             else:
-                src.aspirate(tipMask,sum(volumes)*(1+extraFrac),multi=True,lc=lc[0])	# Aspirate extra
+                src.aspirate(tipMask,sum(volumes)*(1+extraFrac),multi=precondition,lc=lc[0])	# Aspirate extra
                 for i in range(len(dests)):
                     if volumes[i]>0.01:
                         dests[i].dispense(tipMask,volumes[i],src,lc=lc[1])
