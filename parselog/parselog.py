@@ -321,25 +321,28 @@ def fwparse(dev,send,reply,error,lasttime,outfd):
     elif op == 'REE':
         extendedError=[ord(r)-ord('@') for r in reply[0]]   # X, Y, Ys, Z1..8
         #print("REE=",extendedError)
-        # This occurs aftrer a not enough liquid error, RVZ shows the height at the liquid level
     elif op=='RVZ' and int(args[0])==1:
+        # This occurs aftrer a not enough liquid error (error 12), RVZ shows the height at the liquid level
         # This seems to not include the submerge (actual liquid level instead)
-        assert ldpending=='MET'
+        # This also occurs after an explicit liquid detect (with error 0)
+        if ldpending!='MET' and ldpending!='MDT':
+            print(f"**** Unexpected RVZ after {ldpending}",file=outfd)
         heights = [int(r) for r in reply]
         assert (len(heights) == len(sbl))
         for i in range(len(heights)):
             if (1 << i & tipSelect) != 0:
-                if extendedError[3 + i] == 12:
+                if extendedError[3 + i] in [0, 12]:
                     print("TIPS", ldpending, extendedError[3 + i], i + 1, lnum, heights[i], sbl[i], sml[i],heights[i] + sbl[i] - sml[i], file=outfd)
                     dl.logmeasure(i + 1, heights[i], 0*sbl[i], sml[i], zadd[i], lasttime)  # No submerge offset
                     logdb.lastmeasure(i + 1, lnum, heights[i], 0*sbl[i], sml[i], zadd[i], lasttime)
+                elif extendedError[3+i] == 9:
+                    print(f"Not enough liquid for tip {i} - ignore measurement",file=outfd)
                 else:
-                    print("Unexpected RVZ - not after an error 12 MET")
-                    pass
+                    print(f"**** Unexpected RVZ with extended error {extendedError[3+i]}",file=outfd)
         ldpending=None
 
     elif ldpending:
-        print("**** Parser error:  got op %s without a RPZ while ldpending=%s"%(op,ldpending),file=outfd)
+        print("**** Parser error:  got op %s without a RPZ or RVZ while ldpending=%s"%(op,ldpending),file=outfd)
         #assert(False)
         ldpending=None
 
