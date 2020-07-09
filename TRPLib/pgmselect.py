@@ -556,7 +556,7 @@ class PGMSelect(TRP):
             if self.extpostdil[self.rndNum-1]>1:
                 print("Dilution after extension: %.2f"%self.extpostdil[self.rndNum-1])
                 for x in rxs:
-                    if (x.volume > 145/self.extpostdil[self.rndNum-1]):
+                    if x.volume > 145/self.extpostdil[self.rndNum - 1]:
                         print("WARNING: dilution of ext product results in discarding %.1ful"%(x.volume*self.extpostdil[self.rndNum-1]-145))
                 self.diluteInPlace(tgt=rxs,dil=self.extpostdil[self.rndNum-1],finalvol=145)
                 needDil=needDil/self.extpostdil[self.rndNum-1]

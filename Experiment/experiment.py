@@ -27,7 +27,7 @@ SampleListType = List[Sample]
 mixType = Tuple[bool, bool]
 brokenTips= 0
 
-def md5sum(filename: str) -> int:
+def md5sum(filename: str) -> str:
     hashval = md5()
     with open(filename, "rb") as f:
         for chunk in iter(lambda: f.read(128 * hashval.block_size), b""):
@@ -47,6 +47,7 @@ class Experiment(object):
         self.checksum=md5sum(sys.argv[0])
         self.checksum=self.checksum[-4:]
         pyTecan=os.path.dirname(os.path.realpath(__file__))
+        # noinspection PyBroadException
         try:
             self.gitlabel=subprocess.check_output(["git", "describe","--always"],cwd=pyTecan).decode('latin-1').strip()
         except Exception:

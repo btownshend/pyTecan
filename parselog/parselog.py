@@ -4,13 +4,14 @@ import datetime
 import time
 import os
 import sys
+from typing import Optional
 
 epath = os.path.join(os.path.dirname(__file__), '..')
 sys.path.append(epath)
 
 from Experiment.config import Config
 from Experiment import logging
-from datalog import Datalog
+from .datalog import Datalog
 from Experiment.db import LogDB, DB   # Note: parselog is both the parent and current module name
 
 Config.usedb=False
@@ -27,8 +28,8 @@ sml=[0,0,0,0]
 zadd=[0,0,0,0]
 tipSelect=0
 ldpending=False
-extendedError=None
-logdb=None
+extendedError:list
+logdb:LogDB
 
 syscmds={
       'ALO':['Activate door lock output',['locknum','setting'],[]],
@@ -365,6 +366,7 @@ def main():
     if args.password is not None:
         Config.password = args.password
 
+    # noinspection PyUnresolvedReferences
     sys.stdout = codecs.getwriter("latin-1")(sys.stdout.detach())
 
     if args.dirscan is not None:
@@ -414,7 +416,7 @@ def dirscan(dirname: str, follow: bool=False):
         print('done',flush=True)
         now=dt.datetime.now()
 
-def parselog(filename: str, outfile:str=None, follow=False):
+def parselog(filename: Optional[str], outfile:str=None, follow=False):
     global logdb, lnum
 
     if filename is not None:
@@ -427,12 +429,15 @@ def parselog(filename: str, outfile:str=None, follow=False):
     else:
         outfd=sys.stdout
 
+    # noinspection PyUnusedLocal
     csum=fd.readline()
     hdr=fd.readline()
+    # noinspection PyUnusedLocal
     version=fd.readline()
     prevcode='?'
     prevtime='?'
     send={}
+    # noinspection PyUnusedLocal
     error=False
     lastgeminicmd=None
     geminicmdtimes={}

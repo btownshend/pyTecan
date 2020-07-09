@@ -1,19 +1,19 @@
 """Module for generating a worklist from a set of commands"""
 from __future__ import print_function
 
-import math
 import shutil
 import sys
+
+import math
 from zlib import crc32
 
 from . import clock
 from . import logging
-from .plate import Plate
-from .platelocation import PlateLocation
-from .decklayout import QPCRLOC,WASHLOC
 from .db import db
-from .sample import MIXLOSS
+from .decklayout import QPCRLOC, WASHLOC
 from .liquidclass import LCWaterInLiquid
+from .plate import Plate
+from .sample import MIXLOSS
 
 DITI200=0
 DITI10=2
@@ -36,7 +36,7 @@ hashCodes={}
 # Don't care if different tips are used:
 tipHash=[0,0,0,0]
 #print "tipHash=[%06x,%06x,%06x,%06x]"%(tipHash[0],tipHash[1],tipHash[2],tipHash[3])
-timerstart=None
+timerstart:int=0
 nloops=0
 
 def reset():

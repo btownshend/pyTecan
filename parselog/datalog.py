@@ -20,7 +20,7 @@ def getSample(wellx,welly,rack,grid,pos):
             plate.plateType = PlateType.lookupByName(rack)
             if plate.plateType is None:
                 print("No such plateType: ", rack)
-                assert(False)
+                assert False
 
         wellname="%c%d"%(ord('A')+welly-1,wellx)
         well=plate.wellnumber(wellname)
@@ -102,21 +102,21 @@ class Datalog(object):
         
     def logmeasure(self,tip,height,submerge,zmax,zadd,time):
         # Time is the time in seconds of this measurement
-        sample=self.lastSample[tip]
-        if len(sample.extrainfo)>0:
-            elapsed=time-sample.extrainfo[0]
+        lsamp=self.lastSample[tip]
+        if len(lsamp.extrainfo)>0:
+            elapsed=time-lsamp.extrainfo[0]
         else:
             elapsed=timedelta(0)
 
         #print "%s: %f"%(sample.name,elapsed)
-        sample.extrainfo=[time]    # Keep track of last measurement time of this sample in the extrainfo list
-        curzmax=2100-sample.plate.getzmax()-390+TIPOFFSETS[tip-1]
+        lsamp.extrainfo=[time]    # Keep track of last measurement time of this sample in the extrainfo list
+        curzmax=2100-lsamp.plate.getzmax()-390+TIPOFFSETS[tip-1]
         if zmax!=curzmax:
-            logging.warning("ZMax for plate %s, tip %d at time of run was %.0f, currently at %.0f"%(sample.plate.name, tip, zmax, curzmax))
+            logging.warning("ZMax for plate %s, tip %d at time of run was %.0f, currently at %.0f"%(lsamp.plate.name, tip, zmax, curzmax))
             zmax=curzmax
-        prevol=sample.volume-sample.lastadd		# Liquid height is measured before next op, whose volume effect has already been added to sample.volume
+        prevol=lsamp.volume-lsamp.lastadd		# Liquid height is measured before next op, whose volume effect has already been added to sample.volume
         if height==-1:
-            vol=sample.plate.getliquidvolume((zadd+submerge)/10.0)
+            vol=lsamp.plate.getliquidvolume((zadd+submerge)/10.0)
             if vol is not None:
                 if prevol<vol and prevol!=0:
                     # The liquid measure failed, but based on the previous volume estimate, it was guaranteed to fail since the submerge depth would've been below bottom
@@ -128,15 +128,15 @@ class Datalog(object):
             else:
                 h=" @[FAIL <%.1f#%d]"%((zadd+submerge)/10.0,tip)
         else:
-            vol=sample.plate.getliquidvolume((height+submerge-zmax)/10.0)
+            vol=lsamp.plate.getliquidvolume((height+submerge-zmax)/10.0)
             if vol is None:
                 h=" @[%.1fmm,%.1fmm#%d]"%((height-zmax)/10.0,submerge/10.0,tip)
             else:
                 if prevol==0:
                     logging.notice("Got a liquid height measurement for a well that should be empty -- assuming it was prefilled")
-                    sample.volume=vol+sample.lastadd
+                    lsamp.volume=vol+lsamp.lastadd
                     prevol=vol
-                expectHeight=sample.plate.getliquidheight(prevol)
+                expectHeight=lsamp.plate.getliquidheight(prevol)
                 errorHeight=(height+submerge-zmax)-expectHeight*10
                 h=" @[%.1fmm,%.1fmm:%.1ful#%d]"%((height-zmax)/10.0,submerge/10.0,vol,tip)
                 if abs(errorHeight)>1:
@@ -145,21 +145,22 @@ class Datalog(object):
                     else:
                         emphasize=''
                     h=h+"{%sE=%d;%.1ful}"%(emphasize,errorHeight,vol-prevol)
-                sample.volume=sample.volume+(vol-prevol)
+                lsamp.volume=lsamp.volume+(vol-prevol)
         # Insert BEFORE last history entry since the liquid height is measured before aspirate/dispense
-        hsplit=sample.history.split(' ')
+        hsplit=lsamp.history.split(' ')
         if elapsed.total_seconds()>=600:   # Log elapsed time if more than 10 min
-            sample.history=" ".join(hsplit[:-1]+["(T%.0f)"%(elapsed.total_seconds()/60)]+[h]+hsplit[-1:])
+            lsamp.history=" ".join(hsplit[:-1]+["(T%.0f)"%(elapsed.total_seconds()/60)]+[h]+hsplit[-1:])
         else:
-            sample.history=" ".join(hsplit[:-1]+[h]+hsplit[-1:])
+            lsamp.history=" ".join(hsplit[:-1]+[h]+hsplit[-1:])
 
-    def logspeed(self,platename,speed):
+    @staticmethod
+    def logspeed(platename, speed):
         logging.notice("logspeed(%s,%d)"%(platename,speed))
         Sample.addallhistory("(S@%d)"%speed,onlyplate=platename)
             
     def __str__(self):
         s=""
-        logging.notice(self.logentries)
+        logging.notice(str(self.logentries))
         for e in self.logentries:
             le=self.logentries[e]
             s=s+str(le[0].sample)+":""\n"

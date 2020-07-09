@@ -281,6 +281,7 @@ class BuildDB(DB):
             tipTmp = tipTmp >> 1
             tip += 1
 
+    # noinspection PyUnusedLocal
     def wlistWash(self, cmd:str, tipMask:int):
         tip=1
         while tipMask>0:

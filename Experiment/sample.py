@@ -1,6 +1,8 @@
 from __future__ import print_function
 
 import sys
+from typing import Optional
+
 import math
 from . import liquidclass
 from . import worklist
@@ -65,6 +67,8 @@ tiphistory={}
 #
 
 class Sample(object):
+    conc: Optional[Concentration]
+
     __allsamples = []
     __historyOptions = ["normal", "shake", "detect", "tc", "evap"]
 
@@ -109,7 +113,7 @@ class Sample(object):
     def setHistoryOptions(opts):
         Sample.__historyOptions=opts
         
-    def __init__(self, name, plate, well=None, conc=None, volume=0, hasBeads=False, extraVol=50, mixLC=liquidclass.LCMixBottom, firstWell=None,
+    def __init__(self, name, plate, well=None, conc:Optional[Concentration]=None, volume=0, hasBeads=False, extraVol=50, mixLC=liquidclass.LCMixBottom, firstWell=None,
                  extrainfo=None, ingredients=None, atEnd=False, refillable=False,noEvap=False,precious=False):
         if extrainfo is None:
             extrainfo = []
@@ -190,6 +194,7 @@ class Sample(object):
         if isinstance(conc,Concentration) or conc is None:
             self.conc=conc
         else:
+            # noinspection PyTypeChecker
             self.conc=Concentration(conc)
         self.volume=volume
         self.initVol=volume
