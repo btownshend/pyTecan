@@ -3,11 +3,11 @@ from __future__ import print_function
 # Setup QPCR experiments
 import math
 
-from Experiment import worklist, reagents, decklayout, clock, logging
+from Experiment import worklist, reagents, clock, logging
 from Experiment.JobQueue import JobQueue
 from Experiment.sample import Sample
 from TRPLib.TRP import diluteName
-
+from TRPLib import trplayout
 
 class QSetup(object):
     TGTINVOL=4
@@ -27,7 +27,7 @@ class QSetup(object):
         self.MAXDILVOL=maxdilvol
         self.trp=trp
         self.debug=debug
-        self.dilutant=decklayout.SSDDIL
+        self.dilutant=trplayout.SSDDIL
         self.jobq=JobQueue()
         
     def addSamples(self, src, needDil, primers,nreplicates=1,names=None,saveVol=None,saveDil=None,save=True):
@@ -49,9 +49,9 @@ class QSetup(object):
                 saveVol=max(self.MINDILVOL*1.0/saveDil,self.TGTINVOL)
             
             if names is None:
-                tgt=[Sample(diluteName(src[i].name,saveDil),decklayout.DILPLATE) for i in range(len(src))]
+                tgt=[Sample(diluteName(src[i].name,saveDil), trplayout.DILPLATE) for i in range(len(src))]
             else:
-                tgt=[Sample(diluteName(names[i],saveDil),decklayout.DILPLATE) for i in range(len(src))]
+                tgt=[Sample(diluteName(names[i],saveDil), trplayout.DILPLATE) for i in range(len(src))]
             sv=tgt
             
             for i in range(len(sv)):
@@ -83,15 +83,15 @@ class QSetup(object):
                     vol=self.MAXDILVOL
                 else:
                     vol=min(self.MAXDILVOL,max(self.MINDILVOL,dil*self.TGTINVOL))
-                if intermed.plate==decklayout.DILPLATE:
+                if intermed.plate==trplayout.DILPLATE:
                     firstWell=intermed.well+4   # Skip by 4 wells at a time to optimize multi-tip movements
                 else:
                     firstWell=0
                 if not save and i==0 and names is not None:
                     # Need to replace the name in this condition
-                    dest=Sample(diluteName(names[svi],dil),decklayout.DILPLATE,firstWell=firstWell)
+                    dest=Sample(diluteName(names[svi],dil), trplayout.DILPLATE, firstWell=firstWell)
                 else:
-                    dest=Sample(diluteName(intermed.name,dil),decklayout.DILPLATE,firstWell=firstWell)
+                    dest=Sample(diluteName(intermed.name,dil), trplayout.DILPLATE, firstWell=firstWell)
                 #print "dest=",dest
                 j1=self.jobq.addMultiTransfer(volume=vol*(dil-1)/dil,src=self.dilutant,dest=dest,prereqs=[])
                 prereqs.append(j1)

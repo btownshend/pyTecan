@@ -5,7 +5,6 @@ import sys
 import operator
 from .sample import Sample
 from . import logging
-from . import decklayout
 from .concentration import Concentration
 from .plate import Plate
 
@@ -18,7 +17,7 @@ class Reagent(object):
         self.sample=None
         self.name=name
         if plate is None:
-            self.plate=decklayout.REAGENTPLATE
+            assert False
         else:
             self.plate=plate
         self.preferredWell=well
@@ -71,7 +70,7 @@ def add(name, plate:Plate=None, well=None, conc:Concentration=None, hasBeads:boo
     if extrainfo is None:
         extrainfo = []
     if plate is None:
-        plate=decklayout.REAGENTPLATE
+        assert False
     if name in Reagent.allReagents:
         logging.error("Attempt to add duplicate reagent, "+name)
     Reagent.allReagents[name]=Reagent(name,plate,well,conc,hasBeads,extraVol,initVol=initVol,extrainfo=extrainfo,ingredients=ingredients,refillable=refillable,noEvap=noEvap,precious=precious)

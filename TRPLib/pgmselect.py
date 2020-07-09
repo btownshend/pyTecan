@@ -3,15 +3,16 @@ from __future__ import print_function
 
 import math
 
-from Experiment import worklist, reagents, decklayout, logging, clock, thermocycler
+from Experiment import worklist, reagents, logging, clock, thermocycler
 from Experiment.concentration import Concentration
 from Experiment.sample import Sample
 from TRPLib.QSetup import QSetup
 from TRPLib.TRP import TRP
 from .pcrgain import pcrgain
 from Experiment.db import db
+from TRPLib import trplayout
 
-reagents.add("BT5310",well="B5",conc=Concentration(20,20,"pM"))
+reagents.add("BT5310",plate=trplayout.REAGENTPLATE,well="B5",conc=Concentration(20,20,"pM"))
 
 
 # noinspection PyAttributeOutsideInit
@@ -117,7 +118,7 @@ class PGMSelect(TRP):
         self.regenPCRDilution=10
         self.setVolumes()
         #self.savePlate=decklayout.DILPLATE
-        self.savePlate=decklayout.PRODUCTPLATE
+        self.savePlate=trplayout.PRODUCTPLATE
         
     def setVolumes(self):
         # Computed parameters
@@ -219,20 +220,20 @@ class PGMSelect(TRP):
 
         # Add templates
         if self.directT7:
-            self.srcs = self.addTemplates([inp['name'] for inp in self.inputs],stockconc=self.tmplFinalConc/self.templateDilution,finalconc=self.tmplFinalConc,plate=decklayout.SAMPLEPLATE,looplengths=[inp['looplength'] for inp in self.inputs],initVol=self.t7vol[0]*self.templateDilution,extraVol=0)
+            self.srcs = self.addTemplates([inp['name'] for inp in self.inputs], stockconc=self.tmplFinalConc/self.templateDilution, finalconc=self.tmplFinalConc, plate=trplayout.SAMPLEPLATE, looplengths=[inp['looplength'] for inp in self.inputs], initVol=self.t7vol[0] * self.templateDilution, extraVol=0)
         else:
-            self.srcs = self.addTemplates([inp['name'] for inp in self.inputs],stockconc=self.tmplFinalConc/self.templateDilution,finalconc=self.tmplFinalConc,plate=decklayout.DILPLATE,looplengths=[inp['looplength'] for inp in self.inputs],extraVol=15) 
+            self.srcs = self.addTemplates([inp['name'] for inp in self.inputs], stockconc=self.tmplFinalConc/self.templateDilution, finalconc=self.tmplFinalConc, plate=trplayout.DILPLATE, looplengths=[inp['looplength'] for inp in self.inputs], extraVol=15)
 
         if self.dopcr:
             # Reserve space for  PCR products
-            pcrprods=[ [Sample("R%d-T%s"%(r,inp['ligand']),self.savePlate if self.savedilplate else decklayout.EPPENDORFS) for inp in self.inputs] for r in range(len(self.rounds))]
+            pcrprods=[[Sample("R%d-T%s" % (r,inp['ligand']), self.savePlate if self.savedilplate else trplayout.EPPENDORFS) for inp in self.inputs] for r in range(len(self.rounds))]
         else:
             pcrprods=None
 
         t7in = [s.getsample()  for s in self.srcs]
         
         if "negative" in self.qpcrStages:
-            q.addSamples(decklayout.SSDDIL,1,self.allprimers,save=False)   # Negative controls
+            q.addSamples(trplayout.SSDDIL, 1, self.allprimers, save=False)   # Negative controls
         if "reference" in self.qpcrStages:
             q.addReferences(dstep=10,nsteps=5,primers=["WX","MX","T7X"] if self.useMX else ["WX","T7X"],ref=reagents.getsample("BT5310"),nreplicates=1)
 
@@ -405,7 +406,7 @@ class PGMSelect(TRP):
                         print("Negative amount of water (%.1f ul) needed for T7 setup"%watervol)
                         assert False
                     elif watervol>0.1:
-                        self.e.transfer(watervol, decklayout.WATER, inputs[i], mix=(False, False))
+                        self.e.transfer(watervol, trplayout.WATER, inputs[i], mix=(False, False))
                     self.e.transfer(t7vol / mconc, reagents.getsample("MT7"), inputs[i], mix=(False, False))
                 # Add ligands last in case they crash out when they hit aqueous;  this way, they'll be as dilute as possible
                 # However, this also means that the reaction may begin without the ligands present!
@@ -637,7 +638,7 @@ class PGMSelect(TRP):
                 for i in range(len(rxs)):
                     # Save with rtCarryForwardDil dilution to reduce amount of RT consumed (will have Ct's 2-3 lower than others)
                     self.e.transfer(rtCarryForwardVol,rxs[i],self.lastSaved[i],(False,False))
-                    self.e.transfer(rtCarryForwardVol*(rtCarryForwardDil-1),decklayout.WATER,self.lastSaved[i],(False,True))  # Use pipette mixing -- shaker mixing will be too slow
+                    self.e.transfer(rtCarryForwardVol * (rtCarryForwardDil-1), trplayout.WATER, self.lastSaved[i], (False, True))  # Use pipette mixing -- shaker mixing will be too slow
 
             #print "NSplit=",nsplit,", PCR vol=",pcrvol/nsplit,", srcdil=",pcrdil,", input vol=",pcrvol/nsplit/pcrdil
             minvol=min([r.volume for r in rxs])
@@ -697,7 +698,7 @@ class PGMSelect(TRP):
                     sv=pcr
                 else:
                     residual=2.4   # Amount to leave behind to avoid aspirating air
-                    sv=self.saveSamps(src=pcr[:len(rxs)],vol=[min([maxSaveVol,x.volume-residual]) for x in pcr[:len(rxs)]],dil=1,plate=(self.savePlate if self.savedilplate else decklayout.EPPENDORFS),tgt=pcrtgt)
+                    sv=self.saveSamps(src=pcr[:len(rxs)], vol=[min([maxSaveVol,x.volume-residual]) for x in pcr[:len(rxs)]], dil=1, plate=(self.savePlate if self.savedilplate else trplayout.EPPENDORFS), tgt=pcrtgt)
                     if nsplit>1:
                         # Combine split
                         for i in range(len(rxs),len(rxs)*nsplit):

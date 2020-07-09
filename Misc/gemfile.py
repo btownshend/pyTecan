@@ -4,7 +4,7 @@
 import click
 
 from Experiment.plate import Plate
-from Experiment import decklayout
+from TRPLib import trplayout
 import pprint
 from Misc.carrier import Carrier
 

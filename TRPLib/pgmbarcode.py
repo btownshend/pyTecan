@@ -4,12 +4,13 @@ from __future__ import print_function
 import logging
 import numpy as np
 
-from Experiment import reagents, worklist, decklayout, clock
+from Experiment import reagents, worklist, clock
 from Experiment.concentration import Concentration
 from Experiment.sample import Sample
 from TRPLib.QSetup import QSetup
 from TRPLib.TRP import TRP
 from TRPLib.mixsplit import mixsplit
+from TRPLib import trplayout
 
 reagents.add("MPCR1", well="A1", conc=30.0 / 18.0,
              ingredients={'Kapa': 3.33 / 2, 'USER': 1.67 / 2, 'glycerol': 2.5, 'Water': 95})
@@ -21,7 +22,7 @@ reagents.add("BT5310", well="D1", conc=Concentration(20, 20, "pM"))
 class Barcoding(TRP):
     """Barcode multiple samples, mix them"""
 
-    def __init__(self, inputs, pcr1inputconc=0.05, used=None,doqpcr=True,inputPlate=decklayout.SAMPLEPLATE):
+    def __init__(self, inputs, pcr1inputconc=0.05, used=None, doqpcr=True, inputPlate=trplayout.SAMPLEPLATE):
         super(Barcoding, self).__init__()
         if used is None:
             used = []
@@ -173,13 +174,13 @@ class Barcoding(TRP):
             return mix2
         watervol = mixvol - sum(vol)
         print("Mixdown: vols=[", ",".join(["%.2f " % v for v in vol]), "], water=", watervol, ", total=", mixvol, " ul")
-        mixdown = Sample('mixdown', plate=decklayout.SAMPLEPLATE)
+        mixdown = Sample('mixdown', plate=trplayout.SAMPLEPLATE)
 
         if watervol < -0.1:
             print("Total mixdown is %.1f ul, more than planned %.0f ul" % (sum(vol), mixvol))
             assert False
         elif watervol > 0.0:
-            self.e.transfer(watervol, decklayout.WATER, mixdown, (False, False))
+            self.e.transfer(watervol, trplayout.WATER, mixdown, (False, False))
         else:
             pass
         for i in range(len(inp)):
@@ -211,8 +212,8 @@ class Barcoding(TRP):
         for s in left + right:
             primer = "P-" + s
             if not reagents.isReagent(primer):
-                reagents.add(primer, conc=Concentration(2.67, 0.4, 'uM'), extraVol=30, plate=decklayout.REAGENTPLATE,
-                             well=decklayout.REAGENTPLATE.wellname(wellnum))
+                reagents.add(primer, conc=Concentration(2.67, 0.4, 'uM'), extraVol=30, plate=trplayout.REAGENTPLATE,
+                             well=trplayout.REAGENTPLATE.wellname(wellnum))
                 wellnum += 1
         for s in samps:
             # Dilute down to desired conc

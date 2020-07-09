@@ -12,82 +12,87 @@ from Experiment.plate import Plate
 from Experiment.sample import Sample
 from Experiment.db import db
 from Experiment.config import Config
+from Experiment.liquidclass import SURFACEREMOVE
+
+from TRPLib import trplayout
 
 maxVolumePerWell=150
 
+trplayout.initWellKnownSamples()
 
 # Ingredients based on volumes in spreadsheet to make 100ul  (can be scaled arbitrarily)
-reagents.add("MT7",well="A1",conc=2.5,extraVol=30,ingredients={'glycerol':0.5*37.5,'SuperaseIn':0.5*12.5,'T7':0.5*25,'T7-ABE':62.5})
-reagents.add("MPosRT",well="B1",conc=2,extraVol=30,ingredients={'Omniscript':0.5*10,'glycerol':0.5*10,'RT-ABE':90})
-reagents.add("MExo",well="C1",conc=5,extraVol=30,ingredients={'ExoI':0.5*55,'ExoIII':0.5*7,'glycerol':0.5*(55+7),'NEBuffer1':10,'Water':28})
-reagents.add("TheoX",well="C1",conc=4)
-reagents.add("MTaqU",well="C1",conc=2,ingredients={'Taq':0.5*1,'glycerol':0.5*1,'TAQ-ABE':51,'Water':48})
-reagents.add("MTaqC",well="D1",conc=2,ingredients={'Taq':0.5*1,'USER':0.5*2,'glycerol':0.5*3,'TAQ-ABE':51,'Water':46})
-reagents.add("MTaqR",well="C2",conc=2,ingredients={'Taq':0.5*1,'glycerol':0.5*1,'TAQ-ABE':51,'Water':48})
-reagents.add("MLigase",well="E1",conc=5,extraVol=50,ingredients={'T4DNALigase':0.5*2.50,'glycerol':0.5*2.50,'T4-ABE':97.47})
+rp=trplayout.REAGENTPLATE
+reagents.add("MT7", plate=rp, well="A1", conc=2.5, extraVol=30, ingredients={'glycerol': 0.5 * 37.5, 'SuperaseIn': 0.5 * 12.5, 'T7': 0.5 * 25, 'T7-ABE':62.5})
+reagents.add("MPosRT",plate=rp,well="B1",conc=2,extraVol=30,ingredients={'Omniscript':0.5*10,'glycerol':0.5*10,'RT-ABE':90})
+reagents.add("MExo",plate=rp,well="C1",conc=5,extraVol=30,ingredients={'ExoI':0.5*55,'ExoIII':0.5*7,'glycerol':0.5*(55+7),'NEBuffer1':10,'Water':28})
+reagents.add("TheoX",plate=rp,well="C1",conc=4)
+reagents.add("MTaqU",plate=rp,well="C1",conc=2,ingredients={'Taq':0.5*1,'glycerol':0.5*1,'TAQ-ABE':51,'Water':48})
+reagents.add("MTaqC",plate=rp,well="D1",conc=2,ingredients={'Taq':0.5*1,'USER':0.5*2,'glycerol':0.5*3,'TAQ-ABE':51,'Water':46})
+reagents.add("MTaqR",plate=rp,well="C2",conc=2,ingredients={'Taq':0.5*1,'glycerol':0.5*1,'TAQ-ABE':51,'Water':48})
+reagents.add("MLigase",plate=rp,well="E1",conc=5,extraVol=50,ingredients={'T4DNALigase':0.5*2.50,'glycerol':0.5*2.50,'T4-ABE':97.47})
 
-reagents.add("Unclvd-Stop",well="A2",conc=Concentration(4,1,'uM'),extraVol=30)
-reagents.add("MTaqBar",well="B2",conc=2,ingredients={'Taq':0.5*1,'glycerol':0.5*1,'TAQ-ABE':51,'Water':48})
-reagents.add("MKapaBar",well="B2",conc=2,ingredients={'Kapa':0.5*1,'glycerol':0.5*1,'TAQ-ABE':51,'Water':48})  # FIXME: These numbers are wrong (were for Taq)
-reagents.add("MUser",well="B2",conc=5,extraVol=30,ingredients={'USER':0.5*2.5,'glycerol':0.5*2.5,'CutSmart':25,'Water':72.5})
-reagents.add("Ampure",well="C2",conc=None,hasBeads=True)
-reagents.add("EtOH80",well="D2")
-reagents.add("BT88",well="E2",conc=Concentration(4000,800,'nM'),extraVol=30)
+reagents.add("Unclvd-Stop",plate=rp,well="A2",conc=Concentration(4,1,'uM'),extraVol=30)
+reagents.add("MTaqBar",plate=rp,well="B2",conc=2,ingredients={'Taq':0.5*1,'glycerol':0.5*1,'TAQ-ABE':51,'Water':48})
+reagents.add("MKapaBar",plate=rp,well="B2",conc=2,ingredients={'Kapa':0.5*1,'glycerol':0.5*1,'TAQ-ABE':51,'Water':48})  # FIXME: These numbers are wrong (were for Taq)
+reagents.add("MUser",plate=rp,well="B2",conc=5,extraVol=30,ingredients={'USER':0.5*2.5,'glycerol':0.5*2.5,'CutSmart':25,'Water':72.5})
+reagents.add("Ampure",plate=rp,well="C2",conc=None,hasBeads=True)
+reagents.add("EtOH80",plate=rp,well="D2")
+reagents.add("BT88",plate=rp,well="E2",conc=Concentration(4000,800,'nM'),extraVol=30)
 
-reagents.add("B-Stop",well="A3",conc=Concentration(4,1,'uM'),extraVol=30)
-reagents.add("W-Stop",well="B3",conc=Concentration(4,1,'uM'),extraVol=30)
-reagents.add("A-Stop",well="C3",conc=Concentration(4,1,'uM'),extraVol=30)
-reagents.add("T7W-Stop",well="D3",conc=Concentration(4,1,'uM'),extraVol=30)
-reagents.add("Z-Stop",well="D3",conc=Concentration(4,1,'uM'),extraVol=30)
+reagents.add("B-Stop",plate=rp,well="A3",conc=Concentration(4,1,'uM'),extraVol=30)
+reagents.add("W-Stop",plate=rp,well="B3",conc=Concentration(4,1,'uM'),extraVol=30)
+reagents.add("A-Stop",plate=rp,well="C3",conc=Concentration(4,1,'uM'),extraVol=30)
+reagents.add("T7W-Stop",plate=rp,well="D3",conc=Concentration(4,1,'uM'),extraVol=30)
+reagents.add("Z-Stop",plate=rp,well="D3",conc=Concentration(4,1,'uM'),extraVol=30)
 
-reagents.add("SSD",well="A4",conc=10.0)
-reagents.add("EDTA",well="A4",conc=Concentration(20,2,'mM'),extraVol=30)
+reagents.add("SSD",plate=rp,well="A4",conc=10.0)
+reagents.add("EDTA",plate=rp,well="A4",conc=Concentration(20,2,'mM'),extraVol=30)
 #reagents.add("NaOH",well="B4",conc=1.0)
-reagents.add("BeadBuffer",well="C4",conc=1)
+reagents.add("BeadBuffer",plate=rp,well="C4",conc=1)
 #reagents.add("Dynabeads",well="D4",conc=4,hasBeads=True)
-reagents.add("TE8",well="E4",conc=None)
+reagents.add("TE8",plate=rp,well="E4",conc=None)
 
-reagents.add("EvaGreen",well="A5",conc=2)
-reagents.add("EvaUSER",well="A5",conc=2,extraVol=100)
-reagents.add("P-BCFwd",well="B5",conc=4)
-reagents.add("P-T7BX",well="C5",conc=4)
-reagents.add("P-T7ZX",well="C5",conc=4)
-reagents.add("P-T7WX",well="D5",conc=4)
-reagents.add("P-T7AX",well="E5",conc=4)
-reagents.add("P-AX",well="E5",conc=4)
+reagents.add("EvaGreen",plate=rp,well="A5",conc=2)
+reagents.add("EvaUSER",plate=rp,well="A5",conc=2,extraVol=100)
+reagents.add("P-BCFwd",plate=rp,well="B5",conc=4)
+reagents.add("P-T7BX",plate=rp,well="C5",conc=4)
+reagents.add("P-T7ZX",plate=rp,well="C5",conc=4)
+reagents.add("P-T7WX",plate=rp,well="D5",conc=4)
+reagents.add("P-T7AX",plate=rp,well="E5",conc=4)
+reagents.add("P-AX",plate=rp,well="E5",conc=4)
 
-reagents.add("P-T7X",well="A6",conc=4)
-reagents.add("P-WX",well="B6",conc=4)
-reagents.add("P-BX",well="C6",conc=4)
-reagents.add("P-BCRev",well="C6",conc=4)
-reagents.add("P-ZX",well="C6",conc=4)
-reagents.add("P-MX",well="D6",conc=4)
-reagents.add("P-REF",well="E6",conc=4)
+reagents.add("P-T7X",plate=rp,well="A6",conc=4)
+reagents.add("P-WX",plate=rp,well="B6",conc=4)
+reagents.add("P-BX",plate=rp,well="C6",conc=4)
+reagents.add("P-BCRev",plate=rp,well="C6",conc=4)
+reagents.add("P-ZX",plate=rp,well="C6",conc=4)
+reagents.add("P-MX",plate=rp,well="D6",conc=4)
+reagents.add("P-REF",plate=rp,well="E6",conc=4)
 
 # Targets
-reagents.add("T1",well='B4',conc=Concentration(10.0/3,1.0,'x'),extraVol=30)  # New targets (9/2017)
-reagents.add("T1b",well='B4',conc=Concentration(10.0/3,1.0,'x'),extraVol=30)  # New targets (10/17/2017)
-reagents.add("T1c",well='B4',conc=Concentration(10.0/3,1.0,'x'),extraVol=30)  # New targets (4/17/18)
-reagents.add("T1d",well='B4',conc=Concentration(10.0/3,1.0,'x'),extraVol=30)  # New targets (7/10/18)
-reagents.add("T1e",well='B4',conc=Concentration(10.0/3,1.0,'x'),extraVol=30)  # New targets (10/5/18)
-reagents.add("T1f",well='B4',conc=Concentration(10.0/3,1.0,'x'),extraVol=30)  # New targets (10/9/18)
-reagents.add("T1g",well='B4',conc=Concentration(10.0/3,1.0,'x'),extraVol=30)  # New targets (10/20/18)
-reagents.add("T1h",well='B4',conc=Concentration(10.0/3,1.0,'x'),extraVol=30)  # New targets (11/?/18)
-reagents.add("T1i",well='B4',conc=Concentration(10.0/3,1.0,'x'),extraVol=30)  # New targets (11/30/18)
-reagents.add("T2",well='C4',conc=Concentration(10.0,1.0,'mM'),extraVol=30) # Acetyl CoA
-reagents.add("T2b",well='C4',conc=Concentration(10.0/3,1.0,'x'),extraVol=30) # Acetyl CoA + Trans-Zeatin + Redox
-reagents.add("T3",well=None,conc=Concentration(10.0/3,1.0,'x'),extraVol=30) # BIAs
-reagents.add("T3d",well='E3',conc=Concentration(10.0/3,1.0,'x'),extraVol=30) # BIAs less S-Reticuline
-reagents.add("T3e",well='E3',conc=Concentration(10.0/3,1.0,'x'),extraVol=30) # BIAs less S-Reticuline, reduced Noscapine (9/17)
-reagents.add("T3f",well='E3',conc=Concentration(10.0/3,1.0,'x'),extraVol=30) # BIAs with 0.1uM S-Reticuline, 20uM Noscapine (10/17/17)
-reagents.add("T3g",well='E3',conc=Concentration(10.0/3,1.0,'x'),extraVol=30) #Reduced Trans-Zeatin (12/9/17)
-reagents.add("T6",well='D4',conc=Concentration(10.0/3,1.0,'x'),extraVol=30) # Redox
-reagents.add("T25",well='C4',conc=Concentration(10.0/3,1.0,'x'),extraVol=30) # Acetyl CoA + Trans-Zeatin
+reagents.add("T1",plate=rp,well='B4',conc=Concentration(10.0/3,1.0,'x'),extraVol=30)  # New targets (9/2017)
+reagents.add("T1b",plate=rp,well='B4',conc=Concentration(10.0/3,1.0,'x'),extraVol=30)  # New targets (10/17/2017)
+reagents.add("T1c",plate=rp,well='B4',conc=Concentration(10.0/3,1.0,'x'),extraVol=30)  # New targets (4/17/18)
+reagents.add("T1d",plate=rp,well='B4',conc=Concentration(10.0/3,1.0,'x'),extraVol=30)  # New targets (7/10/18)
+reagents.add("T1e",plate=rp,well='B4',conc=Concentration(10.0/3,1.0,'x'),extraVol=30)  # New targets (10/5/18)
+reagents.add("T1f",plate=rp,well='B4',conc=Concentration(10.0/3,1.0,'x'),extraVol=30)  # New targets (10/9/18)
+reagents.add("T1g",plate=rp,well='B4',conc=Concentration(10.0/3,1.0,'x'),extraVol=30)  # New targets (10/20/18)
+reagents.add("T1h",plate=rp,well='B4',conc=Concentration(10.0/3,1.0,'x'),extraVol=30)  # New targets (11/?/18)
+reagents.add("T1i",plate=rp,well='B4',conc=Concentration(10.0/3,1.0,'x'),extraVol=30)  # New targets (11/30/18)
+reagents.add("T2",plate=rp,well='C4',conc=Concentration(10.0,1.0,'mM'),extraVol=30) # Acetyl CoA
+reagents.add("T2b",plate=rp,well='C4',conc=Concentration(10.0/3,1.0,'x'),extraVol=30) # Acetyl CoA + Trans-Zeatin + Redox
+reagents.add("T3",plate=rp,well=None,conc=Concentration(10.0/3,1.0,'x'),extraVol=30) # BIAs
+reagents.add("T3d",plate=rp,well='E3',conc=Concentration(10.0/3,1.0,'x'),extraVol=30) # BIAs less S-Reticuline
+reagents.add("T3e",plate=rp,well='E3',conc=Concentration(10.0/3,1.0,'x'),extraVol=30) # BIAs less S-Reticuline, reduced Noscapine (9/17)
+reagents.add("T3f",plate=rp,well='E3',conc=Concentration(10.0/3,1.0,'x'),extraVol=30) # BIAs with 0.1uM S-Reticuline, 20uM Noscapine (10/17/17)
+reagents.add("T3g",plate=rp,well='E3',conc=Concentration(10.0/3,1.0,'x'),extraVol=30) #Reduced Trans-Zeatin (12/9/17)
+reagents.add("T6",plate=rp,well='D4',conc=Concentration(10.0/3,1.0,'x'),extraVol=30) # Redox
+reagents.add("T25",plate=rp,well='C4',conc=Concentration(10.0/3,1.0,'x'),extraVol=30) # Acetyl CoA + Trans-Zeatin
 #reagents.add("T25T6",well='E2',conc=Concentration(2.222,1.0,'x'),extraVol=30) # Acetyl CoA + Trans-Zeatin +Redox
-reagents.add("8600",well='A1',conc=Concentration(10.0,1.0,'x'),extraVol=30,plate=decklayout.EPPENDORFS,noEvap=True,precious=True)  # HTS library at 10x in DMSO
-reagents.add("8630",well='A1',conc=Concentration(10.0,1.0,'x'),extraVol=30,plate=decklayout.EPPENDORFS,noEvap=True,precious=True)  # HTS library at 10x in DMSO
-reagents.add("DMSO",well='B1',conc=Concentration(10.0,1.0,'x'),extraVol=30,plate=decklayout.EPPENDORFS,noEvap=True,precious=True)  # DMSO 
-reagents.add("8607",well='B1',conc=Concentration(10.0,1.0,'x'),extraVol=30,plate=decklayout.EPPENDORFS,noEvap=True,precious=True)  # DMSO 
+reagents.add("8600", well='A1', conc=Concentration(10.0,1.0,'x'), extraVol=30, plate=trplayout.EPPENDORFS, noEvap=True, precious=True)  # HTS library at 10x in DMSO
+reagents.add("8630", well='A1', conc=Concentration(10.0,1.0,'x'), extraVol=30, plate=trplayout.EPPENDORFS, noEvap=True, precious=True)  # HTS library at 10x in DMSO
+reagents.add("DMSO", well='B1', conc=Concentration(10.0,1.0,'x'), extraVol=30, plate=trplayout.EPPENDORFS, noEvap=True, precious=True)  # DMSO
+reagents.add("8607", well='B1', conc=Concentration(10.0,1.0,'x'), extraVol=30, plate=trplayout.EPPENDORFS, noEvap=True, precious=True)  # DMSO
     
 def listify(x):
     """Convert a list of (lists or scalars) into a list of equal length lists"""
@@ -148,6 +153,7 @@ class TRP(object):
         reagents.reset()
         Plate.reset()
         self.e=Experiment()
+        trplayout.initWellKnownSamples()
         Experiment.setreagenttemp(globals.dewpoint)
         Sample.printallsamples()
         self.e.sanitize(3,50)    # Heavy sanitize
@@ -156,7 +162,7 @@ class TRP(object):
     def addTemplates(names, stockconc, finalconc=None, units="nM", plate=None, looplengths=None, extraVol=30, wellnames=None, initVol=0):
         """Add templates as "reagents", return the list of them"""
         if plate is None:
-            plate=decklayout.EPPENDORFS
+            plate=trplayout.EPPENDORFS
         if finalconc is None:
             logging.warning("final concentration of template not specified, assuming 0.6x (should add to addTemplates() call")
             [names,stockconc]=listify([names,stockconc])
@@ -226,13 +232,13 @@ class TRP(object):
     def saveSamps(self,src,vol,dil,tgt=None,dilutant=None,plate=None,mix=(True,False),atEnd=False):
         [src,vol,dil]=listify([src,vol,dil])
         if plate is None:
-            plate=decklayout.REAGENTPLATE
+            plate=trplayout.REAGENTPLATE
         if tgt is None:
             tgt=[Sample(diluteName(src[i].name,dil[i]),plate,atEnd=atEnd) for i in range(len(src))]
 
         if any([d!=1.0 for d in dil]):
             if dilutant is None:
-                dilutant=decklayout.WATER
+                dilutant=trplayout.WATER
             self.e.multitransfer([vol[i]*(dil[i]-1) for i in range(len(vol))],dilutant,tgt,(False,False))
 
         self.e.shakeSamples(src,returnPlate=True)
@@ -251,7 +257,7 @@ class TRP(object):
             tgt=[Sample("%s.dist%d"%(src[0].name,j),plate) for j in range(wells)]
         
         if dilutant is None:
-            dilutant=decklayout.WATER
+            dilutant=trplayout.WATER
         self.e.multitransfer([vol*(dil-1) for _ in range(wells)],dilutant,tgt)
         self.e.multitransfer([vol for _ in range(wells)],src[0],tgt)
         return tgt
@@ -264,7 +270,7 @@ class TRP(object):
         # Dilute in place
         # e.g.: trp.diluteInPlace(tgt=rt1,dil=2)
         [tgt,dil,finalvol]=listify([tgt,dil,finalvol])
-        dilutant=decklayout.WATER
+        dilutant=trplayout.WATER
         dil2=[1 for _ in tgt]
         for i in range(len(tgt)):
             if finalvol[i] is not None and dil[i] is None:
@@ -311,7 +317,7 @@ class TRP(object):
 
         for i in range(len(src)):
             if  watervol[i]+src[i].volume>=4.0 and watervol[i]>0.1:
-                self.e.transfer(watervol[i],decklayout.WATER,src[i],(False,False))
+                self.e.transfer(watervol[i], trplayout.WATER, src[i], (False, False))
                 watervol[i]=0
         for i in range(len(src)):
             self.e.transfer(mastervol[i],master[i],src[i],(True,False))
@@ -322,7 +328,7 @@ class TRP(object):
                 self.e.transfer(master3vol[i],master3[i],src[i],(True,False))
         for i in range(len(src)):
             if  watervol[i]>=0.1:
-                self.e.transfer(watervol[i],decklayout.WATER,src[i],(False,False))
+                self.e.transfer(watervol[i], trplayout.WATER, src[i], (False, False))
         self.e.shakeSamples(src,returnPlate=returnPlate)
 
     ########################
@@ -344,10 +350,10 @@ class TRP(object):
                     # src could be on Products or other plate, so don't have information as to what plate to use for this
                     # For now, just revert to using sample plate
                     #tgt[i]=Sample("%s.T+%s"%(src[i].name,ligands[i].name),src[i].plate)
-                    tgt[i]=Sample("%s.T+%s"%(src[i].name,ligands[i].name),decklayout.SAMPLEPLATE)
+                    tgt[i]=Sample("%s.T+%s" % (src[i].name,ligands[i].name), trplayout.SAMPLEPLATE)
                 else:
                     #tgt[i]=Sample("%s.T-"%src[i].name,src[i].plate)
-                    tgt[i]=Sample("%s.T-"%src[i].name,decklayout.SAMPLEPLATE)
+                    tgt[i]=Sample("%s.T-" % src[i].name, trplayout.SAMPLEPLATE)
 
 
         worklist.comment("runT7: source=%s"%[str(s) for s in src])
@@ -368,7 +374,7 @@ class TRP(object):
             logging.error("runT7Setup: Negative amount of water required: "+str(watervols))
 
         if sum(watervols)>0.01:
-            self.e.multitransfer(watervols,decklayout.WATER,tgt)
+            self.e.multitransfer(watervols, trplayout.WATER, tgt)
         for ir in range(len(rlist)):
             self.e.multitransfer([rvols[ir] for _ in tgt],reagents.getsample(rlist[ir]),tgt)
         for i in range(len(src)):
@@ -482,7 +488,7 @@ class TRP(object):
         # If keepWash is true, retain all washes (combined)
         # If keepFinal is true, take a sample of the final wash (diluted by keepDil)
         if wash is None:
-            wash=decklayout.WATER
+            wash=trplayout.WATER
         [src,wash]=listify([src,wash])
         # Do all washes while on magnet
         assert(len(set([s.plate for s in src]))==1)	# All on same plate
@@ -490,17 +496,17 @@ class TRP(object):
             if washTgt is None:
                 washTgt=[]
                 for i in range(len(src)):
-                    if src[i].volume-residualVolume+numWashes*(washVol-residualVolume) > decklayout.DILPLATE.maxVolume-20:
+                    if src[i].volume-residualVolume+numWashes*(washVol-residualVolume) > trplayout.DILPLATE.maxVolume-20:
                         logging.notice("Saving %.1f ul of wash in eppendorfs"%(numWashes*washVol))
-                        washTgt.append(Sample("%s.Wash"%src[i].name,decklayout.EPPENDORFS))
+                        washTgt.append(Sample("%s.Wash" % src[i].name, trplayout.EPPENDORFS))
                     else:
-                        washTgt.append(Sample("%s.Wash"%src[i].name,decklayout.DILPLATE))
+                        washTgt.append(Sample("%s.Wash" % src[i].name, trplayout.DILPLATE))
 
         if keepFinal:
             if finalTgt is None:
                 finalTgt=[]
                 for i in range(len(src)):
-                    finalTgt.append(Sample("%s.Final"%src[i].name,decklayout.DILPLATE))
+                    finalTgt.append(Sample("%s.Final" % src[i].name, trplayout.DILPLATE))
 
         if any([s.volume>residualVolume for s in src]):
             # Separate and remove supernatant
@@ -520,7 +526,7 @@ class TRP(object):
         # Wash
 
         for washnum in range(numWashes):
-            if src[0].plate.location!=src[0].plate.homeLocation and src[0].plate.location!=decklayout.MAGPLATELOC:
+            if src[0].plate.location!=src[0].plate.homeLocation and src[0].plate.location!=trplayout.MAGPLATELOC:
                 self.e.moveplate(src[0].plate,"Home")
             if keepFinal and washnum==numWashes-1:
                 'Retain sample of final'
@@ -528,7 +534,7 @@ class TRP(object):
                     src[i].conc=None
                     self.e.transfer(washVol-src[i].volume,wash[i],src[i],mix=(False,True))	# Add wash
                 self.e.shakeSamples(src,returnPlate=True)
-                self.saveSamps(src=src,tgt=finalTgt,vol=keepVol,dil=keepDil,plate=decklayout.DILPLATE)
+                self.saveSamps(src=src, tgt=finalTgt, vol=keepVol, dil=keepDil, plate=trplayout.DILPLATE)
             else:
                 for i in range(len(src)):
                     src[i].conc=None
@@ -561,7 +567,7 @@ class TRP(object):
 
     def beadAddElutant(self,src,elutant=None,elutionVol=30,eluteTime=60,returnPlate=True,temp=None):
         if elutant is None:
-            elutant=decklayout.WATER
+            elutant=trplayout.WATER
         [src,elutionVol,elutant]=listify([src,elutionVol,elutant])
         for i in range(len(src)):
             if elutionVol[i]<30:
@@ -608,7 +614,7 @@ class TRP(object):
                 self.e.dispose(tgt.amountToRemove(residualVolume),tgt)
             self.e.moveplate(tgt.plate,"Home")	
             if s.volume<suspendVolume:
-                self.e.transfer(suspendVolume-s.volume,decklayout.WATER,s,(False,False))
+                self.e.transfer(suspendVolume - s.volume, trplayout.WATER, s, (False, False))
             vol=s.volume-residualVolume-1
             s.conc=None
             self.e.transfer(vol,s,tgt,mix=(True,True))
@@ -682,7 +688,7 @@ class TRP(object):
         
         
         watervol=[vol[i]-stopvol[i]-vol[i]/srcdil[i]-vol[i]/rtmaster[i].conc.dilutionneeded() for i in range(len(tgt))]
-        self.e.multitransfer(watervol,decklayout.WATER,tgt,(False,False))
+        self.e.multitransfer(watervol, trplayout.WATER, tgt, (False, False))
         for i in range(len(tgt)):
             if stopvol[i]>0.1:
                 self.e.transfer(stopvol[i],stop[i],tgt[i],(False,False))
@@ -755,7 +761,7 @@ class TRP(object):
             self.runRxInPlace(src,vol,enzymes[0],returnPlate=(incTime is None))
             tgt=src
         else:
-            self.e.stage('Incubation',enzymes,src,tgt,vol,destMix=False,dilutant=decklayout.WATER)
+            self.e.stage('Incubation', enzymes, src, tgt, vol, destMix=False, dilutant=trplayout.WATER)
             self.e.shakeSamples(tgt,returnPlate=(incTime is None))
 
         if incTime is None:
@@ -851,7 +857,7 @@ class TRP(object):
             if inPlace:
                 self.runRxInPlace(src,vol,reagents.getsample(master),returnPlate=False)
             else:
-                self.e.stage('PCR',[reagents.getsample(master)],src,tgt,vol,destMix=False,dilutant=decklayout.WATER)
+                self.e.stage('PCR', [reagents.getsample(master)], src, tgt, vol, destMix=False, dilutant=trplayout.WATER)
         else:
             # Explicit primers
             logging.notice( "primer="+str(primers))
@@ -873,7 +879,7 @@ class TRP(object):
                     self.runRxInPlace(src,vol,reagents.getsample(master),master2=[reagents.getsample("P-%s"%p[0]) for p in primers],master3=[(reagents.getsample("P-%s"%p[1]) if p[1] is not None else None) for p in primers],returnPlate=False)
                 else:
                     for i in range(len(primers)):
-                        self.e.stage('PCR%d'%i,[reagents.getsample(master)]+[reagents.getsample("P-%s"%s) for s in primers[i]],src[i:i+1] ,tgt[i:i+1],vol[i:i+1],destMix=False,dilutant=decklayout.WATER)
+                        self.e.stage('PCR%d' % i, [reagents.getsample(master)] + [reagents.getsample("P-%s"%s) for s in primers[i]],src[i:i+1],tgt[i:i+1],vol[i:i+1], destMix=False, dilutant=trplayout.WATER)
                     #self.e.shakeSamples(tgt,returnPlate=False)
             else:
                 # Single primer
@@ -881,8 +887,8 @@ class TRP(object):
                     self.runRxInPlace(src,vol,reagents.getsample(master),master2=[reagents.getsample("P-%s"%p) for p in primers],returnPlate=False)
                 else:
                     for up in set(primers):
-                        self.e.stage('PCR%s'%up,[reagents.getsample(master),reagents.getsample("P-%s"%up)],[src[i] for i in range(len(src)) if primers[i]==up],[tgt[i] for i in range(len(tgt)) if primers[i]==up],[vol[i] for i in range(len(vol)) if primers[i]==up],
-                                     destMix=False,dilutant=decklayout.WATER)
+                        self.e.stage('PCR%s' % up, [reagents.getsample(master),reagents.getsample("P-%s"%up)], [src[i] for i in range(len(src)) if primers[i]==up], [tgt[i] for i in range(len(tgt)) if primers[i]==up], [vol[i] for i in range(len(vol)) if primers[i]==up],
+                                     destMix=False, dilutant=trplayout.WATER)
                     #self.e.shakeSamples(tgt,returnPlate=False)
 
         pgm="PCR%d"%ncycles
@@ -961,7 +967,7 @@ class TRP(object):
             logging.error("runT7Setup: Negative amount of water required: "+str(watervols))
 
         if sum(watervols)>0.01:
-            self.e.multitransfer(watervols,decklayout.WATER,tgt)
+            self.e.multitransfer(watervols, trplayout.WATER, tgt)
         for ir in range(len(rlist)):
             self.e.multitransfer([rvols[ir] for _ in tgt],reagents.getsample(rlist[ir]),tgt)
         for i in range(len(BC1)):
@@ -1007,12 +1013,12 @@ class TRP(object):
     ########################
     def runQPCRDIL(self,src,vol,srcdil,tgt=None,dilPlate=False,pipMix=False,dilutant=None):
         if dilutant is None:
-            dilutant=decklayout.SSDDIL
+            dilutant=trplayout.SSDDIL
         [src,vol,srcdil]=listify([src,vol,srcdil])
         vol=[float(v) for v in vol]
         if tgt is None:
             if dilPlate:
-                tgt=[Sample(diluteName(src[i].name,srcdil[i]),decklayout.DILPLATE) for i in range(len(src))]
+                tgt=[Sample(diluteName(src[i].name,srcdil[i]), trplayout.DILPLATE) for i in range(len(src))]
             else:
                 tgt=[Sample(diluteName(src[i].name,srcdil[i]),src[i].plate) for i in range(len(src))]
 
@@ -1052,7 +1058,7 @@ class TRP(object):
                         sampname="%s.Q%s"%(src[i].name,p)
                     else:
                         sampname="%s.Q%s.%d"%(src[i].name,p,repl+1)
-                    s=Sample(sampname,decklayout.QPCRPLATE)
+                    s=Sample(sampname, trplayout.QPCRPLATE)
                     torun=torun+[(src[i],s,p,vol[i])]
 
         # Add enzyme

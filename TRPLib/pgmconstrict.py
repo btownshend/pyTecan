@@ -2,11 +2,12 @@ from __future__ import print_function
 
 import math
 
-from Experiment import decklayout, reagents, clock, worklist
+from Experiment import reagents, clock, worklist
 from Experiment.concentration import Concentration
 from Experiment.sample import Sample
 from TRPLib.QSetup import QSetup
 from TRPLib.TRP import TRP
+from TRPLib import trplayout
 
 reagents.add("BT5310", well="D1", conc=Concentration(20, 20, "pM"))
 reagents.add("MKapa", well='A1', conc=Concentration(2.5, 1, 'x'), extraVol=30,
@@ -48,7 +49,7 @@ class Constrict(TRP):
         self.regen_cycles = 10
 
         self.rsrc = [reagents.add("%s-%s-%s" % (inputs[i]['name'], inputs[i]['left'], inputs[i]['right']),
-                                  decklayout.SAMPLEPLATE,
+                                  trplayout.SAMPLEPLATE,
                                   well=inputs[i]['well'] if 'well' in inputs[i] else None,
                                   conc=Concentration(stock=inputs[i]['bconc'], units="nM"),
                                   initVol=vol, extraVol=0)
@@ -127,13 +128,13 @@ class Constrict(TRP):
 
         watervol = mixvol - sum(vol)
         #print "Mixdown: vols=[", ",".join(["%.2f " % v for v in vol]), "], water=", watervol, ", total=", mixvol, " ul"
-        mixdown = Sample('mixdown', plate=decklayout.SAMPLEPLATE)
+        mixdown = Sample('mixdown', plate=trplayout.SAMPLEPLATE)
 
         if watervol < -0.1:
             print("Total mixdown is %.1f ul, more than planned %.0f ul" % (sum(vol), mixvol))
             assert False
         elif watervol >= 4.0:   # Omit if too small
-            self.e.transfer(watervol, decklayout.WATER, mixdown, (False, False))
+            self.e.transfer(watervol, trplayout.WATER, mixdown, (False, False))
         else:
             pass
         ordering=sorted(list(range(len(inp))),key=lambda i: vol[i],reverse=True)
@@ -159,7 +160,7 @@ class Constrict(TRP):
         dilperstage = math.pow(dil, 1.0 / nstages)
         print("Diluting by %.0fx in %.0f stages of %.1f" % (dil, nstages, dilperstage))
 
-        s = [decklayout.WATER] + [constrictin] * self.nconstrict + [decklayout.SSDDIL]
+        s = [trplayout.WATER] + [constrictin] * self.nconstrict + [trplayout.SSDDIL]
         self.e.sanitize(3, 50)  # Heavy sanitize
 
         for j in range(nstages):
@@ -173,7 +174,7 @@ class Constrict(TRP):
             math.log(self.con_pcr1tgtconc / conc * self.con_pcr1vol / self.con_pcr1inputvol) / math.log(self.pcreff) + 0.5)
         pcr1finalconc = conc * self.con_pcr1inputvol / self.con_pcr1vol * self.pcreff ** cycles
         print("Running %d cycle PCR1 -> %.1f pM" % (cycles, pcr1finalconc * 1e12))
-        s = s + [decklayout.WATER]  # Extra control of just water added to PCR mix
+        s = s + [trplayout.WATER]  # Extra control of just water added to PCR mix
         pcr = self.runPCR(primers=None, src=s, vol=self.con_pcr1vol,
                           srcdil=self.con_pcr1vol * 1.0 / self.con_pcr1inputvol,
                           ncycles=cycles, master="MConstrict", kapa=True)

@@ -1,9 +1,6 @@
 import os
-from .plate import Plate
 from .platetype import PlateType
 from .platelocation import PlateLocation
-
-from .liquidclass import LCBleachMix,LCTrough
 
 ############ Plate types  #############
 hspmaxspeeds={200:1400,150:1600,100:1850,50:2000,20:2200}	# From shaketest experiment
@@ -67,39 +64,11 @@ WASTE = PlateLocation("Waste",20, 3, lihaAccess=False)
 HOTEL = [ PlateLocation(f"Hotel{i+1}",25,0, lihaAccess=False,vectorName=f"Hotel{i+1}") for i in range(6) ]
 
 ############ Physical Plates #############
-WATERTROUGH=Plate(name="Water",plateType=TROUGH, plateLocation=TROUGH2)
-BLEACHTROUGH=Plate(name="Bleach",plateType=TROUGH, plateLocation=TROUGH3)
-SSDTROUGH=Plate(name="SSDDil",plateType=TROUGH, plateLocation=TROUGH1)
-METHTROUGH=Plate(name="MeOH",plateType=TROUGH, plateLocation=TROUGH1)
-
-SAMPLEPLATE=Plate(name="Samples",plateType=EPPLOWBIND,plateLocation=SAMPLELOC)
-DILPLATE=Plate(name="Dilutions",plateType=EPPLOWBIND,plateLocation=DILUTIONLOC,backupPlate=SAMPLEPLATE)
-EPPENDORFS=Plate(name="Eppendorfs",plateType=EPPRACK,plateLocation=EPPLOC)
-REAGENTPLATE=Plate(name="Reagents",plateType=RICBLOCK, plateLocation=RICLOC)
-QPCRPLATE=Plate(name="QPCR",plateType=WHITEQPCR, plateLocation=QPCRLOC)
-PRODUCTPLATE=Plate(name="Products",plateType=EPPLOWBIND,plateLocation=PRODUCTLOC)
-
 #TIPOFFSETS=[390, 389, 394, 387]
 TIPOFFSETS=[390, 390, 390, 390]
 
 
-############ Well-known samples  #############
-WATER=None
-SSDDIL=None
-BLEACH=None
-
-
-def initWellKnownSamples():
-    global WATER, SSDDIL, BLEACH
-    from .sample import Sample
-
-    WATER=Sample("Water",WATERTROUGH,-1,None,100000)
-    WATER.inliquidLC=LCTrough    # Faster liquid detect
-    SSDDIL=Sample("SSDDil",SSDTROUGH,-1,None,100000)
-    SSDDIL.inliquidLC=LCTrough  # Faster liquid detect
-    BLEACH=Sample("RNase-Away",BLEACHTROUGH,-1,None,100000,mixLC=LCBleachMix)
-
-
 ############ Header file containing matching deck layout  #############
+# TODO: Use carrier.py to roll a new header on the fly
 headerfile=os.path.join(os.path.dirname(__file__),"../header.gem")
 headerfile384samp=os.path.join(os.path.dirname(__file__),"../header384samp.gem")

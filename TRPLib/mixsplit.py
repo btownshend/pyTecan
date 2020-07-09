@@ -3,7 +3,7 @@ from __future__ import print_function
 import debughook
 
 from Experiment.sample import Sample, logging
-from Experiment import decklayout
+from TRPLib import trplayout
 
 # Test splitting of mixdowns
 def mixsplit(vols, samps=None, avail=None, minvol=4, minmix=0.0, maxmix=100.0, nextmixnum=1, dilute=1, debug=False, plate=None, prefix="Mix"):
@@ -69,7 +69,7 @@ def mixsplit(vols, samps=None, avail=None, minvol=4, minmix=0.0, maxmix=100.0, n
     if dilute>1:
       water=min(maxmix-totalvol,(dilute-1)*totalvol)
       if water>0:
-        stages[-1][1].append(decklayout.WATER)
+        stages[-1][1].append(trplayout.WATER)
         stages[-1][2].append(water)
         stages[-1][3]=(totalvol+water)/totalvol  # Dilution
 
@@ -83,7 +83,7 @@ if __name__ == "__main__":
     cntr=1
     for t in tests:
         print("Test: ",t)
-        stages=mixsplit(t,plate=decklayout.SAMPLEPLATE,minmix=20,avail=[11.625 for i in t],debug=True,prefix="Test%d_"%cntr)
+        stages=mixsplit(t, plate=trplayout.SAMPLEPLATE, minmix=20, avail=[11.625 for i in t], debug=True, prefix="Test%d_" % cntr)
         cntr+=1
         for s in stages:
             print(s[0].name,'\n =',"\n + ".join(['%4.1f: %s'%(s[2][i],s[1][i]) for i in range(len(s[1]))]))

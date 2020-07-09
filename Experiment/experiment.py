@@ -78,7 +78,7 @@ class Experiment(object):
             worklist.userprompt("Verify that PTC thermocycler lid pressure is set to correct value.")
         self.idlePgms=[]
         self.timerStartTime=[0.0]*8
-        decklayout.initWellKnownSamples()
+        # decklayout.initWellKnownSamples()
         self.addIdleProgram(self.volumeChecker)
 
     def volumeChecker(self,secondsAvail):
@@ -89,10 +89,10 @@ class Experiment(object):
         for s in sorted(Sample.allsamples(),key=lambda z: "%s.%02d"%(z.plate,z.well) if z.well is not None else ""):
             if s is None:
                 continue
-            if s.plate!=decklayout.REAGENTPLATE and (s.plate!=decklayout.EPPENDORFS or s.volume==0):
+            if s.plate.location!=decklayout.RICLOC and (s.plate.location!=decklayout.EPPLOC or s.volume==0):
                 # Was getting arm collided errors with PRODUCTS plate after contents removed -- zmax may be off, but just skip vol checks for now
                 continue
-            if s.plate==decklayout.REAGENTPLATE or s.plate==decklayout.EPPENDORFS:
+            if s.plate.location==decklayout.RICLOC or s.plate.location==decklayout.EPPLOC:
                 freq=3600
             else:
                 freq=3600*4
@@ -113,8 +113,6 @@ class Experiment(object):
         tracking=True
         ricplates=[ Plate.lookupLocation(loc) for loc in [decklayout.RICLOC, decklayout.PRODUCTLOC] ]
         # Verify backward compatibility
-        assert decklayout.REAGENTPLATE in ricplates
-        assert decklayout.PRODUCTPLATE in ricplates
         assert len(ricplates) == 2
         setpoint=22.7
         if tracking:
@@ -184,11 +182,15 @@ class Experiment(object):
             worklist.wash(fixedTips,1,2)
         fixedWells=[]
         if not self.overrideSanitize and not self.overrideWash:
+            bleach = Sample.lookup("Bleach")
+            if bleach is None:
+                print("Unable to location Bleach sample")
+                assert False
             for i in range(4):
                 if (fixedTips & (1<<i)) != 0:
                     fixedWells.append(i)
-                    decklayout.BLEACH.addhistory("SANITIZE",0,1<<i)
-            worklist.mix(fixedTips,fixedWells,decklayout.BLEACH.mixLC,200,decklayout.BLEACH.plate,nmix,False)
+                    bleach.addhistory("SANITIZE",0,1<<i)
+            worklist.mix(fixedTips,fixedWells,bleach.mixLC,200,bleach.plate,nmix,False)
             worklist.wash(fixedTips,1,deepvol,True)
         self.cleanTips|=fixedTips
         
@@ -672,7 +674,6 @@ class Experiment(object):
                 break
         assert plate is not None
         # To verify that using 'plate' instead of decklayout.SAMPLEPLATE is the same
-        assert plate==decklayout.SAMPLEPLATE
 
         self.moveplate(plate, decklayout.SAMPLELOC)  # Move HOME TODO: This should be passed in instead of hard-coding SAMPLELOC
 

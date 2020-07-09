@@ -1,9 +1,10 @@
 from __future__ import print_function
 
-from Experiment import decklayout, reagents, clock, logging
+from Experiment import reagents, clock, logging
 from Experiment.concentration import Concentration
 from TRPLib.QSetup import QSetup
 from TRPLib.TRP import TRP
+from TRPLib import trplayout
 
 reagents.add("BT5310", well="D1", conc=Concentration(20, 20, "pM"))
 reagents.add("MKapa", well='A1', conc=Concentration(2.5, 1, 'x'), extraVol=30,
@@ -33,7 +34,7 @@ class IDPrep(TRP):
 
         print("used=",used)
         self.rsrc = [reagents.add("%s-%s-%s" % (inputs[i]['name'], inputs[i]['left'], inputs[i]['right']),
-                                  decklayout.SAMPLEPLATE,
+                                  trplayout.SAMPLEPLATE,
                                   well=inputs[i]['well'] if 'well' in inputs[i] else None,
                                   conc=Concentration(stock=inputs[i]['conc'], units="nM"),
                                   initVol=self.bc1_inputvol, extraVol=0)
@@ -75,8 +76,8 @@ class IDPrep(TRP):
         for s in left + right:
             primer = "P-" + s
             if not reagents.isReagent(primer):
-                reagents.add(primer, conc=Concentration(2.67, 0.4, 'uM'), extraVol=30, plate=decklayout.REAGENTPLATE,
-                             well=decklayout.REAGENTPLATE.wellname(wellnum))
+                reagents.add(primer, conc=Concentration(2.67, 0.4, 'uM'), extraVol=30, plate=trplayout.REAGENTPLATE,
+                             well=trplayout.REAGENTPLATE.wellname(wellnum))
                 wellnum += 1
         # Run first pass dilution where needed
         for i in range(len(samps)):
