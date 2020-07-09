@@ -386,9 +386,12 @@ class Sample(object):
             nloop+=1
         return volume
 
-    def leveldetect(self,tipMask):
+    def leveldetect(self,tipMask,lc=None):
         well=[self.well if self.well is not None else int(math.log(tipMask, 2))]
-        worklist.detectLiquid(tipMask,well,self.inliquidLC,self.plate,allowDelay=True)
+        if lc is None:
+            lc=self.inliquidLC
+        assert lc.ldetect
+        worklist.detectLiquid(tipMask,well,lc,self.plate,allowDelay=True)
 
     def volcheck(self,tipMask,well,volToRemove):
         """Check if the well contains the expected volume"""
