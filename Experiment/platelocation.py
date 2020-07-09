@@ -19,13 +19,6 @@ class PlateLocation(object):
         PlateLocation.__allplatelocations.append(self)
 
     @classmethod
-    def lookupByName(cls,name):
-        for p in PlateType.__allplatetypes:
-            if p.name==name:
-                return p
-        return None
-
-    @classmethod
     def lookupByLocation(cls,grid,pos):
         for p in PlateLocation.__allplatelocations:
             if p.grid==grid and p.pos==pos:
