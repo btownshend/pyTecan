@@ -35,7 +35,7 @@ def getSample(wellx,welly,rack,grid,pos):
         if s is None:
             s=Sample("%s.%d.%d.%d" % (rack, grid, pos, well), plate, well)
             if grid==3:
-                s.volume=20000   # Troughs
+                s.volume=100000   # Troughs
             else:
                 s.volume=0
         return s
