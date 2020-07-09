@@ -309,12 +309,12 @@ def fwparse(dev,send,reply,error,lasttime,outfd):
         for i in range(len(heights)):
             if (1<<i & tipSelect) != 0:
                 if extendedError[3+i]==0:
-                    print("TIPS",ldpending, i+1, lnum, heights[i], sbl[i], sml[i], heights[i] + sbl[i] - sml[i],file=outfd)
+                    print("TIPS",ldpending, extendedError[3+i], i+1, lnum, heights[i], sbl[i], sml[i], heights[i] + sbl[i] - sml[i],file=outfd)
                     #print("TIPS", lnum, heights[i], sbl[i], sml[i], heights[i] + sbl[i] - sml[i],file=outfd)
                     dl.logmeasure(i+1,heights[i],sbl[i],sml[i],zadd[i],lasttime)
                     logdb.lastmeasure(i+1,lnum,heights[i], sbl[i], sml[i], zadd[i], lasttime)
                 else:
-                    print("TIPERROR",ldpending, extendedError[3+i], lnum, heights[i], sbl[i], sml[i], heights[i] + sbl[i] - sml[i],file=outfd)
+                    print("TIPERROR",ldpending, extendedError[3+i], i+1, lnum, heights[i], sbl[i], sml[i], heights[i] + sbl[i] - sml[i],file=outfd)
                     logdb.lastmeasure(i+1,lnum,None, sbl[i], sml[i], zadd[i], lasttime)
         ldpending=None
     elif op == 'REE':
