@@ -23,11 +23,7 @@ def getSample(wellx,welly,rack,grid,pos):
             print(f"Created new plate {plate} with type: {plate.plateType}, location: {plate.location}")
             pass
         elif plate.plateType.name != rack:
-            print(f"Expected plate type {plate.plateType.name} at {grid},{pos}, but found {rack} - overriding")
-            plate.plateType = PlateType.lookupByName(rack)
-            if plate.plateType is None:
-                print("No such plateType: ", rack)
-                assert False
+            assert False
 
         wellname="%c%d"%(ord('A')+welly-1,wellx)
         well=plate.wellnumber(wellname)
