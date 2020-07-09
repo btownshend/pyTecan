@@ -321,8 +321,8 @@ def fwparse(dev,send,reply,error,lasttime,outfd):
     elif op == 'REE':
         extendedError=[ord(r)-ord('@') for r in reply[0]]   # X, Y, Ys, Z1..8
         #print("REE=",extendedError)
-    elif op=='RVZ':
         # This occurs aftrer a not enough liquid error, RVZ shows the height at the liquid level
+    elif op=='RVZ' and int(args[0])==1:
         # This seems to not include the submerge (actual liquid level instead)
         assert ldpending=='MET'
         heights = [int(r) for r in reply]
