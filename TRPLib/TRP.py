@@ -396,6 +396,7 @@ class TRP(object):
         print("Running T7 at 37C for %d minutes"%dur)
         self.e.runpgm(plate, pgm,dur, False,vol)
 
+    # noinspection PyUnusedLocal
     def runT7Stop(self,theo,tgt,stopmaster=None):
         del theo # Unused
         [tgt,stopmaster]=listify([tgt,stopmaster])
@@ -472,6 +473,7 @@ class TRP(object):
 
         self.e.shakeSamples(src,dur=incTime,returnPlate=False)
 
+    # noinspection PyUnusedLocal
     def sepWait(self,src,sepTime=None):
         del src # Unused
         if sepTime is None:

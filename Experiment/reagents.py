@@ -5,13 +5,12 @@ import sys
 import operator
 from .sample import Sample
 from . import logging
-from .concentration import Concentration
 from .plate import Plate
 
 class Reagent(object):
     allReagents={}
 
-    def __init__(self, name:str , plate:Plate=None, well:str=None, conc:Concentration=None, hasBeads:bool=False, extraVol:float=50, initVol:float=0, extrainfo=None, ingredients=None, refillable=False, noEvap=False,precious=False):
+    def __init__(self, name:str , plate:Plate=None, well:str=None, conc=None, hasBeads:bool=False, extraVol:float=50, initVol:float=0, extrainfo=None, ingredients=None, refillable=False, noEvap=False,precious=False):
         if extrainfo is None:
             extrainfo = []
         self.sample=None
@@ -66,7 +65,7 @@ def getsample(name:str):
 def lookup(name:str):
     return Reagent.allReagents[name]
 
-def add(name, plate:Plate=None, well=None, conc:Concentration=None, hasBeads:bool=False, extraVol:float=50, initVol:float=0, extrainfo=None, ingredients=None, refillable=False, noEvap=False, precious=False):
+def add(name, plate:Plate=None, well=None, conc=None, hasBeads:bool=False, extraVol:float=50, initVol:float=0, extrainfo=None, ingredients=None, refillable=False, noEvap=False, precious=False):
     if extrainfo is None:
         extrainfo = []
     if plate is None:

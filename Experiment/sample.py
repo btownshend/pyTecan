@@ -1,8 +1,6 @@
 from __future__ import print_function
 
 import sys
-from typing import Optional
-
 import math
 from . import liquidclass
 from . import worklist
@@ -67,8 +65,6 @@ tiphistory={}
 #
 
 class Sample(object):
-    conc: Optional[Concentration]
-
     __allsamples = []
     __historyOptions = ["normal", "shake", "detect", "tc", "evap"]
 
@@ -113,7 +109,7 @@ class Sample(object):
     def setHistoryOptions(opts):
         Sample.__historyOptions=opts
         
-    def __init__(self, name, plate, well=None, conc:Optional[Concentration]=None, volume=0, hasBeads=False, extraVol=50, mixLC=liquidclass.LCMixBottom, firstWell=None,
+    def __init__(self, name, plate, well=None, conc=None, volume=0, hasBeads=False, extraVol=50, mixLC=liquidclass.LCMixBottom, firstWell=None,
                  extrainfo=None, ingredients=None, atEnd=False, refillable=False,noEvap=False,precious=False):
         if extrainfo is None:
             extrainfo = []
@@ -593,12 +589,14 @@ class Sample(object):
         worklist.dispense(tipMask,well,lc,volume,self.plate)
         
         # Assume we're diluting the contents
+        # noinspection PyUnresolvedReferences,PyUnresolvedReferences
         if self.conc is None and src.conc is None:
             pass
         elif src.conc is None or volume==0:
             if self.volume==0:
                 self.conc=None
             else:
+                # noinspection PyUnresolvedReferences
                 self.conc=self.conc.dilute((self.volume+volume)/self.volume)
         elif self.conc is None or self.volume==0 or self.conc.final is None or src.conc.final is None:
             self.conc=src.conc.dilute((self.volume+volume)/volume)
