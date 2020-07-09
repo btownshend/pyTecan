@@ -368,7 +368,7 @@ class Experiment(object):
             self.waitpgm()
         if volume>self.MAXVOLUME:
             reuseTip=False   # Since we need to wash to get rid of it
-            msg="Splitting large transfer of %.1f ul into smaller chunks < %.1f ul "%(volume,self.MAXVOLUME),
+            msg="Splitting large transfer of %.1f ul into smaller chunks < %.1f ul "%(volume,self.MAXVOLUME)
             if reuseTip:
                 msg+= "with tip reuse"
             else:
