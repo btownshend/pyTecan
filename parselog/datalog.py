@@ -7,6 +7,7 @@ from Experiment.experiment import Experiment
 from Experiment.liquidclass import SURFACEREMOVE
 from Experiment.plate import Plate
 from Experiment.platetype import PlateType
+from Experiment.platelocation import PlateLocation
 from Experiment.sample import Sample
 from Experiment import sample
 from Experiment import logging
@@ -14,7 +15,13 @@ from Experiment import logging
 def getSample(wellx,welly,rack,grid,pos):
         plate=Plate.lookup(grid,pos)
         if plate is None:
-            plate = Plate(rack, grid, pos)
+            loc=PlateLocation.lookupByLocation(grid,pos)
+            if loc is None:
+                print(f"No such location: {grid},{pos}")
+                assert False
+            plate = Plate(f"@{loc.name}", plateType=PlateType.lookupByName(rack),plateLocation=loc)
+            print(f"Created new plate {plate} with type: {plate.plateType}, location: {plate.location}")
+            pass
         elif plate.plateType.name != rack:
             print(f"Expected plate type {plate.plateType.name} at {grid},{pos}, but found {rack} - overriding")
             plate.plateType = PlateType.lookupByName(rack)
