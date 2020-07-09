@@ -1,5 +1,6 @@
 class PlateLocation(object):
     """An object representing a location on the deck of a container"""
+    __allplatelocations = []
 
     def __init__(self, name: str, grid: int, pos: int, slopex:float=0, slopey:float=0, vectorName:str = None, lihaAccess:bool = True,
                  carrierName=None,zoffset=0):
@@ -15,6 +16,21 @@ class PlateLocation(object):
             self.carrierName=self.name
         else:
             self.carrierName=carrierName
+        PlateLocation.__allplatelocations.append(self)
+
+    @classmethod
+    def lookupByName(cls,name):
+        for p in PlateType.__allplatetypes:
+            if p.name==name:
+                return p
+        return None
+
+    @classmethod
+    def lookupByLocation(cls,grid,pos):
+        for p in PlateLocation.__allplatelocations:
+            if p.grid==grid and p.pos==pos:
+                return p
+        return None
 
     def __str__(self):
         #return "%s(%d,%d)"%(self.name,self.grid,self.pos)
