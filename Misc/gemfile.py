@@ -118,6 +118,8 @@ class GemFile(object):
                 print(f"**** Z-Offset mismatch: carrier: {2100-10*(coffsets[0]+coffsets[1]+roffset+tipoffset)}, decklayout: {2100-10*zoffset1}")
             if r['area'] != plate.plateType.gemArea:
                 print(f"**** GEM Area mismatch: carrier: {r['area']}, decklayout: {plate.plateType.gemArea}")
+            if r['depth'] != plate.plateType.gemDepth:
+                print(f"**** GEM Depth mismatch: carrier: {r['depth']}, decklayout: {plate.plateType.gemDepth}")
             print(f"Location:")
             print(f"\tdecklayout.py: {plate.location.grid},{plate.location.pos}")
             for l in self.layout:
