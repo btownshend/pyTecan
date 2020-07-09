@@ -11,7 +11,7 @@ sys.path.append(epath)
 
 from Experiment.config import Config
 from Experiment import logging
-from .datalog import Datalog
+from datalog import Datalog
 from Experiment.db import LogDB, DB   # Note: parselog is both the parent and current module name
 
 Config.usedb=False
