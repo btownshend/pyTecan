@@ -111,22 +111,29 @@ class Experiment(object):
     @staticmethod
     def setreagenttemp(temp: float=None):
         tracking=True
+        ricplates=[ Plate.lookupLocation(loc) for loc in [decklayout.RICLOC, decklayout.PRODUCTLOC] ]
+        # Verify backward compatibility
+        assert decklayout.REAGENTPLATE in ricplates
+        assert decklayout.PRODUCTPLATE in ricplates
+        assert len(ricplates) == 2
+        setpoint=22.7
         if tracking:
             if temp is not None:
                 print("Using RIC dewpoint tracking for PRODUCT and REAGENT plates, assuming dewpoint=%.1f for evaporation calculations"%globals.dewpoint)
-                decklayout.REAGENTPLATE.liquidTemp=globals.dewpoint+1
-                decklayout.PRODUCTPLATE.liquidTemp=globals.dewpoint+1
+                setpoint=globals.dewpoint+1
             else:
                 pass   # Nothing to do at end
         elif temp is None:
             worklist.pyrun("RIC\\ricset.py IDLE",version=2)
-            decklayout.REAGENTPLATE.liquidTemp=22.7
+            setpoint=22.7
         else:
             worklist.variable("dewpoint",temp,userprompt="Enter dewpoint",minval=0,maxval=20)
             worklist.variable("rictemp","~dewpoint~+2")
             worklist.pyrun("RIC\\ricset.py ~rictemp~",version=2)
-            decklayout.REAGENTPLATE.liquidTemp=temp+2   # Assumes that temp is the one used
+            setpoint=temp+2   # Assumes that temp is the one used
 #            worklist.pyrun("RIC\\ricset.py %s"%temp,version=2)
+        for p in ricplates:
+            p.liquidTemp=setpoint
 
     @staticmethod
     def saveworklist(filename: str):
@@ -406,8 +413,9 @@ class Experiment(object):
             logging.notice("No samples")
             return
 
-        if dilutant is None:
-            dilutant=decklayout.WATER
+        assert dilutant is not None
+        #if dilutant is None:
+        #    dilutant=decklayout.WATER
 
         worklist.flushQueue()
         worklist.comment("Stage: "+stagename)
@@ -479,7 +487,7 @@ class Experiment(object):
         self.pgmStartTime=clock.pipetting
         self.pgmEndTime=duration*60+clock.pipetting
         self.tcrunning=True
-        Sample.addallhistory("{%s}" % pgm, addToEmpty=False, onlyplate=decklayout.SAMPLEPLATE.name, htype="tc")
+        Sample.addallhistory("{%s}" % pgm, addToEmpty=False, onlyplate=plate.name, htype="tc")
         if waitForCompletion:
             self.waitpgm()
 
@@ -656,9 +664,20 @@ class Experiment(object):
             worklist.vector("PTC200WigglePos",decklayout.TCPOS,worklist.ENDTOSAFE,False,worklist.DONOTMOVE,worklist.DONOTMOVE)
 
         self.tcrunning=False
-        self.moveplate(decklayout.SAMPLEPLATE,decklayout.SAMPLELOC)  # Move HOME
+        # Figure out which plate is in the thermocycler
+        plate=None
+        for ap in Plate.allPlates():
+            if ap.location == decklayout.TCPOS:
+                plate=ap
+                break
+        assert plate is not None
+        # To verify that using 'plate' instead of decklayout.SAMPLEPLATE is the same
+        assert plate==decklayout.SAMPLEPLATE
+
+        self.moveplate(plate, decklayout.SAMPLELOC)  # Move HOME TODO: This should be passed in instead of hard-coding SAMPLELOC
+
         # Mark all samples on plate as unmixed (due to condensation)
-        Sample.notMixed(decklayout.SAMPLEPLATE.name)
+        Sample.notMixed(plate.name)
         if thermocycler.cycler=='PTC200':
             # Verify plate is in place
             worklist.vector(None,decklayout.SAMPLELOC,worklist.SAFETOEND,False,worklist.DONOTMOVE,worklist.CLOSE)

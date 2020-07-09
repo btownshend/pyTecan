@@ -755,7 +755,7 @@ class TRP(object):
             self.runRxInPlace(src,vol,enzymes[0],returnPlate=(incTime is None))
             tgt=src
         else:
-            self.e.stage('Incubation',enzymes,src,tgt,vol,destMix=False)
+            self.e.stage('Incubation',enzymes,src,tgt,vol,destMix=False,dilutant=decklayout.WATER)
             self.e.shakeSamples(tgt,returnPlate=(incTime is None))
 
         if incTime is None:
@@ -851,7 +851,7 @@ class TRP(object):
             if inPlace:
                 self.runRxInPlace(src,vol,reagents.getsample(master),returnPlate=False)
             else:
-                self.e.stage('PCR',[reagents.getsample(master)],src,tgt,vol,destMix=False)
+                self.e.stage('PCR',[reagents.getsample(master)],src,tgt,vol,destMix=False,dilutant=decklayout.WATER)
         else:
             # Explicit primers
             logging.notice( "primer="+str(primers))
@@ -873,7 +873,7 @@ class TRP(object):
                     self.runRxInPlace(src,vol,reagents.getsample(master),master2=[reagents.getsample("P-%s"%p[0]) for p in primers],master3=[(reagents.getsample("P-%s"%p[1]) if p[1] is not None else None) for p in primers],returnPlate=False)
                 else:
                     for i in range(len(primers)):
-                        self.e.stage('PCR%d'%i,[reagents.getsample(master)]+[reagents.getsample("P-%s"%s) for s in primers[i]],src[i:i+1] ,tgt[i:i+1],vol[i:i+1],destMix=False)
+                        self.e.stage('PCR%d'%i,[reagents.getsample(master)]+[reagents.getsample("P-%s"%s) for s in primers[i]],src[i:i+1] ,tgt[i:i+1],vol[i:i+1],destMix=False,dilutant=decklayout.WATER)
                     #self.e.shakeSamples(tgt,returnPlate=False)
             else:
                 # Single primer
@@ -881,7 +881,8 @@ class TRP(object):
                     self.runRxInPlace(src,vol,reagents.getsample(master),master2=[reagents.getsample("P-%s"%p) for p in primers],returnPlate=False)
                 else:
                     for up in set(primers):
-                        self.e.stage('PCR%s'%up,[reagents.getsample(master),reagents.getsample("P-%s"%up)],[src[i] for i in range(len(src)) if primers[i]==up],[tgt[i] for i in range(len(tgt)) if primers[i]==up],[vol[i] for i in range(len(vol)) if primers[i]==up],destMix=False)
+                        self.e.stage('PCR%s'%up,[reagents.getsample(master),reagents.getsample("P-%s"%up)],[src[i] for i in range(len(src)) if primers[i]==up],[tgt[i] for i in range(len(tgt)) if primers[i]==up],[vol[i] for i in range(len(vol)) if primers[i]==up],
+                                     destMix=False,dilutant=decklayout.WATER)
                     #self.e.shakeSamples(tgt,returnPlate=False)
 
         pgm="PCR%d"%ncycles
