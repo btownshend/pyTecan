@@ -46,9 +46,9 @@ GRENIER384=PlateType("Grenier384",nx=24,ny=16,yspacing=4.5,pierce=False,unusable
 #   TODO: Make locations more like racks (with a base height) and then plates have a zmax that is relative to that
 # Or, maybe, we don't really need the zmax here -- the parselog can retrieve the zmax that was being used at runtime
 # A particular volume formula goes along with a particular zmax though...
-WATERLOC=PlateLocation("Water",3,2,carrierName="Trough 100ml, 3 Pos.",zoffset=10.0)
-BLEACHLOC=PlateLocation("Bleach",3,3,carrierName="Trough 100ml, 3 Pos.",zoffset=10.0)
-SSDDILLOC=PlateLocation("SSDDil",3,1,carrierName="Trough 100ml, 3 Pos.",zoffset=10.0)
+TROUGH2=PlateLocation("Trough-Middle",3,2,carrierName="Trough 100ml, 3 Pos.",zoffset=10.0)
+TROUGH3=PlateLocation("Trough-Front",3,3,carrierName="Trough 100ml, 3 Pos.",zoffset=10.0)
+TROUGH1=PlateLocation("Trough-Rear",3,1,carrierName="Trough 100ml, 3 Pos.",zoffset=10.0)
 
 RICLOC=PlateLocation("RIC",18,1,slopex=0,slopey=0,carrierName="RIC, Microplate",zoffset=6.2+108.7)
 MAGPLATELOC=PlateLocation("MagPlate",18,2,vectorName="Magplate")
@@ -67,10 +67,10 @@ WASTE = PlateLocation("Waste",20, 3, lihaAccess=False)
 HOTEL = [ PlateLocation(f"Hotel{i+1}",25,0, lihaAccess=False,vectorName=f"Hotel{i+1}") for i in range(6) ]
 
 ############ Physical Plates #############
-WATERTROUGH=Plate(name="Water",plateType=TROUGH, plateLocation=WATERLOC)
-BLEACHTROUGH=Plate(name="Bleach",plateType=TROUGH, plateLocation=BLEACHLOC)
-SSDTROUGH=Plate(name="SSDDil",plateType=TROUGH, plateLocation=SSDDILLOC)
-METHTROUGH=Plate(name="MeOH",plateType=TROUGH, plateLocation=SSDDILLOC)
+WATERTROUGH=Plate(name="Water",plateType=TROUGH, plateLocation=TROUGH2)
+BLEACHTROUGH=Plate(name="Bleach",plateType=TROUGH, plateLocation=TROUGH3)
+SSDTROUGH=Plate(name="SSDDil",plateType=TROUGH, plateLocation=TROUGH1)
+METHTROUGH=Plate(name="MeOH",plateType=TROUGH, plateLocation=TROUGH1)
 
 SAMPLEPLATE=Plate(name="Samples",plateType=EPPLOWBIND,plateLocation=SAMPLELOC)
 DILPLATE=Plate(name="Dilutions",plateType=EPPLOWBIND,plateLocation=DILUTIONLOC,backupPlate=SAMPLEPLATE)
