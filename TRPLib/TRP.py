@@ -290,7 +290,7 @@ class TRP(object):
             self.e.shakeSamples(tgt)
             for i in range(len(tgt)):
                 if dil2[i]>1:
-                    disposeVol=tgt[i].volume - finalvol[i] / dil2[i]-1.4
+                    disposeVol=tgt[i].volume - finalvol[i] / dil2[i]-SURFACEREMOVE
                     if disposeVol>0:
                         self.e.dispose(disposeVol, tgt[i])
                         if tgt[i].volume<4:
