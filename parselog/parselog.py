@@ -321,7 +321,22 @@ def fwparse(dev,send,reply,error,lasttime,outfd):
         extendedError=[ord(r)-ord('@') for r in reply[0]]   # X, Y, Ys, Z1..8
         #print("REE=",extendedError)
     elif op=='RVZ':
-        pass
+        # This occurs aftrer a not enough liquid error, RVZ shows the height at the liquid level
+        # This seems to not include the submerge (actual liquid level instead)
+        assert ldpending=='MET'
+        heights = [int(r) for r in reply]
+        assert (len(heights) == len(sbl))
+        for i in range(len(heights)):
+            if (1 << i & tipSelect) != 0:
+                if extendedError[3 + i] == 12:
+                    print("TIPS", ldpending, extendedError[3 + i], i + 1, lnum, heights[i], sbl[i], sml[i],heights[i] + sbl[i] - sml[i], file=outfd)
+                    dl.logmeasure(i + 1, heights[i], 0*sbl[i], sml[i], zadd[i], lasttime)  # No submerge offset
+                    logdb.lastmeasure(i + 1, lnum, heights[i], 0*sbl[i], sml[i], zadd[i], lasttime)
+                else:
+                    print("Unexpected RVZ - not after an error 12 MET")
+                    pass
+        ldpending=None
+
     elif ldpending:
         print("**** Parser error:  got op %s without a RPZ while ldpending=%s"%(op,ldpending),file=outfd)
         #assert(False)
