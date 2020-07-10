@@ -28,6 +28,9 @@ sml=[0,0,0,0]
 zadd=[0,0,0,0]
 tipSelect=0
 ldpending=False
+rack=''
+grid=0
+pos=0
 extendedError:list
 logdb:LogDB
 
@@ -200,6 +203,7 @@ def gemtip(tipcmd,line2,outfd):
         nmix=None
     wellx=int(g[5])
     welly=int(g[6])
+    global rack, grid, pos
     rack=g[7]
     grid=int(g[8])
     pos=int(g[9])
@@ -229,7 +233,7 @@ def gemtip(tipcmd,line2,outfd):
     dl.logop(op,tip,vol,wellx,welly,rack,grid,pos,lc,std,volset,ptype=='Multi')
     
 def fwparse(dev,send,reply,error,lasttime,outfd):
-    global lnum, sbl, sml, tipSelect, ldpending, zadd, extendedError
+    global lnum, sbl, sml, tipSelect, ldpending, zadd, extendedError, rack, grid, pos
     if debug:
         if error:
             print("\tSEND:%s  ERROR:%s"%(str(send),str(reply)),file=outfd)
@@ -313,10 +317,10 @@ def fwparse(dev,send,reply,error,lasttime,outfd):
                     print("TIPS",ldpending, extendedError[3+i], i+1, lnum, heights[i], sbl[i], sml[i], heights[i] + sbl[i] - sml[i],file=outfd)
                     #print("TIPS", lnum, heights[i], sbl[i], sml[i], heights[i] + sbl[i] - sml[i],file=outfd)
                     dl.logmeasure(i+1,heights[i],sbl[i],sml[i],zadd[i],lasttime)
-                    logdb.lastmeasure(i+1,lnum,heights[i], sbl[i], sml[i], zadd[i], lasttime)
+                    logdb.lastmeasure(i+1,lnum,heights[i], sbl[i], sml[i], zadd[i], lasttime, rack, grid, pos)
                 else:
                     print("TIPERROR",ldpending, extendedError[3+i], i+1, lnum, heights[i], sbl[i], sml[i], heights[i] + sbl[i] - sml[i],file=outfd)
-                    logdb.lastmeasure(i+1,lnum,None, sbl[i], sml[i], zadd[i], lasttime)
+                    logdb.lastmeasure(i+1,lnum,None, sbl[i], sml[i], zadd[i], lasttime, rack, grid, pos)
         ldpending=None
     elif op == 'REE':
         extendedError=[ord(r)-ord('@') for r in reply[0]]   # X, Y, Ys, Z1..8
@@ -334,7 +338,7 @@ def fwparse(dev,send,reply,error,lasttime,outfd):
                 if extendedError[3 + i] in [0, 12]:
                     print("TIPS", ldpending, extendedError[3 + i], i + 1, lnum, heights[i], sbl[i], sml[i],heights[i] + sbl[i] - sml[i], file=outfd)
                     dl.logmeasure(i + 1, heights[i], 0*sbl[i], sml[i], zadd[i], lasttime)  # No submerge offset
-                    logdb.lastmeasure(i + 1, lnum, heights[i], 0*sbl[i], sml[i], zadd[i], lasttime)
+                    logdb.lastmeasure(i + 1, lnum, heights[i], 0*sbl[i], sml[i], zadd[i], lasttime, rack, grid, pos)
                 elif extendedError[3+i] == 9:
                     print(f"Not enough liquid for tip {i} - ignore measurement",file=outfd)
                 else:

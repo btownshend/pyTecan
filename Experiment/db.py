@@ -5,10 +5,12 @@ import pymysql.cursors
 from . import clock
 from . import logging
 from .config import Config
+from .platelocation import PlateLocation
 from .plate import Plate
 from . import decklayout
 from .liquidclass import LCPrefilled
 import pytz
+
 
 
 class DB(object):
@@ -454,10 +456,10 @@ class LogDB(DB):
     def setline(self,lineno):
         self.curline=lineno
 
-    def lastmeasure(self,tip,lineno,height,sbl,sml,zadd,lasttime):
+    def lastmeasure(self,tip,lineno,height,sbl,sml,zadd,lasttime,rack,grid,pos):
         lasttime=self.local2utc(lasttime)
-        logging.notice("lastmeasure(%d,%d,%s,%d,%d,%d,%s)"%(tip,lineno,str(height),sbl,sml,zadd,str(lasttime)))
-        self.measurements[(lineno,tip)]=[height if height!=0 else None,sbl,sml,zadd,lasttime]
+        logging.notice("lastmeasure(%d,%d,%s,%d,%d,%d,%s,%s,%d,%d)"%(tip,lineno,str(height),sbl,sml,zadd,str(lasttime),rack,grid,pos))
+        self.measurements[(lineno,tip)]=[height if height!=0 else None,sbl,sml,zadd,lasttime,rack,grid,pos]
 
     def log_op(self, program, lineno, elapsed, lasttime, plateName, sampleName, wellName, sampid, cmd, tip, volchange,liquidClassName, lc):
         lasttime=self.local2utc(lasttime)
@@ -491,10 +493,12 @@ class LogDB(DB):
             # Add volume measurement
             measurement=self.measurements[(lineno, tip)]
             logging.notice("measurement: %s"%str(measurement))
-            plate=Plate.lookupByName(plateName)
+            loc=PlateLocation.lookupByLocation(measurement[6],measurement[7])
+            plate=Plate.lookupLocation(loc)
+            #plate=Plate.lookupByName(plateName)
             assert plate is not None
             logging.notice("plate=%s"%str(plate))
-            height,submerge,zmax,zadd,meastime=measurement
+            height,submerge,zmax,zadd,meastime,rack,grid,pos=measurement
             curzmax=2100-plate.getzmax()-390+decklayout.TIPOFFSETS[tip-1]
             if zmax!=curzmax:
                 logging.warning("ZMax for plate %s, tip %d at time of run was %.0f, currently at %.0f (using latter)"%(plate.name, tip, zmax, curzmax))
