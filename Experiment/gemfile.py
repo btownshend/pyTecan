@@ -1,19 +1,20 @@
 # Handle Tecan Gemini gem file
 # Loads data from beginning of gem file (CFG part)
+from datetime import datetime
 
 import click
-
-from Experiment.plate import Plate
-from TRPLib import trplayout
 import pprint
-from Misc.carrier import Carrier
 
+from .plate import Plate
+from .carrier import Carrier
 
 class GemFile(object):
     def __init__(self):
-        self.checksum=None
-        self.timestamp=None
-        self.username=None
+        self.checksum='00000000'
+        self.timestamp=datetime.now().strftime('%Y%m%d_%H%M%S')+' Admin'  # e.g. 20181025_205831 Admin
+        self.username='Administrator'
+        self.data999=['209','32']  # Not clear what this is, but use verbatim
+        self.resline='V;200'  # ditto
         self.carriers=[]    # List of carriers in use
         self.layout=[]      # Layout of racks; each entry has grid,carrier,racks:[rack,pos,name]
 
@@ -22,11 +23,21 @@ class GemFile(object):
         entry=[l for l in self.layout if l['grid']==grid]
         if len(entry)==0:
             # New entry
-            entry.append({'grid':grid,'carrier':carrier,'racks':[]})
+            entry={'grid':grid,'carrier':carrier,'racks':[]}
+            self.layout.append(entry)
         else:
+            entry=entry[0]
             assert(entry['carrier']==carrier)
         assert pos not in [r['pos'] for r in entry['racks']]
         entry['racks'].append({'pos':pos,'rack':rack,'name':name})
+
+        self.carriers=[]
+        for i in range(99):
+            entry=[l for l in self.layout if l['grid']==i]
+            if len(entry)==0:
+                self.carriers.append(None)
+            else:
+                self.carriers.append(entry[0]['carrier'])
 
     def print(self, verbose=False):
         print(f"Checksum: {self.checksum}, Timestamp: {self.timestamp}, User: {self.username}")
@@ -61,6 +72,7 @@ class GemFile(object):
                     if l["grid"]==grid:
                         racks=l["racks"]
                 if racks is not None:
+                    racks=sorted(racks,key=lambda r: r['pos'])
                     fd.write(f"998;{len(racks)};{';'.join([r['rack']['name'] for r in racks])};\r\n")
                     fd.write(f"998;{';'.join([r['name'] for r in racks])};\r\n")
                 else:
