@@ -14,7 +14,19 @@ class GemFile(object):
         self.checksum=None
         self.timestamp=None
         self.username=None
-        self.layout=[]
+        self.carriers=[]    # List of carriers in use
+        self.layout=[]      # Layout of racks; each entry has grid,carrier,racks:[rack,pos,name]
+
+    def addrack(self,name,grid,pos,carrier,rack):
+        '''Add to layout'''
+        entry=[l for l in self.layout if l['grid']==grid]
+        if len(entry)==0:
+            # New entry
+            entry.append({'grid':grid,'carrier':carrier,'racks':[]})
+        else:
+            assert(entry['carrier']==carrier)
+        assert pos not in [r['pos'] for r in entry['racks']]
+        entry['racks'].append({'pos':pos,'rack':rack,'name':name})
 
     def print(self, verbose=False):
         print(f"Checksum: {self.checksum}, Timestamp: {self.timestamp}, User: {self.username}")
