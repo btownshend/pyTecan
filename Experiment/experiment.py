@@ -56,9 +56,9 @@ class Experiment(object):
         db.startrun(sys.argv[0],datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'),self.checksum,self.gitlabel)
         worklist.userprompt("Generated %s (%s-%s pyTecan-%s) program ID %s"%(datetime.now().ctime(),sys.argv[0],self.checksum,self.gitlabel,str(db.program)),timeout=10)
         #worklist.userprompt("The following reagent tubes should be present: %s"%Sample.getAllLocOnPlate(decklayout.REAGENTPLATE))
-        epp=Sample.getAllLocOnPlate(decklayout.EPPENDORFS)
-        if len(epp)>0:
-            worklist.userprompt("The following eppendorf tubes should be present: %s"%epp)
+        # epp=Sample.getAllLocOnPlate(decklayout.EPPENDORFS)  # TODO: This should be TRPLib, not here
+        # if len(epp)>0:
+        #     worklist.userprompt("The following eppendorf tubes should be present: %s"%epp)
         worklist.email(dest='cdsrobot@gmail.com',subject='Run started (Generate: %s) expected runtime %.0f minutes'%(datetime.now().ctime(),clock.totalTime/60.0 if clock.totalTime is not None else 0.0 ) )
         worklist.email(dest='cdsrobot@gmail.com',subject='Tecan error',onerror=1)
         self.cleanTips=0

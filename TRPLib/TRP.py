@@ -145,6 +145,9 @@ class TRP(object):
             
     def reset(self):
         """Reset this experiment so we can generate it again after adjusting the reagent initial volumes and total time"""
+        rlist=Sample.getAllLocOnPlate(trplayout.REAGENTPLATE)  # Get list before resets
+        epp=Sample.getAllLocOnPlate(trplayout.EPPENDORFS)
+
         totalTime=clock.elapsed()
         clock.reset(totalTime)
         #print "After reset, elapsed=%d"%clock.elapsed()
@@ -153,6 +156,12 @@ class TRP(object):
         reagents.reset()
         Plate.reset()
         self.e=Experiment()
+        print(f"reagents: {rlist}")
+        if len(rlist)>0:
+            worklist.userprompt(f"The following reagent tubes should be present: {rlist}")
+        if len(epp)>0:
+            worklist.userprompt(f"The following eppendorf tubes should be present: {epp}")
+
         trplayout.initWellKnownSamples()
         Experiment.setreagenttemp(globals.dewpoint)
         Sample.printallsamples()
