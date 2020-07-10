@@ -475,6 +475,31 @@ class Sample(object):
         clock.pipetting=ptmp   # All the retries don't usually happen, so don't count in total time
         self.addhistory("LD",0,tipMask,"detect")
 
+    @classmethod
+    def createvolvars(cls):
+        for tipnum in range(4):
+            volvar = 'detected_volume_%d' % (tipnum+1)
+            worklist.variable(volvar,-2)
+
+    def overflowcheck(self,maxvol,tipMask):
+        # Check for overflow after an operation that detects liquid
+        worklist.flushQueue()
+        worklist.comment(f"Check that {self.name} doesn't have more than {maxvol} ul");
+        tipnum = 0
+        tm = tipMask
+        while tm > 0:
+            tm = tm >> 1
+            tipnum += 1
+
+        volvar = 'detected_volume_%d' % tipnum
+        doneLabel = worklist.getlabel()
+        worklist.condition(volvar, "<", maxvol, doneLabel)
+        msg = f"Overflow of {self.name} current volume ~{volvar}~ > {maxvol}"
+        worklist.email(dest='cdsrobot@gmail.com', subject=msg)
+        worklist.starttimer()
+        worklist.waittimer(600)   # Wait for 10 min for evaporation
+        worklist.comment(doneLabel)
+
     def aspirate(self,tipMask,volume,multi=False,lc=None):
         self.evapcheck('aspirate')
         if self.plate.getzmax() is None:
