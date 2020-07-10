@@ -13,7 +13,9 @@ EPPENDORFS=Plate(name="Eppendorfs",plateType=dl.EPPRACK,plateLocation=dl.EPPLOC)
 REAGENTPLATE=Plate(name="Reagents",plateType=dl.RICBLOCK, plateLocation=dl.RICLOC)
 QPCRPLATE=Plate(name="QPCR",plateType=dl.WHITEQPCR, plateLocation=dl.QPCRLOC)
 PRODUCTPLATE=Plate(name="Products",plateType=dl.EPPLOWBIND,plateLocation=dl.PRODUCTLOC)
-
+CLEANER_SHALLOW_PLATE=Plate(name="Cleaner shallow",plateType=dl.CLEANER_SHALLOW,plateLocation=dl.CLEANER_SHALLOWLOC)
+WASTE_PLATE=Plate(name="Waste",plateType=dl.WASTE,plateLocation=dl.WASTELOC)
+CLEANER_DEEP_PLATE=Plate(name="Cleaner deep",plateType=dl.CLEANER_DEEP,plateLocation=dl.CLEANER_DEEPLOC)
 
 ############ Well-known samples  #############
 WATER=None

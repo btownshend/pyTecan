@@ -463,7 +463,7 @@ class Experiment(object):
     @staticmethod
     def lihahome():
         """Move LiHa to left of deck"""
-        worklist.moveliha(decklayout.WASHLOC)
+        worklist.moveliha(decklayout.WASTELOC)
 
     def runpgm(self,plate:Plate, pgm: str,duration:float,waitForCompletion:bool=True,volume:float=10):
         if self.tcrunning:

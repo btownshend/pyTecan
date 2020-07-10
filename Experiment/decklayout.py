@@ -35,6 +35,9 @@ GRENIER384=PlateType("Grenier384",nx=24,ny=16,yspacing=4.5,pierce=False,unusable
                 angle=17.5,r1=2.070,h1=2.31,v0=26.2, 
                 gemDepth=0.1, gemArea=13.30,
                 gemShape='v-shaped',maxspeeds=eppmaxspeeds,minspeeds=eppminspeeds,glycerolmaxspeeds=eppglycerolmaxspeeds,glycerol=1)  # TODO
+CLEANER_SHALLOW=PlateType("Cleaner shallow, 8 Pos.",nx=1,ny=8,gemShape='flat',gemArea=50.3,zmax=75,r1=0)
+CLEANER_DEEP=PlateType("Cleaner deep, 8 Pos.",nx=1,ny=8,gemShape='flat',gemArea=50.3,zmax=15,r1=0)
+WASTE=PlateType("Waste",nx=1,ny=4,gemShape='flat',gemArea=50.3,zmax=52,r1=0)
 
 ############ Plate locations  #############
 # Plate locations are roughly equivalent to Gemini carriers
@@ -56,17 +59,17 @@ DILUTIONLOC=PlateLocation("DilutionLoc",4,2,vectorName="Microplate Landscape",ca
                           zoffset=62.5)
 PRODUCTLOC=PlateLocation("ProductLoc",18,2,vectorName="Microplate Product",carrierName="RIC, Dual", zoffset=6.2)
 QPCRLOC=PlateLocation("QPCRLoc",4,1,carrierName="MP, 3 Pos., landscape, RoMa",zoffset=62.5)  # defined in worklist.py
-WASHLOC=PlateLocation("Wash",1,2,lihaAccess=True,carrierName="Wash station")  # defined in worklist.py
 EPPLOC=PlateLocation("EppLoc",13,1,carrierName="Eppendorf Tube, 16 Pos.",zoffset=0.0)
 TCPOS=PlateLocation("TC",25,1,vectorName="TROBOT",lihaAccess=False,carrierName="PTC200-Off Deck")
 HOTELPOS = PlateLocation("Hotel",25, 1, lihaAccess=False,carrierName="Hotel")
-WASTE = PlateLocation("Waste",20, 3, lihaAccess=True,carrierName="Wash station")
+CLEANER_DEEPLOC = PlateLocation("Cleaner deep",1, 3, lihaAccess=True,carrierName="Wash station")
+WASTELOC = PlateLocation("Waste",1, 2, lihaAccess=True,carrierName="Wash station")
+CLEANER_SHALLOWLOC = PlateLocation("Cleaner shallow",1, 1, lihaAccess=True,carrierName="Wash station")
 HOTEL = [ PlateLocation(f"Hotel{i+1}",25,1, lihaAccess=False,vectorName=f"Hotel{i+1}",carrierName="Hotel") for i in range(6) ]
 
 ############ Physical Plates #############
 #TIPOFFSETS=[390, 389, 394, 387]
 TIPOFFSETS=[390, 390, 390, 390]
-
 
 ############ Header file containing matching deck layout  #############
 # TODO: Use carrier.py to roll a new header on the fly

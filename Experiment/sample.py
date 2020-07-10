@@ -7,7 +7,7 @@ from . import clock
 from . import logging
 from .platetype import interpolate
 from .db import db
-from .decklayout import MAGPLATELOC
+from .decklayout import MAGPLATELOC, WASTELOC
 
 MAXVOLUME=200
 MINLIQUIDDETECTVOLUME=15
@@ -444,7 +444,7 @@ class Sample(object):
         ptmp=clock.pipetting
         warnLabel=worklist.getlabel()
         worklist.condition(volvar,">",gemvolcrit,warnLabel)
-        worklist.moveliha(worklist.WASHLOC)	# Get LiHa out of the way
+        worklist.moveliha(WASTELOC)	# Get LiHa out of the way
         if self.refillable:
             msg="Failed volume check of %s(refillable) - should have at least %.0f ul (gemvol=~%s~, crit=%.0f)"%(self.name,volcrit,volvar,gemvolcrit)
         else:

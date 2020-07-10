@@ -8,7 +8,7 @@ from zlib import crc32
 from . import clock
 from . import logging
 from .db import db
-from .decklayout import QPCRLOC, WASHLOC
+from .decklayout import QPCRLOC, WASTELOC, CLEANER_SHALLOWLOC, CLEANER_DEEPLOC
 from .liquidclass import LCWaterInLiquid
 from .plate import Plate
 from .sample import MIXLOSS
@@ -500,11 +500,10 @@ def wash( tipMask,wasteVol=1,cleanerVol=2,deepClean=False):
     """Wash tips"""
     flushQueue()
     #comment("*Wash with tips=%d, wasteVol=%d, cleanerVol=%d, deep=%s"%(tipMask,wasteVol,cleanerVol,"Y" if deepClean else "N"))
-    wasteLoc=(1,1)
     if deepClean:
-        cleanerLoc=(1,2)
+        cleanerLoc=CLEANER_DEEPLOC
     else:
-        cleanerLoc=(1,0)
+        cleanerLoc=CLEANER_SHALLOWLOC
     wasteDelay=500 # in msec
     cleanerDelay=500 # in msec
     airgap=10  # ul
@@ -513,7 +512,7 @@ def wash( tipMask,wasteVol=1,cleanerVol=2,deepClean=False):
     fastWash=1
     lowVolume=0
     atFreq=1000  # Hz, For Active tip
-    wlist.append('Wash(%d,%d,%d,%d,%d,%.1f,%d,%.1f,%d,%.1f,%d,%d,%d,%d,%d)'%(tipMask,wasteLoc[0],wasteLoc[1],cleanerLoc[0],cleanerLoc[1],wasteVol,wasteDelay,cleanerVol,cleanerDelay,airgap, airgapSpeed, retractSpeed, fastWash, lowVolume, atFreq))
+    wlist.append('Wash(%d,%d,%d,%d,%d,%.1f,%d,%.1f,%d,%.1f,%d,%d,%d,%d,%d)'%(tipMask,WASTELOC.grid,WASTELOC.pos-1,cleanerLoc.grid,cleanerLoc.pos-1,wasteVol,wasteDelay,cleanerVol,cleanerDelay,airgap, airgapSpeed, retractSpeed, fastWash, lowVolume, atFreq))
     #print "Wash %d,%.1fml,%.1fml,deep="%(tipMask,wasteVol,cleanerVol),deepClean
     clock.pipetting+=15.87
     tip=0
@@ -705,7 +704,7 @@ def testvar(var,op,value,msg=None):
     condition(var,op,value,label)
     if msg is None:
         msg='Failed %s (=~%s~)%s%s'%(var,var,op,value)
-    moveliha(WASHLOC)	# Get LiHa out of the way
+    moveliha(WASTELOC)	# Get LiHa out of the way
     email(dest='cdsrobot@gmail.com',subject=msg)
     userprompt(msg)
     comment(label)
