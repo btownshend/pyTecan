@@ -113,6 +113,8 @@ class Experiment(object):
         tracking=True
         ricplates=[ Plate.lookupLocation(loc) for loc in [decklayout.RICLOC, decklayout.PRODUCTLOC] ]
         # Verify backward compatibility
+        #assert decklayout.REAGENTPLATE in ricplates
+        #assert decklayout.PRODUCTPLATE in ricplates
         assert len(ricplates) == 2
         setpoint=22.7
         if tracking:
@@ -674,6 +676,7 @@ class Experiment(object):
                 break
         assert plate is not None
         # To verify that using 'plate' instead of decklayout.SAMPLEPLATE is the same
+        #assert plate==decklayout.SAMPLEPLATE
 
         self.moveplate(plate, decklayout.SAMPLELOC)  # Move HOME TODO: This should be passed in instead of hard-coding SAMPLELOC
 
