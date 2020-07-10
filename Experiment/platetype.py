@@ -41,14 +41,18 @@ class PlateType(object):
         self.pierce=pierce
         self.maxVolume=maxVolume
         self.warned=False
+        if (angle is None and v0 is not None) or (angle is not None and v0 is None) or r1 is None or h1 is None:
+            print(f"Invalid volume settings for {self.name}: angle={angle}, v0={v0}, r1={r1}, h1={h1}")
         if angle is None:
             self.angle=None
         else:
-            self.angle=angle*math.pi/180
+            self.angle=angle*math.pi/180  # Convert to radians
         self.r1=r1
         self.h1=h1
         self.v0=v0
-        self.gemDepth=gemDepth		  # Values programmed into Gemini so we can foretell what volumes Gemini will come up with for a given height
+        if ((gemShape == 'v-shaped' or gemShape=='round') and (gemDepth is None or gemDepth<=0)) or (gemShape=='flat' and (gemDepth!=0 and gemDepth is not None) ):
+            print(f"Invalid gem volume settings for {self.name}: shape={gemShape}, depth={gemDepth}")
+        self.gemDepth=gemDepth if gemDepth is not None else 0.0		  # Values programmed into Gemini so we can foretell what volumes Gemini will come up with for a given height
         self.gemArea=gemArea
         self.gemShape=gemShape
         self.maxspeeds=maxspeeds
@@ -63,11 +67,14 @@ class PlateType(object):
             print(f"Known racks: {','.join([c['name'] for c in Carrier.cfg().racks])}")
         else:
             if self.gemArea != self.rack['area']:
-                print(f"rack {self.rack['name']} area is {self.rack['area']}, but plateType {self.name} gemArea is {self.gemArea}")
+                print(f"rack '{self.rack['name']}' area is {self.rack['area']}, but plateType '{self.name}' gemArea is {self.gemArea}")
                 dummyStatement=0
-            if self.gemDepth != self.rack['depth']:
-                print(f"rack {self.rack['name']} depth is {self.rack['depth']}, but plateType {self.name} gemDepth is {self.gemDepth}")
+            if self.gemDepth != self.rack['depth'] and (self.gemDepth is not None or self.rack['depth']!=0):
+                print(f"rack '{self.rack['name']}' depth is {self.rack['depth']}, but plateType '{self.name}' gemDepth is {self.gemDepth}")
                 dummyStatement = 0
+            if ((self.gemShape=='flat') != (self.rack['depth']==0) ) or ((self.gemShape=='v-shaped') != (self.rack['depth']>0)):
+                # carries encode shape into depth:  0=flat, negative=round, positive=v-shaped
+                print(f"rack '{self.rack['name']}' depth is {self.rack['depth']}, but plateType '{self.name}' gemShape is {self.gemShape}")
 
 
         PlateType.__allplatetypes.append(self)
