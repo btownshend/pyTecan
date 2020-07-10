@@ -1,5 +1,3 @@
-from __future__ import print_function
-
 import debughook
 
 from ..Experiment.sample import Sample, logging

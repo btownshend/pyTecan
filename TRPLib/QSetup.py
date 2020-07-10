@@ -1,5 +1,3 @@
-from __future__ import print_function
-
 # Setup QPCR experiments
 import math
 

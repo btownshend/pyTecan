@@ -1,6 +1,4 @@
 # Reagent - a set of samples that are allocated as they are needed
-from __future__ import print_function
-
 import sys
 import operator
 from .sample import Sample

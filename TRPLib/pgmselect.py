@@ -1,6 +1,4 @@
 # Generic selection progam
-from __future__ import print_function
-
 import math
 
 from ..Experiment import worklist, reagents, logging, clock, thermocycler

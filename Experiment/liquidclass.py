@@ -1,6 +1,4 @@
 """A liquid class"""
-from __future__ import print_function
-
 import sys
 
 SURFACEREMOVE=0.4	# Extra removed from wells due to tip wetting (assuming liquid detecting, aspirating 3.5mm below surface)

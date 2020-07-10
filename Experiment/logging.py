@@ -1,5 +1,3 @@
-from __future__ import print_function
-
 import inspect
 from . import globals
 import sys

@@ -1,5 +1,4 @@
 """Queue of jobs to be executed during idle times"""
-from __future__ import print_function
 from typing import List
 
 from .experiment import Experiment

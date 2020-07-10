@@ -1,5 +1,3 @@
-from __future__ import print_function
-
 from ..Experiment import reagents, clock, logging
 from ..Experiment.concentration import Concentration
 from .QSetup import QSetup

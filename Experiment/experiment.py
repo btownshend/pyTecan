@@ -1,5 +1,3 @@
-from __future__ import print_function
-
 from datetime import datetime
 from hashlib import md5
 from pprint import pprint

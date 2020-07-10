@@ -1,6 +1,4 @@
 """Module for generating a worklist from a set of commands"""
-from __future__ import print_function
-
 import shutil
 import sys
 
