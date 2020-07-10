@@ -95,8 +95,8 @@ class PlateType(object):
     def getliquidheight(self,volume):
         """Get liquid height in mm above ZMax"""
         if self.angle is None:
-            if self.gemShape=='flat':
-                return volume*1.0/self.gemArea + self.h1   # h1 is the distance of the well bottom above the zmax point
+            if self.r1 is not None and self.h1 is not None:
+                return volume*1.0/(math.pi*self.r1*self.r1) + self.h1   # h1 is the distance of the well bottom above the zmax point
             if not self.warned:
                 logging.warning("No liquid height equation for plate %s"%self.name)
                 self.warned=True
@@ -116,8 +116,8 @@ class PlateType(object):
     def getliquidarea(self,volume:float):
         """Get surface area of liquid in mm^2 when filled to given volume"""
         if self.angle is None:
-            if self.gemShape=='flat':
-                return self.gemArea
+            if self.r1 is not None:
+                return math.pi*self.r1*self.r1
             if not self.warned:
                 logging.warning("No liquid height equation for plate %s"%self.name)
                 self.warned=True
@@ -165,8 +165,8 @@ class PlateType(object):
     def getliquidvolume(self,height:float):
         """Compute liquid volume given height above zmax in mm"""
         if self.angle is None:
-            if self.gemShape=='flat':
-                return self.gemArea*(height-self.h1)   # h1 is the distance of the well bottom above the zmax point
+            if self.r1 is not None and self.h1 is not None:
+                return (math.pi*self.r1*self.r1)*(height-self.h1)   # h1 is the distance of the well bottom above the zmax point
             return None
 
         h0=self.h1-self.r1/math.tan(self.angle/2)
