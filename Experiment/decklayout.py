@@ -56,12 +56,12 @@ DILUTIONLOC=PlateLocation("DilutionLoc",4,2,vectorName="Microplate Landscape",ca
                           zoffset=62.5)
 PRODUCTLOC=PlateLocation("ProductLoc",18,2,vectorName="Microplate Product",carrierName="RIC, Microplate", zoffset=6.2)
 QPCRLOC=PlateLocation("QPCRLoc",4,1,carrierName="MP, 3 Pos., landscape, RoMa",zoffset=62.5)  # defined in worklist.py
-WASHLOC=PlateLocation("Wash",1,2,lihaAccess=False,carrierName="Wash Station")  # defined in worklist.py
+WASHLOC=PlateLocation("Wash",1,2,lihaAccess=True,carrierName="Wash station")  # defined in worklist.py
 EPPLOC=PlateLocation("EppLoc",13,1,carrierName="Eppendorf Tube, 16 Pos.",zoffset=0.0)
-TCPOS=PlateLocation("TC",25,1,vectorName="TROBOT",lihaAccess=False)
-HOTELPOS = PlateLocation("Hotel",25, 0, lihaAccess=False)
-WASTE = PlateLocation("Waste",20, 3, lihaAccess=False)
-HOTEL = [ PlateLocation(f"Hotel{i+1}",25,0, lihaAccess=False,vectorName=f"Hotel{i+1}") for i in range(6) ]
+TCPOS=PlateLocation("TC",25,1,vectorName="TROBOT",lihaAccess=False,carrierName="PTC200-Off Deck")
+HOTELPOS = PlateLocation("Hotel",25, 0, lihaAccess=False,carrierName="Hotel")
+WASTE = PlateLocation("Waste",20, 3, lihaAccess=True,carrierName="Wash station")
+HOTEL = [ PlateLocation(f"Hotel{i+1}",25,0, lihaAccess=False,vectorName=f"Hotel{i+1}",carrierName="Hotel") for i in range(6) ]
 
 ############ Physical Plates #############
 #TIPOFFSETS=[390, 389, 394, 387]
