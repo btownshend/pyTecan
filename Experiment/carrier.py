@@ -1,7 +1,7 @@
 # Handle Tecan Gemini Carriers and Racks
 # Loads data from Carriers.cfg
 import pprint
-
+import os
 import click
 
 class Carrier(object):
@@ -20,8 +20,9 @@ class Carrier(object):
     def cfg(cls):
         '''Singleton instance of carriers '''
         if Carrier.instance is None:
+            modpath=os.path.dirname(__file__)
             Carrier.instance = Carrier()
-            Carrier.instance.loadCFG("../../logs/Carrier.cfg")
+            Carrier.instance.loadCFG(modpath+"/Carrier.cfg")
         return Carrier.instance
 
     def findrack(self,name):
