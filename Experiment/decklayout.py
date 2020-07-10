@@ -16,7 +16,7 @@ eppminspeeds={0:1900,20:1900,32:1800,64:1700,96:1400,150:1100}  # 1100@150ul unt
 # Unusable volume is based on volume remaining at ZMax-1.5 (which is what Water-Bottom LC aspirates at)
 # ZMax is from Carrier.cfg for the rack (zcoords.max)
 # ZMax shown in Gemini configuration is 2100-(PlateType.zmax+PlateLocation.zoffset+39)*10
-TROUGH = PlateType("Trough 100ml",nx=1,ny=4,pierce=False,unusableVolume=100,maxVolume=100000,gemDepth=0,gemArea=1247,gemShape='flat',zmax=6.8)
+TROUGH = PlateType("Trough 100ml",nx=1,ny=4,pierce=False,unusableVolume=100,maxVolume=100000,r1=19.923,h1=0,gemDepth=0,gemArea=1247,gemShape='flat',zmax=6.8)
 EPPLOWBIND=PlateType("EppLoBind on carrier",nx=12,ny=8,pierce=False,unusableVolume=15,maxVolume=200,zmax=5.4,
                 angle=17.5,r1=2.724,h1=8.49,v0=13.48,
                 gemDepth=1.92, gemArea=13.51,
