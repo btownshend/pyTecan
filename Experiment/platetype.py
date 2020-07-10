@@ -75,6 +75,12 @@ class PlateType(object):
             if ((self.gemShape=='flat') != (self.rack['depth']==0) ) or ((self.gemShape=='v-shaped') != (self.rack['depth']>0)):
                 # carries encode shape into depth:  0=flat, negative=round, positive=v-shaped
                 print(f"rack '{self.rack['name']}' depth is {self.rack['depth']}, but plateType '{self.name}' gemShape is {self.gemShape}")
+            if self.pierce != self.rack['piercing'][0]!=0:
+                print(f"rack '{self.rack['name']}' pierce is {self.rack['piercing']}, but plateType '{self.name}' pierce is {self.pierce}")
+            if self.nx != self.rack['wells'][0] or self.ny != self.rack['wells'][1]+self.rack['tipsperwell']-1:
+                print(f"rack '{self.rack['name']}' wells is {self.rack['wells']}, tipsperwell={self.rack['tipsperwell']} but plateType '{self.name}' nx,ny is {self.nx},{self.ny}")
+            if self.zmax != self.rack['zcoords']['max']:
+                print(f"rack '{self.rack['name']}' zcoords.max is {self.rack['zcoords']['max']}, but plateType '{self.name}' zmnax is {self.zmax}")
 
 
         PlateType.__allplatetypes.append(self)
