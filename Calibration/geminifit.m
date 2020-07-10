@@ -28,6 +28,11 @@ if nargin<4
     % Refitting using above fit does work though, gives similar solution
     %fit=fminsearch(@(x) sum((gemcalcheight(vol,struct('depth',x(1),'area',x(2),'hoffset',0))-heights).^2),fit(1:2),options);
     gmdl=struct('depth',fit(1),'area',fit(2),'hoffset',0);
+    if gmdl.depth<0
+      fprintf('Best fit has negative depth (%f), which is illegal; refitting with depth=0\n',gmdl.depth);
+      fit=fminsearch(@(x) sum((gemcalcvol(heights,struct('depth',0,'area',x(1),'hoffset',0))-vol).^2),gmdl.area,options);
+      gmdl=struct('depth',0,'area',fit(1),'hoffset',0);
+    end
   else
     area=51.84;
     fit=fminsearch(@(x) max(abs(gemcalcheight(vol,struct('depth',x(1),'area',area,'hoffset',0))-heights)),x0(1),options);
