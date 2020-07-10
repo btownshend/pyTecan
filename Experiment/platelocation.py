@@ -1,3 +1,6 @@
+from .carrier import Carrier
+
+
 class PlateLocation(object):
     """An object representing a location on the deck of a container"""
     __allplatelocations = []
@@ -16,6 +19,17 @@ class PlateLocation(object):
             self.carrierName=self.name
         else:
             self.carrierName=carrierName
+        self.carrier = Carrier.cfg().findcarrier(self.carrierName)
+        if self.carrier is None:
+            print(f"PlateLocation '{name}' references unknown carrier: '{self.carrierName}'")
+            print(f"Known carriers: {','.join([c['name'] for c in Carrier.cfg().carriers])}")
+        else:
+            if self.zoffset != self.carrier['refoffset'][2]:
+                print(f"carrier '{self.carrier['name']}' refoffset[z] is {self.carrier['refoffset'][2]}, but plateLocation '{self.name}' zoffset is {self.zoffset}")
+                dummyStatement=0
+            if self.lihaAccess == self.carrier['romaonly']:
+                print(f"carrier '{self.carrier['name']}' romaonly is {self.carrier['romaonly']}, but plateLocation '{self.name}' lihaAccess is {self.lihaAccess}")
+                dummyStatement = 0
         PlateLocation.__allplatelocations.append(self)
 
     @classmethod

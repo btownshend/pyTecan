@@ -4,10 +4,9 @@ import pprint
 
 import click
 
-from Experiment.plate import Plate
-from Experiment import decklayout
-
 class Carrier(object):
+    instance = None
+
     def __init__(self):
         self.checksum=None
         self.timestamp=None
@@ -16,6 +15,14 @@ class Carrier(object):
         self.racks=[]
         self.vectors=[]
         self.data999=None
+
+    @classmethod
+    def cfg(cls):
+        '''Singleton instance of carriers '''
+        if Carrier.instance is None:
+            Carrier.instance = Carrier()
+            Carrier.instance.loadCFG("../../logs/Carrier.cfg")
+        return Carrier.instance
 
     def findrack(self,name):
         """Locate a rack by name"""

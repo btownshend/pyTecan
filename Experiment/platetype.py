@@ -3,6 +3,8 @@ from . import globals
 from . import logging
 from typing import Dict
 
+from .carrier import Carrier
+
 InterpDict = Dict[float, float]
 
 def interpolate(dictionary: InterpDict, x0: float):
@@ -55,6 +57,19 @@ class PlateType(object):
         self.minspeeds=minspeeds
         self.zmax=zmax  # Position of bottom of well relative to bottom of plate in mm
         # zmax in robot is in tenths, adds the carrier offset, and is measured from 2100 above deck
+        self.rack = Carrier.cfg().findrack(self.name)
+        if self.rack is None:
+            print(f"PlateType '{name}' references unknown rack: '{self.name}'")
+            print(f"Known racks: {','.join([c['name'] for c in Carrier.cfg().racks])}")
+        else:
+            if self.gemArea != self.rack['area']:
+                print(f"rack {self.rack['name']} area is {self.rack['area']}, but plateType {self.name} gemArea is {self.gemArea}")
+                dummyStatement=0
+            if self.gemDepth != self.rack['depth']:
+                print(f"rack {self.rack['name']} depth is {self.rack['depth']}, but plateType {self.name} gemDepth is {self.gemDepth}")
+                dummyStatement = 0
+
+
         PlateType.__allplatetypes.append(self)
 
     @classmethod
