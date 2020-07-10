@@ -9,6 +9,7 @@ from . import clock
 from . import logging
 from .db import db
 from .decklayout import QPCRLOC, WASTELOC, CLEANER_SHALLOWLOC, CLEANER_DEEPLOC
+from .gemfile import GemFile
 from .liquidclass import LCWaterInLiquid
 from .plate import Plate
 from .sample import MIXLOSS
@@ -729,10 +730,10 @@ def saveworklist(filename):
         print("B;%s"%(str(wlist[i]).replace('\n','\f\a')), file=fd)
     fd.close()
 
-def savegem(headerfile,filename):
+def savegem(header: GemFile,filename):
     """Save worklist in a file in format that Gemini can load as an experiment"""
     flushQueue()
-    shutil.copy(headerfile,filename)
+    header.save(filename)   # Write out header
     fd=open(filename,'ab')
     for i in range(len(wlist)):
         # Worklist contains some binary data masquerading as ascii (in well position string), so need to hack the conversion to bytes

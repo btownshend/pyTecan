@@ -3,6 +3,7 @@ from hashlib import md5
 from pprint import pprint
 from typing import Dict, Tuple, List
 
+from .gemfile import GemFile
 from . import globals
 from . import worklist
 from . import thermocycler
@@ -137,11 +138,15 @@ class Experiment(object):
     def saveworklist(filename: str):
         worklist.saveworklist(filename)
 
-    def savegem(self,filename: str, header=decklayout.headerfile):
+    def savegem(self,filename: str):
         worklist.flushQueue()
         db.endrun()   # May have already been ended before waiting to turn off reagent chiller; idempotent
         worklist.comment("Completed (%s-%s)"%(sys.argv[0],self.checksum))
         worklist.flushQueue()
+        header=GemFile()
+        for plate in Plate.allPlates():
+            header.addrack(plate.name,plate.location.grid,plate.location.pos,plate.location.carrier,plate.plateType.rack)
+        #header.print()
         worklist.savegem(header,filename)
 
     def savesummary(self,filename:str ,settings: Dict =None):
