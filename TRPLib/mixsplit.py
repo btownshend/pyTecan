@@ -1,5 +1,3 @@
-import debughook
-
 from ..Experiment.sample import Sample, logging
 from . import trplayout
 

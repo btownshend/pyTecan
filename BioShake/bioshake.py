@@ -4,7 +4,6 @@ import string
 import sys
 import time
 import logging
-import debughook
 
 class BioShake:
     debug=True
