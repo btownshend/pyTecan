@@ -1,10 +1,10 @@
 from __future__ import print_function
 
-from Experiment import reagents, clock, logging
-from Experiment.concentration import Concentration
-from TRPLib.QSetup import QSetup
-from TRPLib.TRP import TRP
-from TRPLib import trplayout
+from ..Experiment import reagents, clock, logging
+from ..Experiment.concentration import Concentration
+from .QSetup import QSetup
+from .TRP import TRP
+from . import trplayout
 
 reagents.add("BT5310", well="D1", conc=Concentration(20, 20, "pM"))
 reagents.add("MKapa", well='A1', conc=Concentration(2.5, 1, 'x'), extraVol=30,

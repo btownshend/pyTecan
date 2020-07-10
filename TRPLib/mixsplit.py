@@ -2,8 +2,8 @@ from __future__ import print_function
 
 import debughook
 
-from Experiment.sample import Sample, logging
-from TRPLib import trplayout
+from ..Experiment.sample import Sample, logging
+from . import trplayout
 
 # Test splitting of mixdowns
 def mixsplit(vols, samps=None, avail=None, minvol=4, minmix=0.0, maxmix=100.0, nextmixnum=1, dilute=1, debug=False, plate=None, prefix="Mix"):

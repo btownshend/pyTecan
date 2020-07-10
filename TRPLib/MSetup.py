@@ -3,12 +3,12 @@ from __future__ import print_function
 
 import math
 
-from Experiment import reagents, clock, logging
-from Experiment.JobQueue import JobQueue
-from Experiment.experiment import Experiment
-from Experiment.sample import Sample
-from TRPLib.TRP import diluteName
-from TRPLib import trplayout
+from ..Experiment import reagents, clock, logging
+from ..Experiment.JobQueue import JobQueue
+from ..Experiment.experiment import Experiment
+from ..Experiment.sample import Sample
+from .TRP import diluteName
+from . import trplayout
 
 class MSetup(object):
     TGTINVOL = 4

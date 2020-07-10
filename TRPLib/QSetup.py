@@ -3,11 +3,11 @@ from __future__ import print_function
 # Setup QPCR experiments
 import math
 
-from Experiment import worklist, reagents, clock, logging
-from Experiment.JobQueue import JobQueue
-from Experiment.sample import Sample
-from TRPLib.TRP import diluteName
-from TRPLib import trplayout
+from ..Experiment import worklist, reagents, clock, logging
+from ..Experiment.JobQueue import JobQueue
+from ..Experiment.sample import Sample
+from .TRP import diluteName
+from . import trplayout
 
 class QSetup(object):
     TGTINVOL=4

@@ -1,7 +1,7 @@
-from Experiment import decklayout as dl
-from Experiment import liquidclass
-from Experiment.plate import Plate
-from Experiment.sample import Sample
+from ..Experiment import decklayout as dl
+from ..Experiment import liquidclass
+from ..Experiment.plate import Plate
+from ..Experiment.sample import Sample
 
 WATERTROUGH=Plate(name="Water",plateType=dl.TROUGH, plateLocation=dl.TROUGH2)
 BLEACHTROUGH=Plate(name="Bleach",plateType=dl.TROUGH, plateLocation=dl.TROUGH3)

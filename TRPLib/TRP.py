@@ -4,17 +4,17 @@ import argparse
 import os
 import sys
 
-from Experiment import globals
-from Experiment import worklist, reagents, decklayout, clock, logging, thermocycler
-from Experiment.concentration import Concentration
-from Experiment.experiment import Experiment
-from Experiment.plate import Plate
-from Experiment.sample import Sample
-from Experiment.db import db
-from Experiment.config import Config
-from Experiment.liquidclass import SURFACEREMOVE
+from ..Experiment import globals
+from ..Experiment import worklist, reagents, decklayout, clock, logging, thermocycler
+from ..Experiment.concentration import Concentration
+from ..Experiment.experiment import Experiment
+from ..Experiment.plate import Plate
+from ..Experiment.sample import Sample
+from ..Experiment.db import db
+from ..Experiment.config import Config
+from ..Experiment.liquidclass import SURFACEREMOVE
 
-from TRPLib import trplayout
+from . import trplayout
 
 maxVolumePerWell=150
 

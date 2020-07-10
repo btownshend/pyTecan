@@ -4,13 +4,13 @@ from __future__ import print_function
 import logging
 import numpy as np
 
-from Experiment import reagents, worklist, clock
-from Experiment.concentration import Concentration
-from Experiment.sample import Sample
-from TRPLib.QSetup import QSetup
-from TRPLib.TRP import TRP
-from TRPLib.mixsplit import mixsplit
-from TRPLib import trplayout
+from ..Experiment import reagents, worklist, clock
+from ..Experiment.concentration import Concentration
+from ..Experiment.sample import Sample
+from .QSetup import QSetup
+from .TRP import TRP
+from .mixsplit import mixsplit
+from . import trplayout
 
 reagents.add("MPCR1", well="A1", conc=30.0 / 18.0,
              ingredients={'Kapa': 3.33 / 2, 'USER': 1.67 / 2, 'glycerol': 2.5, 'Water': 95})

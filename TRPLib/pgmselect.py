@@ -3,14 +3,14 @@ from __future__ import print_function
 
 import math
 
-from Experiment import worklist, reagents, logging, clock, thermocycler
-from Experiment.concentration import Concentration
-from Experiment.sample import Sample
-from TRPLib.QSetup import QSetup
-from TRPLib.TRP import TRP
+from ..Experiment import worklist, reagents, logging, clock, thermocycler
+from ..Experiment.concentration import Concentration
+from ..Experiment.sample import Sample
+from .QSetup import QSetup
+from .TRP import TRP
 from .pcrgain import pcrgain
-from Experiment.db import db
-from TRPLib import trplayout
+from ..Experiment.db import db
+from . import trplayout
 
 reagents.add("BT5310",plate=trplayout.REAGENTPLATE,well="B5",conc=Concentration(20,20,"pM"))
 
