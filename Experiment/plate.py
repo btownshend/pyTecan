@@ -10,6 +10,15 @@ class Plate(object):
                  backupPlate: 'Plate' = None):
         assert(isinstance(plateLocation,PlateLocation))
         assert(isinstance(plateType, PlateType))
+        # Check if this is an allowed location
+        carrier=plateLocation.carrier
+        rack=plateType.rack
+        permitted=False
+        for allowed in rack['allowed']:
+            if allowed['carrier']==carrier['id'] and plateLocation.pos in allowed['positions']:
+                permitted=True
+        if not permitted:
+            print(f"Rack {plateType.rack['name']} not permitted on carrier {plateLocation.carrier['name']} at position {plateLocation.pos}")
         self.name=name
         self.plateType=plateType
         self.location=plateLocation
