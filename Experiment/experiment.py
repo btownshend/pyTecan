@@ -174,7 +174,7 @@ class Experiment(object):
             pprint (settings,stream=fd)
         fd.close()
 
-    def sanitize(self,nmix:int=1,deepvol:float=10,force:bool=False):
+    def sanitize(self,nmix:int=1,deepvol:float=10,force:bool=False,shallowvol=2):
         """Deep wash including RNase-Away treatment"""
         fixedTips=(~self.DITIMASK)&15&~brokenTips
         worklist.flushQueue()
@@ -184,7 +184,7 @@ class Experiment(object):
             return
         worklist.comment("Sanitize (cleanTips=%d)"%self.cleanTips)
         if not self.overrideWash:
-            worklist.wash(fixedTips,1,2)
+            worklist.wash(fixedTips,1,shallowvol)
         fixedWells=[]
         if not self.overrideSanitize and not self.overrideWash:
             bleach = Sample.lookup("Bleach")
