@@ -1,1 +1,1 @@
-rsync -vt *.py  "Admin@171.64.80.58:Experiment"
+rsync -vt *.py  Carrier.cfg "Admin@171.64.80.58:Experiment"
