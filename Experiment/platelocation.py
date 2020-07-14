@@ -26,10 +26,8 @@ class PlateLocation(object):
         else:
             if self.zoffset != self.carrier['refoffset'][2]:
                 print(f"carrier '{self.carrier['name']}' refoffset[z] is {self.carrier['refoffset'][2]}, but plateLocation '{self.name}' zoffset is {self.zoffset}")
-                dummyStatement=0
             if self.lihaAccess == self.carrier['romaonly']:
                 print(f"carrier '{self.carrier['name']}' romaonly is {self.carrier['romaonly']}, but plateLocation '{self.name}' lihaAccess is {self.lihaAccess}")
-                dummyStatement = 0
         PlateLocation.__allplatelocations.append(self)
 
     @classmethod

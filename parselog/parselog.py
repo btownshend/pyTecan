@@ -525,14 +525,14 @@ def parselog(filename: Optional[str], outfile:str=None, follow=False):
                         tipcmd=""
 
               if cmd.find("setShakeTargetSpeed")!=-1:
-                    pos=cmd.find("setShakeTargetSpeed")
-                    speed=int(cmd[pos+19:])
+                    fpos=cmd.find("setShakeTargetSpeed")
+                    speed=int(cmd[fpos+19:])
                     print("SPEED %d"%speed,file=outfd)
                     dl.logspeed(shakePlate,speed)
 
               if cmd.startswith("moveplate") and cmd.find("Shaker")!=-1:
-                    pos=cmd.find("Shaker")
-                    shakePlate=cmd[10:pos-1]
+                    fpos=cmd.find("Shaker")
+                    shakePlate=cmd[10:fpos-1]
                     print("SHAKEPLATE %s"%shakePlate,file=outfd)
 
               if cmd.startswith("Starting program"):

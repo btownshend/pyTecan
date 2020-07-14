@@ -18,7 +18,7 @@ class Carrier(object):
 
     @classmethod
     def cfg(cls):
-        '''Singleton instance of carriers '''
+        """Singleton instance of carriers """
         if Carrier.instance is None:
             modpath=os.path.dirname(__file__)
             Carrier.instance = Carrier()
@@ -41,12 +41,12 @@ class Carrier(object):
         print(f"Carrier with name {name} not found.")
         return None
 
-    def getcarrier(self,id):
+    def getcarrier(self, carrierid):
         """Locate a carrier by id"""
         for c in self.carriers:
-            if c["id"]==id:
+            if c["id"]==carrierid:
                 return c
-        print(f"Carrier with ID {id} not found.")
+        print(f"Carrier with ID {carrierid} not found.")
         return None
 
     def print(self):

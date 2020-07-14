@@ -1,5 +1,4 @@
 """Module for generating a worklist from a set of commands"""
-import shutil
 import sys
 
 import math

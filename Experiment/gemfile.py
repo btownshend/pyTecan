@@ -19,7 +19,7 @@ class GemFile(object):
         self.layout=[]      # Layout of racks; each entry has grid,carrier,racks:[rack,pos,name]
 
     def addrack(self,name,grid,pos,carrier,rack):
-        '''Add to layout'''
+        """Add to layout"""
         entry=[l for l in self.layout if l['grid']==grid]
         if len(entry)==0:
             # New entry
@@ -175,7 +175,7 @@ def main(filename,cfilename,compare,dump,verbose,output):
         gem.print(verbose)
     if compare:
         gem.deckcompare(carrier)
-    if output != None:
+    if output is not None:
         gem.save(output)
 
 if __name__ == '__main__':

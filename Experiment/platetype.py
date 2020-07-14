@@ -68,10 +68,8 @@ class PlateType(object):
         else:
             if self.gemArea != self.rack['area']:
                 print(f"rack '{self.rack['name']}' area is {self.rack['area']}, but plateType '{self.name}' gemArea is {self.gemArea}")
-                dummyStatement=0
             if self.gemDepth != self.rack['depth'] and (self.gemDepth is not None or self.rack['depth']!=0):
                 print(f"rack '{self.rack['name']}' depth is {self.rack['depth']}, but plateType '{self.name}' gemDepth is {self.gemDepth}")
-                dummyStatement = 0
             if ((self.gemShape=='flat') != (self.rack['depth']==0) ) or ((self.gemShape=='v-shaped') != (self.rack['depth']>0)):
                 # carries encode shape into depth:  0=flat, negative=round, positive=v-shaped
                 print(f"rack '{self.rack['name']}' depth is {self.rack['depth']}, but plateType '{self.name}' gemShape is {self.gemShape}")
