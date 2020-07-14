@@ -482,20 +482,25 @@ class Sample(object):
     def overflowcheck(self,maxvol,tipMask):
         # Check for overflow after an operation that detects liquid
         worklist.flushQueue()
-        worklist.comment(f"Check that {self.name} doesn't have more than {maxvol} ul");
+        worklist.comment(f"Check that {self.name} doesn't have more than {maxvol} ul")
         tipnum = 0
         tm = tipMask
         while tm > 0:
             tm = tm >> 1
             tipnum += 1
 
+        maxheight=self.plate.getliquidheight(maxvol)		# height of maxvol
+        gemmaxvol=self.plate.getgemliquidvolume(maxheight)		# How much will Gemini think we have
+
         volvar = 'detected_volume_%d' % tipnum
         doneLabel = worklist.getlabel()
-        worklist.condition(volvar, "<", maxvol, doneLabel)
-        msg = f"Overflow of {self.name} current volume ~{volvar}~ > {maxvol}"
+        worklist.condition(volvar, "<", gemmaxvol, doneLabel)
+        msg = f"Overflow of {self.name} GEM current volume ~{volvar}~ > {int(gemmaxvol)} (actual vol of {maxvol}) "
         worklist.email(dest='cdsrobot@gmail.com', subject=msg)
         worklist.starttimer()
+        p=clock.pipetting
         worklist.waittimer(600)   # Wait for 10 min for evaporation
+        clock.pipetting=p  # Don't add the wait to our actual time
         worklist.comment(doneLabel)
 
     def aspirate(self,tipMask,volume,multi=False,lc=None):
