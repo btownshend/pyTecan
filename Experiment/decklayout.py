@@ -27,7 +27,7 @@ WHITEQPCR=PlateType("QPCR on HSP96xx",nx=12,ny=8,pierce=False,unusableVolume=15,
                 angle=17.5,r1=2.704,h1=10.89,v0=0.44,gemDepth=3.17,gemArea=14.33,gemShape='v-shaped')
 EPPRACK = PlateType("Eppendorf Tube, 16 Pos.", nx=1, ny=16, pierce=False, unusableVolume=30, maxVolume=1500,angle=17.5,zmax=37.1,
                 r1=4.407,h1=17.34,v0=22.11,
-                gemDepth=1.29, gemArea=16.98, gemShape='v-shaped')
+                gemDepth=10.47, gemArea=57.02, gemShape='v-shaped')
 CLEAR384=PlateType("384 Well, clear on carrier",nx=24,ny=16,yspacing=4.5,pierce=False,unusableVolume=15,maxVolume=130,zmax=5.1,
                 gemArea=15.19, r1=1.971, h1=-1.14,angle=None,
                 gemShape='flat',maxspeeds=eppmaxspeeds,minspeeds=eppminspeeds,glycerolmaxspeeds=eppglycerolmaxspeeds,glycerol=1)  # TODO
@@ -65,7 +65,7 @@ HOTELPOS = PlateLocation("Hotel",25, 1, lihaAccess=False,carrierName="Hotel")
 CLEANER_DEEPLOC = PlateLocation("Cleaner deep",1, 3, lihaAccess=True,carrierName="Wash station")
 WASTELOC = PlateLocation("Waste",1, 2, lihaAccess=True,carrierName="Wash station")
 CLEANER_SHALLOWLOC = PlateLocation("Cleaner shallow",1, 1, lihaAccess=True,carrierName="Wash station")
-HOTEL = [ PlateLocation(f"Hotel{i+1}",25,1, lihaAccess=False,vectorName=f"Hotel{i+1}",carrierName="Hotel") for i in range(6) ]
+HOTEL = [ PlateLocation("HotelStack",25,i+1, lihaAccess=False,vectorName=f"HotelStack",carrierName="HotelStack") for i in range(6) ]
 
 ############ Physical Plates #############
 #TIPOFFSETS=[390, 389, 394, 387]
