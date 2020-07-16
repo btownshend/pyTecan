@@ -479,7 +479,7 @@ class Sample(object):
             volvar = 'detected_volume_%d' % (tipnum+1)
             worklist.variable(volvar,-2)
 
-    def overflowcheck(self,maxvol,tipMask):
+    def overflowcheck(self,maxvol,tipMask,delay=600):
         # Check for overflow after an operation that detects liquid
         worklist.flushQueue()
         worklist.comment(f"Check that {self.name} doesn't have more than {maxvol} ul")
@@ -499,7 +499,7 @@ class Sample(object):
         worklist.email(dest='cdsrobot@gmail.com', subject=msg)
         worklist.starttimer()
         p=clock.pipetting
-        worklist.waittimer(600)   # Wait for 10 min for evaporation
+        worklist.waittimer(delay)   # Wait for evaporation
         clock.pipetting=p  # Don't add the wait to our actual time
         worklist.comment(doneLabel)
 
