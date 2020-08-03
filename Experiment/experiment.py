@@ -461,8 +461,12 @@ class Experiment(object):
 
         if len(sources)>0:
             assert len(sources)<=len(samples)
-            for i in range(len(sources)):
-                self.transfer(sourcevols[i],sources[i],samples[i],(True,destMix))
+            if len(set(sources))==1:
+                print(f"*** All sources identical -- using multitransfer from {sources[0].name} to {[s.name for s in samples]}-- verify that it is not an issue...\n")
+                self.multitransfer(sourcevols,sources[0],samples,(True,destMix),ignoreContents=True,allowSplit=False)
+            else:
+                for i in range(len(sources)):
+                    self.transfer(sourcevols[i],sources[i],samples[i],(True,destMix))
 
 
     @staticmethod
