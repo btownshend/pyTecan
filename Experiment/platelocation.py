@@ -24,8 +24,8 @@ class PlateLocation(object):
             print(f"PlateLocation '{name}' references unknown carrier: '{self.carrierName}'")
             print(f"Known carriers: {','.join([c['name'] for c in Carrier.cfg().carriers])}")
         else:
-            if self.zoffset != self.carrier['refoffset'][2]:
-                print(f"carrier '{self.carrier['name']}' refoffset[z] is {self.carrier['refoffset'][2]}, but plateLocation '{self.name}' zoffset is {self.zoffset}")
+            if self.lihaAccess and self.zoffset != self.carrier['refoffset'][2]+self.carrier['sites'][pos-1]['zoffset']:
+                print(f"carrier '{self.carrier['name']}' refoffset[z] is {self.carrier['refoffset'][2]}, site offset is {self.carrier['sites'][pos-1]['zoffset']}, but plateLocation '{self.name}' zoffset is {self.zoffset}")
             if self.lihaAccess == self.carrier['romaonly']:
                 print(f"carrier '{self.carrier['name']}' romaonly is {self.carrier['romaonly']}, but plateLocation '{self.name}' lihaAccess is {self.lihaAccess}")
         PlateLocation.__allplatelocations.append(self)
