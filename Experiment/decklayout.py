@@ -65,7 +65,7 @@ HOTELPOS = PlateLocation("Hotel",25, 1, lihaAccess=False,carrierName="Hotel")
 CLEANER_DEEPLOC = PlateLocation("Cleaner deep",1, 3, lihaAccess=True,carrierName="Wash station")
 WASTELOC = PlateLocation("Waste",1, 2, lihaAccess=True,carrierName="Wash station")
 CLEANER_SHALLOWLOC = PlateLocation("Cleaner shallow",1, 1, lihaAccess=True,carrierName="Wash station")
-HOTEL = [ PlateLocation("HotelStack",25,i+1, lihaAccess=False,vectorName=f"HotelStack",carrierName="HotelStack") for i in range(6) ]
+HOTEL = [ PlateLocation("HotelStack",25,i+1, lihaAccess=False,vectorName=f"HotelStack",carrierName="HotelStack") for i in range(5) ]
 
 ############ Physical Plates #############
 #TIPOFFSETS=[390, 389, 394, 387]
