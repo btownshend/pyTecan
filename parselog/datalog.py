@@ -16,10 +16,13 @@ def getSample(wellx,welly,rack,grid,pos):
         plate=Plate.lookup(grid,pos)
         if plate is None:
             loc=PlateLocation.lookupByLocation(grid,pos)
-            if loc is None:
+            if len(loc) is 0:
                 print(f"No such location: {grid},{pos}")
                 assert False
-            plate = Plate(f"@{loc.name}", plateType=PlateType.lookupByName(rack),plateLocation=loc)
+            elif len(loc)>1:
+                print(f"Ambiguous location {grid},{pos}:  {[x.name for x in loc]} -- assuming {loc[0].name}")
+
+            plate = Plate(f"@{loc[0].name}", plateType=PlateType.lookupByName(rack),plateLocation=loc[0])
             print(f"Created new plate {plate} with type: {plate.plateType}, location: {plate.location}")
             pass
         elif plate.plateType.name != rack:

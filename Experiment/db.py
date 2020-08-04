@@ -494,6 +494,12 @@ class LogDB(DB):
             measurement=self.measurements[(lineno, tip)]
             logging.notice("measurement: %s"%str(measurement))
             loc=PlateLocation.lookupByLocation(measurement[6],measurement[7])
+            if len(loc)==0:
+                assert False
+            elif len(loc)>1:
+                logging.warning(f"Ambiguous location {measurement[6:8]}:  {[x.name for x in loc]} -- assuming {loc[0].name}")
+
+            loc=loc[0]
             plate=Plate.lookupLocation(loc)
             #plate=Plate.lookupByName(plateName)
             assert plate is not None

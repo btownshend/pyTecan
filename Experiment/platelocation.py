@@ -32,10 +32,11 @@ class PlateLocation(object):
 
     @classmethod
     def lookupByLocation(cls,grid,pos):
+        found = []
         for p in PlateLocation.__allplatelocations:
             if p.grid==grid and p.pos==pos:
-                return p
-        return None
+                found.append(p)
+        return found
 
     def __str__(self):
         #return "%s(%d,%d)"%(self.name,self.grid,self.pos)
