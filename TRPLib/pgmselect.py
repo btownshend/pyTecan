@@ -640,8 +640,8 @@ class PGMSelect(TRP):
 
             #print "NSplit=",nsplit,", PCR vol=",pcrvol/nsplit,", srcdil=",pcrdil,", input vol=",pcrvol/nsplit/pcrdil
             minvol=min([r.volume for r in rxs])
-            #maxpcrvol=(minvol-15-1.4*nsplit)*pcrdil   # If using single transfers for distributing lig product to PCR wells
-            maxpcrvol=(minvol-15)*pcrdil   # If using multi transfers for distributing lig product to PCR wells
+            maxpcrvol=(minvol-15-1.4*nsplit)*pcrdil   # If using single transfers for distributing lig product to PCR wells
+            #maxpcrvol=(minvol-15)*pcrdil   # If using multi transfers for distributing lig product to PCR wells
             if maxpcrvol<pcrvol:
                 print("Reducing PCR volume from %.1ful to %.1ful due to limited input"%(pcrvol, maxpcrvol))
                 pcrvol=maxpcrvol
