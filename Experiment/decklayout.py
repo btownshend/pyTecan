@@ -51,13 +51,13 @@ TROUGH3=PlateLocation("Trough-Front",3,3,carrierName="Trough 100ml, 3 Pos.",zoff
 TROUGH1=PlateLocation("Trough-Rear",3,1,carrierName="Trough 100ml, 3 Pos.",zoffset=10.0)
 
 RICLOC=PlateLocation("RIC",18,1,slopex=0,slopey=0,carrierName="RIC, Dual",zoffset=6.2)
-MAGPLATELOC=PlateLocation("MagPlate Carrier",18,2,vectorName="Magplate",zoffset=62.5)
 SHAKERPLATELOC=PlateLocation("Shaker",9,0,vectorName="Shaker",lihaAccess=False)
 SAMPLELOC=PlateLocation("SampleLoc",4,3,vectorName="Microplate Landscape",carrierName="MP, 3 Pos., landscape, RoMa",
                         zoffset=62.5)
 DILUTIONLOC=PlateLocation("DilutionLoc",4,2,vectorName="Microplate Landscape",carrierName="MP, 3 Pos., landscape, RoMa",
                           zoffset=62.5)
 PRODUCTLOC=PlateLocation("ProductLoc",18,2,vectorName="Microplate Product",carrierName="RIC, Dual", zoffset=6.2)
+MAGPLATELOC=PlateLocation("MagPlate Carrier",18,2,vectorName="Magplate",carrierName="RIC, Dual",zoffset=62.5)
 QPCRLOC=PlateLocation("QPCRLoc",4,1,carrierName="MP, 3 Pos., landscape, RoMa",zoffset=62.5)  # defined in worklist.py
 EPPLOC=PlateLocation("EppLoc",13,1,carrierName="Eppendorf Tube, 16 Pos.",zoffset=0.0)
 TCPOS=PlateLocation("TC",25,1,vectorName="TROBOT",lihaAccess=False,carrierName="PTC200-Off Deck")
