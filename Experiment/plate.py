@@ -49,10 +49,17 @@ class Plate(object):
 
     @classmethod
     def lookup(cls,grid,pos):
+        found=[]
         for p in Plate.__allplates:
             if p.location is not None and (p.location.grid==grid and p.location.pos==pos):
-                return p
-        return None
+                found.append(p)
+        if len(found)==1:
+            return found[0]
+        elif len(found)==0:
+            return None
+        else:
+            print(f"Plate.lookup({grid},{pos}) returned multiple matches: {[x.name for x in found]}")
+            assert False
 
     @classmethod
     def lookupByName(cls,name):
