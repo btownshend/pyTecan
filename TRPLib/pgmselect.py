@@ -85,6 +85,7 @@ class PGMSelect(TRP):
         self.rtSaveDil=2			    # Amount to dilute RT saved volume in TE8
         self.dopcr=True			    # Run PCR of samples
         self.cleavage=0.40			# Estimated cleavage (for computing dilutions of qPCRs)
+        self.t7postdil=1.0			   # DIlution after T7 reaction
         self.extpostdil=[2.0 if r[0]!='U' else 1.0 for r in self.rounds]
         self.nopcrdil=4
         self.userMelt=False
@@ -474,10 +475,18 @@ class PGMSelect(TRP):
             if self.pauseAfterStop:
                 worklist.userprompt("Post EDTA pause")
                 
+            if self.t7postdil>1:
+                print("Dilution after T7: %.2f"%self.t7postdil)
+                for x in rxs:
+                    if x.volume > 145/self.t7postdil:
+                        print("WARNING: dilution of T7 product results in discarding %.1ful"%(x.volume*self.t7postdil-145))
+                self.diluteInPlace(tgt=rxs,dil=self.t7postdil,finalvol=145)
+                self.e.shakeSamples(rxs)
+
             if self.saveRNA:
                 self.saveSamps(src=rxs,vol=self.saveRNAVolume,dil=self.saveRNADilution,plate=self.savePlate,dilutant=reagents.getsample("TE8"),mix=(False,False))   # Save to check [RNA] on Qubit, bioanalyzer
 
-        needDil = self.rnaConc/self.qConc/stopDil
+        needDil = self.rnaConc/self.qConc/stopDil/self.t7postdil
 
         if "stopped" in self.qpcrStages:
             for i in range(len(rxs)):
