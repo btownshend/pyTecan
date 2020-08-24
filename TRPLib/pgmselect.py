@@ -343,11 +343,15 @@ class PGMSelect(TRP):
                 tref=reagents.getsample(trefname)
                 self.e.transfer(r1[i].volume/(tref.conc.dilutionneeded()-1),tref,r1[i],mix=(False,False))
 
-        db.pushStatus('qPCR')
-        print("######### qPCR ########### %.0f min"%(clock.elapsed()/60))
-        self.allprimers=q.allprimers()
-        q.run(confirm=self.qpcrWait)
-        db.popStatus()
+        if len(self.allprimers) > 0:
+            db.pushStatus('qPCR')
+            print("######### qPCR ########### %.0f min"%(clock.elapsed()/60))
+            self.allprimers=q.allprimers()
+            q.run(confirm=self.qpcrWait)
+            db.popStatus()
+
+        self.e.waitpgm()		# May still need to wait for TC to complete before able to do final jobs
+        print("######### DONE ########## %.0f min"%(clock.elapsed()/60))
         
     def oneround(self, q, inputs, prefixOut, stop, prefixIn, keepCleaved, t7vol, rtvol, pcrdil, cycles, pcrvol, dolig,pcrtgt=None):
         primerSet=[set(["REF","T7X",prefixIn[i]+"X",prefixOut[i]+"X"]+(["MX"] if self.useMX else [])) for i in range(len(prefixIn))]
