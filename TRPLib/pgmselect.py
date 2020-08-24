@@ -454,7 +454,7 @@ class PGMSelect(TRP):
             print("Estimate usable RNA concentration in T7 reaction at %.0f nM"%self.rnaConc)
 
             if self.rndNum==1:
-                worklist.userprompt("T7 Incubation Started",(self.t7dur-8)*60)
+                worklist.userprompt("T7 Incubation Started",(self.t7dur-8)*60,countfortiming=False)
                 # Wash tips again to remove any drips that may have formed while waiting 
                 worklist.wash(15,1,5,True)
             
