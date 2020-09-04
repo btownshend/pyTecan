@@ -256,7 +256,7 @@ class PGMSelect(TRP):
                 if len(roundType)!=2:
                     logging.error("Uncleaved rounds must specify a stop to use")
                     assert False
-                stop=roundType[1]
+                stop=[roundType[1] for _ in curPrefix]
             else:
                 if roundType=='T':
                     stop=['T7%s'%p for p in curPrefix]
