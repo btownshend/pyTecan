@@ -575,7 +575,7 @@ class PGMSelect(TRP):
                 pcrdil=pcrdil*1.0/self.extpostdil[self.rndNum-1]
                 
             if self.saveDil is not None:
-                ext=self.saveSamps(src=rxs,vol=3,dil=self.saveDil,dilutant=reagents.getsample("TE8"),tgt=[Sample("%s.ext"%n,self.savePlate) for n in names],mix=(False,True))   # Save cDNA product for subsequent NGS
+                ext=self.saveSamps(src=rxs,vol=3,dil=self.saveDil,dilutant=reagents.getsample("TE8"),tgt=[Sample("%s.ext"%n,self.savePlate) for n in names],mix=(False,False))   # Save cDNA product for subsequent NGS
                 if "ext" in self.qpcrStages:
                     for i in range(len(ext)):
                         # Make sure we don't take more than 2 more steps
