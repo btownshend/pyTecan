@@ -403,7 +403,7 @@ class Sample(object):
             if volToRemove==0:
                 # No need to check if not removing anything and it has been checked previously (i.e. lastvolcheck is not None)
                 return
-            if not self.refillable and (self.volume-volToRemove > max(30,self.lastvolcheck-200) or self.volume-volToRemove>200):
+            if not self.refillable and (self.volume-volToRemove > max(30,self.lastvolcheck-20) or self.volume-volToRemove>200):
                 # Not needed (but always check refillable wells)
                 return
         self.lastvolcheck=self.volume
