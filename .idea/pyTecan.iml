@@ -8,7 +8,7 @@
       <excludeFolder url="file://$MODULE_DIR$/SELEX" />
       <excludeFolder url="file://$MODULE_DIR$/Scale" />
     </content>
-    <orderEntry type="jdk" jdkName="Python 3.8" jdkType="Python SDK" />
+    <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
   <component name="TestRunnerService">
