@@ -335,16 +335,21 @@ def fwparse(dev,send,reply,error,lasttime,outfd):
         assert (len(heights) == len(sbl))
         for i in range(len(heights)):
             if (1 << i & tipSelect) != 0:
-                if extendedError[3 + i] in [0, 12]:
+                if extendedError[3 + i] in [12]:
                     print("TIPS", ldpending, extendedError[3 + i], i + 1, lnum, heights[i], sbl[i], sml[i],heights[i] + sbl[i] - sml[i], file=outfd)
                     dl.logmeasure(i + 1, heights[i], 0*sbl[i], sml[i], zadd[i], lasttime)  # No submerge offset
                     logdb.lastmeasure(i + 1, lnum, heights[i], 0*sbl[i], sml[i], zadd[i], lasttime, rack, grid, pos)
+                    ldpending=None
+                elif extendedError[3+i] == 0:
+                    #print(f"Ignoring RVX with error code 0, ldpending={ldpending}")
+                    pass
                 elif extendedError[3+i] == 9:
                     print(f"Not enough liquid for tip {i} - ignore measurement",file=outfd)
+                    ldpending=None
                 else:
                     print(f"**** Unexpected RVZ with extended error {extendedError[3+i]}",file=outfd)
-        ldpending=None
-
+                    ldpending=None
+        
     elif ldpending:
         print("**** Parser error:  got op %s without a RPZ or RVZ while ldpending=%s"%(op,ldpending),file=outfd)
         #assert(False)

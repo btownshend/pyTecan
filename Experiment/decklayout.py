@@ -21,7 +21,7 @@ EPPLOWBIND=PlateType("EppLoBind on carrier",nx=12,ny=8,pierce=False,unusableVolu
                 angle=17.5,r1=2.724,h1=8.49,v0=13.48,
                 gemDepth=1.92, gemArea=13.51,
                 gemShape='v-shaped',maxspeeds=eppmaxspeeds,minspeeds=eppminspeeds,glycerolmaxspeeds=eppglycerolmaxspeeds,glycerol=1)  # EppLoBind
-RICBLOCK=PlateType("RIC Eppendorfs",nx=6,ny=5,pierce=False,unusableVolume=20,maxVolume=1700,angle=17.5,r1=4.088,h1=16.91,v0=10.23,gemDepth=1.02,gemArea=13.52,gemShape='v-shaped',
+RICBLOCK=PlateType("RIC Eppendorfs",nx=6,ny=5,pierce=False,unusableVolume=20,maxVolume=1700,angle=17.5,r1=4.102,h1=16.79,v0=15.11,gemDepth=0.25,gemArea=14.07,gemShape='v-shaped',
                    zmax=-0.6)
 WHITEQPCR=PlateType("QPCR on HSP96xx",nx=12,ny=8,pierce=False,unusableVolume=15,maxVolume=200,zmax=8.9,
                 angle=17.5,r1=2.704,h1=10.89,v0=0.44,gemDepth=3.17,gemArea=14.33,gemShape='v-shaped')
