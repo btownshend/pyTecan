@@ -115,7 +115,7 @@ class DB(object):
     def getOp(self, lineno, tip, sampid):
         if self.program is None:
             return None
-        if len(self.opdict) is 0:
+        if len(self.opdict) == 0:
             # Initial read of any samples already in DB
             with self.db.cursor() as cursor:
                 # Check if it already exists
@@ -140,7 +140,7 @@ class DB(object):
     def getSample(self, plateName, wellName):
         if self.program is None:
             return None
-        if len(self.sampids) is 0:
+        if len(self.sampids) == 0:
             # Initial read of any samples already in DB
             with self.db.cursor() as cursor:
                 # Check if it already exists
@@ -219,6 +219,7 @@ class BuildDB(DB):
         # Add sample to database
         #logging.notice("newsample %s, program %s"%(sample,self.program))
         if self.program is None:
+            logging.warning(f"newsample {sample} with no program")
             return
         sampid=self.getSample(sample.plate.name,sample.plate.wellname(sample.well))
         if sampid is None:
