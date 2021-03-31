@@ -165,7 +165,7 @@ class PGMSelect(TRP):
             self.rtvol=[max(15.0/self.rtpostdil[i],self.rtvol[i])+(self.rtSaveVol+1.4)/self.rtpostdil[i] for i in range(len(self.rtvol))]  # Extra for saves
         elif "rt" in self.qpcrStages:		# Take from save if rtSave is set
             self.rtvol=[max(15.0/self.rtpostdil[i],self.rtvol[i])+5.4/self.rtpostdil[i] for i in range(len(self.rtvol))]  # Extra for qPCR
-        self.rtvol=[max(v,10.0) for v in self.rtvol]   # Minimum volume
+        self.rtvol=[max(v,8.0) for v in self.rtvol]   # Minimum volume
         self.rtvol=[min(v,self.maxSampVolume) for v in self.rtvol]  # Maximum volume
         # print ("self.rtvol=",self.rtvol)
         
