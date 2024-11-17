@@ -76,6 +76,47 @@ class GUI(Ui_MainWindow):
             pdb.set_trace()
             sys.exit(1)
 
+    def loadSampInfo(self,horizon):
+        """Load samp info for all samples in current run"""
+        sampInfo={}
+        query=f"""SELECT a.sample, x.estvol, x.estvol+y.futurevols finalvol, x.estvol+z.futurevols horizvol
+            FROM
+            (SELECT DISTINCT sample 
+                FROM ops
+                WHERE program={self.currentProgram}) a
+            RIGHT OUTER JOIN
+            (SELECT sample, v.op,estvol,volume,volchange,elapsed+timestampdiff(second,measured,now()) elapsed
+                FROM vols v, ops o
+                WHERE v.op=o.op
+                AND (o.sample,v.op) IN (SELECT o2.sample,MAX(v2.op) from vols v2, ops o2 where v2.op=o2.op and v2.run={self.currentRun} group by o2.sample)
+                AND run={self.currentRun}
+                ORDER BY v.op DESC) x
+            ON a.sample=x.sample
+            RIGHT OUTER JOIN
+            (SELECT sample,sum(volchange) futurevols
+                FROM ops
+                WHERE (sample,op) NOT IN (SELECT o2.sample,v2.op from vols v2, ops o2 where v2.op=o2.op AND v2.run={self.currentRun})
+                AND program={self.currentProgram}
+                GROUP BY sample) y
+            ON a.sample=y.sample
+            RIGHT OUTER JOIN
+            (SELECT sample,sum(volchange) futurevols
+                FROM ops
+                WHERE (sample,op) NOT IN (SELECT o2.sample,v2.op from vols v2, ops o2 where v2.op=o2.op AND v2.run={self.currentRun})
+                AND program={self.currentProgram}
+                AND elapsed<={self.lastElapsed+horizon*3600}
+                GROUP BY sample) z
+            ON  a.sample=z.sample"""
+        q = QtSql.QSqlQuery(query)
+        if q.lastError().isValid():
+            self.dbreopen()
+            q = QtSql.QSqlQuery(query)
+        self.sqlErrorCheck(q.lastError())
+        while q.next():
+            sampInfo[q.value(0)] = (q.value(1), q.value(2),q.value(3),0)
+        print(f"Query <{query}>")
+        return sampInfo
+
     def getSampData(self,sampid,horizon):
         """Get Sample info for given sampid for horizon hours"""
         print("getSampData(%d,%f)"%(sampid,horizon))
@@ -131,7 +172,8 @@ class GUI(Ui_MainWindow):
                 """%(lastop,sampid,self.currentProgram,elapsed+horizon*3600))   # TODO: Should use global elapsed in case there was a stall since the last time this samp was accessed
             horizvol=q3.value(0)+estvol
             self.sampInfo[sampid]=(estvol,horizvol,finalvol,lastop)
-        print("->",self.sampInfo[sampid])
+        #si2=self.loadSampInfo(horizon)
+        #print("->",self.sampInfo[sampid],', si2->',si2[sampid])
         return self.sampInfo[sampid]
 
     def getTotalNeeded(self):
