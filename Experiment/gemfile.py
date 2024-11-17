@@ -27,8 +27,15 @@ class GemFile(object):
             self.layout.append(entry)
         else:
             entry=entry[0]
-            assert(entry['carrier']==carrier)
-        assert pos not in [r['pos'] for r in entry['racks']]
+            assert entry['carrier']==carrier, \
+                f"Grid {grid} already has carrier {entry['carrier']['name']} but trying to add {carrier['name']}"
+        for r in entry['racks']:
+            if r['pos']==pos:
+                if r['rack'] == rack and r['name'] == name:
+                    # Already there
+                    print(f"Already have {name} at {grid},{pos} on {carrier['name']}")
+                    return
+                assert False, f"Grid {grid}, pos {pos} has rack {r['name']} but trying to add {name}"
         entry['racks'].append({'pos':pos,'rack':rack,'name':name})
 
         self.carriers=[]
